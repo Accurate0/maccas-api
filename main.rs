@@ -1,8 +1,7 @@
 use aws_sdk_dynamodb::{model::AttributeValue, Client};
 use chrono::{DateTime, FixedOffset, Utc};
 use config::Config;
-use lambda_runtime::{service_fn, Error, LambdaEvent};
-use serde_json::Value;
+use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use std::collections::HashMap;
 use std::time::SystemTime;
 
@@ -12,13 +11,14 @@ pub mod api_types;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let func = service_fn(run);
-    lambda_runtime::run(func).await?;
+    lambda_http::run(func).await?;
     Ok(())
 }
 
 const VERSION: &str = "2";
 
-async fn run(_: LambdaEvent<Value>) -> Result<(), Error> {
+async fn run(request: Request) -> Result<impl IntoResponse, Error> {
+    println!("{:#?}", request);
     let settings = Config::builder()
         .add_source(config::File::from_str(
             std::include_str!("config.yml"),
@@ -95,8 +95,8 @@ async fn run(_: LambdaEvent<Value>) -> Result<(), Error> {
 
                     let diff = now - last_invocation;
 
-                    if diff.num_minutes() > 10 {
-                        println!(">10 mins since last attempt.. refreshing..");
+                    if diff.num_minutes() > 9 {
+                        println!(">= 10 mins since last attempt.. refreshing..");
                         let mut new_access_token: String = String::from("");
                         let mut new_ref_token: String = String::from("");
 
@@ -108,12 +108,14 @@ async fn run(_: LambdaEvent<Value>) -> Result<(), Error> {
                             new_ref_token = unwrapped_res.refresh_token;
                         }
 
-                        if res.status.code == 40000 {
+                        if res.status.code != 20000 {
                             api_client.security_auth_token().await?;
                             let res = api_client.customer_login().await?;
 
                             new_access_token = res.response.access_token;
                             new_ref_token = res.response.refresh_token;
+
+                            api_client.set_auth_token(&new_access_token);
                         }
 
                         client
@@ -134,6 +136,6 @@ async fn run(_: LambdaEvent<Value>) -> Result<(), Error> {
 
     let resp = api_client.get_offers(None).await?;
     println!("{:#?}", resp.status);
-
-    Ok(())
+    // return events.APIGatewayProxyResponse{Body: string(json), StatusCode: 200}, nil
+    Ok(serde_json::to_string(&resp).unwrap())
 }
