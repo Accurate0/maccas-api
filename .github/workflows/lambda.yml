@@ -1,0 +1,41 @@
+name: lambda
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: environment-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+
+      - name: rust-cargo-install
+        uses: actions-rs/install@v0.1.2
+        with:
+          crate: cargo-lambda
+          version: latest
+
+      - name: install zig
+        run: pip3 install ziglang
+
+      - name: cargo build
+        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
+
+      - name: publish lambda
+        run: |
+          aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+
+      - name: increment lambda version
+        run: aws lambda publish-version --function-name MaccasApi
