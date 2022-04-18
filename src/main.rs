@@ -5,7 +5,6 @@ use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use std::collections::HashMap;
-use std::time::Duration;
 use std::time::SystemTime;
 
 pub mod api;
