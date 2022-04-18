@@ -40,6 +40,7 @@ jobs:
         with:
           crate: cargo-lambda
           version: latest
+          use-tool-cache: true
 
       - name: install zig
         run: pip3 install ziglang
