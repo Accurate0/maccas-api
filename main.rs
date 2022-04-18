@@ -1,6 +1,8 @@
 use aws_sdk_dynamodb::{model::AttributeValue, Client};
 use chrono::{DateTime, FixedOffset, Utc};
 use config::Config;
+use http::Method;
+use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use std::collections::HashMap;
 use std::time::SystemTime;
@@ -10,12 +12,11 @@ pub mod api_types;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let func = service_fn(run);
-    lambda_http::run(func).await?;
+    lambda_http::run(service_fn(run)).await?;
     Ok(())
 }
 
-const VERSION: &str = "2";
+const VERSION: &str = "3";
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     println!("{:#?}", request);
@@ -37,12 +38,13 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         settings.get("loginPassword").unwrap().to_string(),
     );
 
+    let table_name = settings.get("tableName").unwrap().to_string();
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
 
     let resp = client
         .get_item()
-        .table_name(settings.get("tableName").unwrap().to_string())
+        .table_name(&table_name)
         .key("Version", AttributeValue::S(VERSION.to_string()))
         .send()
         .await?;
@@ -59,7 +61,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
             client
                 .put_item()
-                .table_name(settings.get("tableName").unwrap().to_string())
+                .table_name(&table_name)
                 .item("Version", AttributeValue::S(VERSION.to_owned()))
                 .item(
                     "access_token",
@@ -97,36 +99,40 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                     if diff.num_minutes() > 9 {
                         println!(">= 10 mins since last attempt.. refreshing..");
-                        let mut new_access_token: String = String::from("");
-                        let mut new_ref_token: String = String::from("");
+                        let mut new_access_token = String::from("");
+                        let mut new_ref_token = String::from("");
 
-                        let res = api_client.customer_login_refresh(refresh_token).await?;
-                        if res.response.is_some() {
-                            let unwrapped_res = res.response.unwrap();
+                        let res = api_client.customer_login_refresh(refresh_token).await;
+                        match res {
+                            Ok(r) => {
+                                if r.response.is_some() {
+                                    let unwrapped_res = r.response.unwrap();
 
-                            new_access_token = unwrapped_res.access_token;
-                            new_ref_token = unwrapped_res.refresh_token;
+                                    new_access_token = unwrapped_res.access_token;
+                                    new_ref_token = unwrapped_res.refresh_token;
+                                } else if r.status.code != 20000 {
+                                    api_client.security_auth_token().await?;
+                                    let res = api_client.customer_login().await?;
+
+                                    new_access_token = res.response.access_token;
+                                    new_ref_token = res.response.refresh_token;
+
+                                    api_client.set_auth_token(&new_access_token);
+                                }
+
+                                client
+                                    .put_item()
+                                    .table_name(&table_name)
+                                    .item("Version", AttributeValue::S(VERSION.to_owned()))
+                                    .item("access_token", AttributeValue::S(new_access_token))
+                                    .item("refresh_token", AttributeValue::S(new_ref_token))
+                                    .item("last_invocation", AttributeValue::S(now.to_rfc3339()))
+                                    .send()
+                                    .await?;
+                            }
+
+                            Err(_) => panic!(),
                         }
-
-                        if res.status.code != 20000 {
-                            api_client.security_auth_token().await?;
-                            let res = api_client.customer_login().await?;
-
-                            new_access_token = res.response.access_token;
-                            new_ref_token = res.response.refresh_token;
-
-                            api_client.set_auth_token(&new_access_token);
-                        }
-
-                        client
-                            .put_item()
-                            .table_name(settings.get("tableName").unwrap().to_string())
-                            .item("Version", AttributeValue::S(VERSION.to_owned()))
-                            .item("access_token", AttributeValue::S(new_access_token))
-                            .item("refresh_token", AttributeValue::S(new_ref_token))
-                            .item("last_invocation", AttributeValue::S(now.to_rfc3339()))
-                            .send()
-                            .await?;
                     }
                 }
                 _ => panic!(),
@@ -134,8 +140,75 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         }
     }
 
-    let resp = api_client.get_offers(None).await?;
-    println!("{:#?}", resp.status);
-    // return events.APIGatewayProxyResponse{Body: string(json), StatusCode: 200}, nil
-    Ok(serde_json::to_string(&resp).unwrap())
+    let params = request.path_parameters();
+    let context = request.request_context();
+
+    let resource_path = match context {
+        RequestContext::ApiGatewayV1(r) => r.resource_path,
+        _ => panic!(),
+    };
+
+    Ok(match resource_path {
+        Some(s) => match s.as_str() {
+            "/deals" => {
+                let resp = api_client
+                    .get_offers(None)
+                    .await?
+                    .response
+                    .expect("to have response")
+                    .offers;
+
+                serde_json::to_string(&resp).unwrap().into_response()
+            }
+
+            "/deals/{dealId}" => {
+                let deal_id = params.first("dealId").expect("must have id");
+                let deal_id = &deal_id.to_owned();
+
+                match *request.method() {
+                    Method::POST => {
+                        let resp = api_client
+                            .add_offer_to_offers_dealstack(deal_id, None, None)
+                            .await?;
+
+                        serde_json::to_string(&resp).unwrap().into_response()
+                    }
+
+                    Method::DELETE => {
+                        let resp = api_client
+                            .get_offers(None)
+                            .await?
+                            .response
+                            .expect("to have response")
+                            .offers;
+
+                        let offer_id_vec: Vec<i64> = resp
+                            .iter()
+                            .filter(|d| d.offer_proposition_id.to_string() == *deal_id)
+                            .map(|d| d.offer_id)
+                            .collect();
+
+                        let offer_id = offer_id_vec.first().unwrap();
+
+                        let resp = api_client
+                            .remove_offer_from_offers_dealstack(*offer_id, deal_id, None, None)
+                            .await?;
+
+                        serde_json::to_string(&resp).unwrap().into_response()
+                    }
+
+                    _ => panic!(),
+                }
+            }
+
+            _ => Response::builder()
+                .status(400)
+                .body("Bad Request".into())
+                .expect("failed to render response"),
+        },
+        None => Response::builder()
+            .status(400)
+            .body("Bad Request".into())
+            .expect("failed to render response"),
+    })
 }

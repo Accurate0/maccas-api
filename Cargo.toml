@@ -18,13 +18,14 @@ reqwest = { version = "0.11.10", features = ["json", "gzip"] }
 openssl = { version = "0.10", features = ["vendored"] }
 aws-sdk-dynamodb = "0.10.1"
 config = { version = "0.13.1", features = ["yaml"] }
-uuid = "0.8.2"
+uuid = { version = "0.8.2", features = ["v4"] }
 http-auth-basic = "0.3.3"
 aws-config = "0.10.1"
 http = "0.2.6"
 reqwest-middleware = "0.1.5"
 reqwest-retry = "0.1.4"
 chrono = "0.4.19"
+futures = "0.3.21"
 
 [[bin]]
 name = "maccas_api"
