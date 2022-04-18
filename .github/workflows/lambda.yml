@@ -30,8 +30,6 @@ jobs:
       - name: generate config
         run: |
           echo -e $CONFIG_FILE > config.yml
-          echo -e $CONFIG_FILE
-          cat config.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
 
@@ -39,7 +37,7 @@ jobs:
         uses: actions-rs/install@v0.1.2
         with:
           crate: cargo-lambda
-          version: latest
+          version: 0.6.1
           use-tool-cache: true
 
       - name: install zig
