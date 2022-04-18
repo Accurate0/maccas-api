@@ -2,10 +2,9 @@ use aws_sdk_dynamodb::{model::AttributeValue, Client};
 use chrono::{DateTime, FixedOffset, Utc};
 use config::Config;
 use lambda_http::Error;
+use libmaccas::api;
 use std::collections::HashMap;
 use std::time::SystemTime;
-
-use crate::api;
 
 const VERSION: &str = "3";
 
