@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2017-03-01",
+      "name": "general-apim/Maccas-API-v1/Status",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Status",
+        "method": "GET",
+        "urlTemplate": "/status",
+        "templateParameters": [],
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2017-03-01",
+      "name": "general-apim/Maccas-API-v2/Status",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Status",
+        "method": "GET",
+        "urlTemplate": "/status",
+        "templateParameters": [],
+        "responses": [
+          {
+            "statusCode": 200,
+            "representations": [
+              {
+                "contentType": "application/json"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
