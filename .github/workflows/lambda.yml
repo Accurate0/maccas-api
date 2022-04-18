@@ -32,7 +32,9 @@ jobs:
 
       - name: generate config
         run: |
-          echo ${{ secrets.API_CONFIG_FILE }} > config.yml
+          echo $CONFIG_FILE > config.yml
+        env:
+          CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
 
       - name: cargo build
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
