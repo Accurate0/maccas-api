@@ -2,9 +2,7 @@ use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 
-pub mod api;
 pub mod client;
-pub mod types;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
