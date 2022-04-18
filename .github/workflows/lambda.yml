@@ -27,6 +27,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
+      - name: generate config
+        run: |
+          echo $CONFIG_FILE > config.yml
+          echo $CONFIG_FILE
+          cat config.yml
+        env:
+          CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
+
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
         with:
@@ -35,12 +43,6 @@ jobs:
 
       - name: install zig
         run: pip3 install ziglang
-
-      - name: generate config
-        run: |
-          echo $CONFIG_FILE > config.yml
-        env:
-          CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
 
       - name: cargo build
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
