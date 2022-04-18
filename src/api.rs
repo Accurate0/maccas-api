@@ -1,4 +1,4 @@
-use crate::api_types::{
+use crate::types::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OrderResponse, RestaurantLocationResponse, TokenResponse,
 };
