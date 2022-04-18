@@ -3,9 +3,11 @@ use crate::api_types::{
     OrderResponse, RestaurantLocationResponse, TokenResponse,
 };
 use http_auth_basic::Credentials;
-use reqwest::{Client, Method};
+use reqwest::Method;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
+use std::time::Duration;
+use uuid::Uuid;
 
 const BASE_URL: &str = "https://ap-prod.api.mcd.com";
 
@@ -27,9 +29,14 @@ impl ApiClient {
         login_password: String,
     ) -> ApiClient {
         let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
-        let client = ClientBuilder::new(Client::new())
-            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
-            .build();
+        let client = ClientBuilder::new(
+            reqwest::ClientBuilder::new()
+                .timeout(Duration::from_secs(10))
+                .build()
+                .unwrap(),
+        )
+        .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .build();
 
         ApiClient {
             client,
@@ -52,7 +59,7 @@ impl ApiClient {
             .header("accept-language", "en-AU")
             .header("content-type", "application/json; charset=UTF-8")
             .header("mcd-clientid", client_id)
-            .header("mcd-uuid", "f0a08fb5-131b-4646-b08c-58462cb06796")
+            .header("mcd-uuid", Uuid::new_v4().to_hyphenated().to_string())
             .header("user-agent", "MCDSDK/20.0.14 (Android; 31; en-AU) GMA/6.2")
             .header("mcd-sourceapp", "GMA")
             .header("mcd-marketid", "AU");
@@ -82,8 +89,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<TokenResponse>()
             .await
             .expect("error deserializing payload");
@@ -115,8 +121,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<LoginResponse>()
             .await
             .expect("error deserializing payload");
@@ -151,8 +156,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<OrderResponse>()
             .await
             .expect("error deserializing payload");
@@ -196,8 +200,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<RestaurantLocationResponse>()
             .await
             .expect("error deserializing payload");
@@ -221,8 +224,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<OfferDetailsResponse>()
             .await
             .expect("error deserializing payload");
@@ -230,7 +232,7 @@ impl ApiClient {
         Ok(response)
     }
 
-    // https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
+    // GET https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
     pub async fn offers_dealstack(
         &self,
         offset: Option<String>,
@@ -252,8 +254,87 @@ impl ApiClient {
 
         let response = request
             .send()
+            .await?
+            .json::<OfferDealStackResponse>()
             .await
-            .expect("error making request")
+            .expect("error deserializing payload");
+
+        Ok(response)
+    }
+
+    // POST https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/166870?offerId=1139347703&offset=480&storeId=951488
+    pub async fn add_offer_to_offers_dealstack(
+        &self,
+        offer_id: &String,
+        offset: Option<String>,
+        store_id: Option<String>,
+    ) -> reqwest_middleware::Result<OfferDealStackResponse> {
+        let token: &String = self.auth_token.as_ref().unwrap();
+        let params = Vec::from([
+            (String::from("offset"), offset.unwrap_or("480".to_owned())),
+            (
+                String::from("storeId"),
+                store_id.unwrap_or("951488".to_owned()),
+            ),
+        ]);
+
+        let request = self
+            .get_default_request(
+                format!("exp/v1/offers/dealstack/{offer_id}").as_str(),
+                Method::POST,
+            )
+            .query(&params)
+            .bearer_auth(token);
+
+        let response = request
+            .send()
+            .await?
+            .json::<OfferDealStackResponse>()
+            .await
+            .expect("error deserializing payload");
+
+        Ok(response)
+    }
+
+    // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/offer/166870?offerId=1139347703&offset=480&storeId=951488
+    pub async fn remove_offer_from_offers_dealstack(
+        &self,
+        offer_id: i64,
+        offer_proposition_id: &String,
+        offset: Option<i64>,
+        store_id: Option<String>,
+    ) -> reqwest_middleware::Result<OfferDealStackResponse> {
+        let store_id = store_id.unwrap_or("951488".to_owned());
+
+        // the app sends a body, but this request works without it
+        // but we're pretending to be the app :)
+        let body = serde_json::json!(
+            {
+                "storeId": store_id,
+                "offerId": offer_id,
+                "offset": offset.unwrap_or(480)
+            }
+        );
+
+        let token: &String = self.auth_token.as_ref().unwrap();
+        let params = Vec::from([
+            (String::from("offerId"), offer_id.to_string()),
+            (String::from("offset"), offset.unwrap_or(480).to_string()),
+            (String::from("storeId"), store_id),
+        ]);
+
+        let request = self
+            .get_default_request(
+                format!("exp/v1/offers/dealstack/offer/{offer_proposition_id}").as_str(),
+                Method::DELETE,
+            )
+            .json(&body)
+            .query(&params)
+            .bearer_auth(token);
+
+        let response = request
+            .send()
+            .await?
             .json::<OfferDealStackResponse>()
             .await
             .expect("error deserializing payload");
@@ -277,8 +358,7 @@ impl ApiClient {
 
         let response = request
             .send()
-            .await
-            .expect("error making request")
+            .await?
             .json::<LoginRefreshResponse>()
             .await
             .expect("error deserializing payload");

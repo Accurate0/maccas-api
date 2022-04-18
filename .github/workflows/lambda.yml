@@ -30,6 +30,10 @@ jobs:
       - name: install zig
         run: pip3 install ziglang
 
+      - name: generate config
+        run: |
+          echo ${{ secrets.API_CONFIG_FILE }} > config.yml
+
       - name: cargo build
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
 

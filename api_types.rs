@@ -286,7 +286,7 @@ pub struct OfferDealStackResp {
     pub random_code: String,
     pub bar_code_content: String,
     pub expiration_time: String,
-    pub deal_stack: Vec<DealStack>,
+    pub deal_stack: Option<Vec<DealStack>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -294,7 +294,7 @@ pub struct OfferDealStackResp {
 pub struct DealStack {
     pub offer_id: i64,
     pub offer_proposition_id: String,
-    pub state: String,
+    pub state: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
