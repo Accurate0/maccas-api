@@ -29,8 +29,8 @@ jobs:
 
       - name: generate config
         run: |
-          echo $CONFIG_FILE > config.yml
-          echo $CONFIG_FILE
+          echo -e $CONFIG_FILE > config.yml
+          echo -e $CONFIG_FILE
           cat config.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
