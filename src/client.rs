@@ -102,13 +102,13 @@ pub async fn get() -> Result<api::ApiClient, Error> {
                             Ok(r) => {
                                 if r.response.is_some() {
                                     let unwrapped_res = r.response.unwrap();
-
+                                    println!("refresh success..");
                                     new_access_token = unwrapped_res.access_token;
                                     new_ref_token = unwrapped_res.refresh_token;
                                 } else if r.status.code != 20000 {
                                     api_client.security_auth_token().await?;
                                     let res = api_client.customer_login().await?;
-
+                                    println!("refresh failed, logged in again..");
                                     new_access_token = res.response.access_token;
                                     new_ref_token = res.response.refresh_token;
                                 }
