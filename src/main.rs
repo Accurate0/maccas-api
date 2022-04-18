@@ -5,6 +5,7 @@ use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use std::collections::HashMap;
+use std::time::Duration;
 use std::time::SystemTime;
 
 pub mod api;
@@ -116,10 +117,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                                     new_access_token = res.response.access_token;
                                     new_ref_token = res.response.refresh_token;
-
-                                    api_client.set_auth_token(&new_access_token);
                                 }
 
+                                api_client.set_auth_token(&new_access_token);
                                 client
                                     .put_item()
                                     .table_name(&table_name)
