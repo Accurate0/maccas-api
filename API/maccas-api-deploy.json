@@ -7,12 +7,12 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2017-03-01",
-      "name": "general-apim/Maccas-API-v1/Status",
+      "name": "general-apim/Maccas-API-v1/Deals",
       "dependsOn": [],
       "properties": {
-        "displayName": "Status",
+        "displayName": "Deals",
         "method": "GET",
-        "urlTemplate": "/status",
+        "urlTemplate": "/deals",
         "templateParameters": [],
         "responses": []
       }
