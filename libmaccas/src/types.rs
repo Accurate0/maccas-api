@@ -6,13 +6,6 @@ use serde_derive::Serialize;
 use serde_json::Value;
 
 #[derive(serde::Deserialize, std::fmt::Debug)]
-pub struct StatusResponse {
-    code: u32,
-    r#type: String,
-    message: String,
-}
-
-#[derive(serde::Deserialize, std::fmt::Debug)]
 pub struct Token {
     pub token: String,
     pub expires: u32,
@@ -20,7 +13,7 @@ pub struct Token {
 
 #[derive(serde::Deserialize, std::fmt::Debug)]
 pub struct TokenResponse {
-    pub status: StatusResponse,
+    pub status: Status,
     pub response: Token,
 }
 
@@ -33,7 +26,7 @@ pub struct AccessTokenResponse {
 
 #[derive(serde::Deserialize, std::fmt::Debug)]
 pub struct LoginResponse {
-    pub status: StatusResponse,
+    pub status: Status,
     pub response: AccessTokenResponse,
 }
 
@@ -41,24 +34,24 @@ pub struct LoginResponse {
 #[serde(rename_all = "camelCase")]
 pub struct OfferResponse {
     pub status: Status,
-    pub response: Option<OfferResp>,
+    pub response: Option<OfferList>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub code: i64,
-    #[serde(rename = "type", skip_serializing)]
+    #[serde(rename = "type", skip_serializing, skip_deserializing)]
     pub type_field: String,
-    #[serde(rename = "correlationID", skip_serializing)]
+    #[serde(rename = "correlationID", skip_serializing, skip_deserializing)]
     pub correlation_id: Option<String>,
     pub message: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OfferResp {
+pub struct OfferList {
     pub offers: Vec<Offer>,
 }
 
@@ -67,7 +60,7 @@ pub struct OfferResp {
 pub struct Offer {
     pub offer_id: i64,
     pub offer_proposition_id: i64,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub offer_type: i64,
     pub local_valid_from: String,
     pub local_valid_to: String,
@@ -76,43 +69,43 @@ pub struct Offer {
     #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub short_description: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub long_description: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub image_base_name: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub image_base_language: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub redemption_mode: i64,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub is_archived: bool,
-    #[serde(rename = "isSLPOffer", skip_serializing)]
+    #[serde(rename = "isSLPOffer", skip_serializing, skip_deserializing)]
     pub is_slpoffer: bool,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub is_locked: bool,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub is_redeemed: bool,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub offer_bucket: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub punch_info: PunchInfo,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub recurring_info: RecurringInfo,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub conditions: Conditions,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub color_coding_info: i64,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub isvalid_total_order: bool,
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
-    #[serde(rename = "extendToEOD", skip_serializing)]
+    #[serde(rename = "extendToEOD", skip_serializing, skip_deserializing)]
     pub extend_to_eod: bool,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub is_dynamic_expiration: bool,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub daypart_filters: Vec<Value>,
 }
 
@@ -159,12 +152,12 @@ pub struct SaleAmountCondition {
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantLocationResponse {
     pub status: Status,
-    pub response: Option<RestaurantLocationResp>,
+    pub response: Option<RestaurantLocationList>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RestaurantLocationResp {
+pub struct RestaurantLocationList {
     pub restaurants: Vec<Restaurant>,
 }
 
@@ -226,12 +219,12 @@ pub struct Service {
 #[serde(rename_all = "camelCase")]
 pub struct OfferDetailsResponse {
     pub status: Status,
-    pub response: Option<OfferDetailsResp>,
+    pub response: Option<OfferDetails>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OfferDetailsResp {
+pub struct OfferDetails {
     pub order_discount_type: i64,
     pub offer_proposition_id: i64,
     pub offer_type: i64,
@@ -295,14 +288,14 @@ pub struct FrequencyOfferInfo {
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStackResponse {
     pub status: Status,
-    pub response: Option<OfferDealStackResp>,
+    pub response: Option<OfferDealStack>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OfferDealStackResp {
+pub struct OfferDealStack {
     pub random_code: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub bar_code_content: String,
     pub expiration_time: String,
     pub deal_stack: Option<Vec<DealStack>>,
@@ -312,7 +305,7 @@ pub struct OfferDealStackResp {
 #[serde(rename_all = "camelCase")]
 pub struct DealStack {
     pub offer_id: i64,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub offer_proposition_id: String,
     pub state: Option<String>,
 }
