@@ -12,6 +12,7 @@ pub struct Deal {
     #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
+    #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
 }
 
