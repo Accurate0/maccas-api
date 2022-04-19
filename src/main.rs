@@ -3,7 +3,6 @@ use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use libmaccas::api::ApiClient;
-use libmaccas::api_types::DealResponse;
 use libmaccas::types::Offer;
 use std::collections::HashMap;
 

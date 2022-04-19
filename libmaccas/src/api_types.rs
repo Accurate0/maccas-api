@@ -5,6 +5,7 @@ use serde_derive::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct Deal {
     pub offer_id: i64,
+    pub offer_proposition_id: i64,
     pub local_valid_from: String,
     pub local_valid_to: String,
     #[serde(rename = "validFromUTC")]
