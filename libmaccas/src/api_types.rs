@@ -7,7 +7,9 @@ pub struct Deal {
     pub offer_id: i64,
     pub local_valid_from: String,
     pub local_valid_to: String,
+    #[serde(rename = "validFromUTC")]
     pub valid_from_utc: String,
+    #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
     pub creation_date_utc: String,
