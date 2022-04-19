@@ -66,7 +66,6 @@ pub struct OfferResp {
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     pub offer_id: i64,
-    #[serde(skip_serializing)]
     pub offer_proposition_id: i64,
     #[serde(skip_serializing)]
     pub offer_type: i64,
