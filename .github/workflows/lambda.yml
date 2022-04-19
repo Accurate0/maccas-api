@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - src/**
+      - libmaccas/**
       - .github/workflows/lambda.yml
 
 concurrency:
