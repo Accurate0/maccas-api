@@ -47,10 +47,11 @@ pub struct OrderResponse {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
+    #[serde(skip_serializing)]
     pub code: i64,
-    #[serde(rename = "type")]
+    #[serde(rename = "type", skip_serializing)]
     pub type_field: String,
-    #[serde(rename = "correlationID")]
+    #[serde(rename = "correlationID", skip_serializing)]
     pub correlation_id: Option<String>,
     pub message: String,
 }
@@ -65,7 +66,9 @@ pub struct OrderResp {
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     pub offer_id: i64,
+    #[serde(skip_serializing)]
     pub offer_proposition_id: i64,
+    #[serde(skip_serializing)]
     pub offer_type: i64,
     pub local_valid_from: String,
     pub local_valid_to: String,
@@ -75,26 +78,41 @@ pub struct Offer {
     pub valid_to_utc: String,
     pub name: String,
     pub short_description: String,
+    #[serde(skip_serializing)]
     pub long_description: String,
+    #[serde(skip_serializing)]
     pub image_base_name: String,
+    #[serde(skip_serializing)]
     pub image_base_language: String,
+    #[serde(skip_serializing)]
     pub redemption_mode: i64,
+    #[serde(skip_serializing)]
     pub is_archived: bool,
-    #[serde(rename = "isSLPOffer")]
+    #[serde(rename = "isSLPOffer", skip_serializing)]
     pub is_slpoffer: bool,
+    #[serde(skip_serializing)]
     pub is_locked: bool,
+    #[serde(skip_serializing)]
     pub is_redeemed: bool,
+    #[serde(skip_serializing)]
     pub offer_bucket: String,
+    #[serde(skip_serializing)]
     pub punch_info: PunchInfo,
+    #[serde(skip_serializing)]
     pub recurring_info: RecurringInfo,
+    #[serde(skip_serializing)]
     pub conditions: Conditions,
+    #[serde(skip_serializing)]
     pub color_coding_info: i64,
+    #[serde(skip_serializing)]
     pub isvalid_total_order: bool,
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
-    #[serde(rename = "extendToEOD")]
+    #[serde(rename = "extendToEOD", skip_serializing)]
     pub extend_to_eod: bool,
+    #[serde(skip_serializing)]
     pub is_dynamic_expiration: bool,
+    #[serde(skip_serializing)]
     pub daypart_filters: Vec<Value>,
 }
 
@@ -284,6 +302,7 @@ pub struct OfferDealStackResponse {
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStackResp {
     pub random_code: String,
+    #[serde(skip_serializing)]
     pub bar_code_content: String,
     pub expiration_time: String,
     pub deal_stack: Option<Vec<DealStack>>,
@@ -293,6 +312,7 @@ pub struct OfferDealStackResp {
 #[serde(rename_all = "camelCase")]
 pub struct DealStack {
     pub offer_id: i64,
+    #[serde(skip_serializing)]
     pub offer_proposition_id: String,
     pub state: Option<String>,
 }
