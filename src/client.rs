@@ -1,45 +1,36 @@
 use aws_sdk_dynamodb::{model::AttributeValue, Client};
 use chrono::{DateTime, FixedOffset, Utc};
-use config::Config;
 use lambda_http::Error;
 use libmaccas::api;
-use std::collections::HashMap;
 use std::time::SystemTime;
 
-const VERSION: &str = "3";
+const ACCOUNT_NAME: &str = "account_name";
+const ACCESS_TOKEN: &str = "access_token";
+const REFRESH_TOKEN: &str = "refresh_token";
+const LAST_REFRESH: &str = "last_refresh";
 
-// get a valid client with keys, for this lambda session
-// in future this should be able to cater for other users too
-// replace version with username key
-// use key to build api client
-// active key list in setting etc
-pub async fn get() -> Result<api::ApiClient, Error> {
-    let settings = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .add_source(config::Environment::with_prefix("MCD_API"))
-        .build()
-        .unwrap()
-        .try_deserialize::<HashMap<String, String>>()
-        .unwrap();
-
+pub async fn get(
+    table_name: &String,
+    account_name: &String,
+    client_id: &String,
+    client_secret: &String,
+    login_username: &String,
+    login_password: &String,
+) -> Result<api::ApiClient, Error> {
     let mut api_client = api::ApiClient::new(
-        settings.get("clientId").unwrap().to_string(),
-        settings.get("clientSecret").unwrap().to_string(),
-        settings.get("loginUsername").unwrap().to_string(),
-        settings.get("loginPassword").unwrap().to_string(),
+        client_id.clone(),
+        client_secret.clone(),
+        login_username.clone(),
+        login_password.clone(),
     );
 
-    let table_name = settings.get("tableName").unwrap().to_string();
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
 
     let resp = client
         .get_item()
-        .table_name(&table_name)
-        .key("Version", AttributeValue::S(VERSION.to_string()))
+        .table_name(table_name)
+        .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
         .send()
         .await?;
 
@@ -53,43 +44,39 @@ pub async fn get() -> Result<api::ApiClient, Error> {
             let now: DateTime<Utc> = now.into();
             let now = now.to_rfc3339();
 
+            let resp = response.response;
+
             client
                 .put_item()
-                .table_name(&table_name)
-                .item("Version", AttributeValue::S(VERSION.to_owned()))
-                .item(
-                    "access_token",
-                    AttributeValue::S(response.response.access_token),
-                )
-                .item(
-                    "refresh_token",
-                    AttributeValue::S(response.response.refresh_token),
-                )
-                .item("last_invocation", AttributeValue::S(now))
+                .table_name(table_name)
+                .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
+                .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
+                .item(LAST_REFRESH, AttributeValue::S(now))
                 .send()
                 .await?;
         }
         Some(ref item) => {
             println!("tokens in db, trying..");
-            let refresh_token = match item["refresh_token"].as_s() {
+            let refresh_token = match item[REFRESH_TOKEN].as_s() {
                 Ok(s) => s,
                 _ => panic!(),
             };
 
-            match item["access_token"].as_s() {
+            match item[ACCESS_TOKEN].as_s() {
                 Ok(s) => api_client.set_auth_token(s),
                 _ => panic!(),
             };
 
-            match item["last_invocation"].as_s() {
+            match item[LAST_REFRESH].as_s() {
                 Ok(s) => {
                     let now = SystemTime::now();
                     let now: DateTime<Utc> = now.into();
                     let now: DateTime<FixedOffset> = DateTime::from(now);
 
-                    let last_invocation = DateTime::parse_from_rfc3339(s).unwrap();
+                    let last_refresh = DateTime::parse_from_rfc3339(s).unwrap();
 
-                    let diff = now - last_invocation;
+                    let diff = now - last_refresh;
 
                     if diff.num_minutes() > 9 {
                         println!(">= 10 mins since last attempt.. refreshing..");
@@ -115,11 +102,11 @@ pub async fn get() -> Result<api::ApiClient, Error> {
                                 api_client.set_auth_token(&new_access_token);
                                 client
                                     .put_item()
-                                    .table_name(&table_name)
-                                    .item("Version", AttributeValue::S(VERSION.to_owned()))
-                                    .item("access_token", AttributeValue::S(new_access_token))
-                                    .item("refresh_token", AttributeValue::S(new_ref_token))
-                                    .item("last_invocation", AttributeValue::S(now.to_rfc3339()))
+                                    .table_name(table_name)
+                                    .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                                    .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
+                                    .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
+                                    .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
                                     .send()
                                     .await?;
                             }

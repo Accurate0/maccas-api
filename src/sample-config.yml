@@ -1,5 +1,8 @@
 clientId:
 clientSecret:
-loginUsername:
-loginPassword:
 tableName:
+
+users:
+  - accountName:
+    loginUsername:
+    loginPassword:
