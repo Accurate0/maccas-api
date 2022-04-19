@@ -7,6 +7,23 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2017-03-01",
+      "name": "general-apim/Maccas-API-v1/Code",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Code",
+        "method": "GET",
+        "urlTemplate": "/code/{dealId}",
+        "templateParameters": [{
+            "name": "dealId",
+            "type": "string",
+            "required": true
+        }],
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2017-03-01",
       "name": "general-apim/Maccas-API-v1/Deals",
       "dependsOn": [],
       "properties": {

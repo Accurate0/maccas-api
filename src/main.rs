@@ -31,6 +31,41 @@ struct ApiConfig {
     users: Vec<ApiConfigUsers>,
 }
 
+async fn get_by_order_id<'a>(
+    deal_id: &String,
+    client_map: &'a HashMap<String, ApiClient>,
+) -> Result<(&'a ApiClient, String, String), Error> {
+    let mut offer_map = HashMap::<&String, Vec<Offer>>::new();
+    for (account_name, api_client) in client_map {
+        let resp = api_client
+            .get_offers(None)
+            .await?
+            .response
+            .expect("to have response")
+            .offers;
+
+        offer_map.insert(account_name, resp);
+    }
+
+    let mut offer_account_name: Option<String> = None;
+    let mut offer_proposition_id: Option<String> = None;
+    for (account_name, offer_list) in offer_map {
+        for offer in offer_list {
+            if offer.offer_id.to_string() == *deal_id {
+                offer_account_name = Some(account_name.to_string());
+                offer_proposition_id = Some(offer.offer_proposition_id.to_string());
+                break;
+            }
+        }
+    }
+
+    let offer_account_name = offer_account_name.ok_or("no account")?;
+    let offer_proposition_id = offer_proposition_id.ok_or("no offer")?;
+    let api_client = client_map.get(&offer_account_name).ok_or("no api client")?;
+
+    Ok((api_client, offer_account_name, offer_proposition_id))
+}
+
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let config = Config::builder()
         .add_source(config::File::from_str(
@@ -84,72 +119,71 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 serde_json::to_string(&offer_list).unwrap().into_response()
             }
 
+            "/code/{dealId}" => {
+                let deal_id = params.first("dealId").expect("must have id");
+                let deal_id = &deal_id.to_owned();
+
+                match get_by_order_id(deal_id, &client_map).await {
+                    Ok((api_client, _, _)) => {
+                        let resp = api_client.offers_dealstack(None, None).await?;
+                        serde_json::to_string(&resp).unwrap().into_response()
+                    }
+
+                    _ => Response::builder()
+                        .status(400)
+                        .body("".into())
+                        .expect("failed to render response"),
+                }
+            }
+
             "/deals/{dealId}" => {
                 let deal_id = params.first("dealId").expect("must have id");
                 let deal_id = &deal_id.to_owned();
 
-                let mut offer_map = HashMap::<&String, Vec<Offer>>::new();
-                for (account_name, api_client) in &client_map {
-                    let resp = api_client
-                        .get_offers(None)
-                        .await?
-                        .response
-                        .expect("to have response")
-                        .offers;
+                match get_by_order_id(deal_id, &client_map).await {
+                    Ok((api_client, _, offer_proposition_id)) => match *request.method() {
+                        Method::POST => {
+                            let resp = api_client
+                                .add_offer_to_offers_dealstack(&offer_proposition_id, None, None)
+                                .await?;
 
-                    offer_map.insert(account_name, resp);
-                }
-
-                let mut offer_account_name: Option<String> = None;
-                let mut offer_proposition_id: Option<String> = None;
-                for (account_name, offer_list) in offer_map {
-                    for offer in offer_list {
-                        if offer.offer_id.to_string() == *deal_id {
-                            offer_account_name = Some(account_name.to_string());
-                            offer_proposition_id = Some(offer.offer_proposition_id.to_string());
-                            break;
+                            serde_json::to_string(&resp).unwrap().into_response()
                         }
-                    }
-                }
 
-                let offer_account_name = offer_account_name.unwrap();
-                let offer_proposition_id = offer_proposition_id.unwrap();
-                let api_client = client_map.get(&offer_account_name).unwrap();
+                        Method::DELETE => {
+                            let resp = api_client
+                                .remove_offer_from_offers_dealstack(
+                                    deal_id.parse::<i64>().unwrap(),
+                                    &offer_proposition_id,
+                                    None,
+                                    None,
+                                )
+                                .await?;
 
-                match *request.method() {
-                    Method::POST => {
-                        let resp = api_client
-                            .add_offer_to_offers_dealstack(&offer_proposition_id, None, None)
-                            .await?;
+                            serde_json::to_string(&resp).unwrap().into_response()
+                        }
 
-                        serde_json::to_string(&resp).unwrap().into_response()
-                    }
+                        _ => Response::builder()
+                            .status(400)
+                            .body("".into())
+                            .expect("failed to render response"),
+                    },
 
-                    Method::DELETE => {
-                        let resp = api_client
-                            .remove_offer_from_offers_dealstack(
-                                deal_id.parse::<i64>().unwrap(),
-                                &offer_proposition_id,
-                                None,
-                                None,
-                            )
-                            .await?;
-
-                        serde_json::to_string(&resp).unwrap().into_response()
-                    }
-
-                    _ => panic!(),
+                    _ => Response::builder()
+                        .status(400)
+                        .body("".into())
+                        .expect("failed to render response"),
                 }
             }
 
             _ => Response::builder()
                 .status(400)
-                .body("Bad Request".into())
+                .body("".into())
                 .expect("failed to render response"),
         },
         None => Response::builder()
             .status(400)
-            .body("Bad Request".into())
+            .body("".into())
             .expect("failed to render response"),
     })
 }
