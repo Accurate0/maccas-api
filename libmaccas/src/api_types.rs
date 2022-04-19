@@ -12,8 +12,3 @@ pub struct Deal {
     pub name: String,
     pub creation_date_utc: String,
 }
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DealResponse {
-    pub deals: Vec<Deal>,
-}
