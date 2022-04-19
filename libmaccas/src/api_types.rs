@@ -12,3 +12,5 @@ pub struct Deal {
     pub name: String,
     pub creation_date_utc: String,
 }
+
+pub type DealResponse = Vec<Deal>;
