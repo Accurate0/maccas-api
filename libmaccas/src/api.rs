@@ -1,6 +1,6 @@
 use crate::types::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
-    OrderResponse, RestaurantLocationResponse, TokenResponse,
+    OfferResponse, RestaurantLocationResponse, TokenResponse,
 };
 use http_auth_basic::Credentials;
 use reqwest::Method;
@@ -135,7 +135,7 @@ impl ApiClient {
     pub async fn get_offers(
         &self,
         params: Option<Vec<(String, String)>>,
-    ) -> reqwest_middleware::Result<OrderResponse> {
+    ) -> reqwest_middleware::Result<OfferResponse> {
         let default_params = match params {
             Some(p) => p,
             None => Vec::from([
@@ -157,7 +157,7 @@ impl ApiClient {
         let response = request
             .send()
             .await?
-            .json::<OrderResponse>()
+            .json::<OfferResponse>()
             .await
             .expect("error deserializing payload");
 

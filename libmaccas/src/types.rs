@@ -39,9 +39,9 @@ pub struct LoginResponse {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderResponse {
+pub struct OfferResponse {
     pub status: Status,
-    pub response: Option<OrderResp>,
+    pub response: Option<OfferResp>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -58,7 +58,7 @@ pub struct Status {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderResp {
+pub struct OfferResp {
     pub offers: Vec<Offer>,
 }
 
