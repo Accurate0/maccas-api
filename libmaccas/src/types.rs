@@ -77,6 +77,7 @@ pub struct Offer {
     #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
+    #[serde(skip_serializing)]
     pub short_description: String,
     #[serde(skip_serializing)]
     pub long_description: String,

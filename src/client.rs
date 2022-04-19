@@ -36,7 +36,7 @@ pub async fn get(
 
     match resp.item {
         None => {
-            println!("nothing in db, requesting..");
+            println!("{}: nothing in db, requesting..", account_name);
             let _ = api_client.security_auth_token().await?;
             let response = api_client.customer_login().await?;
 
@@ -57,7 +57,7 @@ pub async fn get(
                 .await?;
         }
         Some(ref item) => {
-            println!("tokens in db, trying..");
+            println!("{}: tokens in db, trying..", account_name);
             let refresh_token = match item[REFRESH_TOKEN].as_s() {
                 Ok(s) => s,
                 _ => panic!(),
@@ -79,7 +79,10 @@ pub async fn get(
                     let diff = now - last_refresh;
 
                     if diff.num_minutes() > 9 {
-                        println!(">= 10 mins since last attempt.. refreshing..");
+                        println!(
+                            "{}: >= 10 mins since last attempt.. refreshing..",
+                            account_name
+                        );
                         let mut new_access_token = String::from("");
                         let mut new_ref_token = String::from("");
 
