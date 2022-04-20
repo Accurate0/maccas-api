@@ -99,9 +99,9 @@ pub async fn get(
 
                     let diff = now - last_refresh;
 
-                    if diff.num_minutes() > 9 {
+                    if diff.num_minutes() >= 14 {
                         println!(
-                            "{}: >= 10 mins since last attempt.. refreshing..",
+                            "{}: >= 14 mins since last attempt.. refreshing..",
                             account_name
                         );
                         let mut new_access_token = String::from("");
