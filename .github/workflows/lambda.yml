@@ -43,24 +43,24 @@ jobs:
       - name: install zig
         run: pip3 install ziglang
 
-      - name: cargo build
+      - name: cargo build api
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
         working-directory: "./maccas_api"
 
-      - name: publish lambda
+      - name: publish lambda api
         run: aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
         working-directory: "./maccas_api"
 
-      - name: cargo build
+      - name: cargo build api-deals
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
         working-directory: "./maccas_api_deals"
 
-      - name: publish lambda
+      - name: publish lambda api-deals
         run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
         working-directory: "./maccas_api_deals"
 
-      - name: increment lambda version
+      - name: increment lambda version api
         run: aws lambda publish-version --function-name MaccasApi-deals
 
-      - name: increment lambda version
+      - name: increment lambda version api-deals
         run: aws lambda publish-version --function-name MaccasApi
