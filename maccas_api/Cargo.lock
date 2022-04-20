@@ -1114,6 +1114,7 @@ dependencies = [
  "lambda_runtime",
  "libmaccas",
  "log",
+ "maccas_core",
  "openssl",
  "reqwest",
  "reqwest-middleware",
@@ -1123,6 +1124,26 @@ dependencies = [
  "serde_json",
  "simple_logger",
  "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "maccas_core"
+version = "0.1.0"
+dependencies = [
+ "aws-config",
+ "aws-sdk-dynamodb",
+ "chrono",
+ "config",
+ "http",
+ "http-auth-basic",
+ "lambda_http",
+ "lambda_runtime",
+ "libmaccas",
+ "openssl",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "uuid",
 ]
 

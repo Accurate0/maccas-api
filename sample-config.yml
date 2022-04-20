@@ -1,6 +1,7 @@
 clientId:
 clientSecret:
 tableName:
+cacheTableName:
 
 users:
   - accountName:

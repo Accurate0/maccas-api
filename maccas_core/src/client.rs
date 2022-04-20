@@ -1,15 +1,12 @@
-use aws_sdk_dynamodb::{model::AttributeValue, Client};
+use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
+use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
 use libmaccas::api;
 use std::time::SystemTime;
 
-const ACCOUNT_NAME: &str = "account_name";
-const ACCESS_TOKEN: &str = "access_token";
-const REFRESH_TOKEN: &str = "refresh_token";
-const LAST_REFRESH: &str = "last_refresh";
-
 pub async fn get(
+    client: &aws_sdk_dynamodb::Client,
     table_name: &String,
     account_name: &String,
     client_id: &String,
@@ -23,9 +20,6 @@ pub async fn get(
         login_username.clone(),
         login_password.clone(),
     );
-
-    let shared_config = aws_config::load_from_env().await;
-    let client = Client::new(&shared_config);
 
     let resp = client
         .get_item()

@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - src/**
+      - maccas_core/**
+      - maccas_api_deals/**
+      - maccas_api/**
       - libmaccas/**
       - .github/workflows/lambda.yml
 
@@ -13,10 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    defaults:
-      run:
-        working-directory: "./src"
+  deploy-api:
     runs-on: ubuntu-latest
 
     steps:
@@ -46,10 +45,22 @@ jobs:
 
       - name: cargo build
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
+        working-directory: "./maccas_api"
 
       - name: publish lambda
-        run: |
-          aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+        run: aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+        working-directory: "./maccas_api"
+
+      - name: cargo build
+        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
+        working-directory: "./maccas_api_deals"
+
+      - name: publish lambda
+        run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+        working-directory: "./maccas_api_deals"
+
+      - name: increment lambda version
+        run: aws lambda publish-version --function-name MaccasApi-deals
 
       - name: increment lambda version
         run: aws lambda publish-version --function-name MaccasApi
