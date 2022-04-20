@@ -2,11 +2,10 @@ use aws_sdk_dynamodb::Client;
 use config::Config;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
-use libmaccas::api::ApiClient;
 use libmaccas::types::Offer;
 use maccas_core::cache;
+use maccas_core::client;
 use maccas_core::config::ApiConfig;
-use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -27,23 +26,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
-
-    let mut client_map = HashMap::<String, ApiClient>::new();
-    for user in config.users {
-        let api_client = maccas_core::client::get(
-            &client,
-            &config.table_name,
-            &user.account_name,
-            &config.client_id,
-            &config.client_secret,
-            &user.login_username,
-            &user.login_password,
-        )
-        .await?;
-
-        client_map.insert(user.account_name, api_client);
-    }
-
+    let client_map = client::get_client_map(&config, &client).await?;
     let context = request.request_context();
 
     let resource_path = match context {

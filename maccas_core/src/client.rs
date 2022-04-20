@@ -1,9 +1,36 @@
+use crate::client;
+use crate::config::ApiConfig;
 use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
 use libmaccas::api;
+use libmaccas::api::ApiClient;
+use std::collections::HashMap;
 use std::time::SystemTime;
+
+pub async fn get_client_map(
+    config: &ApiConfig,
+    client: &aws_sdk_dynamodb::Client,
+) -> Result<HashMap<String, ApiClient>, Error> {
+    let mut client_map = HashMap::<String, ApiClient>::new();
+    for user in &config.users {
+        let api_client = client::get(
+            &client,
+            &config.table_name,
+            &user.account_name,
+            &config.client_id,
+            &config.client_secret,
+            &user.login_username,
+            &user.login_password,
+        )
+        .await?;
+
+        client_map.insert(user.account_name.clone(), api_client);
+    }
+
+    Ok(client_map)
+}
 
 pub async fn get(
     client: &aws_sdk_dynamodb::Client,
