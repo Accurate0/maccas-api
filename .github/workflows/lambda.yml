@@ -56,7 +56,7 @@ jobs:
         working-directory: "./maccas_api_deals"
 
       - name: publish lambda api-deals
-        run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+        run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api_deals/bootstrap.zip
         working-directory: "./maccas_api_deals"
 
       - name: increment lambda version api

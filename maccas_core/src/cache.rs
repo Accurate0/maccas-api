@@ -35,6 +35,7 @@ pub async fn get_offers<'a>(
                     let diff = now - last_refresh;
 
                     if diff.num_minutes() > 59 {
+                        println!("{}: update offers cache", account_name);
                         let resp = api_client
                             .get_offers(None)
                             .await?
@@ -59,6 +60,7 @@ pub async fn get_offers<'a>(
                             .await?;
                         resp
                     } else {
+                        println!("{}: offers in cache", account_name);
                         match item[OFFER_LIST].as_s() {
                             Ok(s) => serde_json::from_str::<Vec<Offer>>(s).unwrap(),
                             _ => panic!(),
@@ -69,6 +71,7 @@ pub async fn get_offers<'a>(
             },
 
             None => {
+                println!("{}: no cached values", account_name);
                 let resp = api_client
                     .get_offers(None)
                     .await?
