@@ -1,0 +1,259 @@
+[2022-04-21][21:57:53][serenity::http::client][INFO] request; self=Http { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, ratelimiter: Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } }, ratelimiter_disabled: false, proxy: None } req=Request { body: None, multipart: None, headers: None, route: GetGateway }
+[2022-04-21][21:57:53][serenity::http::ratelimiting][INFO] perform; self=Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } } req=RatelimitedRequest { req: Request { body: None, multipart: None, headers: None, route: GetGateway } }
+[2022-04-21][21:57:53][serenity::http::ratelimiting][INFO] pre_hook; self=Ratelimit { limit: 9223372036854775807, remaining: 9223372036854775807, reset: None, reset_after: None } route=Gateway
+[2022-04-21][21:57:53][serenity::http::request][INFO] build; self=Request { body: None, multipart: None, headers: None, route: GetGateway } client=Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} } proxy=None
+[2022-04-21][21:57:53][reqwest::connect][DEBUG] starting new connection: https://discord.com/
+[2022-04-21][21:57:53][rustls::client::hs][DEBUG] No cached session for DnsName(DnsName(DnsName("discord.com")))
+[2022-04-21][21:57:53][rustls::client::hs][DEBUG] Not resuming any session
+[2022-04-21][21:57:53][rustls::client::hs][DEBUG] Using ciphersuite Tls13(Tls13CipherSuite { suite: TLS13_AES_256_GCM_SHA384, bulk: Aes256Gcm })
+[2022-04-21][21:57:53][rustls::client::tls13][DEBUG] Not resuming
+[2022-04-21][21:57:53][rustls::client::tls13][DEBUG] TLS1.3 encrypted extensions: [ServerNameAck, Protocols([PayloadU8([104, 50])])]
+[2022-04-21][21:57:53][rustls::client::hs][DEBUG] ALPN protocol is Some(b"h2")
+[2022-04-21][21:57:53][h2::client][DEBUG] binding client connection
+[2022-04-21][21:57:53][h2::client][DEBUG] client connection bound
+[2022-04-21][21:57:53][h2::codec::framed_write][DEBUG] send frame=Settings { flags: (0x0), enable_push: 0, initial_window_size: 2097152, max_frame_size: 16384 }
+[2022-04-21][21:57:53][h2::proto::connection][DEBUG] Connection; peer=Client
+[2022-04-21][21:57:53][h2::codec::framed_write][DEBUG] send frame=WindowUpdate { stream_id: StreamId(0), size_increment: 5177345 }
+[2022-04-21][21:57:53][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(1), flags: (0x5: END_HEADERS | END_STREAM) }
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=Settings { flags: (0x0), max_concurrent_streams: 256, initial_window_size: 65536, max_frame_size: 16777215 }
+[2022-04-21][21:57:54][h2::codec::framed_write][DEBUG] send frame=Settings { flags: (0x1: ACK) }
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=WindowUpdate { stream_id: StreamId(0), size_increment: 2147418112 }
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=Settings { flags: (0x1: ACK) }
+[2022-04-21][21:57:54][h2::proto::settings][DEBUG] received settings ACK; applying Settings { flags: (0x0), enable_push: 0, initial_window_size: 2097152, max_frame_size: 16384 }
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(1), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(1) }
+[2022-04-21][21:57:54][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(1), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:54][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/gateway
+[2022-04-21][21:57:54][serenity::http::ratelimiting][INFO] post_hook; self=Ratelimit { limit: 9223372036854775807, remaining: 9223372036854775807, reset: None, reset_after: None } response=Response { url: Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("discord.com")), port: None, path: "/api/v10/gateway", query: None, fragment: None }, status: 200, headers: {"date": "Thu, 21 Apr 2022 13:57:53 GMT", "content-type": "application/json", "content-length": "35", "strict-transport-security": "max-age=31536000; includeSubDomains; preload", "x-envoy-upstream-service-time": "15", "via": "1.1 google", "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400", "cf-cache-status": "HIT", "age": "56474", "last-modified": "Wed, 20 Apr 2022 22:16:39 GMT", "expires": "Thu, 21 Apr 2022 14:27:53 GMT", "cache-control": "public, max-age=1800", "accept-ranges": "bytes", "expect-ct": "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"", "report-to": "{\"endpoints\":[{\"url\":\"https:\/\/a.nel.cloudflare.com\/report\/v3?s=0aRYbbZJPqc5hvznZAB5DQkXeD2XRMkOUAcRvpGrsK4KON6%2FbncpaqNprfbbsRhGMIkbeIdZT002v5%2FQYpD81arlMzqSWcwLky0qlmWp%2B482z27SA%2BnRdCGei%2BQg\"}],\"group\":\"cf-nel\",\"max_age\":604800}", "nel": "{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}", "vary": "Accept-Encoding", "x-content-type-options": "nosniff", "server": "cloudflare", "cf-ray": "6ff6a1a46e2117ca-MEL"} } route=Gateway
+[2022-04-21][21:57:54][tracing::span][INFO] start;
+[2022-04-21][21:57:54][tracing::span][INFO] run;
+[2022-04-21][21:57:54][serenity::client][INFO] start_connection; shard_data=[0, 0, 1]
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_manager][INFO] set_shards; index=0 init=1 total=1
+[2022-04-21][21:57:54][tracing::span][INFO] shutdown_all;
+[2022-04-21][21:57:54][serenity::client][DEBUG] Initializing shard info: 0 - 1/1
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_manager][INFO] Telling shard queuer to start shard 0
+[2022-04-21][21:57:54][tracing::span][INFO] run;
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_queuer][DEBUG] [Shard Queuer] Received to start shard 0 of 1.
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_manager_monitor][DEBUG] Starting shard manager worker
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_queuer][INFO] checked_start; id=0 total=1
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_queuer][DEBUG] [Shard Queuer] Checked start for shard 0 out of 1
+[2022-04-21][21:57:54][tracing::span][INFO] check_last_start;
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_queuer][INFO] start; shard_id=0 shard_total=1
+[2022-04-21][21:57:54][serenity::internal::ws_impl][INFO] create_rustls_client; url=Url { scheme: "wss", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("gateway.discord.gg")), port: None, path: "/", query: Some("v=10"), fragment: None }
+[2022-04-21][21:57:54][rustls::client::hs][DEBUG] No cached session for DnsName(DnsName(DnsName("gateway.discord.gg")))
+[2022-04-21][21:57:54][rustls::client::hs][DEBUG] Not resuming any session
+[2022-04-21][21:57:54][rustls::client::hs][DEBUG] Using ciphersuite Tls13(Tls13CipherSuite { suite: TLS13_AES_256_GCM_SHA384, bulk: Aes256Gcm })
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] Not resuming
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] TLS1.3 encrypted extensions: [ServerNameAck]
+[2022-04-21][21:57:54][rustls::client::hs][DEBUG] ALPN protocol is None
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:57:54][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:57:54][tungstenite::handshake::client][DEBUG] Client handshake done.
+[2022-04-21][21:57:54][tracing::span][INFO] run;
+[2022-04-21][21:57:54][serenity::client::bridge::gateway::shard_runner][INFO] [ShardRunner [0, 1]] Running
+[2022-04-21][21:57:54][tracing::span][INFO] recv;
+[2022-04-21][21:57:54][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:54][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:54][serenity::gateway::shard][DEBUG] [Shard [0, 1]] Received a Hello; interval: 41250
+[2022-04-21][21:57:54][tracing::span][INFO] action;
+[2022-04-21][21:57:54][tracing::span][INFO] identify;
+[2022-04-21][21:57:54][serenity::gateway::ws_client_ext][INFO] send_identify; shard_info=[0, 1] intents=GUILD_MESSAGES | DIRECT_MESSAGES | MESSAGE_CONTENT
+[2022-04-21][21:57:54][serenity::gateway::ws_client_ext][DEBUG] [Shard [0, 1]] Identifying
+[2022-04-21][21:57:54][tracing::span][INFO] recv;
+[2022-04-21][21:57:54][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:54][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:54][serenity::gateway::shard][DEBUG] [Shard [0, 1]] Received Ready
+[2022-04-21][21:57:54][tracing::span][INFO] dispatch;
+[2022-04-21][21:57:54][serenity::client::dispatch][INFO] handle_event; runner_tx=UnboundedSender(Some(UnboundedSenderInner { inner: UnboundedInner { state: 9223372036854775808, message_queue: Queue { head: 0x7fea24005dd0, tail: UnsafeCell { .. } }, num_senders: 2, recv_task: AtomicWaker } })) shard_id=0
+[2022-04-21][21:57:54][tracing::span][INFO] dispatch;
+[2022-04-21][21:57:54][serenity::client::dispatch][INFO] handle_event; runner_tx=UnboundedSender(Some(UnboundedSenderInner { inner: UnboundedInner { state: 9223372036854775808, message_queue: Queue { head: 0x7fea24005dd0, tail: UnsafeCell { .. } }, num_senders: 3, recv_task: AtomicWaker } })) shard_id=0
+[2022-04-21][21:57:54][tracing::span][INFO] recv;
+[2022-04-21][21:57:54][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:54][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:54][serenity::http::client][INFO] request; self=Http { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, ratelimiter: Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } }, ratelimiter_disabled: false, proxy: None } req=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 102, 117, 99, 107, 32, 101, 108, 108, 105, 111, 116, 32, 119, 97, 108, 107, 101, 114, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 115, 34, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } }
+[2022-04-21][21:57:54][serenity::http::ratelimiting][INFO] perform; self=Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } } req=RatelimitedRequest { req: Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 102, 117, 99, 107, 32, 101, 108, 108, 105, 111, 116, 32, 119, 97, 108, 107, 101, 114, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 115, 34, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } }
+[2022-04-21][21:57:54][serenity::http::ratelimiting][INFO] pre_hook; self=Ratelimit { limit: 9223372036854775807, remaining: 9223372036854775807, reset: None, reset_after: None } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:54][serenity::http::request][INFO] build; self=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 102, 117, 99, 107, 32, 101, 108, 108, 105, 111, 116, 32, 119, 97, 108, 107, 101, 114, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 115, 34, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } client=Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} } proxy=None
+[2022-04-21][21:57:54][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(3), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:54][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(3), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(3), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(3) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(3), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] post_hook; self=Ratelimit { limit: 9223372036854775807, remaining: 9223372036854775807, reset: None, reset_after: None } response=Response { url: Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("discord.com")), port: None, path: "/api/v10/applications/965917339910565950/commands", query: None, fragment: None }, status: 200, headers: {"date": "Thu, 21 Apr 2022 13:57:55 GMT", "content-type": "application/json", "set-cookie": "__dcfduid=0af5bf4cc17b11ecb05e3ec25b345ec9; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "set-cookie": "__sdcfduid=0af5bf4cc17b11ecb05e3ec25b345ec9f4865b53f5bc5792277ef4c7098d3ce91a85d08a63723a0a1e223bfa88d8f2c7; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "strict-transport-security": "max-age=31536000; includeSubDomains; preload", "x-ratelimit-bucket": "db18a1c09af2e1661654351fbf0faf15", "x-ratelimit-limit": "5", "x-ratelimit-remaining": "4", "x-ratelimit-reset": "1650549495.040", "x-ratelimit-reset-after": "20.000", "cf-ray": "6ff6a1aa2c8d17ca-MEL", "x-envoy-upstream-service-time": "47", "via": "1.1 google", "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400", "cf-cache-status": "DYNAMIC", "expect-ct": "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"", "report-to": "{\"endpoints\":[{\"url\":\"https:\/\/a.nel.cloudflare.com\/report\/v3?s=NgLwE13r9cvWSg1JrLq6P2ZS2kpeMXFffJqri2Mo0J1LzVzGPpUgcS%2BlhWvvgeeXngGRk0YSnVrhwxhUGqk6RevQaO7bakRjUEWgKerbARitaZFUHPe9ezMXpjg5\"}],\"group\":\"cf-nel\",\"max_age\":604800}", "nel": "{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}", "x-content-type-options": "nosniff", "server": "cloudflare"} } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:55][serenity::http::client][INFO] request; self=Http { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, ratelimiter: Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } }, ratelimiter_disabled: false, proxy: None } req=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 114, 101, 109, 111, 118, 101, 32, 97, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 114, 101, 109, 111, 118, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } }
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] perform; self=Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } } req=RatelimitedRequest { req: Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 114, 101, 109, 111, 118, 101, 32, 97, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 114, 101, 109, 111, 118, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } }
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] pre_hook; self=Ratelimit { limit: 5, remaining: 4, reset: Some(SystemTime { tv_sec: 1650549495, tv_nsec: 267938192 }), reset_after: Some(20s) } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:55][serenity::http::request][INFO] build; self=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 114, 101, 109, 111, 118, 101, 32, 97, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 114, 101, 109, 111, 118, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } client=Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} } proxy=None
+[2022-04-21][21:57:55][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(5), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:55][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(5), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][tracing::span][INFO] recv;
+[2022-04-21][21:57:55][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:55][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(5), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(5) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(5), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] post_hook; self=Ratelimit { limit: 5, remaining: 3, reset: Some(SystemTime { tv_sec: 1650549495, tv_nsec: 267938192 }), reset_after: Some(20s) } response=Response { url: Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("discord.com")), port: None, path: "/api/v10/applications/965917339910565950/commands", query: None, fragment: None }, status: 200, headers: {"date": "Thu, 21 Apr 2022 13:57:55 GMT", "content-type": "application/json", "set-cookie": "__dcfduid=0b332d50c17b11ec89f286bdd749877f; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "set-cookie": "__sdcfduid=0b332d50c17b11ec89f286bdd749877fcc07166d46ce0e50405e2d5554f7759831778c9ed91e0cb0186cff9dfe74695c; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "strict-transport-security": "max-age=31536000; includeSubDomains; preload", "x-ratelimit-bucket": "db18a1c09af2e1661654351fbf0faf15", "x-ratelimit-limit": "5", "x-ratelimit-remaining": "3", "x-ratelimit-reset": "1650549495.044", "x-ratelimit-reset-after": "19.597", "cf-ray": "6ff6a1ac8f1117ca-MEL", "x-envoy-upstream-service-time": "51", "via": "1.1 google", "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400", "cf-cache-status": "DYNAMIC", "expect-ct": "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"", "report-to": "{\"endpoints\":[{\"url\":\"https:\/\/a.nel.cloudflare.com\/report\/v3?s=COboL1%2BZ8VKPMJdzQS1%2BO1Obq8rA9zz4BvPa8SA4OXMZ8MtlwcT9R4Wkzdx%2FGol35nBBZUJ6cc2qOWtPqnT69v9ibXsqe9hZL1buRuYg843dnjEyNj0tpU%2FBYN9X\"}],\"group\":\"cf-nel\",\"max_age\":604800}", "nel": "{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}", "x-content-type-options": "nosniff", "server": "cloudflare"} } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:55][serenity::http::client][INFO] request; self=Http { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, ratelimiter: Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } }, ratelimiter_disabled: false, proxy: None } req=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 103, 101, 116, 32, 99, 111, 100, 101, 32, 102, 111, 114, 32, 101, 120, 105, 115, 116, 105, 110, 103, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 99, 111, 100, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } }
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] perform; self=Ratelimiter { client: Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} }, global: Mutex { data: () }, routes: RwLock { mr: 536870911, s: Semaphore { permits: 536870911 }, c: UnsafeCell { .. } } } req=RatelimitedRequest { req: Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 103, 101, 116, 32, 99, 111, 100, 101, 32, 102, 111, 114, 32, 101, 120, 105, 115, 116, 105, 110, 103, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 99, 111, 100, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } }
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] pre_hook; self=Ratelimit { limit: 5, remaining: 3, reset: Some(SystemTime { tv_sec: 1650549495, tv_nsec: 199678940 }), reset_after: Some(19.597s) } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:55][serenity::http::request][INFO] build; self=Request { body: Some([123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 103, 101, 116, 32, 99, 111, 100, 101, 32, 102, 111, 114, 32, 101, 120, 105, 115, 116, 105, 110, 103, 32, 100, 101, 97, 108, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 99, 111, 100, 101, 34, 44, 34, 111, 112, 116, 105, 111, 110, 115, 34, 58, 91, 123, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 116, 104, 101, 32, 100, 101, 97, 108, 32, 105, 100, 34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 100, 101, 97, 108, 95, 105, 100, 34, 44, 34, 114, 101, 113, 117, 105, 114, 101, 100, 34, 58, 116, 114, 117, 101, 44, 34, 116, 121, 112, 101, 34, 58, 51, 125, 93, 125]), multipart: None, headers: None, route: CreateGlobalApplicationCommand { application_id: 965917339910565950 } } client=Client { accepts: Accepts { gzip: true }, proxies: [Proxy(System({}), None)], referer: true, default_headers: {"accept": "*/*"} } proxy=None
+[2022-04-21][21:57:55][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(7), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:55][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(7), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][tracing::span][INFO] recv;
+[2022-04-21][21:57:55][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:55][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(7), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(7) }
+[2022-04-21][21:57:55][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(7), flags: (0x1: END_STREAM) }
+[2022-04-21][21:57:55][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:57:55][serenity::http::ratelimiting][INFO] post_hook; self=Ratelimit { limit: 5, remaining: 2, reset: Some(SystemTime { tv_sec: 1650549495, tv_nsec: 199678940 }), reset_after: Some(19.597s) } response=Response { url: Url { scheme: "https", cannot_be_a_base: false, username: "", password: None, host: Some(Domain("discord.com")), port: None, path: "/api/v10/applications/965917339910565950/commands", query: None, fragment: None }, status: 200, headers: {"date": "Thu, 21 Apr 2022 13:57:55 GMT", "content-type": "application/json", "set-cookie": "__dcfduid=0b643c7ec17b11ec95b43a823edb9d4f; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "set-cookie": "__sdcfduid=0b643c7ec17b11ec95b43a823edb9d4f47865e6419db77e2d6307236083fd4296d9fb22b6381d80f8e63c3622987d6aa; Expires=Tue, 20-Apr-2027 13:57:55 GMT; Max-Age=157680000; Secure; HttpOnly; Path=/", "strict-transport-security": "max-age=31536000; includeSubDomains; preload", "x-ratelimit-bucket": "db18a1c09af2e1661654351fbf0faf15", "x-ratelimit-limit": "5", "x-ratelimit-remaining": "2", "x-ratelimit-reset": "1650549495.040", "x-ratelimit-reset-after": "19.282", "cf-ray": "6ff6a1aea93a17ca-MEL", "x-envoy-upstream-service-time": "55", "via": "1.1 google", "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400", "cf-cache-status": "DYNAMIC", "expect-ct": "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"", "report-to": "{\"endpoints\":[{\"url\":\"https:\/\/a.nel.cloudflare.com\/report\/v3?s=NUaFk%2BNH2L%2BwnDm%2BnaUwSF7PG6OaZZfu51zuNXaxfGyXK%2BZC2Wjox4m7TjBqd2AxyV%2FWPbTbuuwAvHi4UbX9o8E0sa9Xt2l65KXBOnhAjsURc%2F%2FglbDNI7RNOP0k\"}],\"group\":\"cf-nel\",\"max_age\":604800}", "nel": "{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}", "x-content-type-options": "nosniff", "server": "cloudflare"} } route=ApplicationsIdCommands(965917339910565950)
+[2022-04-21][21:57:56][tracing::span][INFO] recv;
+[2022-04-21][21:57:56][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:56][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:56][tracing::span][INFO] recv;
+[2022-04-21][21:57:56][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:56][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:57][tracing::span][INFO] recv;
+[2022-04-21][21:57:57][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:57][tracing::span][INFO] recv_event;
+[2022-04-21][21:57:57][tracing::span][INFO] recv;
+[2022-04-21][21:57:57][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:57:57][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:46][reqwest::connect][DEBUG] starting new connection: https://discord.com/
+[2022-04-21][21:59:46][hyper::client::connect::dns][DEBUG] resolving host="discord.com"
+[2022-04-21][21:59:46][hyper::client::connect::http][DEBUG] connecting to 162.159.128.233:443
+[2022-04-21][21:59:46][hyper::client::connect::http][DEBUG] connected to 162.159.128.233:443
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] No cached session for DnsName(DnsName(DnsName("discord.com")))
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] Not resuming any session
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] Using ciphersuite Tls13(Tls13CipherSuite { suite: TLS13_AES_256_GCM_SHA384, bulk: Aes256Gcm })
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] Not resuming
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] TLS1.3 encrypted extensions: [ServerNameAck, Protocols([PayloadU8([104, 50])])]
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] ALPN protocol is Some(b"h2")
+[2022-04-21][21:59:46][h2::client][DEBUG] binding client connection
+[2022-04-21][21:59:46][h2::client][DEBUG] client connection bound
+[2022-04-21][21:59:46][h2::codec::framed_write][DEBUG] send frame=Settings { flags: (0x0), enable_push: 0, initial_window_size: 2097152, max_frame_size: 16384 }
+[2022-04-21][21:59:46][h2::proto::connection][DEBUG] Connection; peer=Client
+[2022-04-21][21:59:46][h2::codec::framed_write][DEBUG] send frame=WindowUpdate { stream_id: StreamId(0), size_increment: 5177345 }
+[2022-04-21][21:59:46][hyper::client::pool][DEBUG] pooling idle connection for ("https", discord.com)
+[2022-04-21][21:59:46][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(1), flags: (0x5: END_HEADERS | END_STREAM) }
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=Settings { flags: (0x0), max_concurrent_streams: 256, initial_window_size: 65536, max_frame_size: 16777215 }
+[2022-04-21][21:59:46][h2::codec::framed_write][DEBUG] send frame=Settings { flags: (0x1: ACK) }
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=WindowUpdate { stream_id: StreamId(0), size_increment: 2147418112 }
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=Settings { flags: (0x1: ACK) }
+[2022-04-21][21:59:46][h2::proto::settings][DEBUG] received settings ACK; applying Settings { flags: (0x0), enable_push: 0, initial_window_size: 2097152, max_frame_size: 16384 }
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(1), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(1) }
+[2022-04-21][21:59:46][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(1), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:46][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/gateway
+[2022-04-21][21:59:46][tracing::span][INFO] start;
+[2022-04-21][21:59:46][tracing::span][INFO] run;
+[2022-04-21][21:59:46][tracing::span][INFO] shutdown_all;
+[2022-04-21][21:59:46][tracing::span][INFO] run;
+[2022-04-21][21:59:46][tracing::span][INFO] check_last_start;
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] No cached session for DnsName(DnsName(DnsName("gateway.discord.gg")))
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] Not resuming any session
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] Using ciphersuite Tls13(Tls13CipherSuite { suite: TLS13_AES_256_GCM_SHA384, bulk: Aes256Gcm })
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] Not resuming
+[2022-04-21][21:59:46][rustls::client::tls13][DEBUG] TLS1.3 encrypted extensions: [ServerNameAck]
+[2022-04-21][21:59:46][rustls::client::hs][DEBUG] ALPN protocol is None
+[2022-04-21][21:59:47][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:59:47][rustls::client::tls13][DEBUG] Ticket saved
+[2022-04-21][21:59:47][tungstenite::handshake::client][DEBUG] Client handshake done.
+[2022-04-21][21:59:47][tracing::span][INFO] run;
+[2022-04-21][21:59:47][tracing::span][INFO] recv;
+[2022-04-21][21:59:47][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:47][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:47][tracing::span][INFO] action;
+[2022-04-21][21:59:47][tracing::span][INFO] identify;
+[2022-04-21][21:59:47][tracing::span][INFO] recv;
+[2022-04-21][21:59:47][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:47][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:47][tracing::span][INFO] dispatch;
+[2022-04-21][21:59:47][tracing::span][INFO] dispatch;
+[2022-04-21][21:59:47][tracing::span][INFO] recv;
+[2022-04-21][21:59:47][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:47][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:47][hyper::client::pool][DEBUG] reuse idle connection for ("https", discord.com)
+[2022-04-21][21:59:47][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(3), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:47][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(3), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(3), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(3) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(3), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:59:48][hyper::client::pool][DEBUG] reuse idle connection for ("https", discord.com)
+[2022-04-21][21:59:48][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(5), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:48][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(5), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][tracing::span][INFO] recv;
+[2022-04-21][21:59:48][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:48][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(5), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(5) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(5), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:59:48][hyper::client::pool][DEBUG] reuse idle connection for ("https", discord.com)
+[2022-04-21][21:59:48][h2::codec::framed_write][DEBUG] send frame=Headers { stream_id: StreamId(7), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:48][h2::codec::framed_write][DEBUG] send frame=Data { stream_id: StreamId(7), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Headers { stream_id: StreamId(7), flags: (0x4: END_HEADERS) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(7) }
+[2022-04-21][21:59:48][h2::codec::framed_read][DEBUG] received frame=Data { stream_id: StreamId(7), flags: (0x1: END_STREAM) }
+[2022-04-21][21:59:48][reqwest::async_impl::client][DEBUG] response '200 OK' for https://discord.com/api/v10/applications/965917339910565950/commands
+[2022-04-21][21:59:48][tracing::span][INFO] recv;
+[2022-04-21][21:59:48][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:48][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:49][tracing::span][INFO] recv;
+[2022-04-21][21:59:49][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:49][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:49][tracing::span][INFO] recv;
+[2022-04-21][21:59:49][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:49][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:50][tracing::span][INFO] recv;
+[2022-04-21][21:59:50][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:50][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:50][tracing::span][INFO] recv;
+[2022-04-21][21:59:50][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:50][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:51][tracing::span][INFO] recv;
+[2022-04-21][21:59:51][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:51][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:51][tracing::span][INFO] recv;
+[2022-04-21][21:59:51][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:51][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:52][tracing::span][INFO] recv;
+[2022-04-21][21:59:52][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:52][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:52][tracing::span][INFO] recv;
+[2022-04-21][21:59:52][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:52][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:53][tracing::span][INFO] recv;
+[2022-04-21][21:59:53][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:53][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:53][tracing::span][INFO] recv;
+[2022-04-21][21:59:53][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:53][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:54][tracing::span][INFO] recv;
+[2022-04-21][21:59:54][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:54][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:54][tracing::span][INFO] recv;
+[2022-04-21][21:59:54][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:54][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:55][tracing::span][INFO] recv;
+[2022-04-21][21:59:55][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:55][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:55][tracing::span][INFO] recv;
+[2022-04-21][21:59:55][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:55][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:56][tracing::span][INFO] recv;
+[2022-04-21][21:59:56][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:56][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:56][tracing::span][INFO] recv;
+[2022-04-21][21:59:56][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:56][tracing::span][INFO] recv_event;
+[2022-04-21][21:59:57][tracing::span][INFO] recv;
+[2022-04-21][21:59:57][tracing::span][INFO] check_heartbeat;
+[2022-04-21][21:59:57][tracing::span][INFO] recv_event;
