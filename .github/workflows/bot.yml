@@ -38,6 +38,14 @@ jobs:
         env:
           CONFIG_FILE: ${{ secrets.BOT_CONFIG_FILE }}
 
+      - name: debug
+        run: |
+          ls
+          pwd
+          cd ..
+          ls
+          pwd
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
