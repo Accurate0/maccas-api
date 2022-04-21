@@ -34,8 +34,7 @@ jobs:
           aws-region: ap-southeast-2
 
       - name: generate config
-        run: echo -e "$CONFIG_FILE" > config.yml
-        working-directory: "./maccas_bot"
+        run: echo -e "$CONFIG_FILE" > "./maccas_bot/config.yml"
         env:
           CONFIG_FILE: ${{ secrets.BOT_CONFIG_FILE }}
 
