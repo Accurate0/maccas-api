@@ -76,7 +76,7 @@ jobs:
           host: ${{ env.INSTANCE }}
           username: ${{ env.USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
-          envs: DOCKERHUB_USERNAME
+          envs: DOCKER_USERNAME
           script_stop: true
           script: |
             docker pull $DOCKER_USERNAME/maccas-bot:latest
