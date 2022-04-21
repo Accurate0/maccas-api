@@ -19,52 +19,52 @@ env:
   DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
 jobs:
-  build-docker-image:
-    defaults:
-      run:
-        working-directory: "./maccas_bot"
-    runs-on: ubuntu-latest
+  # build-docker-image:
+  #   defaults:
+  #     run:
+  #       working-directory: "./maccas_bot"
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ap-southeast-2
 
-      - name: generate config
-        run: echo -e "$CONFIG_FILE" > "./config.yml"
-        env:
-          CONFIG_FILE: ${{ secrets.BOT_CONFIG_FILE }}
+  #     - name: generate config
+  #       run: echo -e "$CONFIG_FILE" > "./config.yml"
+  #       env:
+  #         CONFIG_FILE: ${{ secrets.BOT_CONFIG_FILE }}
 
-      - name: debug
-        run: |
-          ls
-          pwd
-          cd ..
-          ls
-          pwd
+  #     - name: debug
+  #       run: |
+  #         ls
+  #         pwd
+  #         cd ..
+  #         ls
+  #         pwd
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/maccas-bot:latest
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: .
+  #         push: true
+  #         tags: ${{ secrets.DOCKERHUB_USERNAME }}/maccas-bot:latest
 
   deploy-discord-bot:
-    needs: build-docker-image
+    # needs: build-docker-image
     runs-on: ubuntu-latest
 
     steps:
@@ -76,5 +76,5 @@ jobs:
           key: ${{ secrets.INSTANCE_KEY }}
           script: |
             docker pull ${DOCKER_USERNAME}/maccas-bot:latest
-            docker stop "maccas-bot" -t 3
+            docker stop "maccas-bot" -t 3 || true
             docker run --rm -d --name "maccas-bot" ${DOCKER_USERNAME}/maccas-bot:latest
