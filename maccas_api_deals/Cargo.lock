@@ -1074,7 +1074,6 @@ dependencies = [
  "chrono",
  "http",
  "http-auth-basic",
- "openssl",
  "reqwest",
  "reqwest-middleware",
  "reqwest-retry",
