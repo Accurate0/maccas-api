@@ -34,7 +34,7 @@ jobs:
           aws-region: ap-southeast-2
 
       - name: generate config
-        run: echo -e "$CONFIG_FILE" > "./maccas_bot/config.yml"
+        run: echo -e "$CONFIG_FILE" > "./config.yml"
         env:
           CONFIG_FILE: ${{ secrets.BOT_CONFIG_FILE }}
 
@@ -67,4 +67,4 @@ jobs:
           script: |
             docker pull ${DOCKER_USERNAME}/maccas-bot:latest
             docker stop "maccas-bot" -t 3
-            docker run -d --name "maccas-bot" ${DOCKER_USERNAME}/maccas-bot:latest
+            docker run --rm -d --name "maccas-bot" ${DOCKER_USERNAME}/maccas-bot:latest

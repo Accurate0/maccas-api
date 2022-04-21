@@ -1,5 +1,7 @@
 FROM rust:1.60-alpine as builder
 
+WORKDIR /
+
 RUN apk update && apk add musl-dev pkgconf openssl openssl-dev gcc --no-cache
 COPY ./ ./
 RUN cd maccas_bot && cargo build --release
