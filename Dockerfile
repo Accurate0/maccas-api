@@ -4,7 +4,7 @@ WORKDIR /
 
 RUN apk update && apk add musl-dev pkgconf openssl openssl-dev gcc --no-cache
 COPY ./ ./
-RUN cd maccas_bot && cargo build --release
+RUN cd maccas_bot && cargo build --target x86_64-unknown-linux-musl --release
 RUN rm -rf ./maccas_bot/target/release/deps && rm -rf ./libmaccas/target/release/deps
 
 FROM alpine:3.12
