@@ -71,7 +71,7 @@ jobs:
       - name: activate deployment
         uses: appleboy/ssh-action@v0.1.4
         env:
-          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ env.INSTANCE }}
           username: ${{ env.USERNAME }}
@@ -79,6 +79,6 @@ jobs:
           envs: DOCKERHUB_USERNAME
           script_stop: true
           script: |
-            docker pull $USERNAME/maccas-bot:latest
+            docker pull $DOCKER_USERNAME/maccas-bot:latest
             docker stop "maccas-bot" -t 3 || true
-            docker run --rm -d --name "maccas-bot" $USERNAME/maccas-bot:latest
+            docker run --rm -d --name "maccas-bot" $DOCKER_USERNAME/maccas-bot:latest
