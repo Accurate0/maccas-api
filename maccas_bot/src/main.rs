@@ -348,7 +348,7 @@ async fn main() {
 
     let mut headers = header::HeaderMap::new();
     headers.insert("X-Api-Key", api_key_header);
-    headers.insert("Content-Length", header::HeaderValue::from(0));
+    headers.insert("Content-Length", header::HeaderValue::from(0 as i32));
 
     let client = reqwest::Client::builder()
         .default_headers(headers)

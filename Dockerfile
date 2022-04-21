@@ -7,13 +7,10 @@ COPY ./ ./
 RUN cd maccas_bot && cargo build --release
 RUN rm -rf ./maccas_bot/target/release/deps && rm -rf ./libmaccas/target/release/deps
 
-CMD ["./maccas_bot/target/release/maccas_bot"]
-
-FROM alpine
+FROM alpine:3.12
 
 WORKDIR /bot
 
-# Copy our build
 COPY --from=builder /maccas_bot/target/release/maccas_bot ./
 
 CMD ["/bot/maccas_bot"]
