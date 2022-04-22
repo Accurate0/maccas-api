@@ -36,7 +36,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
     Ok(match resource_path {
         Some(s) => match s.as_str() {
-            "/deals/cache" => {
+            "/deals/refresh" => {
                 cache::get_offers(&client, &config.cache_table_name, &client_map, true).await?;
                 Response::builder()
                     .status(204)
