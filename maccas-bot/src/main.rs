@@ -1,6 +1,7 @@
 use config::Config;
 use log::*;
 use reqwest::header;
+use serenity::model::prelude::GuildId;
 use simplelog::*;
 use std::time::Duration;
 
@@ -74,11 +75,65 @@ impl EventHandler for Bot {
         })
         .await
         .unwrap();
+
+        ApplicationCommand::create_global_application_command(&ctx.http, |command| {
+            command
+                .name("refresh")
+                .description("force refresh deal list")
+        })
+        .await
+        .unwrap();
+
+        // let guild_id = GuildId(
+        //     std::env::var("GUILD_ID")
+        //         .expect("Expected GUILD_ID in environment")
+        //         .parse()
+        //         .expect("GUILD_ID must be an integer"),
+        // );
+        // let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+        //     commands.create_application_command(|command| {
+        //         command
+        //             .name("refresh")
+        //             .description("force refresh deal list")
+        //     })
+        // })
+        // .await
+        // .unwrap();
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
             match command.data.name.as_str() {
+                "refresh" => {
+                    command
+                        .create_interaction_response(&ctx.http, |r| {
+                            r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                        })
+                        .await
+                        .unwrap();
+
+                    let url = &self.base_url.join("deals/refresh").unwrap();
+
+                    let resp = self
+                        .client
+                        .post(url.as_str())
+                        .send()
+                        .await
+                        .unwrap()
+                        .status();
+
+                    command
+                        .edit_original_interaction_response(&ctx, |m| {
+                            m.embed(|e| {
+                                e.colour(0xDA291C as i32)
+                                    .title("Response")
+                                    .description(resp)
+                            })
+                        })
+                        .await
+                        .unwrap();
+                }
+
                 "remove" => {
                     command
                         .create_interaction_response(&ctx.http, |r| {
