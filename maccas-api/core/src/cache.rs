@@ -5,14 +5,15 @@ use chrono::FixedOffset;
 use chrono::Utc;
 use lambda_runtime::Error;
 use libmaccas::api::ApiClient;
-use libmaccas::types::Offer;
 use std::collections::HashMap;
 use std::time::SystemTime;
+use types::maccas::Offer;
 
 pub async fn get_offers<'a>(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &'a String,
     client_map: &'a HashMap<String, ApiClient>,
+    force_refresh: bool,
 ) -> Result<HashMap<&'a String, Vec<Offer>>, Error> {
     let mut offer_map = HashMap::<&String, Vec<Offer>>::new();
     for (account_name, api_client) in client_map {
@@ -34,7 +35,7 @@ pub async fn get_offers<'a>(
 
                     let diff = now - last_refresh;
 
-                    if diff.num_minutes() > 59 {
+                    if diff.num_minutes() > 59 || force_refresh {
                         println!("{}: update offers cache", account_name);
                         let resp = api_client
                             .get_offers(None)

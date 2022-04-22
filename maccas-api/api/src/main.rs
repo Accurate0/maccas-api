@@ -3,10 +3,10 @@ use config::Config;
 use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
-use maccas_core::cache;
-use maccas_core::client;
-use maccas_core::config::ApiConfig;
-use maccas_core::utils;
+use core::cache;
+use core::client;
+use core::config::ApiConfig;
+use core::utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -39,13 +39,13 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     Ok(match resource_path {
         Some(s) => {
             let offer_map =
-                cache::get_offers(&client, &config.cache_table_name, &client_map).await?;
+                cache::get_offers(&client, &config.cache_table_name, &client_map, false).await?;
             match s.as_str() {
                 "/code/{dealId}" => {
                     let deal_id = params.first("dealId").expect("must have id");
                     let deal_id = &deal_id.to_owned();
 
-                    match maccas_core::utils::get_by_order_id(&offer_map, deal_id, &client_map)
+                    match core::utils::get_by_order_id(&offer_map, deal_id, &client_map)
                         .await
                     {
                         Ok((api_client, _, _)) => {

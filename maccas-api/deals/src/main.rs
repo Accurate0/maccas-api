@@ -1,11 +1,11 @@
 use aws_sdk_dynamodb::Client;
 use config::Config;
+use core::cache;
+use core::client;
+use core::config::ApiConfig;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
-use libmaccas::types::Offer;
-use maccas_core::cache;
-use maccas_core::client;
-use maccas_core::config::ApiConfig;
+use types::maccas::Offer;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -36,9 +36,18 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
     Ok(match resource_path {
         Some(s) => match s.as_str() {
+            "/deals/cache" => {
+                cache::get_offers(&client, &config.cache_table_name, &client_map, true).await?;
+                Response::builder()
+                    .status(204)
+                    .body("".into())
+                    .expect("failed to render response")
+            }
+
             "/deals" => {
                 let offer_map =
-                    cache::get_offers(&client, &config.cache_table_name, &client_map).await?;
+                    cache::get_offers(&client, &config.cache_table_name, &client_map, false)
+                        .await?;
                 let mut offer_list = Vec::<Offer>::new();
                 for (_, offers) in &offer_map {
                     offer_list.append(&mut offers.clone());

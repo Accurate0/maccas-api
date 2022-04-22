@@ -1,0 +1,2 @@
+[workspace]
+members = ["libmaccas", "maccas-api/core", "maccas-api/api", "maccas-api/deals", "maccas-bot", "types"]

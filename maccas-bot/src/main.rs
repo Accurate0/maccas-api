@@ -15,8 +15,8 @@ use serenity::prelude::*;
 
 use serenity::model::gateway::Ready;
 
-use libmaccas::types;
 use serenity::model::interactions::Interaction;
+use types::maccas;
 
 struct Bot {
     client: reqwest::Client,
@@ -153,7 +153,7 @@ impl EventHandler for Bot {
 
                     match resp.status() {
                         reqwest::StatusCode::OK => {
-                            let resp = resp.json::<types::OfferDealStackResponse>().await.unwrap();
+                            let resp = resp.json::<maccas::OfferDealStackResponse>().await.unwrap();
                             let code = resp.response.unwrap().random_code;
 
                             command
@@ -203,7 +203,7 @@ impl EventHandler for Bot {
                         .send()
                         .await
                         .unwrap()
-                        .json::<Vec<types::Offer>>()
+                        .json::<Vec<maccas::Offer>>()
                         .await
                         .unwrap();
 
@@ -278,7 +278,7 @@ impl EventHandler for Bot {
                         .send()
                         .await
                         .unwrap()
-                        .json::<types::OfferDealStackResponse>()
+                        .json::<maccas::OfferDealStackResponse>()
                         .await
                         .unwrap();
 
@@ -296,7 +296,7 @@ impl EventHandler for Bot {
                                 .send()
                                 .await
                                 .unwrap()
-                                .json::<types::OfferDealStackResponse>()
+                                .json::<maccas::OfferDealStackResponse>()
                                 .await
                                 .unwrap();
 

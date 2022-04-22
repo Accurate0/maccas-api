@@ -1,5 +1,5 @@
 [package]
-name = "maccas_bot"
+name = "maccas-bot"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 libmaccas = { path = "../libmaccas" }
+types = { path = "../types" }
 
 serenity = { version = "0.11", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "collector"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
