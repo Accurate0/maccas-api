@@ -47,7 +47,7 @@ jobs:
         working-directory: "./maccas-api/api"
 
       - name: publish lambda api
-        run: aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
+        run: aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/api/bootstrap.zip
         working-directory: "./maccas-api/api"
 
       - name: cargo build api-deals
@@ -55,11 +55,11 @@ jobs:
         working-directory: "./maccas-api/deals"
 
       - name: publish lambda api-deals
-        run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api_deals/bootstrap.zip
+        run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/deals/bootstrap.zip
         working-directory: "./maccas-api/deals"
 
       - name: increment lambda version api
-        run: aws lambda publish-version --function-name MaccasApi-deals
+        run: aws lambda publish-version --function-name MaccasApi
 
       - name: increment lambda version api-deals
-        run: aws lambda publish-version --function-name MaccasApi
+        run: aws lambda publish-version --function-name MaccasApi-deals
