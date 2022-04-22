@@ -1,23 +1,23 @@
 [package]
-name = "maccas_core"
+name = "deals"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libmaccas = { path = "../libmaccas" }
+libmaccas = { path = "../../libmaccas" }
+types = { path = "../../types" }
+core = { path = "../core" }
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
+log = "0.4.14"
 serde = "1.0.126"
+simple_logger = "1.11.0"
+tokio = "1.6.1"
 serde_json = "1.0.79"
 serde_derive = "1.0.136"
-openssl = { version = "0.10", features = ["vendored"] }
 aws-sdk-dynamodb = "0.10.1"
 config = { version = "0.13.1", features = ["yaml"] }
-uuid = { version = "0.8.2", features = ["v4"] }
-http-auth-basic = "0.3.3"
 aws-config = "0.10.1"
-http = "0.2.6"
-chrono = "0.4.19"

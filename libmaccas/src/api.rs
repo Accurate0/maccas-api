@@ -1,12 +1,12 @@
-use crate::types::{
-    LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
-    OfferResponse, RestaurantLocationResponse, TokenResponse,
-};
 use http_auth_basic::Credentials;
 use reqwest::Method;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use std::time::Duration;
+use types::maccas::{
+    LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
+    OfferResponse, RestaurantLocationResponse, TokenResponse,
+};
 use uuid::Uuid;
 
 const BASE_URL: &str = "https://ap-prod.api.mcd.com";

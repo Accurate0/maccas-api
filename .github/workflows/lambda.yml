@@ -4,10 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - maccas_core/**
-      - maccas_api_deals/**
-      - maccas_api/**
+      - maccas-api/**
       - libmaccas/**
+      - types/**
       - .github/workflows/lambda.yml
 
 concurrency:
@@ -29,7 +28,7 @@ jobs:
 
       - name: generate config
         run: |
-          echo -e "$CONFIG_FILE" > config.yml
+          echo -e "$CONFIG_FILE" > maccas-api/config.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
 
@@ -45,19 +44,19 @@ jobs:
 
       - name: cargo build api
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-        working-directory: "./maccas_api"
+        working-directory: "./maccas-api/api"
 
       - name: publish lambda api
         run: aws lambda update-function-code --function-name MaccasApi --zip-file fileb://target/lambda/maccas_api/bootstrap.zip
-        working-directory: "./maccas_api"
+        working-directory: "./maccas-api/api"
 
       - name: cargo build api-deals
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-        working-directory: "./maccas_api_deals"
+        working-directory: "./maccas-api/deals"
 
       - name: publish lambda api-deals
         run: aws lambda update-function-code --function-name MaccasApi-deals --zip-file fileb://target/lambda/maccas_api_deals/bootstrap.zip
-        working-directory: "./maccas_api_deals"
+        working-directory: "./maccas-api/deals"
 
       - name: increment lambda version api
         run: aws lambda publish-version --function-name MaccasApi-deals
