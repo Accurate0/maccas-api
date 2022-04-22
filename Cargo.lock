@@ -683,7 +683,6 @@ name = "maccas-bot"
 version = "0.1.0"
 dependencies = [
  "config",
- "libmaccas",
  "log",
  "reqwest",
  "serde",
