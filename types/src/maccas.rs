@@ -165,14 +165,17 @@ pub struct RestaurantLocationList {
 #[serde(rename_all = "camelCase")]
 pub struct Restaurant {
     pub restaurant_status: String,
+    #[serde(skip_serializing, skip_deserializing)]
     pub facilities: Vec<String>,
     pub address: Address,
+    #[serde(skip_serializing, skip_deserializing)]
     pub mc_deliveries: McDeliveries,
     pub location: Location,
     pub name: String,
     pub national_store_number: i64,
     pub status: i64,
     pub time_zone: String,
+    #[serde(skip_serializing, skip_deserializing)]
     pub week_opening_hours: Vec<WeekOpeningHour>,
     pub phone_number: Option<String>,
 }
