@@ -310,6 +310,8 @@ impl EventHandler for Bot {
                         }
                     };
 
+                    message.delete(&ctx.http).await.unwrap();
+
                     let offer_id = mci.data.values.get(0).unwrap();
 
                     mci.create_interaction_response(&ctx, |r| {
