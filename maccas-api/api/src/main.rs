@@ -50,7 +50,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                     match core::utils::get_by_order_id(&offer_map, deal_id, &client_map).await {
                         Ok((api_client, _, _)) => {
-                            let resp = api_client.offers_dealstack(None, None).await?;
+                            let resp = api_client.offers_dealstack(None, store).await?;
                             serde_json::to_string(&resp).unwrap().into_response()
                         }
 

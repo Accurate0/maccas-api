@@ -49,6 +49,13 @@
             "required": true
           }
         ],
+        "queryParameters": [
+          {
+            "name": "store",
+            "type": "string",
+            "required": false
+          }
+        ],
         "responses": []
       }
     },
@@ -94,6 +101,13 @@
             "required": true
           }
         ],
+        "queryParameters": [
+          {
+            "name": "store",
+            "type": "string",
+            "required": false
+          }
+        ],
         "responses": []
       }
     },
@@ -111,6 +125,13 @@
             "name": "dealId",
             "type": "string",
             "required": true
+          }
+        ],
+        "queryParameters": [
+          {
+            "name": "store",
+            "type": "string",
+            "required": false
           }
         ],
         "responses": []
