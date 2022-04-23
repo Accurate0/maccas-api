@@ -167,28 +167,16 @@ impl ApiClient {
     // https://ap-prod.api.mcd.com/exp/v1/restaurant/location?distance=20&filter=summary&latitude=-32.0117&longitude=115.8845
     pub async fn restaurant_location(
         &self,
-        distance: Option<String>,
-        latitude: Option<String>,
-        longitude: Option<String>,
-        filter: Option<String>,
+        distance: Option<&str>,
+        latitude: Option<&str>,
+        longitude: Option<&str>,
+        filter: Option<&str>,
     ) -> reqwest_middleware::Result<RestaurantLocationResponse> {
         let params = Vec::from([
-            (
-                String::from("distance"),
-                distance.unwrap_or("20".to_owned()),
-            ),
-            (
-                String::from("latitude"),
-                latitude.unwrap_or("-32.0117".to_owned()),
-            ),
-            (
-                String::from("longitude"),
-                longitude.unwrap_or("115.8845".to_owned()),
-            ),
-            (
-                String::from("filter"),
-                filter.unwrap_or("summary".to_owned()),
-            ),
+            (String::from("distance"), distance.unwrap_or("20")),
+            (String::from("latitude"), latitude.unwrap_or("-32.0117")),
+            (String::from("longitude"), longitude.unwrap_or("115.8845")),
+            (String::from("filter"), filter.unwrap_or("summary")),
         ]);
 
         let token: &String = self.auth_token.as_ref().unwrap();
@@ -196,7 +184,7 @@ impl ApiClient {
         let request = self
             .get_default_request("exp/v1/restaurant/location", Method::GET)
             .query(&params)
-            .header("authorization", format!("Bearer {token}"));
+            .bearer_auth(token);
 
         let response = request
             .send()
@@ -266,16 +254,16 @@ impl ApiClient {
     pub async fn add_offer_to_offers_dealstack(
         &self,
         offer_id: &String,
-        offset: Option<String>,
-        store_id: Option<String>,
+        offset: Option<&str>,
+        store_id: Option<&str>,
     ) -> reqwest_middleware::Result<OfferDealStackResponse> {
         let token: &String = self.auth_token.as_ref().unwrap();
+        let store_id = store_id.unwrap_or("951488");
+        let offset = offset.unwrap_or("480").to_string();
+
         let params = Vec::from([
-            (String::from("offset"), offset.unwrap_or("480".to_owned())),
-            (
-                String::from("storeId"),
-                store_id.unwrap_or("951488".to_owned()),
-            ),
+            (String::from("offset"), offset.as_str()),
+            (String::from("storeId"), store_id),
         ]);
 
         let request = self
@@ -302,24 +290,25 @@ impl ApiClient {
         offer_id: i64,
         offer_proposition_id: &String,
         offset: Option<i64>,
-        store_id: Option<String>,
+        store_id: Option<&str>,
     ) -> reqwest_middleware::Result<OfferDealStackResponse> {
-        let store_id = store_id.unwrap_or("951488".to_owned());
-
+        let store_id = store_id.unwrap_or("951488");
+        let offer_id = offer_id.to_string();
+        let offset = offset.unwrap_or(480).to_string();
         // the app sends a body, but this request works without it
         // but we're pretending to be the app :)
         let body = serde_json::json!(
             {
                 "storeId": store_id,
                 "offerId": offer_id,
-                "offset": offset.unwrap_or(480)
+                "offset": offset,
             }
         );
 
         let token: &String = self.auth_token.as_ref().unwrap();
         let params = Vec::from([
-            (String::from("offerId"), offer_id.to_string()),
-            (String::from("offset"), offset.unwrap_or(480).to_string()),
+            (String::from("offerId"), offer_id.as_str()),
+            (String::from("offset"), offset.as_str()),
             (String::from("storeId"), store_id),
         ]);
 

@@ -28,6 +28,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let client = Client::new(&shared_config);
     let client_map = client::get_client_map(&config, &client).await?;
     let context = request.request_context();
+    let query_params = request.query_string_parameters();
 
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
@@ -36,6 +37,27 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
     Ok(match resource_path {
         Some(s) => match s.as_str() {
+            "/locations" => {
+                println!("{:#?}", query_params);
+                let distance = query_params.first("distance");
+                let latitude = query_params.first("latitude");
+                let longitude = query_params.first("longitude");
+
+                if distance.is_some() && latitude.is_some() && longitude.is_some() {
+                    let api_client = client_map.values().find(|_| true).unwrap();
+                    let resp = api_client
+                        .restaurant_location(distance, latitude, longitude, None)
+                        .await?;
+
+                    serde_json::to_string(&resp).unwrap().into_response()
+                } else {
+                    Response::builder()
+                        .status(400)
+                        .body("".into())
+                        .expect("failed to render response")
+                }
+            }
+
             "/deals/refresh" => {
                 cache::get_offers(&client, &config.cache_table_name, &client_map, true).await?;
                 Response::builder()

@@ -1,12 +1,12 @@
 use aws_sdk_dynamodb::Client;
 use config::Config;
-use http::Method;
-use lambda_http::request::RequestContext;
-use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use core::cache;
 use core::client;
 use core::config::ApiConfig;
 use core::utils;
+use http::Method;
+use lambda_http::request::RequestContext;
+use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -30,6 +30,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let client_map = client::get_client_map(&config, &client).await?;
     let params = request.path_parameters();
     let context = request.request_context();
+    let query_params = request.query_string_parameters();
 
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
@@ -40,14 +41,14 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         Some(s) => {
             let offer_map =
                 cache::get_offers(&client, &config.cache_table_name, &client_map, false).await?;
+            let store = query_params.first("store");
+
             match s.as_str() {
                 "/code/{dealId}" => {
                     let deal_id = params.first("dealId").expect("must have id");
                     let deal_id = &deal_id.to_owned();
 
-                    match core::utils::get_by_order_id(&offer_map, deal_id, &client_map)
-                        .await
-                    {
+                    match core::utils::get_by_order_id(&offer_map, deal_id, &client_map).await {
                         Ok((api_client, _, _)) => {
                             let resp = api_client.offers_dealstack(None, None).await?;
                             serde_json::to_string(&resp).unwrap().into_response()
@@ -71,7 +72,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                     .add_offer_to_offers_dealstack(
                                         &offer_proposition_id,
                                         None,
-                                        None,
+                                        store,
                                     )
                                     .await?;
 
@@ -84,7 +85,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                         deal_id.parse::<i64>().unwrap(),
                                         &offer_proposition_id,
                                         None,
-                                        None,
+                                        store,
                                     )
                                     .await?;
 

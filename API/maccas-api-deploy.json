@@ -7,17 +7,48 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2017-03-01",
+      "name": "general-apim/Maccas-API-v1/Locations",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get Locations",
+        "method": "GET",
+        "urlTemplate": "/locations",
+        "queryParameters": [
+          {
+            "name": "distance",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "latitude",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "longitude",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2017-03-01",
       "name": "general-apim/Maccas-API-v1/Code",
       "dependsOn": [],
       "properties": {
         "displayName": "Code",
         "method": "GET",
         "urlTemplate": "/code/{dealId}",
-        "templateParameters": [{
+        "templateParameters": [
+          {
             "name": "dealId",
             "type": "string",
             "required": true
-        }],
+          }
+        ],
         "responses": []
       }
     },
@@ -56,11 +87,13 @@
         "displayName": "Deals",
         "method": "POST",
         "urlTemplate": "/deals/{dealId}",
-        "templateParameters": [{
+        "templateParameters": [
+          {
             "name": "dealId",
             "type": "string",
             "required": true
-        }],
+          }
+        ],
         "responses": []
       }
     },
@@ -73,11 +106,13 @@
         "displayName": "Deals",
         "method": "DELETE",
         "urlTemplate": "/deals/{dealId}",
-        "templateParameters": [{
+        "templateParameters": [
+          {
             "name": "dealId",
             "type": "string",
             "required": true
-        }],
+          }
+        ],
         "responses": []
       }
     }
