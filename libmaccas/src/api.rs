@@ -223,16 +223,13 @@ impl ApiClient {
     // GET https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
     pub async fn offers_dealstack(
         &self,
-        offset: Option<String>,
-        store_id: Option<String>,
+        offset: Option<&str>,
+        store_id: Option<&str>,
     ) -> reqwest_middleware::Result<OfferDealStackResponse> {
         let token: &String = self.auth_token.as_ref().unwrap();
         let params = Vec::from([
-            (String::from("offset"), offset.unwrap_or("480".to_owned())),
-            (
-                String::from("storeId"),
-                store_id.unwrap_or("951488".to_owned()),
-            ),
+            (String::from("offset"), offset.unwrap_or("480")),
+            (String::from("storeId"), store_id.unwrap_or("951488")),
         ]);
 
         let request = self
