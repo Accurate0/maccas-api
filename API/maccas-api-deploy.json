@@ -39,7 +39,7 @@
       "name": "general-apim/Maccas-API-v1/Code",
       "dependsOn": [],
       "properties": {
-        "displayName": "Code",
+        "displayName": "Get Code for Deal",
         "method": "GET",
         "urlTemplate": "/code/{dealId}",
         "templateParameters": [
@@ -65,7 +65,7 @@
       "name": "general-apim/Maccas-API-v1/Deals",
       "dependsOn": [],
       "properties": {
-        "displayName": "Deals",
+        "displayName": "Get Deals",
         "method": "GET",
         "urlTemplate": "/deals",
         "templateParameters": [],
@@ -91,7 +91,7 @@
       "name": "general-apim/Maccas-API-v1/Deals-POST",
       "dependsOn": [],
       "properties": {
-        "displayName": "Deals",
+        "displayName": "Add Deal",
         "method": "POST",
         "urlTemplate": "/deals/{dealId}",
         "templateParameters": [
@@ -117,7 +117,7 @@
       "name": "general-apim/Maccas-API-v1/Deals-DELETE",
       "dependsOn": [],
       "properties": {
-        "displayName": "Deals",
+        "displayName": "Remove Deals",
         "method": "DELETE",
         "urlTemplate": "/deals/{dealId}",
         "templateParameters": [
