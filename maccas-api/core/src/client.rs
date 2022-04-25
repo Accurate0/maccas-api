@@ -17,10 +17,8 @@ pub async fn get_client_map(
     for user in &config.users {
         let api_client = client::get(
             &client,
-            &config.table_name,
             &user.account_name,
-            &config.client_id,
-            &config.client_secret,
+            &config,
             &user.login_username,
             &user.login_password,
         )
@@ -34,23 +32,21 @@ pub async fn get_client_map(
 
 pub async fn get(
     client: &aws_sdk_dynamodb::Client,
-    table_name: &String,
     account_name: &String,
-    client_id: &String,
-    client_secret: &String,
+    api_config: &ApiConfig,
     login_username: &String,
     login_password: &String,
 ) -> Result<api::ApiClient, Error> {
     let mut api_client = api::ApiClient::new(
-        client_id.clone(),
-        client_secret.clone(),
+        api_config.client_id.clone(),
+        api_config.client_secret.clone(),
         login_username.clone(),
         login_password.clone(),
     );
 
     let resp = client
         .get_item()
-        .table_name(table_name)
+        .table_name(&api_config.table_name)
         .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
         .send()
         .await?;
@@ -69,7 +65,7 @@ pub async fn get(
 
             client
                 .put_item()
-                .table_name(table_name)
+                .table_name(&api_config.table_name)
                 .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
                 .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
                 .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
@@ -126,7 +122,7 @@ pub async fn get(
                                 api_client.set_auth_token(&new_access_token);
                                 client
                                     .put_item()
-                                    .table_name(table_name)
+                                    .table_name(&api_config.table_name)
                                     .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
                                     .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
                                     .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))

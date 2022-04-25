@@ -12,6 +12,37 @@ use types::maccas::Offer;
 pub async fn get_offers<'a>(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &'a String,
+    account_name_list: &'a Vec<String>,
+) -> Result<HashMap<&'a String, Option<Vec<Offer>>>, Error> {
+    let mut offer_map = HashMap::<&String, Option<Vec<Offer>>>::new();
+    for account_name in account_name_list {
+        let table_resp = client
+            .get_item()
+            .table_name(cache_table_name)
+            .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .send()
+            .await?;
+
+        let resp = match table_resp.item {
+            Some(ref item) => match item[OFFER_LIST].as_s() {
+                Ok(s) => {
+                    let json = serde_json::from_str::<Vec<Offer>>(s).unwrap();
+                    Some(json)
+                }
+                _ => panic!(),
+            },
+
+            None => None,
+        };
+
+        offer_map.insert(account_name, resp);
+    }
+    Ok(offer_map)
+}
+
+pub async fn refresh_offer_cache<'a>(
+    client: &aws_sdk_dynamodb::Client,
+    cache_table_name: &'a String,
     client_map: &'a HashMap<String, ApiClient>,
     force_refresh: bool,
 ) -> Result<HashMap<&'a String, Vec<Offer>>, Error> {
@@ -35,7 +66,7 @@ pub async fn get_offers<'a>(
 
                     let diff = now - last_refresh;
 
-                    if diff.num_minutes() > 59 || force_refresh {
+                    if diff.num_minutes() > 120 || force_refresh {
                         println!("{}: update offers cache", account_name);
                         let resp = api_client
                             .get_offers(None)

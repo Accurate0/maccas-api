@@ -25,48 +25,59 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         .try_deserialize::<ApiConfig>()
         .expect("valid configuration present");
 
-    let shared_config = aws_config::load_from_env().await;
-    let client = Client::new(&shared_config);
-    let client_map = client::get_client_map(&config, &client).await?;
-    let params = request.path_parameters();
     let context = request.request_context();
-    let query_params = request.query_string_parameters();
-
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
         _ => panic!(),
     };
 
     Ok(match resource_path {
-        Some(s) => {
+        Some(path) => {
+            let path = path.as_str();
+
+            let shared_config = aws_config::load_from_env().await;
+            let client = Client::new(&shared_config);
+            let params = request.path_parameters();
+            let query_params = request.query_string_parameters();
+            let account_name_list = config
+                .users
+                .iter()
+                .map(|u| u.account_name.clone())
+                .collect();
+
             let offer_map =
-                cache::get_offers(&client, &config.cache_table_name, &client_map, false).await?;
+                cache::get_offers(&client, &config.cache_table_name, &account_name_list).await?;
             let store = query_params.first("store");
 
-            match s.as_str() {
-                "/code/{dealId}" => {
-                    let deal_id = params.first("dealId").expect("must have id");
-                    let deal_id = &deal_id.to_owned();
+            let deal_id = params.first("dealId").expect("must have id");
+            let deal_id = &deal_id.to_owned();
 
-                    match core::utils::get_by_order_id(&offer_map, deal_id, &client_map).await {
-                        Ok((api_client, _, _)) => {
+            let account_name_and_offer_id = utils::get_by_order_id(&offer_map, deal_id).await;
+
+            match account_name_and_offer_id {
+                Ok((account_name, offer_proposition_id)) => {
+                    let user = config
+                        .users
+                        .iter()
+                        .find(|u| u.account_name == account_name)
+                        .unwrap();
+
+                    let api_client = client::get(
+                        &client,
+                        &account_name,
+                        &config,
+                        &user.login_username,
+                        &user.login_password,
+                    )
+                    .await?;
+
+                    match path {
+                        "/code/{dealId}" => {
                             let resp = api_client.offers_dealstack(None, store).await?;
                             serde_json::to_string(&resp).unwrap().into_response()
                         }
 
-                        _ => Response::builder()
-                            .status(400)
-                            .body("".into())
-                            .expect("failed to render response"),
-                    }
-                }
-
-                "/deals/{dealId}" => {
-                    let deal_id = params.first("dealId").expect("must have id");
-                    let deal_id = &deal_id.to_owned();
-
-                    match utils::get_by_order_id(&offer_map, deal_id, &client_map).await {
-                        Ok((api_client, _, offer_proposition_id)) => match *request.method() {
+                        "/deals/{dealId}" => match *request.method() {
                             Method::POST => {
                                 let resp = api_client
                                     .add_offer_to_offers_dealstack(
@@ -75,7 +86,6 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                         store,
                                     )
                                     .await?;
-
                                 serde_json::to_string(&resp).unwrap().into_response()
                             }
 
@@ -92,28 +102,16 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                 serde_json::to_string(&resp).unwrap().into_response()
                             }
 
-                            _ => Response::builder()
-                                .status(400)
-                                .body("".into())
-                                .expect("failed to render response"),
+                            _ => Response::builder().status(400).body("".into()).unwrap(),
                         },
 
-                        _ => Response::builder()
-                            .status(400)
-                            .body("".into())
-                            .expect("failed to render response"),
+                        // this isn't something that will happen
+                        _ => Response::builder().status(401).body("".into()).unwrap(),
                     }
                 }
-
-                _ => Response::builder()
-                    .status(400)
-                    .body("".into())
-                    .expect("failed to render response"),
+                _ => Response::builder().status(400).body("".into()).unwrap(),
             }
         }
-        None => Response::builder()
-            .status(400)
-            .body("".into())
-            .expect("failed to render response"),
+        _ => Response::builder().status(400).body("".into()).unwrap(),
     })
 }
