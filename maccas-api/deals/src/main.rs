@@ -74,10 +74,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                         serde_json::to_string(&resp).unwrap().into_response()
                     } else {
-                        Response::builder()
-                            .status(400)
-                            .body("".into())
-                            .expect("failed to render response")
+                        Response::builder().status(400).body("".into()).unwrap()
                     }
                 }
 
@@ -90,10 +87,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         true,
                     )
                     .await?;
-                    Response::builder()
-                        .status(204)
-                        .body("".into())
-                        .expect("failed to render response")
+                    Response::builder().status(204).body("".into()).unwrap()
                 }
 
                 "/deals" => {
@@ -113,15 +107,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     serde_json::to_string(&offer_list).unwrap().into_response()
                 }
 
-                _ => Response::builder()
-                    .status(400)
-                    .body("".into())
-                    .expect("failed to render response"),
+                _ => Response::builder().status(400).body("".into()).unwrap(),
             }
         }
-        None => Response::builder()
-            .status(400)
-            .body("".into())
-            .expect("failed to render response"),
+        None => Response::builder().status(400).body("".into()).unwrap(),
     })
 }
