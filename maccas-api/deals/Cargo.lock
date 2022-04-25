@@ -610,6 +610,7 @@ dependencies = [
  "lambda_runtime",
  "libmaccas",
  "log",
+ "rand",
  "serde",
  "serde_derive",
  "serde_json",
