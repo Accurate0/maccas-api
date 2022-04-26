@@ -80,13 +80,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                 "/deals/refresh" => {
                     let client_map = client::get_client_map(&config, &client).await?;
-                    cache::refresh_offer_cache(
-                        &client,
-                        &config.cache_table_name,
-                        &client_map,
-                        true,
-                    )
-                    .await?;
+                    cache::refresh_offer_cache(&client, &config.cache_table_name, &client_map)
+                        .await?;
                     Response::builder().status(204).body("".into()).unwrap()
                 }
 
