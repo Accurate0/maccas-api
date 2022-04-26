@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  refresh:
+  _:
     uses: ./.github/workflows/lambda-deploy.yml
     with:
       directory: "./maccas-api/refresh"
