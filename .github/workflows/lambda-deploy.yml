@@ -16,10 +16,6 @@ on:
       API_CONFIG_FILE:
         required: true
 
-concurrency:
-  group: environment-${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: false
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
