@@ -8,6 +8,9 @@ on:
       lambda_name:
         type: string
         required: true
+      zip_path:
+        type: string
+        required: true
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -50,7 +53,7 @@ jobs:
         working-directory: ${{ inputs.directory }}
 
       - name: publish lambda ${{ inputs.lambda_name }}
-        run: aws lambda update-function-code --function-name ${{ inputs.lambda_name }} --zip-file fileb://target/lambda/api/bootstrap.zip
+        run: aws lambda update-function-code --function-name ${{ inputs.lambda_name }} --zip-file fileb://target/lambda/${{ inputs.zip_path }}/bootstrap.zip
         working-directory: ${{ inputs.directory }}
 
       - name: increment lambda version ${{ inputs.lambda_name }}
