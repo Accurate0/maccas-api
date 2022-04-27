@@ -1,6 +1,7 @@
 use config::Config;
 use log::*;
 use reqwest::header;
+use serenity::builder::CreateSelectMenuOptions;
 use serenity::model::prelude::GuildId;
 use simplelog::*;
 use std::time::Duration;
@@ -262,11 +263,7 @@ impl EventHandler for Bot {
                         .await
                         .unwrap();
 
-                    let mut menu = CreateSelectMenu::default();
-                    menu.custom_id("fuck-elliot-walker");
-                    menu.placeholder("No offer selected");
-
-                    let options = resp
+                    let options: Vec<CreateSelectMenuOption> = resp
                         .iter()
                         .filter(|offer| offer.offer_id != 0)
                         .map(|offer| {
@@ -279,21 +276,35 @@ impl EventHandler for Bot {
                             opt.value(offer.offer_id);
 
                             opt
+                        })
+                        .collect();
+
+                    let mut x = 0 as u8;
+                    let mut ars = Vec::<CreateActionRow>::new();
+                    for chunk in options.chunks(25).into_iter() {
+                        let mut ar = CreateActionRow::default();
+                        let mut menu = CreateSelectMenu::default();
+                        menu.custom_id(x.to_string());
+                        menu.placeholder("No offer selected");
+                        menu.options(|f| {
+                            for option in chunk {
+                                f.add_option(option.clone());
+                            }
+                            f
                         });
-
-                    menu.options(|f| {
-                        for option in options {
-                            f.add_option(option);
-                        }
-                        f
-                    });
-
-                    let mut ar = CreateActionRow::default();
-                    ar.add_select_menu(menu);
+                        ar.add_select_menu(menu);
+                        x += 1;
+                        ars.push(ar);
+                    }
 
                     let message = command
                         .edit_original_interaction_response(&ctx.http, |m| {
-                            m.components(|c| c.add_action_row(ar.clone()))
+                            m.components(|c| {
+                                for ar in ars {
+                                    c.add_action_row(ar.clone());
+                                }
+                                c
+                            })
                         })
                         .await
                         .unwrap();
