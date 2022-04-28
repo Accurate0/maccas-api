@@ -1,4 +1,7 @@
 use http_auth_basic::Credentials;
+use rand::distributions::{Alphanumeric, DistString};
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use reqwest::Method;
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
@@ -103,6 +106,8 @@ impl ApiClient {
         let token: &String = self.login_token.as_ref().unwrap();
         let login_username = &self.login_username;
         let login_password = &self.login_password;
+        let mut rng = StdRng::from_entropy();
+        let device_id = Alphanumeric.sample_string(&mut rng, 16);
 
         let creds = serde_json::json!({
             "credentials": {
@@ -110,7 +115,7 @@ impl ApiClient {
                 "password": login_password,
                 "type": "email"
             },
-            "deviceId": "51e1a16711be3f77"
+            "deviceId": device_id
         });
 
         let request = self
