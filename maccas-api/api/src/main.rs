@@ -1,8 +1,6 @@
 use aws_sdk_dynamodb::Client;
-use config::Config;
 use core::cache;
 use core::client;
-use core::config::ApiConfig;
 use core::utils;
 use http::Method;
 use lambda_http::request::RequestContext;
@@ -15,16 +13,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
-    let config = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("../../config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present");
-
+    let config = core::config::load(std::include_str!("../../config.yml"));
     let context = request.request_context();
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
