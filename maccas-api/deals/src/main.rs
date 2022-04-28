@@ -1,8 +1,8 @@
 use aws_sdk_dynamodb::Client;
-use config::Config;
 use core::cache;
 use core::client;
-use core::config::ApiConfig;
+use core::lock;
+use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use rand::prelude::SliceRandom;
@@ -17,20 +17,12 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
-    let config = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("../../config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present");
-
+    let config = core::config::load(std::include_str!("../../config.yml"));
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
     let context = request.request_context();
     let query_params = request.query_string_parameters();
+    let params = request.path_parameters();
 
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
@@ -86,6 +78,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 }
 
                 "/deals" => {
+                    let locked_deals =
+                        lock::get_all_locked_deals(&client, &config.offer_id_table_name).await?;
+
                     let offer_map =
                         cache::get_offers(&client, &config.cache_table_name, &account_name_list)
                             .await?;
@@ -99,7 +94,31 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         }
                     }
 
+                    // filter locked deals
+                    let offer_list: Vec<&Offer> = offer_list
+                        .iter()
+                        .filter(|offer| !locked_deals.contains(&offer.offer_id.to_string()))
+                        .collect();
+
                     serde_json::to_string(&offer_list).unwrap().into_response()
+                }
+
+                "/deals/lock/{dealId}" => {
+                    let deal_id = params.first("dealId").expect("must have id");
+                    let deal_id = &deal_id.to_owned();
+
+                    match *request.method() {
+                        Method::POST => {
+                            lock::lock_deal(&client, &config.offer_id_table_name, deal_id).await?;
+                            Response::builder().status(204).body("".into()).unwrap()
+                        }
+                        Method::DELETE => {
+                            lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
+                                .await?;
+                            Response::builder().status(204).body("".into()).unwrap()
+                        }
+                        _ => Response::builder().status(400).body("".into()).unwrap(),
+                    }
                 }
 
                 _ => Response::builder().status(400).body("".into()).unwrap(),

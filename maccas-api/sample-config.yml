@@ -2,6 +2,7 @@ clientId:
 clientSecret:
 tableName:
 cacheTableName:
+offerIdTableName:
 
 users:
   - accountName:
