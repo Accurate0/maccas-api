@@ -26,7 +26,7 @@ impl Bot {
             .iter()
             // 0 "can't" be selected in App
             // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
-            .filter(|offer| offer.offer_id != 0 || offer.offer_proposition_id != 30762)
+            .filter(|offer| offer.offer_id != 0 && offer.offer_proposition_id != 30762)
             .map(|offer| {
                 let mut opt = CreateSelectMenuOption::default();
 
