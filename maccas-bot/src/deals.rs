@@ -102,6 +102,11 @@ impl Bot {
             )
             .await;
 
+        // Lock deal for 15 minutes, to prevent it from showing in GET /deals requests
+        self.api_client
+            .request_without_deserialize(Method::POST, format!("deals/lock/{offer_id}").as_str())
+            .await;
+
         let code = match resp.response {
             Some(r) => r.random_code,
             None => {

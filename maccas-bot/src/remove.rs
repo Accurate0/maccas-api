@@ -1,4 +1,5 @@
 use crate::Bot;
+use http::Method;
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
@@ -26,9 +27,14 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request_without_deserialize(http::Method::DELETE, format!("deals/{deal_id}").as_str())
+            .request_without_deserialize(Method::DELETE, format!("deals/{deal_id}").as_str())
             .await
             .status();
+
+        // Unlock deal
+        self.api_client
+            .request_without_deserialize(Method::DELETE, format!("deals/lock/{deal_id}").as_str())
+            .await;
 
         command
             .edit_original_interaction_response(&ctx, |m| {
