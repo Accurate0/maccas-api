@@ -6,6 +6,7 @@ use simplelog::*;
 
 mod api;
 mod code;
+mod constants;
 mod deals;
 mod event_handler;
 mod refresh;
