@@ -27,13 +27,16 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request_without_deserialize(Method::DELETE, format!("deals/{deal_id}").as_str())
+            .maccas_request_without_deserialize(Method::DELETE, format!("deals/{deal_id}").as_str())
             .await
             .status();
 
         // Unlock deal
         self.api_client
-            .request_without_deserialize(Method::DELETE, format!("deals/lock/{deal_id}").as_str())
+            .maccas_request_without_deserialize(
+                Method::DELETE,
+                format!("deals/lock/{deal_id}").as_str(),
+            )
             .await;
 
         command

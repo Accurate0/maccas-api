@@ -19,7 +19,7 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request::<Vec<maccas::Offer>>(Method::GET, "deals")
+            .maccas_request::<Vec<maccas::Offer>>(Method::GET, "deals")
             .await;
 
         let options: Vec<CreateSelectMenuOption> = resp
@@ -96,7 +96,7 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request::<maccas::OfferDealStackResponse>(
+            .maccas_request::<maccas::OfferDealStackResponse>(
                 Method::POST,
                 format!("deals/{offer_id}").as_str(),
             )
@@ -104,7 +104,10 @@ impl Bot {
 
         // Lock deal for 15 minutes, to prevent it from showing in GET /deals requests
         self.api_client
-            .request_without_deserialize(Method::POST, format!("deals/lock/{offer_id}").as_str())
+            .maccas_request_without_deserialize(
+                Method::POST,
+                format!("deals/lock/{offer_id}").as_str(),
+            )
             .await;
 
         let code = match resp.response {
@@ -112,7 +115,7 @@ impl Bot {
             None => {
                 let resp = self
                     .api_client
-                    .request::<maccas::OfferDealStackResponse>(
+                    .maccas_request::<maccas::OfferDealStackResponse>(
                         Method::GET,
                         format!("code/{offer_id}").as_str(),
                     )
