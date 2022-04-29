@@ -14,7 +14,7 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request_without_deserialize(http::Method::POST, "deals/refresh")
+            .maccas_request_without_deserialize(http::Method::POST, "deals/refresh")
             .await
             .status();
 

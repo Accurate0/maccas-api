@@ -27,7 +27,10 @@ impl Bot {
 
         let resp = self
             .api_client
-            .request_without_deserialize(http::Method::GET, format!("code/{deal_id}").as_str())
+            .maccas_request_without_deserialize(
+                http::Method::GET,
+                format!("code/{deal_id}").as_str(),
+            )
             .await;
 
         match resp.status() {
