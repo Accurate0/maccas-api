@@ -1,4 +1,4 @@
-use crate::Bot;
+use crate::{constants, Bot};
 use http::Method;
 use serenity::builder::{CreateActionRow, CreateSelectMenu, CreateSelectMenuOption};
 use serenity::client::Context;
@@ -124,7 +124,7 @@ impl Bot {
 
         mci.edit_original_interaction_response(&ctx, |m| {
             m.embed(|e| {
-                e.colour(0xDA291C as i32)
+                e.colour(constants::MACCAS_RED)
                     .title("Code")
                     .description(code)
                     .field("Response", format!("{}", resp.status.message), false)

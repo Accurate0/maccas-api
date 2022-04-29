@@ -1,4 +1,4 @@
-use crate::Bot;
+use crate::{constants, Bot};
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
@@ -38,7 +38,7 @@ impl Bot {
                 command
                     .edit_original_interaction_response(&ctx, |m| {
                         m.embed(|e| {
-                            e.colour(0xDA291C as i32)
+                            e.colour(constants::MACCAS_RED)
                                 .title("Code")
                                 .description(code)
                                 .field("Response", format!("{}", resp.status.message), false)
@@ -51,7 +51,7 @@ impl Bot {
                 command
                     .edit_original_interaction_response(&ctx, |m| {
                         m.embed(|e| {
-                            e.colour(0xDA291C as i32)
+                            e.colour(constants::MACCAS_RED)
                                 .title("Response")
                                 .description(resp.status())
                         })
