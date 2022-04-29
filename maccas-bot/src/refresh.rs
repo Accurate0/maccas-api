@@ -12,14 +12,10 @@ impl Bot {
             .await
             .unwrap();
 
-        let url = &self.base_url.join("deals/refresh").unwrap();
-
         let resp = self
-            .client
-            .post(url.as_str())
-            .send()
+            .api_client
+            .request_without_deserialize(http::Method::POST, "deals/refresh")
             .await
-            .unwrap()
             .status();
 
         command

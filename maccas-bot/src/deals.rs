@@ -1,12 +1,11 @@
-use std::time::Duration;
-
+use crate::Bot;
+use http::Method;
 use serenity::builder::{CreateActionRow, CreateSelectMenu, CreateSelectMenuOption};
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
+use std::time::Duration;
 use types::maccas;
-
-use crate::Bot;
 
 impl Bot {
     pub async fn deals_command(&self, ctx: &Context, command: &ApplicationCommandInteraction) {
@@ -18,16 +17,10 @@ impl Bot {
             .await
             .unwrap();
 
-        let url = &self.base_url.join("deals").unwrap();
         let resp = self
-            .client
-            .get(url.as_str())
-            .send()
-            .await
-            .unwrap()
-            .json::<Vec<maccas::Offer>>()
-            .await
-            .unwrap();
+            .api_client
+            .request::<Vec<maccas::Offer>>(Method::GET, "deals")
+            .await;
 
         let options: Vec<CreateSelectMenuOption> = resp
             .iter()
@@ -99,38 +92,24 @@ impl Bot {
         .await
         .unwrap();
 
-        let url = &self
-            .base_url
-            .join(format!("deals/{offer_id}").as_str())
-            .unwrap();
-
         let resp = self
-            .client
-            .post(url.as_str())
-            .send()
-            .await
-            .unwrap()
-            .json::<maccas::OfferDealStackResponse>()
-            .await
-            .unwrap();
+            .api_client
+            .request::<maccas::OfferDealStackResponse>(
+                Method::POST,
+                format!("deals/{offer_id}").as_str(),
+            )
+            .await;
 
         let code = match resp.response {
             Some(r) => r.random_code,
             None => {
-                let url = &self
-                    .base_url
-                    .join(format!("code/{offer_id}").as_str())
-                    .unwrap();
-
                 let resp = self
-                    .client
-                    .get(url.as_str())
-                    .send()
-                    .await
-                    .unwrap()
-                    .json::<maccas::OfferDealStackResponse>()
-                    .await
-                    .unwrap();
+                    .api_client
+                    .request::<maccas::OfferDealStackResponse>(
+                        Method::GET,
+                        format!("code/{offer_id}").as_str(),
+                    )
+                    .await;
 
                 resp.response.unwrap().random_code
             }
