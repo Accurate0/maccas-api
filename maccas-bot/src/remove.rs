@@ -24,17 +24,10 @@ impl Bot {
             .as_str()
             .unwrap();
 
-        let url = &self
-            .base_url
-            .join(format!("deals/{deal_id}").as_str())
-            .unwrap();
-
         let resp = self
-            .client
-            .delete(url.as_str())
-            .send()
+            .api_client
+            .request_without_deserialize(http::Method::DELETE, format!("deals/{deal_id}").as_str())
             .await
-            .unwrap()
             .status();
 
         command

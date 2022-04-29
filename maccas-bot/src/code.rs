@@ -1,9 +1,8 @@
+use crate::Bot;
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
 use types::maccas;
-
-use crate::Bot;
 
 impl Bot {
     pub async fn code_command(&self, ctx: &Context, command: &ApplicationCommandInteraction) {
@@ -26,12 +25,10 @@ impl Bot {
             .as_str()
             .unwrap();
 
-        let url = &self
-            .base_url
-            .join(format!("code/{deal_id}").as_str())
-            .unwrap();
-
-        let resp = self.client.get(url.as_str()).send().await.unwrap();
+        let resp = self
+            .api_client
+            .request_without_deserialize(http::Method::GET, format!("code/{deal_id}").as_str())
+            .await;
 
         match resp.status() {
             reqwest::StatusCode::OK => {

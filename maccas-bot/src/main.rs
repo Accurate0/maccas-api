@@ -4,6 +4,7 @@ use reqwest::header;
 use serenity::prelude::*;
 use simplelog::*;
 
+mod api;
 mod code;
 mod deals;
 mod event_handler;
@@ -11,8 +12,7 @@ mod refresh;
 mod remove;
 
 struct Bot {
-    client: reqwest::Client,
-    base_url: reqwest::Url,
+    api_client: api::Api,
 }
 
 fn setup_logging() {
@@ -65,7 +65,8 @@ async fn main() {
         .unwrap();
 
     let base_url = reqwest::Url::parse(&config.base_url.as_str()).unwrap();
-    let bot = Bot { client, base_url };
+    let api_client = api::Api { base_url, client };
+    let bot = Bot { api_client };
 
     let mut client = Client::builder(
         config.discord_token,
