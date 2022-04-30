@@ -2,6 +2,7 @@ use aws_sdk_dynamodb::Client;
 use config::Config;
 use core::cache;
 use core::client;
+use core::config::ApiConfig;
 use core::utils;
 use http::Method;
 use lambda_http::request::RequestContext;
