@@ -15,7 +15,18 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-singapore:
+  deploy:
+    strategy:
+    fail-fast: false
+    matrix:
+      environment:
+        - SYDNEY
+        - SINGAPORE
+
+    environment: ${{ matrix.environment }}
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
     runs-on: ubuntu-latest
 
     steps:
@@ -30,51 +41,10 @@ jobs:
       - name: generate config
         run: |
           echo -e "$CONFIG_FILE" > maccas-api/config.yml
-          echo -e "$ACCOUNTS_SINGAPORE" > maccas-api/accounts.yml
+          echo -e "$API_CONFIG_ACCOUNTS" > maccas-api/accounts.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
-          ACCOUNTS_SINGAPORE: ${{ secrets.API_CONFIG_ACCOUNTS_SINGAPORE }}
-
-      - name: rust-cargo-install
-        uses: actions-rs/install@v0.1.2
-        with:
-          crate: cargo-lambda
-          version: 0.6.1
-          use-tool-cache: true
-
-      - name: install zig
-        run: pip3 install ziglang
-
-      - name: cargo build MaccasApi-refresh
-        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-        working-directory: "./maccas-api-refresh"
-
-      - name: publish lambda MaccasApi-refresh
-        run: aws lambda update-function-code --function-name MaccasApi-refresh-singapore --zip-file fileb://target/lambda/refresh/bootstrap.zip --region ap-southeast-1
-        working-directory: "./maccas-api-refresh"
-
-      - name: increment lambda version MaccasApi-refresh
-        run: aws lambda publish-version --function-name MaccasApi-refresh
-
-  deploy-sydney:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
-
-      - name: generate config
-        run: |
-          echo -e "$CONFIG_FILE" > maccas-api/config.yml
-          echo -e "$ACCOUNTS_SYDNEY" > maccas-api/accounts.yml
-        env:
-          CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
-          ACCOUNTS_SYDNEY: ${{ secrets.API_CONFIG_ACCOUNTS_SYDNEY }}
+          API_CONFIG_ACCOUNTS: ${{ secrets.API_CONFIG_API_CONFIG_ACCOUNTS }}
 
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
