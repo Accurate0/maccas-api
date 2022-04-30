@@ -17,11 +17,11 @@ concurrency:
 jobs:
   deploy:
     strategy:
-    fail-fast: false
-    matrix:
-      environment:
-        - SYDNEY
-        - SINGAPORE
+      fail-fast: false
+      matrix:
+        environment:
+          - SYDNEY
+          - SINGAPORE
 
     environment: ${{ matrix.environment }}
 
