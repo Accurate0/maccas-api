@@ -1,4 +1,5 @@
 use aws_sdk_dynamodb::Client;
+use config::Config;
 use core::cache;
 use core::client;
 use core::lock;
