@@ -35,8 +35,14 @@ jobs:
       - name: generate config
         run: |
           echo -e "$CONFIG_FILE" > maccas-api/config.yml
+          echo -e "$ACCOUNTS" > maccas-api/accounts-all.yml
+          echo -e "$ACCOUNTS_SYDNEY" > maccas-api/accounts-sydney.yml
+          echo -e "$ACCOUNTS_SINGAPORE" > maccas-api/accounts-singapore.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
+          ACCOUNTS: ${{ secrets.API_CONFIG_ACCOUNTS_ALL }}
+          ACCOUNTS_SYDNEY: ${{ secrets.API_CONFIG_ACCOUNTS_SYDNEY }}
+          ACCOUNTS_SINGAPORE: ${{ secrets.API_CONFIG_ACCOUNTS_SINGAPORE }}
 
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
