@@ -16,7 +16,11 @@ async fn main() -> Result<(), Error> {
 async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let config = Config::builder()
         .add_source(config::File::from_str(
-            std::include_str!("../../config.yml"),
+            std::include_str!("../../base-config.yml"),
+            config::FileFormat::Yaml,
+        ))
+        .add_source(config::File::from_str(
+            std::include_str!("../../accounts.yml"),
             config::FileFormat::Yaml,
         ))
         .build()
@@ -24,7 +28,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         .try_deserialize::<ApiConfig>()
         .expect("valid configuration present");
 
-    let shared_config = aws_config::load_from_env().await;
+    let shared_config = aws_config::from_env().region("ap-southeast-2").load().await;
     let client = Client::new(&shared_config);
     let client_map = client::get_client_map(&config, &client).await?;
 

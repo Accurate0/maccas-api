@@ -17,7 +17,20 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
-    let config = core::config::load(std::include_str!("../../config.yml"));
+    let config = Config::builder()
+        .add_source(config::File::from_str(
+            std::include_str!("../../base-config.yml"),
+            config::FileFormat::Yaml,
+        ))
+        .add_source(config::File::from_str(
+            std::include_str!("../../accounts-all.yml"),
+            config::FileFormat::Yaml,
+        ))
+        .build()
+        .unwrap()
+        .try_deserialize::<ApiConfig>()
+        .expect("valid configuration present");
+
     let shared_config = aws_config::load_from_env().await;
     let client = Client::new(&shared_config);
     let context = request.request_context();
