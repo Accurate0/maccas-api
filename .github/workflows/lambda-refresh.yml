@@ -58,11 +58,11 @@ jobs:
 
       - name: cargo build MaccasApi-refresh
         run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-        working-directory: "./maccas-api-refresh"
+        working-directory: "maccas-api/refresh"
 
       - name: publish lambda MaccasApi-refresh
         run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://target/lambda/refresh/bootstrap.zip
-        working-directory: "./maccas-api-refresh"
+        working-directory: "maccas-api/refresh"
 
       - name: increment lambda version MaccasApi-refresh
         run: aws lambda publish-version --function-name MaccasApi-refresh
