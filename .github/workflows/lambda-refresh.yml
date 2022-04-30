@@ -37,7 +37,7 @@ jobs:
 
       - name: generate config
         run: |
-          echo -e "$CONFIG_FILE" > maccas-api/config.yml
+          echo -e "$CONFIG_FILE" > maccas-api/base-config.yml
           echo -e "$API_CONFIG_ACCOUNTS" > maccas-api/accounts.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
