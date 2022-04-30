@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         environment:
-          - SYDNEY
-          - SINGAPORE
+          - sydney
+          - singapore
 
     environment: ${{ matrix.environment }}
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           echo -e "$API_CONFIG_ACCOUNTS" > maccas-api/accounts.yml
         env:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
-          API_CONFIG_ACCOUNTS: ${{ secrets.API_CONFIG_API_CONFIG_ACCOUNTS }}
+          API_CONFIG_ACCOUNTS: ${{ secrets.API_CONFIG_ACCOUNTS }}
 
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
