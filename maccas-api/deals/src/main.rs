@@ -4,7 +4,6 @@ use core::cache;
 use core::client;
 use core::config::ApiConfig;
 use core::lock;
-use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use rand::prelude::SliceRandom;
@@ -37,7 +36,6 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let client = Client::new(&shared_config);
     let context = request.request_context();
     let query_params = request.query_string_parameters();
-    let params = request.path_parameters();
 
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
@@ -85,13 +83,6 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     }
                 }
 
-                "/deals/refresh" => {
-                    let client_map = client::get_client_map(&config, &client).await?;
-                    cache::refresh_offer_cache(&client, &config.cache_table_name, &client_map)
-                        .await?;
-                    Response::builder().status(204).body("".into()).unwrap()
-                }
-
                 "/deals" => {
                     let locked_deals =
                         lock::get_all_locked_deals(&client, &config.offer_id_table_name).await?;
@@ -109,33 +100,18 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         }
                     }
 
-                    // filter locked deals
+                    // filter locked deals & extras
+                    // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
                     let offer_list: Vec<&Offer> = offer_list
                         .iter()
-                        .filter(|offer| !locked_deals.contains(&offer.offer_id.to_string()))
+                        .filter(|offer| {
+                            !locked_deals.contains(&offer.offer_id.to_string())
+                                && offer.offer_proposition_id != 30762
+                        })
                         .collect();
 
                     serde_json::to_string(&offer_list).unwrap().into_response()
                 }
-
-                "/deals/lock/{dealId}" => {
-                    let deal_id = params.first("dealId").expect("must have id");
-                    let deal_id = &deal_id.to_owned();
-
-                    match *request.method() {
-                        Method::POST => {
-                            lock::lock_deal(&client, &config.offer_id_table_name, deal_id).await?;
-                            Response::builder().status(204).body("".into()).unwrap()
-                        }
-                        Method::DELETE => {
-                            lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
-                                .await?;
-                            Response::builder().status(204).body("".into()).unwrap()
-                        }
-                        _ => Response::builder().status(400).body("".into()).unwrap(),
-                    }
-                }
-
                 _ => Response::builder().status(400).body("".into()).unwrap(),
             }
         }
