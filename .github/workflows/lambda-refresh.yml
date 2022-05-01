@@ -43,14 +43,17 @@ jobs:
           CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
           API_CONFIG_ACCOUNTS: ${{ secrets.API_CONFIG_ACCOUNTS }}
 
+      - name: rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+
+      - uses: Swatinem/rust-cache@v1
+
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
         with:
           crate: cargo-lambda
           version: 0.6.1
           use-tool-cache: true
-
-      - uses: Swatinem/rust-cache@v1
 
       - name: install zig
         run: pip3 install ziglang
