@@ -8,9 +8,7 @@ pub async fn lock_deal(
     table_name: &str,
     deal_id: &str,
 ) -> Result<(), Error> {
-    let utc: DateTime<Utc> = Utc::now()
-        .checked_add_signed(Duration::minutes(15))
-        .unwrap();
+    let utc: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(6)).unwrap();
 
     client
         .put_item()
