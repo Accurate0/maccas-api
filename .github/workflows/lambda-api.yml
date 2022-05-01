@@ -26,3 +26,4 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       API_CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
+      API_CONFIG_ACCOUNTS_ALL: ${{ secrets.API_CONFIG_ACCOUNTS_ALL }}
