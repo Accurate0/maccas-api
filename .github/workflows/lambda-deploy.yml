@@ -49,6 +49,8 @@ jobs:
           version: 0.6.1
           use-tool-cache: true
 
+      - uses: Swatinem/rust-cache@v1
+
       - name: install zig
         run: pip3 install ziglang
 
