@@ -18,6 +18,8 @@ on:
         required: true
       API_CONFIG_FILE:
         required: true
+      API_CONFIG_ACCOUNTS_ALL:
+        required: true
 
 jobs:
   deploy:

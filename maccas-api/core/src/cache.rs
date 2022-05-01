@@ -67,7 +67,14 @@ pub async fn refresh_offer_cache<'a>(
             )
             .send()
             .await?;
+
+        println!("{}: offer cache refreshed", account_name)
     }
+
+    println!(
+        "refreshed {} account offer caches..",
+        client_map.keys().len()
+    );
 
     Ok(())
 }
