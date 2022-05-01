@@ -31,14 +31,6 @@ impl Bot {
             .await
             .status();
 
-        // Unlock deal
-        self.api_client
-            .maccas_request_without_deserialize(
-                Method::DELETE,
-                format!("deals/lock/{deal_id}").as_str(),
-            )
-            .await;
-
         command
             .edit_original_interaction_response(&ctx, |m| {
                 m.embed(|e| {

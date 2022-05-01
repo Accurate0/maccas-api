@@ -25,8 +25,8 @@ impl Bot {
         let options: Vec<CreateSelectMenuOption> = resp
             .iter()
             // 0 "can't" be selected in App
-            // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
-            .filter(|offer| offer.offer_id != 0 && offer.offer_proposition_id != 30762)
+            // we need a unique ID to show them... 0 is not unique.
+            .filter(|offer| offer.offer_id != 0)
             .map(|offer| {
                 let mut opt = CreateSelectMenuOption::default();
 
@@ -99,14 +99,6 @@ impl Bot {
             .maccas_request::<maccas::OfferDealStackResponse>(
                 Method::POST,
                 format!("deals/{offer_id}").as_str(),
-            )
-            .await;
-
-        // Lock deal for 15 minutes, to prevent it from showing in GET /deals requests
-        self.api_client
-            .maccas_request_without_deserialize(
-                Method::POST,
-                format!("deals/lock/{offer_id}").as_str(),
             )
             .await;
 

@@ -3,6 +3,7 @@ use config::Config;
 use core::cache;
 use core::client;
 use core::config::ApiConfig;
+use core::lock;
 use core::utils;
 use http::Method;
 use lambda_http::request::RequestContext;
@@ -56,64 +57,65 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             let deal_id = params.first("dealId").expect("must have id");
             let deal_id = &deal_id.to_owned();
 
-            let account_name_and_offer_id = utils::get_by_order_id(&offer_map, deal_id).await;
+            if let Ok((account_name, offer_proposition_id)) =
+                utils::get_by_order_id(&offer_map, deal_id).await
+            {
+                let user = config
+                    .users
+                    .iter()
+                    .find(|u| u.account_name == account_name)
+                    .unwrap();
 
-            match account_name_and_offer_id {
-                Ok((account_name, offer_proposition_id)) => {
-                    let user = config
-                        .users
-                        .iter()
-                        .find(|u| u.account_name == account_name)
-                        .unwrap();
+                let api_client = client::get(
+                    &client,
+                    &account_name,
+                    &config,
+                    &user.login_username,
+                    &user.login_password,
+                )
+                .await?;
 
-                    let api_client = client::get(
-                        &client,
-                        &account_name,
-                        &config,
-                        &user.login_username,
-                        &user.login_password,
-                    )
-                    .await?;
+                match path {
+                    "/code/{dealId}" => {
+                        let resp = api_client.offers_dealstack(None, store).await?;
+                        serde_json::to_string(&resp).unwrap().into_response()
+                    }
 
-                    match path {
-                        "/code/{dealId}" => {
-                            let resp = api_client.offers_dealstack(None, store).await?;
+                    "/deals/{dealId}" => match *request.method() {
+                        Method::POST => {
+                            let resp = api_client
+                                .add_offer_to_offers_dealstack(&offer_proposition_id, None, store)
+                                .await?;
+                            // lock the deal from appearing in GET /deals
+                            lock::lock_deal(&client, &config.offer_id_table_name, deal_id).await?;
+
                             serde_json::to_string(&resp).unwrap().into_response()
                         }
 
-                        "/deals/{dealId}" => match *request.method() {
-                            Method::POST => {
-                                let resp = api_client
-                                    .add_offer_to_offers_dealstack(
-                                        &offer_proposition_id,
-                                        None,
-                                        store,
-                                    )
-                                    .await?;
-                                serde_json::to_string(&resp).unwrap().into_response()
-                            }
+                        Method::DELETE => {
+                            let resp = api_client
+                                .remove_offer_from_offers_dealstack(
+                                    deal_id.parse::<i64>().unwrap(),
+                                    &offer_proposition_id,
+                                    None,
+                                    store,
+                                )
+                                .await?;
 
-                            Method::DELETE => {
-                                let resp = api_client
-                                    .remove_offer_from_offers_dealstack(
-                                        deal_id.parse::<i64>().unwrap(),
-                                        &offer_proposition_id,
-                                        None,
-                                        store,
-                                    )
-                                    .await?;
+                            lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
+                                .await?;
 
-                                serde_json::to_string(&resp).unwrap().into_response()
-                            }
+                            serde_json::to_string(&resp).unwrap().into_response()
+                        }
 
-                            _ => Response::builder().status(400).body("".into()).unwrap(),
-                        },
+                        _ => Response::builder().status(400).body("".into()).unwrap(),
+                    },
 
-                        // this isn't something that will happen
-                        _ => Response::builder().status(401).body("".into()).unwrap(),
-                    }
+                    // this isn't something that will happen
+                    _ => Response::builder().status(400).body("".into()).unwrap(),
                 }
-                _ => Response::builder().status(400).body("".into()).unwrap(),
+            } else {
+                Response::builder().status(400).body("".into()).unwrap()
             }
         }
         _ => Response::builder().status(400).body("".into()).unwrap(),
