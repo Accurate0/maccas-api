@@ -107,7 +107,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     let offer_list: Vec<&Offer> = offer_list
                         .iter()
                         .filter(|offer| {
-                            !locked_deals.contains(&offer.offer_id.to_string())
+                            !locked_deals.contains(&offer.deal_uuid.as_ref().unwrap().to_string())
                                 && offer.offer_proposition_id != 30762
                         })
                         .collect();
