@@ -7,8 +7,9 @@ pub async fn lock_deal(
     client: &aws_sdk_dynamodb::Client,
     table_name: &str,
     deal_id: &str,
+    duration: Duration,
 ) -> Result<(), Error> {
-    let utc: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(6)).unwrap();
+    let utc: DateTime<Utc> = Utc::now().checked_add_signed(duration).unwrap();
 
     client
         .put_item()

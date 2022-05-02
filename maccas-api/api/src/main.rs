@@ -1,4 +1,5 @@
 use aws_sdk_dynamodb::Client;
+use chrono::Duration;
 use config::Config;
 use core::cache;
 use core::client;
@@ -57,7 +58,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             let deal_id = params.first("dealId").expect("must have id");
             let deal_id = &deal_id.to_owned();
 
-            if let Ok((account_name, offer_proposition_id)) =
+            if let Ok((account_name, offer_proposition_id, offer_id)) =
                 utils::get_by_order_id(&offer_map, deal_id).await
             {
                 let user = config
@@ -86,8 +87,26 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             let resp = api_client
                                 .add_offer_to_offers_dealstack(&offer_proposition_id, None, store)
                                 .await?;
+                            // this can cause the offer id to change.. for offers with id == 0
+                            // we need to update the database to avoid inconsistency
+                            if offer_id == "0" {
+                                cache::refresh_offer_cache_for(
+                                    &client,
+                                    &config.cache_table_name,
+                                    &account_name,
+                                    &api_client,
+                                )
+                                .await?;
+                            }
+
                             // lock the deal from appearing in GET /deals
-                            lock::lock_deal(&client, &config.offer_id_table_name, deal_id).await?;
+                            lock::lock_deal(
+                                &client,
+                                &config.offer_id_table_name,
+                                deal_id,
+                                Duration::hours(6),
+                            )
+                            .await?;
 
                             serde_json::to_string(&resp).unwrap().into_response()
                         }
@@ -95,7 +114,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         Method::DELETE => {
                             let resp = api_client
                                 .remove_offer_from_offers_dealstack(
-                                    deal_id.parse::<i64>().unwrap(),
+                                    offer_id.parse::<i64>().unwrap(),
                                     &offer_proposition_id,
                                     None,
                                     store,

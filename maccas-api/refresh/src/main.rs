@@ -14,7 +14,6 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
-    env_logger::init();
     let config = Config::builder()
         .add_source(config::File::from_str(
             std::include_str!("../../base-config.yml"),

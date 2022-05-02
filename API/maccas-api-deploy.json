@@ -6,36 +6,38 @@
   "resources": [
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2017-03-01",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Locations",
       "dependsOn": [],
       "properties": {
         "displayName": "Get Locations",
         "method": "GET",
         "urlTemplate": "/locations",
-        "queryParameters": [
-          {
-            "name": "distance",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "latitude",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "longitude",
-            "type": "string",
-            "required": true
-          }
-        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "distance",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "latitude",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "longitude",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
         "responses": []
       }
     },
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2017-03-01",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Code",
       "dependsOn": [],
       "properties": {
@@ -49,11 +51,60 @@
             "required": true
           }
         ],
-        "queryParameters": [
+        "request": {
+          "queryParameters": [
+            {
+              "name": "store",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-01-01-preview",
+      "name": "general-apim/Maccas-API-v1/Lock-Deal",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Lock Deal",
+        "method": "POST",
+        "urlTemplate": "/deals/lock/{dealId}",
+        "templateParameters": [
           {
-            "name": "store",
+            "name": "dealId",
             "type": "string",
-            "required": false
+            "required": true
+          }
+        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "duration",
+              "type": "number",
+              "required": true
+            }
+          ]
+        },
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-01-01-preview",
+      "name": "general-apim/Maccas-API-v1/Unlock-Deal",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Unlock Deal",
+        "method": "DELETE",
+        "urlTemplate": "/deals/lock/{dealId}",
+        "templateParameters": [
+          {
+            "name": "dealId",
+            "type": "string",
+            "required": true
           }
         ],
         "responses": []
@@ -61,7 +112,7 @@
     },
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2017-03-01",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Deals",
       "dependsOn": [],
       "properties": {
@@ -74,7 +125,7 @@
     },
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2017-03-01",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Deals-POST",
       "dependsOn": [],
       "properties": {
@@ -88,19 +139,21 @@
             "required": true
           }
         ],
-        "queryParameters": [
-          {
-            "name": "store",
-            "type": "string",
-            "required": false
-          }
-        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "store",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
         "responses": []
       }
     },
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2017-03-01",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Deals-DELETE",
       "dependsOn": [],
       "properties": {
@@ -114,13 +167,15 @@
             "required": true
           }
         ],
-        "queryParameters": [
-          {
-            "name": "store",
-            "type": "string",
-            "required": false
-          }
-        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "store",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
         "responses": []
       }
     }

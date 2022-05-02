@@ -1,9 +1,11 @@
 use aws_sdk_dynamodb::Client;
+use chrono::Duration;
 use config::Config;
 use core::cache;
 use core::client;
 use core::config::ApiConfig;
 use core::lock;
+use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use rand::prelude::SliceRandom;
@@ -111,6 +113,34 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         .collect();
 
                     serde_json::to_string(&offer_list).unwrap().into_response()
+                }
+
+                "/deals/lock/{dealId}" => {
+                    let params = request.path_parameters();
+
+                    let deal_id = params.first("dealId").expect("must have id");
+                    let deal_id = &deal_id.to_owned();
+
+                    match *request.method() {
+                        Method::POST => {
+                            let duration =
+                                query_params.first("duration").expect("must have duration");
+                            lock::lock_deal(
+                                &client,
+                                &config.offer_id_table_name,
+                                deal_id,
+                                Duration::seconds(duration.parse::<i64>().unwrap()),
+                            )
+                            .await?;
+                            Response::builder().status(204).body("".into()).unwrap()
+                        }
+                        Method::DELETE => {
+                            lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
+                                .await?;
+                            Response::builder().status(204).body("".into()).unwrap()
+                        }
+                        _ => Response::builder().status(400).body("".into()).unwrap(),
+                    }
                 }
                 _ => Response::builder().status(400).body("".into()).unwrap(),
             }

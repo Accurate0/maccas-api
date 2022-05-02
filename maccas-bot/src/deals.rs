@@ -1,5 +1,6 @@
 use crate::{constants, Bot};
 use http::Method;
+use itertools::Itertools;
 use serenity::builder::{CreateActionRow, CreateSelectMenu, CreateSelectMenuOption};
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
@@ -22,19 +23,21 @@ impl Bot {
             .maccas_request::<Vec<maccas::Offer>>(Method::GET, "deals")
             .await;
 
+        let mut deals_to_lock = Vec::<String>::new();
         let options: Vec<CreateSelectMenuOption> = resp
-            .iter()
-            // 0 "can't" be selected in App
-            // we need a unique ID to show them... 0 is not unique.
-            .filter(|offer| offer.offer_id != 0)
+            .into_iter()
+            .unique_by(|offer| offer.offer_proposition_id)
             .map(|offer| {
                 let mut opt = CreateSelectMenuOption::default();
 
                 let cloned_name = offer.name.clone();
                 let split: Vec<&str> = cloned_name.split("\n").collect();
 
+                let uuid = offer.deal_uuid.unwrap();
                 opt.label(split[0]);
-                opt.value(offer.offer_id);
+                opt.value(&uuid);
+
+                deals_to_lock.push(String::from(uuid));
 
                 opt
             })
@@ -58,8 +61,19 @@ impl Bot {
             ars.push(ar);
         }
 
+        // lock these deals for 180 seconds...
+        const DURATION: u64 = 180;
+        for deal in &deals_to_lock {
+            self.api_client
+                .maccas_request_without_deserialize(
+                    Method::POST,
+                    format!("deals/lock/{deal}?duration={DURATION}").as_str(),
+                )
+                .await;
+        }
+
         let message = command
-            .edit_original_interaction_response(&ctx.http, |m| {
+            .create_followup_message(&ctx.http, |m| {
                 m.components(|c| {
                     for ar in ars {
                         c.add_action_row(ar.clone());
@@ -72,12 +86,27 @@ impl Bot {
 
         let mci = match message
             .await_component_interaction(&ctx)
-            .timeout(Duration::from_secs(180))
+            .timeout(Duration::from_secs(DURATION))
             .await
         {
             Some(ci) => ci,
             None => {
-                message.reply(&ctx, "Timed out").await.unwrap();
+                command
+                    .edit_original_interaction_response(&ctx.http, |m| {
+                        m.content("Timed out").components(|c| c)
+                    })
+                    .await
+                    .unwrap();
+
+                for deal in &deals_to_lock {
+                    self.api_client
+                        .maccas_request_without_deserialize(
+                            Method::DELETE,
+                            format!("deals/lock/{deal}").as_str(),
+                        )
+                        .await;
+                }
+
                 return;
             }
         };
@@ -127,5 +156,24 @@ impl Bot {
         })
         .await
         .unwrap();
+
+        // unlock
+        for deal in &deals_to_lock {
+            if deal == offer_id {
+                continue;
+            }
+
+            self.api_client
+                .maccas_request_without_deserialize(
+                    Method::DELETE,
+                    format!("deals/lock/{deal}").as_str(),
+                )
+                .await;
+        }
+
+        command
+            .edit_original_interaction_response(&ctx.http, |m| m.content("Interaction finished."))
+            .await
+            .unwrap();
     }
 }
