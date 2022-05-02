@@ -58,6 +58,8 @@ pub struct OfferList {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
+    // not actually a maccas type
+    pub deal_uuid: Option<String>,
     pub offer_id: i64,
     pub offer_proposition_id: i64,
     #[serde(skip_serializing, skip_deserializing)]

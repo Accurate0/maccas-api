@@ -22,3 +22,4 @@ aws-sdk-dynamodb = "0.10.1"
 config = { version = "0.13.1", features = ["yaml"] }
 aws-config = "0.10.1"
 http = "0.2.6"
+chrono = "0.4.19"
