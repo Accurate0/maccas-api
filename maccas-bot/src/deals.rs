@@ -61,8 +61,8 @@ impl Bot {
             ars.push(ar);
         }
 
-        // lock these deals for 180 seconds...
-        const DURATION: u64 = 180;
+        // lock these deals for 120 seconds...
+        const DURATION: u64 = 120;
         for deal in &deals_to_lock {
             self.api_client
                 .maccas_request_without_deserialize(
