@@ -6,6 +6,7 @@ use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
 use std::time::Duration;
+use types::bot::UserOptions;
 use types::maccas;
 
 impl Bot {
@@ -123,12 +124,24 @@ impl Bot {
         .await
         .unwrap();
 
+        let user_id = command.user.id.as_u64().to_string();
+        let user_options = self.api_client.kvp_get(&user_id).await;
+        let store_id = match user_options.status() {
+            reqwest::StatusCode::OK => {
+                let json = user_options.json::<UserOptions>().await.unwrap();
+                Some(json.store_id)
+            }
+            _ => None,
+        };
+
+        let endpoint = match store_id {
+            Some(s) => format!("deals/{offer_id}?store={s}"),
+            None => format!("deals/{offer_id}"),
+        };
+
         let resp = self
             .api_client
-            .maccas_request::<maccas::OfferDealStackResponse>(
-                Method::POST,
-                format!("deals/{offer_id}").as_str(),
-            )
+            .maccas_request::<maccas::OfferDealStackResponse>(Method::POST, endpoint.as_str())
             .await;
 
         let code = match resp.response {
@@ -172,7 +185,9 @@ impl Bot {
         }
 
         command
-            .edit_original_interaction_response(&ctx.http, |m| m.content("Interaction finished."))
+            .edit_original_interaction_response(&ctx.http, |m| {
+                m.content("Interaction finished.").components(|c| c)
+            })
             .await
             .unwrap();
     }

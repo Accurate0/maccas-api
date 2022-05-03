@@ -13,10 +13,11 @@ impl EventHandler for Bot {
         if let Interaction::ApplicationCommand(command) = interaction {
             #[rustfmt::skip]
             match command.data.name.as_str() {
-                "refresh" => self.refresh_command(&ctx, &command).await,
-                "remove"  => self.remove_command(&ctx, &command).await,
-                "code"    => self.code_command(&ctx, &command).await,
-                "deals"   => self.deals_command(&ctx, &command).await,
+                "refresh"    => self.refresh_command(&ctx, &command).await,
+                "remove"     => self.remove_command(&ctx, &command).await,
+                "code"       => self.code_command(&ctx, &command).await,
+                "deals"      => self.deals_command(&ctx, &command).await,
+                "location"   => self.location_command(&ctx, &command).await,
                 _ => panic!(),
             };
         }
@@ -51,6 +52,20 @@ impl EventHandler for Bot {
                 .create_option(|opt| {
                     opt.name("deal_id")
                         .description("the deal id")
+                        .kind(ApplicationCommandOptionType::String)
+                        .required(true)
+                })
+        })
+        .await
+        .unwrap();
+
+        ApplicationCommand::create_global_application_command(&ctx.http, |command| {
+            command
+                .name("location")
+                .description("set your location for nearest maccas")
+                .create_option(|opt| {
+                    opt.name("location")
+                        .description("location to lookup")
                         .kind(ApplicationCommandOptionType::String)
                         .required(true)
                 })
