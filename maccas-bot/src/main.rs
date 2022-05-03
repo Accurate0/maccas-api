@@ -9,6 +9,7 @@ mod code;
 mod constants;
 mod deals;
 mod event_handler;
+mod location;
 mod refresh;
 mod remove;
 
@@ -57,8 +58,6 @@ async fn main() {
 
     let mut headers = header::HeaderMap::new();
     headers.insert("X-Api-Key", api_key_header);
-    // APIM randomly complains about this... we literally don't have content length ever
-    headers.insert("Content-Length", header::HeaderValue::from(0 as i32));
 
     let client = reqwest::Client::builder()
         .default_headers(headers)
