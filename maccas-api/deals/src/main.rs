@@ -104,6 +104,16 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         }
                     }
 
+                    // filter locked deals & extras
+                    // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
+                    let offer_list: Vec<Offer> = offer_list
+                        .into_iter()
+                        .filter(|offer| match offer.deal_uuid.as_ref() {
+                            Some(s) => !locked_deals.contains(&s.to_string()),
+                            None => true,
+                        } && offer.offer_proposition_id != 30762)
+                        .collect();
+
                     let mut count_map = HashMap::<i64, u32>::new();
                     for offer in &offer_list {
                         match count_map.get(&offer.offer_proposition_id) {
@@ -115,17 +125,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         };
                     }
 
-                    // filter locked deals & extras
-                    // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
                     let offer_list: Vec<Offer> = offer_list
                         .into_iter()
                         .unique_by(|offer| offer.offer_proposition_id)
-                        .filter(|offer| match offer.deal_uuid.as_ref() {
-                            Some(s) => !locked_deals.contains(&s.to_string()),
-                            None => true,
-                        } && offer.offer_proposition_id != 30762)
                         .map(|mut offer| {
-                            offer.count = Some(*count_map.get(&offer.offer_proposition_id).unwrap());
+                            offer.count =
+                                Some(*count_map.get(&offer.offer_proposition_id).unwrap());
                             offer
                         })
                         .collect();
