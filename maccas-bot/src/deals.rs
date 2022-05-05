@@ -1,11 +1,12 @@
 use crate::{constants, Bot};
+use chrono::{DateTime, Utc};
 use http::Method;
-use itertools::Itertools;
 use serenity::builder::{CreateActionRow, CreateSelectMenu, CreateSelectMenuOption};
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
 use std::time::Duration;
+use std::time::SystemTime;
 use types::bot::UserOptions;
 use types::maccas;
 
@@ -24,6 +25,10 @@ impl Bot {
             .maccas_request::<Vec<maccas::Offer>>(Method::GET, "deals")
             .await;
 
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.timestamp();
+
         let mut deals_to_lock = Vec::<String>::new();
         let options: Vec<CreateSelectMenuOption> = resp
             .clone()
@@ -33,11 +38,16 @@ impl Bot {
 
                 let cloned_name = offer.name.clone();
                 let split: Vec<&str> = cloned_name.split("\n").collect();
-
+                let valid_time = DateTime::parse_from_rfc3339(&offer.valid_from_utc)
+                    .unwrap()
+                    .timestamp();
+                let emoji = if valid_time < now { "✅" } else { "❌" };
+                let offer_name = String::from(split[0]);
                 let uuid = offer.deal_uuid.unwrap();
-                opt.label(split[0]);
-                opt.value(&uuid);
+                let count = offer.count.unwrap();
 
+                opt.label(format!("{emoji} {offer_name} ({count})"));
+                opt.value(&uuid);
                 deals_to_lock.push(String::from(uuid));
 
                 opt

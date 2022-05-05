@@ -698,6 +698,7 @@ dependencies = [
 name = "maccas-bot"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "config",
  "http",
  "itertools",

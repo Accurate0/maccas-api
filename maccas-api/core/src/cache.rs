@@ -118,7 +118,14 @@ pub async fn refresh_offer_cache_for(
                     .iter()
                     .find(|co| co.offer_proposition_id == offer.offer_proposition_id)
                 {
-                    offer.deal_uuid = Some(cached_offer.deal_uuid.as_ref().unwrap().clone());
+                    match &cached_offer.deal_uuid {
+                        Some(u) => {
+                            offer.deal_uuid = Some(u.clone());
+                        }
+                        None => {
+                            offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
+                        }
+                    }
                 }
             } else {
                 offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
