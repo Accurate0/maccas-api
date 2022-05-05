@@ -26,8 +26,8 @@ impl Bot {
 
         let mut deals_to_lock = Vec::<String>::new();
         let options: Vec<CreateSelectMenuOption> = resp
+            .clone()
             .into_iter()
-            .unique_by(|offer| offer.offer_proposition_id)
             .map(|offer| {
                 let mut opt = CreateSelectMenuOption::default();
 
@@ -113,12 +113,20 @@ impl Bot {
         };
 
         let offer_id = mci.data.values.get(0).unwrap();
+        let offer_name = resp
+            .iter()
+            .find(|offer| offer.deal_uuid.as_ref().unwrap() == offer_id)
+            .unwrap()
+            .name
+            .clone();
+        let offer_name = offer_name.split("\n").collect::<Vec<&str>>();
+        let offer_name = offer_name[0];
 
         mci.create_interaction_response(&ctx, |r| {
             r.kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|d| {
                     d.ephemeral(true)
-                        .content(format!("You chose: **{}**", offer_id))
+                        .content(format!("You chose: **{}**", offer_name))
                 })
         })
         .await
@@ -164,6 +172,7 @@ impl Bot {
                 e.colour(constants::MACCAS_RED)
                     .title("Code")
                     .description(code)
+                    .field("Offer ID", format!("{}", offer_id), false)
                     .field("Response", format!("{}", resp.status.message), false)
             })
         })
