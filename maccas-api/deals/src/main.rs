@@ -6,11 +6,13 @@ use core::client;
 use core::config::ApiConfig;
 use core::lock;
 use http::Method;
+use itertools::Itertools;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
+use std::collections::HashMap;
 use types::maccas::Offer;
 
 #[tokio::main]
@@ -102,13 +104,29 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         }
                     }
 
+                    let mut count_map = HashMap::<i64, u32>::new();
+                    for offer in &offer_list {
+                        match count_map.get(&offer.offer_proposition_id) {
+                            Some(count) => {
+                                let count = count + 1;
+                                count_map.insert(offer.offer_proposition_id.clone(), count)
+                            }
+                            None => count_map.insert(offer.offer_proposition_id.clone(), 1),
+                        };
+                    }
+
                     // filter locked deals & extras
                     // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
-                    let offer_list: Vec<&Offer> = offer_list
-                        .iter()
-                        .filter(|offer| {
-                            !locked_deals.contains(&offer.deal_uuid.as_ref().unwrap().to_string())
-                                && offer.offer_proposition_id != 30762
+                    let offer_list: Vec<Offer> = offer_list
+                        .into_iter()
+                        .unique_by(|offer| offer.offer_proposition_id)
+                        .filter(|offer| match offer.deal_uuid.as_ref() {
+                            Some(s) => !locked_deals.contains(&s.to_string()),
+                            None => true,
+                        } && offer.offer_proposition_id != 30762)
+                        .map(|mut offer| {
+                            offer.count = Some(*count_map.get(&offer.offer_proposition_id).unwrap());
+                            offer
                         })
                         .collect();
 
