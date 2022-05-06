@@ -126,6 +126,8 @@ pub async fn refresh_offer_cache_for(
                             offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
                         }
                     }
+                } else {
+                    offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
                 }
             } else {
                 offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
