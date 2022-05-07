@@ -140,7 +140,7 @@ impl Bot {
         mci.create_interaction_response(&ctx, |r| {
             r.kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|d| {
-                    d.ephemeral(true)
+                    d.ephemeral(is_public)
                         .content(format!("You chose: **{}**", offer_name))
                 })
         })
