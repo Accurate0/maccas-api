@@ -4,7 +4,12 @@ use serenity::model::interactions::application_command::ApplicationCommandIntera
 use serenity::model::interactions::InteractionResponseType;
 
 impl Bot {
-    pub async fn refresh_command(&self, ctx: &Context, command: &ApplicationCommandInteraction) {
+    pub async fn refresh_command(
+        &self,
+        ctx: &Context,
+        command: &ApplicationCommandInteraction,
+        _is_public: bool,
+    ) {
         command
             .create_interaction_response(&ctx.http, |r| {
                 r.kind(InteractionResponseType::DeferredChannelMessageWithSource)

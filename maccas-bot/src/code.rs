@@ -5,11 +5,16 @@ use serenity::model::interactions::InteractionResponseType;
 use types::maccas;
 
 impl Bot {
-    pub async fn code_command(&self, ctx: &Context, command: &ApplicationCommandInteraction) {
+    pub async fn code_command(
+        &self,
+        ctx: &Context,
+        command: &ApplicationCommandInteraction,
+        is_public: bool,
+    ) {
         command
             .create_interaction_response(&ctx.http, |r| {
                 r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                    .interaction_response_data(|d| d.ephemeral(true))
+                    .interaction_response_data(|d| d.ephemeral(is_public))
             })
             .await
             .unwrap();
