@@ -11,13 +11,21 @@ use serenity::model::interactions::Interaction;
 impl EventHandler for Bot {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
+            let is_public = match command.channel_id.to_channel(&ctx).await {
+                Ok(c) => match c.private() {
+                    Some(_) => false,
+                    None => true,
+                },
+                _ => true,
+            };
+
             #[rustfmt::skip]
             match command.data.name.as_str() {
-                "refresh"    => self.refresh_command(&ctx, &command).await,
-                "remove"     => self.remove_command(&ctx, &command).await,
-                "code"       => self.code_command(&ctx, &command).await,
-                "deals"      => self.deals_command(&ctx, &command).await,
-                "location"   => self.location_command(&ctx, &command).await,
+                "refresh"    => self.refresh_command(&ctx, &command, is_public).await,
+                "remove"     => self.remove_command(&ctx, &command, is_public).await,
+                "code"       => self.code_command(&ctx, &command, is_public).await,
+                "deals"      => self.deals_command(&ctx, &command, is_public).await,
+                "location"   => self.location_command(&ctx, &command, is_public).await,
                 _ => panic!(),
             };
         }

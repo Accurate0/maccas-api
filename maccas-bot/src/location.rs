@@ -7,11 +7,16 @@ use types::bot::UserOptions;
 use types::maccas::RestaurantLocationResponse;
 
 impl Bot {
-    pub async fn location_command(&self, ctx: &Context, command: &ApplicationCommandInteraction) {
+    pub async fn location_command(
+        &self,
+        ctx: &Context,
+        command: &ApplicationCommandInteraction,
+        is_public: bool,
+    ) {
         command
             .create_interaction_response(&ctx.http, |r| {
                 r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                    .interaction_response_data(|d| d.ephemeral(true))
+                    .interaction_response_data(|d| d.ephemeral(is_public))
             })
             .await
             .unwrap();
