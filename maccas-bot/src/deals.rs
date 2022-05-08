@@ -7,6 +7,7 @@ use serenity::model::interactions::application_command::ApplicationCommandIntera
 use serenity::model::interactions::InteractionResponseType;
 use std::time::Duration;
 use std::time::SystemTime;
+use types::bot::UsageLog;
 use types::bot::UserOptions;
 use types::maccas;
 
@@ -221,5 +222,15 @@ impl Bot {
             })
             .await
             .unwrap();
+
+        // log this request
+        let usage_log = UsageLog {
+            user_id,
+            deal_readable: offer_name.to_string(),
+            deal_uuid: offer_id.to_string(),
+            user_readable: command.user.name.to_string(),
+            message: "Deal Used",
+        };
+        self.api_client.log(&usage_log).await
     }
 }
