@@ -1,8 +1,10 @@
 use http::Method;
+use types::bot::UsageLog;
 use types::bot::UserOptions;
 use types::places::PlaceResponse;
 
 const MACCAS_BOT_PREFIX: &'static str = "MACCAS_BOT_";
+const MACCAS_BOT_SYSTEM: &'static str = "MaccasBot";
 
 pub struct Api {
     pub base_url: reqwest::Url,
@@ -88,6 +90,18 @@ impl Api {
             .unwrap();
 
         return resp;
+    }
+
+    pub async fn log(&self, value: &UsageLog<'_>) {
+        let url = self.base_url.join(format!("log/v1/log").as_str()).unwrap();
+
+        self.client
+            .request(Method::POST, url)
+            .header("X-Source", MACCAS_BOT_SYSTEM)
+            .body(serde_json::to_string(value).unwrap())
+            .send()
+            .await
+            .unwrap();
     }
 
     pub async fn maccas_request_without_deserialize(
