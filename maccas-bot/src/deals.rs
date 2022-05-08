@@ -43,10 +43,17 @@ impl Bot {
 
                 let cloned_name = offer.name.clone();
                 let split: Vec<&str> = cloned_name.split("\n").collect();
-                let valid_time = DateTime::parse_from_rfc3339(&offer.valid_from_utc)
+                let valid_time_from = DateTime::parse_from_rfc3339(&offer.valid_from_utc)
                     .unwrap()
                     .timestamp();
-                let emoji = if valid_time < now { "✅" } else { "❌" };
+                let valid_time_to = DateTime::parse_from_rfc3339(&offer.valid_to_utc)
+                    .unwrap()
+                    .timestamp();
+                let emoji = if valid_time_from < now && valid_time_to > now {
+                    "✅"
+                } else {
+                    "❌"
+                };
                 let offer_name = String::from(split[0]);
                 let uuid = offer.deal_uuid.unwrap();
                 let count = offer.count.unwrap();
