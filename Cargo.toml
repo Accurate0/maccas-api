@@ -1,3 +1,0 @@
-[workspace]
-members = ["libmaccas", "maccas-bot", "types"]
-exclude = ["maccas-api/api", "maccas-api/deals", "maccas-api/core", "maccas-api/refresh"]

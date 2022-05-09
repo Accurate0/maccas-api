@@ -36,7 +36,7 @@ checksum = "08f9b8508dccb7687a1d6c4ce66b2b0ecef467c94667de27d8d7fe1f8d2a9cdc"
 
 [[package]]
 name = "api"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
@@ -1112,7 +1112,7 @@ checksum = "21a41fed9d98f27ab1c6d161da622a4fa35e8a54a8adc24bbf3ddd0ef70b0e50"
 
 [[package]]
 name = "libmaccas"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "http",
@@ -2124,7 +2124,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "types"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_derive",
