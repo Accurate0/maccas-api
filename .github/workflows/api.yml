@@ -2,7 +2,8 @@ name: api
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    tags:
+      - "v*"
     paths:
       - API/**
       - .github/workflows/api.yml
