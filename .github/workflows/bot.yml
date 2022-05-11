@@ -21,7 +21,7 @@ env:
 
 jobs:
   build-docker-image:
-    if: { { false } }
+    if: ${{ false }}
     defaults:
       run:
         working-directory: "./maccas-bot"
@@ -52,7 +52,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/maccas-bot:latest
 
   deploy-discord-bot:
-    if: { { false } }
+    if: ${{ false }}
     needs: build-docker-image
     runs-on: ubuntu-latest
 
