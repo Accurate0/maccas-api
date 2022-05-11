@@ -23,8 +23,7 @@ on:
 
 jobs:
   deploy:
-    environment:
-      - v2
+    environment: v2
     runs-on: ubuntu-latest
 
     steps:
