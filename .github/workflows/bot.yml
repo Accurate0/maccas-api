@@ -2,8 +2,7 @@ name: bot
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
     paths:
       - maccas-bot/**
       - libmaccas/**
@@ -22,6 +21,7 @@ env:
 
 jobs:
   build-docker-image:
+    if: { { false } }
     defaults:
       run:
         working-directory: "./maccas-bot"
@@ -52,6 +52,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/maccas-bot:latest
 
   deploy-discord-bot:
+    if: { { false } }
     needs: build-docker-image
     runs-on: ubuntu-latest
 

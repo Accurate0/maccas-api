@@ -2,8 +2,7 @@ name: lambda-api
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
     paths:
       - maccas-api/api/**
       - maccas-api/core/**
@@ -18,10 +17,12 @@ concurrency:
 
 jobs:
   _:
+    environment:
+      - v2
     uses: ./.github/workflows/lambda-deploy.yml
     with:
       directory: "./maccas-api/api"
-      lambda_name: "MaccasApi"
+      lambda_name: "MaccasApi-v2"
       zip_path: "api"
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

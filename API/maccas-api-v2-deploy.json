@@ -7,7 +7,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
-      "name": "general-apim/Maccas-API-v1/Locations",
+      "name": "general-apim/Maccas-API-v2/Locations",
       "dependsOn": [],
       "properties": {
         "displayName": "Get Locations",
@@ -38,7 +38,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
-      "name": "general-apim/Maccas-API-v1/Code",
+      "name": "general-apim/Maccas-API-v2/Code",
       "dependsOn": [],
       "properties": {
         "displayName": "Get Code for Deal",
@@ -66,7 +66,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-01-01-preview",
-      "name": "general-apim/Maccas-API-v1/Lock-Deal",
+      "name": "general-apim/Maccas-API-v2/Lock-Deal",
       "dependsOn": [],
       "properties": {
         "displayName": "Lock Deal",
@@ -94,7 +94,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-01-01-preview",
-      "name": "general-apim/Maccas-API-v1/Unlock-Deal",
+      "name": "general-apim/Maccas-API-v2/Unlock-Deal",
       "dependsOn": [],
       "properties": {
         "displayName": "Unlock Deal",
@@ -113,7 +113,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
-      "name": "general-apim/Maccas-API-v1/Deals",
+      "name": "general-apim/Maccas-API-v2/Deals",
       "dependsOn": [],
       "properties": {
         "displayName": "Get Deals",
@@ -126,7 +126,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
-      "name": "general-apim/Maccas-API-v1/Deals-POST",
+      "name": "general-apim/Maccas-API-v2/Deals-POST",
       "dependsOn": [],
       "properties": {
         "displayName": "Add Deal",
@@ -154,7 +154,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
-      "name": "general-apim/Maccas-API-v1/Deals-DELETE",
+      "name": "general-apim/Maccas-API-v2/Deals-DELETE",
       "dependsOn": [],
       "properties": {
         "displayName": "Remove Deals",

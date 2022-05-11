@@ -2,8 +2,7 @@ name: lambda-deals
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
     paths:
       - maccas-api/deals/**
       - maccas-api/core/**
@@ -18,10 +17,12 @@ concurrency:
 
 jobs:
   _:
+    environment:
+      - v2
     uses: ./.github/workflows/lambda-deploy.yml
     with:
       directory: "./maccas-api/deals"
-      lambda_name: "MaccasApi-deals"
+      lambda_name: "MaccasApi-deals-v2"
       zip_path: "deals"
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
