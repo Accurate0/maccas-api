@@ -2,8 +2,7 @@ name: api
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
     paths:
       - API/**
       - .github/workflows/api.yml
@@ -25,4 +24,4 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           resourceGroupName: "general-api-group"
-          template: ./API/maccas-api-deploy.json
+          template: ./API/maccas-api-v2-deploy.json
