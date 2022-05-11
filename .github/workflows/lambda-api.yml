@@ -2,8 +2,7 @@ name: lambda-api
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [v1.x]
     paths:
       - maccas-api/api/**
       - maccas-api/core/**

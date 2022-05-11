@@ -2,8 +2,7 @@ name: lambda-deals
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [v1.x]
     paths:
       - maccas-api/deals/**
       - maccas-api/core/**

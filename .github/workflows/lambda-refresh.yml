@@ -2,8 +2,7 @@ name: lambda-refresh
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [v1.x]
     paths:
       - maccas-api/refresh/**
       - maccas-api/core/**
