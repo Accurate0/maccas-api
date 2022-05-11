@@ -17,8 +17,6 @@ concurrency:
 
 jobs:
   _:
-    environment:
-      - v2
     uses: ./.github/workflows/lambda-deploy.yml
     with:
       directory: "./maccas-api/api"
