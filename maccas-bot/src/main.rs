@@ -23,7 +23,7 @@ fn setup_logging() {
         .build();
 
     TermLogger::init(
-        LevelFilter::Info,
+        LevelFilter::Warn,
         term_config,
         TerminalMode::Mixed,
         ColorChoice::Auto,
