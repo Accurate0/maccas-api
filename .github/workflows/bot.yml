@@ -62,7 +62,7 @@ jobs:
           host: ${{ env.INSTANCE }}
           username: ${{ env.USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
-          script_stop: true
+          script_stop: false
           script: |
             docker pull ghcr.io/accurate0/maccas-bot:latest
             docker stop "maccas-bot-v2" -t 3 || true
