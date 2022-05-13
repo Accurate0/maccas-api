@@ -21,7 +21,6 @@ env:
 
 jobs:
   build-docker-image:
-    if: ${{ false }}
     defaults:
       run:
         working-directory: "./maccas-bot"
@@ -53,7 +52,6 @@ jobs:
           tags: ghcr.io/accurate0/maccas-bot:latest
 
   deploy-discord-bot:
-    if: ${{ false }}
     needs: build-docker-image
     runs-on: ubuntu-latest
 
