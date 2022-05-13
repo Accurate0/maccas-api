@@ -41,15 +41,16 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/maccas-bot:latest
+          tags: ghcr.io/accurate0/maccas-bot:latest
 
   deploy-discord-bot:
     if: ${{ false }}
@@ -59,15 +60,12 @@ jobs:
     steps:
       - name: activate deployment
         uses: appleboy/ssh-action@v0.1.4
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ env.INSTANCE }}
           username: ${{ env.USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
-          envs: DOCKER_USERNAME
           script_stop: true
           script: |
-            docker pull $DOCKER_USERNAME/maccas-bot:latest
-            docker stop "maccas-bot" -t 3 || true
-            docker run --rm -d --name "maccas-bot" $DOCKER_USERNAME/maccas-bot:latest
+            docker pull ghcr.io/accurate0/maccas-bot:latest
+            docker stop "maccas-bot-v2" -t 3 || true
+            docker run --rm -d --name "maccas-bot-v2" ghcr.io/accurate0/maccas-bot:latest
