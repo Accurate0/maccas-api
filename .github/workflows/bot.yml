@@ -17,7 +17,6 @@ concurrency:
 env:
   INSTANCE: oracle2.anurag.sh
   USERNAME: ubuntu
-  DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
 jobs:
   build-docker-image:
