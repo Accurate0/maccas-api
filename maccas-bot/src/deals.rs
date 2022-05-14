@@ -202,6 +202,11 @@ impl Bot {
         .await
         .unwrap();
 
+        // easy to copy paste on mobile
+        mci.create_followup_message(&ctx, |m| m.ephemeral(is_public).content(offer_id))
+            .await
+            .unwrap();
+
         // unlock
         for deal in &deals_to_lock {
             if deal == offer_id {
