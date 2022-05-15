@@ -1,9 +1,9 @@
 use aws_sdk_dynamodb::Client;
 use chrono::Duration;
-use config::Config;
 use core::cache;
 use core::client;
-use core::config::ApiConfig;
+use core::config;
+use core::constants;
 use core::lock;
 use core::utils;
 use http::Method;
@@ -17,20 +17,11 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
-    let config = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("../../base-config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .add_source(config::File::from_str(
-            std::include_str!("../../accounts-all.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present");
-
+    let shared_config = aws_config::from_env()
+        .region(constants::DEFAULT_AWS_REGION)
+        .load()
+        .await;
+    let config = config::load_from_s3(&shared_config).await;
     let context = request.request_context();
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
@@ -41,7 +32,6 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         Some(path) => {
             let path = path.as_str();
 
-            let shared_config = aws_config::load_from_env().await;
             let client = Client::new(&shared_config);
             let params = request.path_parameters();
             let query_params = request.query_string_parameters();
