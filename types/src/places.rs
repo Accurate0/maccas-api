@@ -8,12 +8,12 @@ use serde_derive::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct PlaceResponse {
     pub status: String,
-    pub result: Option<Result>,
+    pub result: Option<Place>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Result {
+pub struct Place {
     #[serde(rename = "formatted_address")]
     pub formatted_address: String,
     pub geometry: Geometry,
@@ -38,20 +38,6 @@ pub struct Location {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Viewport {
-    pub northeast: Northeast,
-    pub southwest: Southwest,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Northeast {
-    pub lat: f64,
-    pub lng: f64,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Southwest {
-    pub lat: f64,
-    pub lng: f64,
+    pub northeast: Location,
+    pub southwest: Location,
 }
