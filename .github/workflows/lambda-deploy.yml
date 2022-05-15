@@ -16,10 +16,6 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      API_CONFIG_FILE:
-        required: true
-      API_CONFIG_ACCOUNTS_ALL:
-        required: true
 
 jobs:
   deploy:
@@ -34,14 +30,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
-
-      - name: generate config
-        run: |
-          echo -e "$CONFIG_FILE" > maccas-api/base-config.yml
-          echo -e "$ACCOUNTS" > maccas-api/accounts-all.yml
-        env:
-          CONFIG_FILE: ${{ secrets.API_CONFIG_FILE }}
-          ACCOUNTS: ${{ secrets.API_CONFIG_ACCOUNTS_ALL }}
 
       - name: rust-toolchain
         uses: actions-rs/toolchain@v1.0.6
