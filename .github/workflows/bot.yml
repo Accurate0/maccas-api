@@ -67,5 +67,6 @@ jobs:
           script_stop: true
           script: |
             docker pull $DOCKER_USERNAME/maccas-bot:latest
-            docker stop "maccas-bot" -t 3 || true
-            docker run -d --name "maccas-bot" $DOCKER_USERNAME/maccas-bot:latest --restart unless-stopped
+            docker stop "maccas-bot" -t 3
+            docker rm "maccas-bot"
+            docker run --restart unless-stopped -d --name "maccas-bot" $DOCKER_USERNAME/maccas-bot:latest
