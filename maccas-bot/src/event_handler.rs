@@ -6,6 +6,7 @@ use serenity::model::interactions::application_command::{
     ApplicationCommand, ApplicationCommandOptionType,
 };
 use serenity::model::interactions::Interaction;
+use serenity::model::prelude::Activity;
 
 #[async_trait]
 impl EventHandler for Bot {
@@ -33,8 +34,10 @@ impl EventHandler for Bot {
 
     async fn ready(&self, ctx: Context, ready: Ready) {
         log::warn!("{} is connected!", ready.user.name);
+        ctx.set_activity(Activity::watching("Super Size Me")).await;
+
         ApplicationCommand::create_global_application_command(&ctx.http, |command| {
-            command.name("deals").description("fuck elliot walker")
+            command.name("deals").description("eat something")
         })
         .await
         .unwrap();
