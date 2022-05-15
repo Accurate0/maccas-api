@@ -1,4 +1,5 @@
 use crate::{constants, Bot};
+use chrono::Local;
 use chrono::{DateTime, Utc};
 use http::Method;
 use serenity::builder::{CreateActionRow, CreateSelectMenu, CreateSelectMenuOption};
@@ -228,6 +229,8 @@ impl Bot {
             .await
             .unwrap();
 
+        let dt: DateTime<Local> = Local::now();
+
         // log this request
         let usage_log = UsageLog {
             user_id,
@@ -235,6 +238,7 @@ impl Bot {
             deal_uuid: offer_id.to_string(),
             user_readable: command.user.name.to_string(),
             message: "Deal Used",
+            local_time: dt.format("%a %b %e %T %Y").to_string(),
         };
         self.api_client.log(&usage_log).await
     }
