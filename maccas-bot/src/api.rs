@@ -18,7 +18,7 @@ impl Api {
     {
         let url = self
             .base_url
-            .join("maccas/v1/")
+            .join("maccas/v2/")
             .unwrap()
             .join(endpoint)
             .unwrap();
@@ -111,7 +111,7 @@ impl Api {
     ) -> reqwest::Response {
         let url = self
             .base_url
-            .join("maccas/v1/")
+            .join("maccas/v2/")
             .unwrap()
             .join(endpoint)
             .unwrap();

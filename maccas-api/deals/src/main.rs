@@ -84,21 +84,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         lock::get_all_locked_deals(&dynamodb_client, &config.offer_id_table_name)
                             .await?;
 
-                    let offer_map = cache::get_offers(
-                        &dynamodb_client,
-                        &config.cache_table_name,
-                        &account_name_list,
-                    )
-                    .await?;
-                    let mut offer_list = Vec::<Offer>::new();
-                    for (_, offers) in &offer_map {
-                        match offers {
-                            Some(offers) => {
-                                offer_list.append(&mut offers.clone());
-                            }
-                            None => {}
-                        }
-                    }
+                    let offer_list =
+                        cache::get_all_offers_as_vec(&dynamodb_client, &config.cache_table_name)
+                            .await?;
 
                     // filter locked deals & extras
                     // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
