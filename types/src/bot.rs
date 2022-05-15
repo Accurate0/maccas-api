@@ -15,4 +15,5 @@ pub struct UsageLog<'a> {
     pub deal_uuid: String,
     pub user_readable: String,
     pub message: &'a str,
+    pub local_time: String,
 }
