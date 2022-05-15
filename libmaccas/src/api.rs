@@ -3,9 +3,9 @@ use rand::distributions::{Alphanumeric, DistString};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use reqwest::Method;
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
-use std::time::Duration;
+use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
+
+
 use types::maccas::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OfferResponse, RestaurantLocationResponse, TokenResponse,
@@ -14,8 +14,8 @@ use uuid::Uuid;
 
 const BASE_URL: &str = "https://ap-prod.api.mcd.com";
 
-pub struct ApiClient {
-    client: ClientWithMiddleware,
+pub struct ApiClient<'a> {
+    client: &'a ClientWithMiddleware,
     auth_token: Option<String>,
     login_token: Option<String>,
     client_id: String,
@@ -24,23 +24,14 @@ pub struct ApiClient {
     login_password: String,
 }
 
-impl ApiClient {
+impl ApiClient<'_> {
     pub fn new(
+        client: &ClientWithMiddleware,
         client_id: String,
         client_secret: String,
         login_username: String,
         login_password: String,
     ) -> ApiClient {
-        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
-        let client = ClientBuilder::new(
-            reqwest::ClientBuilder::new()
-                .timeout(Duration::from_secs(10))
-                .build()
-                .unwrap(),
-        )
-        .with(RetryTransientMiddleware::new_with_policy(retry_policy))
-        .build();
-
         ApiClient {
             client,
             login_token: None,

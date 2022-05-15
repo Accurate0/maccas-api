@@ -6,16 +6,33 @@ use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
 use libmaccas::api;
 use libmaccas::api::ApiClient;
+use reqwest_middleware::{ClientBuilder};
+use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use std::collections::HashMap;
+use std::time::Duration;
 use std::time::SystemTime;
 
-pub async fn get_client_map(
-    config: &ApiConfig,
-    client: &aws_sdk_dynamodb::Client,
-) -> Result<HashMap<String, ApiClient>, Error> {
-    let mut client_map = HashMap::<String, ApiClient>::new();
+pub fn get_http_client() -> reqwest_middleware::ClientWithMiddleware {
+    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+    ClientBuilder::new(
+        reqwest::ClientBuilder::new()
+            .timeout(Duration::from_secs(10))
+            .build()
+            .unwrap(),
+    )
+    .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+    .build()
+}
+
+pub async fn get_client_map<'a>(
+    http_client: &'a reqwest_middleware::ClientWithMiddleware,
+    config: &'a ApiConfig,
+    client: &'a aws_sdk_dynamodb::Client,
+) -> Result<HashMap<String, ApiClient<'a>>, Error> {
+    let mut client_map = HashMap::<String, ApiClient<'_>>::new();
     for user in &config.users {
         let api_client = client::get(
+            http_client,
             &client,
             &user.account_name,
             &config,
@@ -30,14 +47,16 @@ pub async fn get_client_map(
     Ok(client_map)
 }
 
-pub async fn get(
-    client: &aws_sdk_dynamodb::Client,
-    account_name: &String,
-    api_config: &ApiConfig,
-    login_username: &String,
-    login_password: &String,
-) -> Result<api::ApiClient, Error> {
+pub async fn get<'a>(
+    http_client: &'a reqwest_middleware::ClientWithMiddleware,
+    client: &'a aws_sdk_dynamodb::Client,
+    account_name: &'a String,
+    api_config: &'a ApiConfig,
+    login_username: &'a String,
+    login_password: &'a String,
+) -> Result<api::ApiClient<'a>, Error> {
     let mut api_client = api::ApiClient::new(
+        http_client,
         api_config.client_id.clone(),
         api_config.client_secret.clone(),
         login_username.clone(),

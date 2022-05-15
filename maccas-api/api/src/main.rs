@@ -57,7 +57,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     .find(|u| u.account_name == account_name)
                     .unwrap();
 
+                let http_client = client::get_http_client();
                 let api_client = client::get(
+                    &http_client,
                     &client,
                     &account_name,
                     &config,
