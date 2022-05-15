@@ -4,7 +4,7 @@ use types::bot::UserOptions;
 use types::places::PlaceResponse;
 
 const MACCAS_BOT_PREFIX: &'static str = "MACCAS_BOT_";
-const MACCAS_BOT_SYSTEM: &'static str = "MaccasBot";
+const MACCAS_BOT_SYSTEM: &'static str = "MaccasBot-v2";
 
 pub struct Api {
     pub base_url: reqwest::Url,
