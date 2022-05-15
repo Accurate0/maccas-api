@@ -65,5 +65,6 @@ jobs:
           script_stop: false
           script: |
             docker pull ghcr.io/accurate0/maccas-bot:latest
-            docker stop "maccas-bot-v2" -t 3 || true
+            docker stop "maccas-bot-v2" -t 3
+            docker rm "maccas-bot-v2"
             docker run -d --restart unless-stopped --name "maccas-bot-v2" ghcr.io/accurate0/maccas-bot:latest
