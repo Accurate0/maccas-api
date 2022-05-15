@@ -6,7 +6,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
 use libmaccas::api;
 use libmaccas::api::ApiClient;
-use reqwest_middleware::{ClientBuilder};
+use reqwest_middleware::ClientBuilder;
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -122,36 +122,30 @@ pub async fn get<'a>(
                         let mut new_access_token = String::from("");
                         let mut new_ref_token = String::from("");
 
-                        let res = api_client.customer_login_refresh(refresh_token).await;
-                        match res {
-                            Ok(r) => {
-                                if r.response.is_some() {
-                                    let unwrapped_res = r.response.unwrap();
-                                    println!("refresh success..");
-                                    new_access_token = unwrapped_res.access_token;
-                                    new_ref_token = unwrapped_res.refresh_token;
-                                } else if r.status.code != 20000 {
-                                    api_client.security_auth_token().await?;
-                                    let res = api_client.customer_login().await?;
-                                    println!("refresh failed, logged in again..");
-                                    new_access_token = res.response.access_token;
-                                    new_ref_token = res.response.refresh_token;
-                                }
-
-                                api_client.set_auth_token(&new_access_token);
-                                client
-                                    .put_item()
-                                    .table_name(&api_config.table_name)
-                                    .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
-                                    .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
-                                    .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
-                                    .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
-                                    .send()
-                                    .await?;
-                            }
-
-                            Err(_) => panic!(),
+                        let res = api_client.customer_login_refresh(refresh_token).await?;
+                        if res.response.is_some() {
+                            let unwrapped_res = res.response.unwrap();
+                            println!("refresh success..");
+                            new_access_token = unwrapped_res.access_token;
+                            new_ref_token = unwrapped_res.refresh_token;
+                        } else if res.status.code != 20000 {
+                            api_client.security_auth_token().await?;
+                            let res = api_client.customer_login().await?;
+                            println!("refresh failed, logged in again..");
+                            new_access_token = res.response.access_token;
+                            new_ref_token = res.response.refresh_token;
                         }
+
+                        api_client.set_auth_token(&new_access_token);
+                        client
+                            .put_item()
+                            .table_name(&api_config.table_name)
+                            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                            .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
+                            .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
+                            .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
+                            .send()
+                            .await?;
                     }
                 }
                 _ => panic!(),
