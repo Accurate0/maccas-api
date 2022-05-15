@@ -1,8 +1,8 @@
 use aws_sdk_dynamodb::Client;
-use config::Config;
 use core::cache;
 use core::client;
-use core::config::ApiConfig;
+use core::config;
+use core::constants;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
 use serde_json::{json, Value};
@@ -14,21 +14,12 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
-    let config = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("../../base-config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .add_source(config::File::from_str(
-            std::include_str!("../../accounts.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present");
-
-    let shared_config = aws_config::from_env().region("ap-southeast-2").load().await;
+    let shared_config = aws_config::from_env()
+        .region(constants::DEFAULT_AWS_REGION)
+        .load()
+        .await;
+    let env = std::env::var(constants::MACCAS_REFRESH_REGION).unwrap();
+    let config = config::load_from_s3_for_region(&shared_config, &env).await;
     let client = Client::new(&shared_config);
     let client_map = client::get_client_map(&config, &client).await?;
 

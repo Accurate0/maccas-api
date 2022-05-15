@@ -1,9 +1,8 @@
-use aws_sdk_dynamodb::Client;
 use chrono::Duration;
-use config::Config;
 use core::cache;
 use core::client;
-use core::config::ApiConfig;
+use core::config;
+use core::constants;
 use core::lock;
 use http::Method;
 use itertools::Itertools;
@@ -22,22 +21,13 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(request: Request) -> Result<impl IntoResponse, Error> {
-    let config = Config::builder()
-        .add_source(config::File::from_str(
-            std::include_str!("../../base-config.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .add_source(config::File::from_str(
-            std::include_str!("../../accounts-all.yml"),
-            config::FileFormat::Yaml,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present");
+    let shared_config = aws_config::from_env()
+        .region(constants::DEFAULT_AWS_REGION)
+        .load()
+        .await;
 
-    let shared_config = aws_config::load_from_env().await;
-    let client = Client::new(&shared_config);
+    let config = config::load_from_s3(&shared_config).await;
+    let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let context = request.request_context();
     let query_params = request.query_string_parameters();
 
@@ -70,7 +60,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             .unwrap();
 
                         let api_client = client::get(
-                            &client,
+                            &dynamodb_client,
                             &choice,
                             &config,
                             &user.login_username,
@@ -89,11 +79,15 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
                 "/deals" => {
                     let locked_deals =
-                        lock::get_all_locked_deals(&client, &config.offer_id_table_name).await?;
-
-                    let offer_map =
-                        cache::get_offers(&client, &config.cache_table_name, &account_name_list)
+                        lock::get_all_locked_deals(&dynamodb_client, &config.offer_id_table_name)
                             .await?;
+
+                    let offer_map = cache::get_offers(
+                        &dynamodb_client,
+                        &config.cache_table_name,
+                        &account_name_list,
+                    )
+                    .await?;
                     let mut offer_list = Vec::<Offer>::new();
                     for (_, offers) in &offer_map {
                         match offers {
@@ -149,7 +143,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             let duration =
                                 query_params.first("duration").expect("must have duration");
                             lock::lock_deal(
-                                &client,
+                                &dynamodb_client,
                                 &config.offer_id_table_name,
                                 deal_id,
                                 Duration::seconds(duration.parse::<i64>().unwrap()),
@@ -158,8 +152,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             Response::builder().status(204).body("".into()).unwrap()
                         }
                         Method::DELETE => {
-                            lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
-                                .await?;
+                            lock::unlock_deal(
+                                &dynamodb_client,
+                                &config.offer_id_table_name,
+                                deal_id,
+                            )
+                            .await?;
                             Response::builder().status(204).body("".into()).unwrap()
                         }
                         _ => Response::builder().status(400).body("".into()).unwrap(),

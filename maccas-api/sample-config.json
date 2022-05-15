@@ -1,0 +1,14 @@
+{
+  "clientId": null,
+  "clientSecret": null,
+  "tableName": null,
+  "cacheTableName": null,
+  "offerIdTableName": null,
+  "users": [
+    {
+      "accountName": null,
+      "loginUsername": null,
+      "loginPassword": null
+    }
+  ]
+}
