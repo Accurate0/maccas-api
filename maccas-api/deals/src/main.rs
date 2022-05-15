@@ -59,7 +59,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             .find(|u| u.account_name == choice)
                             .unwrap();
 
+                        let http_client = client::get_http_client();
                         let api_client = client::get(
+                            &http_client,
                             &dynamodb_client,
                             &choice,
                             &config,

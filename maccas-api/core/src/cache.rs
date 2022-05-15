@@ -75,7 +75,7 @@ pub async fn set_offer_for(
 pub async fn refresh_offer_cache<'a>(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &'a String,
-    client_map: &'a HashMap<String, ApiClient>,
+    client_map: &'a HashMap<String, ApiClient<'_>>,
 ) -> Result<(), Error> {
     for (account_name, api_client) in client_map {
         refresh_offer_cache_for(&client, &cache_table_name, &account_name, &api_client).await?;
@@ -92,7 +92,7 @@ pub async fn refresh_offer_cache_for(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
     account_name: &String,
-    api_client: &ApiClient,
+    api_client: &ApiClient<'_>,
 ) -> Result<(), Error> {
     let mut resp = api_client
         .get_offers(None)
