@@ -35,14 +35,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             let client = Client::new(&shared_config);
             let params = request.path_parameters();
             let query_params = request.query_string_parameters();
-            let account_name_list = config
-                .users
-                .iter()
-                .map(|u| u.account_name.clone())
-                .collect();
 
-            let offer_map =
-                cache::get_offers(&client, &config.cache_table_name, &account_name_list).await?;
+            let offer_map = cache::get_all_offers_as_map(&client, &config.cache_table_name).await?;
             let store = query_params.first("store");
 
             let deal_id = params.first("dealId").expect("must have id");

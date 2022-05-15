@@ -6,6 +6,7 @@ use lambda_runtime::Error;
 use libmaccas::api::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
+use tokio_stream::StreamExt;
 use types::maccas::Offer;
 use uuid::Uuid;
 
@@ -20,6 +21,62 @@ pub async fn get_offers<'a>(
         offer_map.insert(account_name, resp);
     }
     Ok(offer_map)
+}
+
+pub async fn get_all_offers_as_map(
+    client: &aws_sdk_dynamodb::Client,
+    cache_table_name: &String,
+) -> Result<HashMap<String, Vec<Offer>>, Error> {
+    let mut offer_map = HashMap::<String, Vec<Offer>>::new();
+
+    let table_resp: Result<Vec<_>, _> = client
+        .scan()
+        .table_name(cache_table_name)
+        .into_paginator()
+        .items()
+        .send()
+        .collect()
+        .await;
+
+    for item in table_resp? {
+        if item[ACCOUNT_NAME].as_s().is_ok() && item[OFFER_LIST].as_s().is_ok() {
+            let account_name = item[ACCOUNT_NAME].as_s().unwrap();
+            let offer_list = item[OFFER_LIST].as_s().unwrap();
+            let offer_list = serde_json::from_str::<Vec<Offer>>(offer_list).unwrap();
+
+            offer_map.insert(account_name.to_string(), offer_list);
+        }
+    }
+
+    Ok(offer_map)
+}
+
+pub async fn get_all_offers_as_vec(
+    client: &aws_sdk_dynamodb::Client,
+    cache_table_name: &String,
+) -> Result<Vec<Offer>, Error> {
+    let mut offer_list = Vec::<Offer>::new();
+
+    let table_resp: Result<Vec<_>, _> = client
+        .scan()
+        .table_name(cache_table_name)
+        .into_paginator()
+        .items()
+        .send()
+        .collect()
+        .await;
+
+    for item in table_resp? {
+        match item[OFFER_LIST].as_s() {
+            Ok(s) => {
+                let mut json = serde_json::from_str::<Vec<Offer>>(s).unwrap();
+                offer_list.append(&mut json);
+            }
+            _ => panic!(),
+        }
+    }
+
+    Ok(offer_list)
 }
 
 pub async fn get_offer_for(
