@@ -8,7 +8,7 @@ const MACCAS_BOT_SYSTEM: &'static str = "MaccasBot-v2";
 
 pub struct Api {
     pub base_url: reqwest::Url,
-    pub client: reqwest::Client,
+    pub client: reqwest_middleware::ClientWithMiddleware,
 }
 
 impl Api {
