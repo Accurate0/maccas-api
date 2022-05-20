@@ -1,5 +1,5 @@
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useAccount, useMsal } from "@azure/msal-react";
-import { AppBar, Box, Button, Container, Grid, IconButton, Toolbar, Typography } from "@mui/material";
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+import { AppBar, Box, Button, Container, Grid, Toolbar, Typography } from "@mui/material";
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import DealSelection from "./components/DealSelection";
@@ -8,7 +8,7 @@ import { LoginRequest } from "./config/msal";
 import { Offer } from "./types";
 
 const App = () => {
-  const { accounts, instance } = useMsal();
+  const { instance } = useMsal();
   const navigate = useNavigate();
   const [deal, setDeal] = useState<Offer>();
   const onDealSelected = async (deal?: Offer) => {
