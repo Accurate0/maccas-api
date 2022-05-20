@@ -1,0 +1,2 @@
+
+export interface Offer { dealUuid: string | null, count: number | null, offerId: bigint, offerPropositionId: bigint, localValidFrom: string, localValidTo: string, validFromUTC: string, validToUTC: string, name: string, CreationDateUtc: string, }
