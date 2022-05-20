@@ -37,7 +37,8 @@ pub struct OfferResponse {
     pub response: Option<OfferList>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[ts(export, export_to = "../maccas-web/src/types/Status.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     #[serde(skip_serializing, skip_deserializing)]
@@ -55,6 +56,8 @@ pub struct OfferList {
     pub offers: Vec<Offer>,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(export, export_to = "../maccas-web/src/types/Offer.ts")]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
@@ -291,6 +294,11 @@ pub struct FrequencyOfferInfo {
     pub total_punch: i64,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(
+    export,
+    export_to = "../maccas-web/src/types/OfferDealStackResponse.ts"
+)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStackResponse {
@@ -298,7 +306,8 @@ pub struct OfferDealStackResponse {
     pub response: Option<OfferDealStack>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[ts(export, export_to = "../maccas-web/src/types/OfferDealStack.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStack {
     pub random_code: String,
@@ -308,7 +317,8 @@ pub struct OfferDealStack {
     pub deal_stack: Option<Vec<DealStack>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[ts(export, export_to = "../maccas-web/src/types/DealStack.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct DealStack {
     pub offer_id: i64,
