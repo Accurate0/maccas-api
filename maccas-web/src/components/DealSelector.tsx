@@ -24,8 +24,8 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
     <>
       <Grid item>
         <FormControl sx={{ m: 1, minWidth: 300 }}>
-          <InputLabel>Deal</InputLabel>
-          <Select label="Deal" onChange={(e) => setSelected(e.target.value as string)}>
+          <InputLabel>{deals ? "Deal" : "Loading..."}</InputLabel>
+          <Select label="Deal" onChange={(e) => setSelected(e.target.value as string)} disabled={!!!deals}>
             {deals?.map((o) => (
               <MenuItem value={o.dealUuid ?? ""}>
                 {isOfferValid(o) ? "✅" : "❌"} {o.name.split("\n")[0]} ({o.count})
