@@ -8,6 +8,7 @@ use serenity::model::interactions::application_command::ApplicationCommandIntera
 use serenity::model::interactions::InteractionResponseType;
 use std::time::Duration;
 use std::time::SystemTime;
+use types::api::Offer;
 use types::bot::UsageLog;
 use types::bot::UserOptions;
 use types::maccas;
@@ -29,7 +30,7 @@ impl Bot {
 
         let resp = self
             .api_client
-            .maccas_request::<Vec<maccas::Offer>>(Method::GET, "deals")
+            .maccas_request::<Vec<Offer>>(Method::GET, "deals")
             .await;
 
         let now = SystemTime::now();
@@ -57,8 +58,8 @@ impl Bot {
                     "❌"
                 };
                 let offer_name = String::from(split[0]);
-                let uuid = offer.deal_uuid.unwrap();
-                let count = offer.count.unwrap();
+                let uuid = offer.deal_uuid;
+                let count = offer.count;
 
                 opt.label(format!("{emoji} {offer_name} ({count})"));
                 opt.value(&uuid);
@@ -139,7 +140,7 @@ impl Bot {
         let offer_id = mci.data.values.get(0).unwrap();
         let offer_name = resp
             .iter()
-            .find(|offer| offer.deal_uuid.as_ref().unwrap() == offer_id)
+            .find(|offer| offer.deal_uuid == *offer_id)
             .unwrap()
             .name
             .clone();

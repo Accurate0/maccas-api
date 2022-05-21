@@ -1,6 +1,6 @@
 use lambda_http::Error;
 use std::collections::HashMap;
-use types::maccas::Offer;
+use types::api::Offer;
 
 pub async fn get_by_order_id<'a>(
     offer_map: &HashMap<String, Vec<Offer>>,
@@ -12,7 +12,7 @@ pub async fn get_by_order_id<'a>(
 
     for (account_name, offer_list) in offer_map {
         for offer in offer_list {
-            if *offer.deal_uuid.as_ref().unwrap() == *deal_id {
+            if *offer.deal_uuid == *deal_id {
                 offer_account_name = Some(account_name.to_string());
                 offer_proposition_id = Some(offer.offer_proposition_id.to_string());
                 offer_id = Some(offer.offer_id.to_string());

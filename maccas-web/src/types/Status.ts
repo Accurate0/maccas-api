@@ -1,3 +1,2 @@
-export interface Status {
-  message: string;
-}
+
+export interface Status { message: string, }

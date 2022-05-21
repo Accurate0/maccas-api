@@ -13,7 +13,7 @@ use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use std::collections::HashMap;
-use types::maccas::Offer;
+use types::api::Offer;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -94,10 +94,10 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
                     let offer_list: Vec<Offer> = offer_list
                         .into_iter()
-                        .filter(|offer| match offer.deal_uuid.as_ref() {
-                            Some(s) => !locked_deals.contains(&s.to_string()),
-                            None => true,
-                        } && offer.offer_proposition_id != 30762)
+                        .filter(|offer| {
+                            !locked_deals.contains(&offer.deal_uuid.to_string())
+                                && offer.offer_proposition_id != 30762
+                        })
                         .collect();
 
                     let mut count_map = HashMap::<i64, u32>::new();
@@ -115,8 +115,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         .into_iter()
                         .unique_by(|offer| offer.offer_proposition_id)
                         .map(|mut offer| {
-                            offer.count =
-                                Some(*count_map.get(&offer.offer_proposition_id).unwrap());
+                            offer.count = *count_map.get(&offer.offer_proposition_id).unwrap();
                             offer
                         })
                         .collect();
