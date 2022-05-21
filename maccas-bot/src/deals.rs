@@ -10,8 +10,8 @@ use std::time::Duration;
 use std::time::SystemTime;
 use types::api::Offer;
 use types::bot::UsageLog;
-use types::bot::UserOptions;
 use types::maccas;
+use types::user::UserOptions;
 
 impl Bot {
     pub async fn deals_command(
