@@ -32,6 +32,7 @@ const useCode = () => {
     if (deal) {
       get();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deal]);
 
   const remove = async () => {

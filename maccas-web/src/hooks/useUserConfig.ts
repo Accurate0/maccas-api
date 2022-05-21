@@ -25,6 +25,7 @@ const useUserConfig = () => {
     };
 
     get();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateConfig = async (c: UserOptions) => {
