@@ -40,3 +40,21 @@ impl From<crate::maccas::MaccasOffer> for Offer {
         }
     }
 }
+
+#[derive(ts_rs::TS)]
+#[ts(export, export_to = "../maccas-web/src/types/RestaurantInformation.ts")]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RestaurantInformation {
+    pub name: String,
+    pub store_number: i64,
+}
+
+impl From<crate::maccas::Restaurant> for RestaurantInformation {
+    fn from(res: crate::maccas::Restaurant) -> Self {
+        Self {
+            name: res.name.clone(),
+            store_number: res.national_store_number,
+        }
+    }
+}

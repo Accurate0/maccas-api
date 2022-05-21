@@ -5,6 +5,8 @@ use core::constants;
 use core::lock;
 use http::Method;
 use itertools::Itertools;
+use jwt::Header;
+use jwt::Token;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use maccas_core::client;
@@ -14,6 +16,8 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 use std::collections::HashMap;
 use types::api::Offer;
+use types::api::RestaurantInformation;
+use types::places::PlaceResponse;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -78,6 +82,119 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         serde_json::to_string(&resp).unwrap().into_response()
                     } else {
                         Response::builder().status(400).body("".into()).unwrap()
+                    }
+                }
+
+                "/user/config" => {
+                    let auth_header = request.headers().get(http::header::AUTHORIZATION);
+                    match auth_header {
+                        Some(h) => {
+                            let value = h.to_str().unwrap().replace("Bearer ", "");
+                            let jwt: Token<Header, types::jwt::JwtClaim, _> =
+                                jwt::Token::parse_unverified(&value).unwrap();
+                            let user_id = &jwt.claims().oid;
+                            let http_client = client::get_http_client();
+                            let body = request.body().clone();
+                            let body = match body {
+                                lambda_http::Body::Text(s) => s,
+                                _ => String::new(),
+                            };
+
+                            let response = http_client
+                                .request(
+                                    request.method().clone(),
+                                    format!(
+                                        "{}/{}{}",
+                                        constants::KVP_API_BASE,
+                                        constants::MACCAS_WEB_API_PREFIX,
+                                        user_id
+                                    )
+                                    .as_str(),
+                                )
+                                .body(body)
+                                .header(constants::X_API_KEY_HEADER, &config.api_key)
+                                .send()
+                                .await
+                                .unwrap();
+
+                            Response::builder()
+                                .status(response.status())
+                                .body(response.text().await?.into())
+                                .unwrap()
+                        }
+                        None => Response::builder().status(400).body("".into()).unwrap(),
+                    }
+                }
+
+                "/locations/search" => {
+                    let text = query_params.first("text").expect("must have text");
+                    let http_client = client::get_http_client();
+
+                    let response = http_client
+                        .request(
+                            request.method().clone(),
+                            format!("{}/place?text={}", constants::PLACES_API_BASE, text,).as_str(),
+                        )
+                        .header(constants::X_API_KEY_HEADER, &config.api_key)
+                        .send()
+                        .await
+                        .unwrap()
+                        .json::<PlaceResponse>()
+                        .await
+                        .unwrap();
+
+                    let mut rng = StdRng::from_entropy();
+                    let choice = account_name_list.choose(&mut rng).unwrap().to_string();
+                    let user = config
+                        .users
+                        .iter()
+                        .find(|u| u.account_name == choice)
+                        .unwrap();
+
+                    let api_client = core::client::get(
+                        &http_client,
+                        &dynamodb_client,
+                        &choice,
+                        &config,
+                        &user.login_username,
+                        &user.login_password,
+                    )
+                    .await?;
+                    let response = response.result;
+
+                    match response {
+                        Some(response) => {
+                            let lat = response.geometry.location.lat;
+                            let lng = response.geometry.location.lng;
+                            let resp = api_client
+                                .restaurant_location(
+                                    Some(&constants::LOCATION_SEARCH_DISTANCE.to_string()),
+                                    Some(&lat.to_string()),
+                                    Some(&lng.to_string()),
+                                    None,
+                                )
+                                .await?;
+
+                            match resp.response {
+                                Some(list) => match list.restaurants.first() {
+                                    Some(res) => Response::builder()
+                                        .status(200)
+                                        .body(
+                                            serde_json::to_string(&RestaurantInformation::from(
+                                                res.clone(),
+                                            ))
+                                            .unwrap()
+                                            .into(),
+                                        )
+                                        .unwrap(),
+                                    None => {
+                                        Response::builder().status(400).body("".into()).unwrap()
+                                    }
+                                },
+                                None => Response::builder().status(400).body("".into()).unwrap(),
+                            }
+                        }
+                        None => Response::builder().status(400).body("".into()).unwrap(),
                     }
                 }
 

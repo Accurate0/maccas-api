@@ -17,6 +17,7 @@ pub struct ApiConfig {
     pub table_name: String,
     pub cache_table_name: String,
     pub offer_id_table_name: String,
+    pub api_key: String,
     pub users: Vec<ApiConfigUsers>,
 }
 
