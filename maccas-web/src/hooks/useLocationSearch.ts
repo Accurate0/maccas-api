@@ -7,7 +7,7 @@ const useLocationSearch = () => {
   const search = async (text: string) => {
     const response = await AxiosInstance.get("/locations/search", {
       params: {
-        text,
+        text: encodeURIComponent(text),
       },
     });
 
