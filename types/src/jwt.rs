@@ -14,8 +14,6 @@ pub struct JwtClaim {
     pub aud: String,
     pub nonce: String,
     pub iat: i64,
-    #[serde(rename = "auth_time")]
-    pub auth_time: i64,
     pub oid: String,
     pub name: String,
     pub tfp: String,

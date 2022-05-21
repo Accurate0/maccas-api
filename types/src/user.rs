@@ -7,4 +7,5 @@ use serde_derive::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct UserOptions {
     pub store_id: String,
+    pub store_name: String,
 }

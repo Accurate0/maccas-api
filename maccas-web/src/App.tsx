@@ -1,9 +1,11 @@
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
 import { AppBar, Box, Button, Container, Grid, Toolbar, Typography } from "@mui/material";
 import { useState } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import DealSelection from "./components/DealSelection";
 import DealSelector from "./components/DealSelector";
+import LocationSelection from "./components/LocationSelection";
+import LocationValue from "./components/LocationValue";
 import { LoginRequest } from "./config/msal";
 import { Offer } from "./types";
 
@@ -41,15 +43,25 @@ const App = () => {
               <Grid justifyContent="space-between" container>
                 <Grid item>
                   <Typography variant="h6" color="inherit" component="div">
-                    Maccas
+                    <Link to="/">Maccas</Link>
                   </Typography>
                 </Grid>
-                <Grid>
-                  <div>
-                    <Button color="inherit" onClick={() => instance.logoutRedirect()}>
-                      Logout
-                    </Button>
-                  </div>
+                <Grid item>
+                  <Grid container spacing={3}>
+                    <Grid item alignSelf="center">
+                      <LocationValue />
+                    </Grid>
+                    <Grid item>
+                      <Button color="inherit" onClick={() => navigate("/location")}>
+                        Change Location
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button color="inherit" onClick={() => instance.logoutRedirect()}>
+                        Logout
+                      </Button>
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </Toolbar>
@@ -60,6 +72,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<DealSelector onSelection={onDealSelected} />} />
               <Route path="/code" element={<DealSelection selected={deal} />} />
+              <Route path="/location" element={<LocationSelection />} />
             </Routes>
           </Grid>
         </Container>
