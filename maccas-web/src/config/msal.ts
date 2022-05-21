@@ -2,8 +2,9 @@ import { Configuration, PublicClientApplication } from "@azure/msal-browser";
 
 export const MSALConfig: Configuration = {
   auth: {
-    clientId: "871d2afa-2389-401d-aaa9-94bf38d05c1d",
-    authority: "https://login.microsoftonline.com/b1f3a0a4-f4e2-4300-b952-88f3dc55ee9b",
+    clientId: "f285a3b9-c589-4fae-971e-edd635df6b96",
+    authority: "https://apib2clogin.b2clogin.com/apib2clogin.onmicrosoft.com/B2C_1_SignIn",
+    knownAuthorities: ["https://apib2clogin.b2clogin.com/"],
   },
   cache: {
     cacheLocation: "sessionStorage",
@@ -12,7 +13,7 @@ export const MSALConfig: Configuration = {
 };
 
 export const LoginRequest = {
-  scopes: ["https://apib2clogin.onmicrosoft.com/871d2afa-2389-401d-aaa9-94bf38d05c1d/.default"],
+  scopes: ["openid", "https://login.anurag.sh/f285a3b9-c589-4fae-971e-edd635df6b96/Maccas.ReadWrite"],
 };
 
 export const MSALInstance = new PublicClientApplication(MSALConfig);

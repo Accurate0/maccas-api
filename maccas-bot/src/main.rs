@@ -2,9 +2,6 @@ use async_trait::async_trait;
 use config::Config;
 use core::time::Duration;
 use log::*;
-use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
-use oauth2::{AuthUrl, ClientId, ClientSecret, Scope, TokenResponse, TokenUrl};
 use reqwest::header;
 use reqwest::{Request, Response};
 use reqwest_middleware::{Next, Result};
@@ -47,66 +44,9 @@ pub struct BotConfig {
     pub api_key: String,
     pub base_url: String,
     pub discord_token: String,
-    pub client_secret: String,
-    pub client_id: String,
-    pub auth_url: String,
-    pub token_url: String,
-    pub scope: String,
-}
-
-struct AccessTokenMiddleware {
-    scope: String,
-    client: BasicClient,
-    token_result:
-        oauth2::StandardTokenResponse<oauth2::EmptyExtraTokenFields, oauth2::basic::BasicTokenType>,
 }
 
 struct LoggingMiddleware;
-
-impl AccessTokenMiddleware {
-    pub async fn new_with_config(config: &BotConfig) -> Self {
-        let client = BasicClient::new(
-            ClientId::new(config.client_id.clone()),
-            Some(ClientSecret::new(config.client_secret.clone())),
-            AuthUrl::new(config.auth_url.clone()).unwrap(),
-            Some(TokenUrl::new(config.token_url.clone()).unwrap()),
-        );
-
-        let token_result = client
-            .exchange_client_credentials()
-            .add_scope(Scope::new(config.scope.clone()))
-            .request_async(async_http_client)
-            .await
-            .unwrap();
-
-        Self {
-            scope: config.scope.clone(),
-            client,
-            token_result,
-        }
-    }
-}
-
-#[async_trait]
-impl reqwest_middleware::Middleware for AccessTokenMiddleware {
-    async fn handle(
-        &self,
-        req: Request,
-        extensions: &mut Extensions,
-        next: Next<'_>,
-    ) -> Result<Response> {
-        let at = self.token_result.access_token().clone();
-        let mut request = req.try_clone().unwrap();
-        let headers = request.headers_mut();
-        headers.insert(
-            reqwest::header::AUTHORIZATION,
-            header::HeaderValue::from_str(at.secret()).unwrap(),
-        );
-
-        let res = next.run(request, extensions).await;
-        res
-    }
-}
 
 #[async_trait]
 impl reqwest_middleware::Middleware for LoggingMiddleware {
@@ -125,11 +65,9 @@ impl reqwest_middleware::Middleware for LoggingMiddleware {
 
 pub async fn get_middleware_http_client(
     client: reqwest::Client,
-    config: &BotConfig,
 ) -> reqwest_middleware::ClientWithMiddleware {
     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
     reqwest_middleware::ClientBuilder::new(client)
-        .with(AccessTokenMiddleware::new_with_config(config).await)
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
         .with(LoggingMiddleware)
         .build()
@@ -161,7 +99,7 @@ async fn main() {
         .build()
         .unwrap();
 
-    let client = get_middleware_http_client(client, &config).await;
+    let client = get_middleware_http_client(client).await;
     let base_url = reqwest::Url::parse(&config.base_url.as_str()).unwrap();
     let api_client = api::Api { base_url, client };
     let bot = Bot { api_client };
