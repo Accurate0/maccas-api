@@ -24,3 +24,4 @@ config = { version = "0.13.1", features = ["yaml"] }
 aws-config = "0.12.0"
 http = "0.2.6"
 chrono = "0.4.19"
+simplelog = "0.12.0"

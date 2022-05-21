@@ -10,6 +10,7 @@ use tokio_stream::StreamExt;
 use types::maccas::Offer;
 use uuid::Uuid;
 
+#[deprecated]
 pub async fn get_offers<'a>(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &'a String,
@@ -137,7 +138,7 @@ pub async fn refresh_offer_cache<'a>(
     for (account_name, api_client) in client_map {
         refresh_offer_cache_for(&client, &cache_table_name, &account_name, &api_client).await?;
     }
-    println!(
+    log::info!(
         "refreshed {} account offer caches..",
         client_map.keys().len()
     );
@@ -205,6 +206,6 @@ pub async fn refresh_offer_cache_for(
         .send()
         .await?;
 
-    println!("{}: offer cache refreshed", account_name);
+    log::info!("{}: offer cache refreshed", account_name);
     Ok(())
 }

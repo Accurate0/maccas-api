@@ -57,7 +57,7 @@ pub async fn get<'a>(
 
     match resp.item {
         None => {
-            println!("{}: nothing in db, requesting..", account_name);
+            log::info!("{}: nothing in db, requesting..", account_name);
             let _ = api_client.security_auth_token().await?;
             let response = api_client.customer_login().await?;
 
@@ -78,7 +78,7 @@ pub async fn get<'a>(
                 .await?;
         }
         Some(ref item) => {
-            println!("{}: tokens in db, trying..", account_name);
+            log::info!("{}: tokens in db, trying..", account_name);
             let refresh_token = match item[REFRESH_TOKEN].as_s() {
                 Ok(s) => s,
                 _ => panic!(),
@@ -100,7 +100,7 @@ pub async fn get<'a>(
                     let diff = now - last_refresh;
 
                     if diff.num_minutes() >= 14 {
-                        println!(
+                        log::info!(
                             "{}: >= 14 mins since last attempt.. refreshing..",
                             account_name
                         );
@@ -110,13 +110,13 @@ pub async fn get<'a>(
                         let res = api_client.customer_login_refresh(refresh_token).await?;
                         if res.response.is_some() {
                             let unwrapped_res = res.response.unwrap();
-                            println!("refresh success..");
+                            log::info!("refresh success..");
                             new_access_token = unwrapped_res.access_token;
                             new_ref_token = unwrapped_res.refresh_token;
                         } else if res.status.code != 20000 {
                             api_client.security_auth_token().await?;
                             let res = api_client.customer_login().await?;
-                            println!("refresh failed, logged in again..");
+                            log::info!("refresh failed, logged in again..");
                             new_access_token = res.response.access_token;
                             new_ref_token = res.response.refresh_token;
                         }

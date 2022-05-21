@@ -5,10 +5,12 @@ use core::constants;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
 use maccas_core::client;
+use maccas_core::logging;
 use serde_json::{json, Value};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    logging::setup_logging();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
 }

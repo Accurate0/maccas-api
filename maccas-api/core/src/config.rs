@@ -20,6 +20,7 @@ pub struct ApiConfig {
     pub users: Vec<ApiConfigUsers>,
 }
 
+#[deprecated]
 pub fn load(config: &str) -> ApiConfig {
     Config::builder()
         .add_source(config::File::from_str(config, config::FileFormat::Yaml))
@@ -29,16 +30,40 @@ pub fn load(config: &str) -> ApiConfig {
         .expect("valid configuration present")
 }
 
-pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> ApiConfig {
-    let s3_client = aws_sdk_s3::Client::new(&shared_config);
-    let resp = s3_client
+async fn load_base_config_from_s3(
+    client: &aws_sdk_s3::Client,
+) -> aws_sdk_s3::types::AggregatedBytes {
+    let resp = client
         .get_object()
         .bucket(constants::CONFIG_BUCKET_NAME)
         .key(constants::BASE_CONFIG_FILE)
         .send()
         .await
         .unwrap();
-    let base_config_bytes = resp.body.collect().await.unwrap();
+    resp.body.collect().await.unwrap()
+}
+
+async fn build_config_from_bytes(
+    base_config: &aws_sdk_s3::types::AggregatedBytes,
+    accounts: &aws_sdk_s3::types::AggregatedBytes,
+) -> ApiConfig {
+    Config::builder()
+        .add_source(config::File::from_str(
+            std::str::from_utf8(&base_config.clone().into_bytes()).unwrap(),
+            config::FileFormat::Json,
+        ))
+        .add_source(config::File::from_str(
+            std::str::from_utf8(&accounts.clone().into_bytes()).unwrap(),
+            config::FileFormat::Json,
+        ))
+        .build()
+        .unwrap()
+        .try_deserialize::<ApiConfig>()
+        .expect("valid configuration present")
+}
+pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> ApiConfig {
+    let s3_client = aws_sdk_s3::Client::new(&shared_config);
+    let base_config_bytes = load_base_config_from_s3(&s3_client).await;
 
     let resp = s3_client
         .get_object()
@@ -49,19 +74,7 @@ pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> ApiConfig {
         .unwrap();
     let all_accounts_bytes = resp.body.collect().await.unwrap();
 
-    Config::builder()
-        .add_source(config::File::from_str(
-            std::str::from_utf8(&base_config_bytes.into_bytes()).unwrap(),
-            config::FileFormat::Json,
-        ))
-        .add_source(config::File::from_str(
-            std::str::from_utf8(&all_accounts_bytes.into_bytes()).unwrap(),
-            config::FileFormat::Json,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present")
+    build_config_from_bytes(&base_config_bytes, &all_accounts_bytes).await
 }
 
 pub async fn load_from_s3_for_region(
@@ -69,14 +82,7 @@ pub async fn load_from_s3_for_region(
     region: &String,
 ) -> ApiConfig {
     let s3_client = aws_sdk_s3::Client::new(&shared_config);
-    let resp = s3_client
-        .get_object()
-        .bucket(constants::CONFIG_BUCKET_NAME)
-        .key(constants::BASE_CONFIG_FILE)
-        .send()
-        .await
-        .unwrap();
-    let base_config_bytes = resp.body.collect().await.unwrap();
+    let base_config_bytes = load_base_config_from_s3(&s3_client).await;
 
     let resp = s3_client
         .get_object()
@@ -85,19 +91,7 @@ pub async fn load_from_s3_for_region(
         .send()
         .await
         .unwrap();
-    let all_accounts_bytes = resp.body.collect().await.unwrap();
+    let accounts_bytes = resp.body.collect().await.unwrap();
 
-    Config::builder()
-        .add_source(config::File::from_str(
-            std::str::from_utf8(&base_config_bytes.into_bytes()).unwrap(),
-            config::FileFormat::Json,
-        ))
-        .add_source(config::File::from_str(
-            std::str::from_utf8(&all_accounts_bytes.into_bytes()).unwrap(),
-            config::FileFormat::Json,
-        ))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present")
+    build_config_from_bytes(&base_config_bytes, &accounts_bytes).await
 }
