@@ -7,8 +7,7 @@ use libmaccas::api::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
-use types::maccas::Offer;
-use uuid::Uuid;
+use types::api::Offer;
 
 #[deprecated]
 pub async fn get_offers<'a>(
@@ -163,35 +162,12 @@ pub async fn refresh_offer_cache_for(
     let now: DateTime<Utc> = now.into();
     let now = now.to_rfc3339();
 
-    let cached_offers_or_none = get_offer_for(&client, &cache_table_name, &account_name).await?;
-
     // use existing offer id if possible
     // can rely on proposition because thats kind of offer type id
     // unique in account i think..
-    let resp: Vec<&mut Offer> = resp
+    let resp: Vec<types::api::Offer> = resp
         .iter_mut()
-        .map(|offer| {
-            if let Some(cached_offers) = &cached_offers_or_none {
-                if let Some(cached_offer) = cached_offers
-                    .iter()
-                    .find(|co| co.offer_proposition_id == offer.offer_proposition_id)
-                {
-                    match &cached_offer.deal_uuid {
-                        Some(u) => {
-                            offer.deal_uuid = Some(u.clone());
-                        }
-                        None => {
-                            offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
-                        }
-                    }
-                } else {
-                    offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
-                }
-            } else {
-                offer.deal_uuid = Some(Uuid::new_v4().to_hyphenated().to_string());
-            }
-            offer
-        })
+        .map(|offer| types::api::Offer::from(offer.clone()))
         .collect();
 
     client

@@ -2262,6 +2262,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "ts-rs",
+ "uuid",
 ]
 
 [[package]]
