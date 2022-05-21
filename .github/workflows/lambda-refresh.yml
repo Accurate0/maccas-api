@@ -15,23 +15,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  sydney:
-    uses: ./.github/workflows/lambda-deploy.yml
-    with:
-      directory: "./maccas-api/refresh"
-      lambda_name: "MaccasApi-refresh-v2"
-      zip_path: "refresh"
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  build:
+    - name: rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          profile: minimal
+          toolchain: stable
 
-  singapore:
-    uses: ./.github/workflows/lambda-deploy.yml
-    with:
-      directory: "./maccas-api/refresh"
-      lambda_name: "MaccasApi-refresh-v2"
-      zip_path: "refresh"
-      region: ap-southeast-1
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - uses: Swatinem/rust-cache@v1
+
+    - name: rust-cargo-install
+      uses: actions-rs/install@v0.1.2
+      with:
+        crate: cargo-lambda
+        version: 0.6.1
+        use-tool-cache: true
+
+    - name: install zig
+      run: pip3 install ziglang
+
+    - name: cargo build
+      run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
+      working-directory: "./maccas-api/refresh"
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: refresh
+        path: ./maccas-api/refresh/target/lambda/refresh/bootstrap.zip
+
+  deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        region:
+          - ap-southeast-2
+          - ap-southeast-1
+          - ap-northeast-1
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: refresh
+
+    - name: deploy ${{ matrix.region }}
+        run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}

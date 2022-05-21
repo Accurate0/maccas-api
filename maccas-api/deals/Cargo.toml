@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 libmaccas = { path = "../../libmaccas" }
+maccas-core = { path = "../../maccas-core" }
 types = { path = "../../types" }
 core = { path = "../core" }
 
