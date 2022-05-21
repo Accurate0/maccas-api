@@ -6,6 +6,7 @@ on:
     paths:
       - maccas-api/refresh/**
       - maccas-api/core/**
+      - maccas-core/**
       - libmaccas/**
       - types/**
       - .github/workflows/lambda-refresh.yml
@@ -16,34 +17,38 @@ concurrency:
 
 jobs:
   build:
-    - name: rust-toolchain
-      uses: actions-rs/toolchain@v1.0.6
-      with:
-        profile: minimal
-        toolchain: stable
+    runs-on: ubuntu-latest
+    steps:
+      - name: rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          profile: minimal
+          toolchain: stable
 
-    - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v1
 
-    - name: rust-cargo-install
-      uses: actions-rs/install@v0.1.2
-      with:
-        crate: cargo-lambda
-        version: 0.6.1
-        use-tool-cache: true
+      - name: rust-cargo-install
+        uses: actions-rs/install@v0.1.2
+        with:
+          crate: cargo-lambda
+          version: 0.6.1
+          use-tool-cache: true
 
-    - name: install zig
-      run: pip3 install ziglang
+      - name: install zig
+        run: pip3 install ziglang
 
-    - name: cargo build
-      run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-      working-directory: "./maccas-api/refresh"
+      - name: cargo build
+        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
+        working-directory: "./maccas-api/refresh"
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: refresh
-        path: ./maccas-api/refresh/target/lambda/refresh/bootstrap.zip
+      - uses: actions/upload-artifact@v3
+        with:
+          name: refresh
+          path: ./maccas-api/refresh/target/lambda/refresh/bootstrap.zip
 
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -52,9 +57,15 @@ jobs:
           - ap-southeast-1
           - ap-northeast-1
 
-    - uses: actions/download-artifact@v3
-      with:
-        name: refresh
+    name: deploy ${{ matrix.region }}
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    - name: deploy ${{ matrix.region }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: refresh
+
+      - name: deploy ${{ matrix.region }}
         run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
