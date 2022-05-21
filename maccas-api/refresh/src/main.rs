@@ -1,10 +1,10 @@
 use aws_sdk_dynamodb::Client;
 use core::cache;
-use core::client;
 use core::config;
 use core::constants;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
+use maccas_core::client;
 use serde_json::{json, Value};
 
 #[tokio::main]
@@ -22,7 +22,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let config = config::load_from_s3_for_region(&shared_config, &env).await;
     let client = Client::new(&shared_config);
     let http_client = client::get_http_client();
-    let client_map = client::get_client_map(&http_client, &config, &client).await?;
+    let client_map = core::client::get_client_map(&http_client, &config, &client).await?;
 
     cache::refresh_offer_cache(&client, &config.cache_table_name, &client_map).await?;
 

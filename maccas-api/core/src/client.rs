@@ -6,23 +6,8 @@ use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
 use libmaccas::api;
 use libmaccas::api::ApiClient;
-use reqwest_middleware::ClientBuilder;
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
 use std::collections::HashMap;
-use std::time::Duration;
 use std::time::SystemTime;
-
-pub fn get_http_client() -> reqwest_middleware::ClientWithMiddleware {
-    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
-    ClientBuilder::new(
-        reqwest::ClientBuilder::new()
-            .timeout(Duration::from_secs(10))
-            .build()
-            .unwrap(),
-    )
-    .with(RetryTransientMiddleware::new_with_policy(retry_policy))
-    .build()
-}
 
 pub async fn get_client_map<'a>(
     http_client: &'a reqwest_middleware::ClientWithMiddleware,

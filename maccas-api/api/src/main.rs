@@ -1,7 +1,6 @@
 use aws_sdk_dynamodb::Client;
 use chrono::Duration;
 use core::cache;
-use core::client;
 use core::config;
 use core::constants;
 use core::lock;
@@ -9,6 +8,7 @@ use core::utils;
 use http::Method;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
+use maccas_core::client;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -52,7 +52,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     .unwrap();
 
                 let http_client = client::get_http_client();
-                let api_client = client::get(
+                let api_client = core::client::get(
                     &http_client,
                     &client,
                     &account_name,
