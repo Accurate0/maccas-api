@@ -6,6 +6,7 @@ on:
     paths:
       - maccas-api/api/**
       - maccas-api/core/**
+      - maccas-core/**
       - libmaccas/**
       - types/**
       - .github/workflows/lambda-deploy.yml

@@ -6,6 +6,7 @@ on:
     paths:
       - maccas-bot/**
       - libmaccas/**
+      - maccas-core/**
       - types/**
       - .github/workflows/bot.yml
       - Dockerfile
