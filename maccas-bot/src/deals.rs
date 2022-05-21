@@ -89,14 +89,13 @@ impl Bot {
 
         // lock these deals for 120 seconds...
         const DURATION: u64 = 120;
-        for deal in &deals_to_lock {
-            self.api_client
-                .maccas_request_without_deserialize(
-                    Method::POST,
-                    format!("deals/lock/{deal}?duration={DURATION}").as_str(),
-                )
-                .await;
-        }
+        self.api_client
+            .maccas_request_without_deserialize_with_body(
+                Method::POST,
+                format!("deals/lock?duration={DURATION}").as_str(),
+                &serde_json::to_string(&deals_to_lock).unwrap(),
+            )
+            .await;
 
         let message = command
             .create_followup_message(&ctx.http, |m| {
@@ -124,15 +123,13 @@ impl Bot {
                     .await
                     .unwrap();
 
-                for deal in &deals_to_lock {
-                    self.api_client
-                        .maccas_request_without_deserialize(
-                            Method::DELETE,
-                            format!("deals/lock/{deal}").as_str(),
-                        )
-                        .await;
-                }
-
+                self.api_client
+                    .maccas_request_without_deserialize_with_body(
+                        Method::DELETE,
+                        format!("deals/lock").as_str(),
+                        &serde_json::to_string(&deals_to_lock).unwrap(),
+                    )
+                    .await;
                 return;
             }
         };
@@ -210,18 +207,18 @@ impl Bot {
             .unwrap();
 
         // unlock
-        for deal in &deals_to_lock {
-            if deal == offer_id {
-                continue;
-            }
+        let deals_to_unlock = deals_to_lock
+            .iter()
+            .filter(|d| *d != offer_id)
+            .collect::<Vec<&String>>();
 
-            self.api_client
-                .maccas_request_without_deserialize(
-                    Method::DELETE,
-                    format!("deals/lock/{deal}").as_str(),
-                )
-                .await;
-        }
+        self.api_client
+            .maccas_request_without_deserialize_with_body(
+                Method::DELETE,
+                format!("deals/lock").as_str(),
+                &serde_json::to_string(&deals_to_unlock).unwrap(),
+            )
+            .await;
 
         command
             .edit_original_interaction_response(&ctx.http, |m| {

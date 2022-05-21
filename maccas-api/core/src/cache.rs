@@ -162,9 +162,6 @@ pub async fn refresh_offer_cache_for(
     let now: DateTime<Utc> = now.into();
     let now = now.to_rfc3339();
 
-    // use existing offer id if possible
-    // can rely on proposition because thats kind of offer type id
-    // unique in account i think..
     let resp: Vec<types::api::Offer> = resp
         .iter_mut()
         .map(|offer| types::api::Offer::from(offer.clone()))

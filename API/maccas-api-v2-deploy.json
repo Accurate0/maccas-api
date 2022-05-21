@@ -71,14 +71,8 @@
       "properties": {
         "displayName": "Lock Deal",
         "method": "POST",
-        "urlTemplate": "/deals/lock/{dealId}",
-        "templateParameters": [
-          {
-            "name": "dealId",
-            "type": "string",
-            "required": true
-          }
-        ],
+        "urlTemplate": "/deals/lock",
+        "templateParameters": [],
         "request": {
           "queryParameters": [
             {
@@ -99,14 +93,8 @@
       "properties": {
         "displayName": "Unlock Deal",
         "method": "DELETE",
-        "urlTemplate": "/deals/lock/{dealId}",
-        "templateParameters": [
-          {
-            "name": "dealId",
-            "type": "string",
-            "required": true
-          }
-        ],
+        "urlTemplate": "/deals/lock",
+        "templateParameters": [],
         "responses": []
       }
     },
