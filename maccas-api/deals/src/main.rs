@@ -8,6 +8,7 @@ use itertools::Itertools;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use maccas_core::client;
+use maccas_core::logging;
 use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
@@ -16,6 +17,7 @@ use types::maccas::Offer;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    logging::setup_logging();
     lambda_http::run(service_fn(run)).await?;
     Ok(())
 }

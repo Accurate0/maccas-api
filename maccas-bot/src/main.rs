@@ -1,9 +1,8 @@
 use config::Config;
-use log::*;
 use maccas_core::client;
+use maccas_core::logging;
 use reqwest::header;
 use serenity::prelude::*;
-use simplelog::*;
 
 mod api;
 mod code;
@@ -18,21 +17,6 @@ struct Bot {
     api_client: api::Api,
 }
 
-fn setup_logging() {
-    let term_config = ConfigBuilder::new()
-        .set_level_padding(LevelPadding::Right)
-        .add_filter_ignore_str("tracing::span")
-        .build();
-
-    TermLogger::init(
-        LevelFilter::Info,
-        term_config,
-        TerminalMode::Mixed,
-        ColorChoice::Auto,
-    )
-    .unwrap();
-}
-
 #[derive(serde::Deserialize, std::fmt::Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BotConfig {
@@ -43,7 +27,7 @@ pub struct BotConfig {
 
 #[tokio::main]
 async fn main() {
-    setup_logging();
+    logging::setup_logging();
 
     let config = Config::builder()
         .add_source(config::File::from_str(
@@ -77,6 +61,6 @@ async fn main() {
     .expect("Error creating client");
 
     if let Err(why) = discord_client.start().await {
-        println!("Client error: {:?}", why);
+        log::error!("Client error: {:?}", why);
     }
 }
