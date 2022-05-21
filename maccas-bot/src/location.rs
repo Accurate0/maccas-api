@@ -3,8 +3,8 @@ use http::Method;
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
-use types::bot::UserOptions;
 use types::maccas::RestaurantLocationResponse;
+use types::user::UserOptions;
 
 impl Bot {
     pub async fn location_command(

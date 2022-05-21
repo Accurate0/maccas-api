@@ -1,7 +1,7 @@
 use http::Method;
 use types::bot::UsageLog;
-use types::bot::UserOptions;
 use types::places::PlaceResponse;
+use types::user::UserOptions;
 
 const MACCAS_BOT_PREFIX: &'static str = "MACCAS_BOT_";
 const MACCAS_BOT_SYSTEM: &'static str = "MaccasBot-v2";
