@@ -27,7 +27,7 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
           <InputLabel>{deals ? "Deal" : "Loading..."}</InputLabel>
           <Select label="Deal" onChange={(e) => setSelected(e.target.value as string)} disabled={!!!deals}>
             {deals?.map((o) => (
-              <MenuItem value={o.dealUuid ?? ""}>
+              <MenuItem value={o.dealUuid ?? ""} key={o.dealUuid}>
                 {isOfferValid(o) ? "✅" : "❌"} {o.name.split("\n")[0]} ({o.count})
               </MenuItem>
             ))}
