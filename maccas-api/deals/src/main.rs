@@ -123,32 +123,46 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     serde_json::to_string(&offer_list).unwrap().into_response()
                 }
 
-                "/deals/lock/{dealId}" => {
-                    let params = request.path_parameters();
-
-                    let deal_id = params.first("dealId").expect("must have id");
-                    let deal_id = &deal_id.to_owned();
+                "/deals/lock" => {
+                    let deals = match request.body() {
+                        lambda_http::Body::Text(s) => {
+                            match serde_json::from_str::<Vec<String>>(s) {
+                                Ok(obj) => obj,
+                                Err(_) => {
+                                    return Ok(Response::builder()
+                                        .status(400)
+                                        .body("".into())
+                                        .unwrap())
+                                }
+                            }
+                        }
+                        _ => return Ok(Response::builder().status(400).body("".into()).unwrap()),
+                    };
 
                     match *request.method() {
                         Method::POST => {
                             let duration =
                                 query_params.first("duration").expect("must have duration");
-                            lock::lock_deal(
-                                &dynamodb_client,
-                                &config.offer_id_table_name,
-                                deal_id,
-                                Duration::seconds(duration.parse::<i64>().unwrap()),
-                            )
-                            .await?;
+                            for deal_id in deals {
+                                lock::lock_deal(
+                                    &dynamodb_client,
+                                    &config.offer_id_table_name,
+                                    &deal_id,
+                                    Duration::seconds(duration.parse::<i64>().unwrap()),
+                                )
+                                .await?;
+                            }
                             Response::builder().status(204).body("".into()).unwrap()
                         }
                         Method::DELETE => {
-                            lock::unlock_deal(
-                                &dynamodb_client,
-                                &config.offer_id_table_name,
-                                deal_id,
-                            )
-                            .await?;
+                            for deal_id in deals {
+                                lock::unlock_deal(
+                                    &dynamodb_client,
+                                    &config.offer_id_table_name,
+                                    &deal_id,
+                                )
+                                .await?;
+                            }
                             Response::builder().status(204).body("".into()).unwrap()
                         }
                         _ => Response::builder().status(400).body("".into()).unwrap(),

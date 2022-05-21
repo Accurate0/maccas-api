@@ -126,4 +126,28 @@ impl Api {
 
         return resp;
     }
+
+    pub async fn maccas_request_without_deserialize_with_body(
+        &self,
+        method: Method,
+        endpoint: &str,
+        body: &String,
+    ) -> reqwest::Response {
+        let url = self
+            .base_url
+            .join("maccas/v2/")
+            .unwrap()
+            .join(endpoint)
+            .unwrap();
+
+        let resp = self
+            .client
+            .request(method, url)
+            .body(body.clone())
+            .send()
+            .await
+            .unwrap();
+
+        return resp;
+    }
 }
