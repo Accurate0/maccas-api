@@ -19,3 +19,4 @@ pub const PLACES_API_BASE: &str = "https://api.anurag.sh/places/v1";
 pub const X_API_KEY_HEADER: &str = "X-Api-Key";
 pub const MACCAS_WEB_API_PREFIX: &str = "MACCAS_WEB_";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
+pub const CORRELATION_ID_HEADER: &str = "traceparent";
