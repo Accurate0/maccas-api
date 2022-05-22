@@ -1,2 +1,2 @@
 
-export interface UserOptions { storeId: string, storeName: string, }
+export interface UserOptions { storeId: string, storeName: string | null, }
