@@ -6,7 +6,7 @@ import useNotification from "./useNotification";
 import useSetBackdrop from "./useSetBackdrop";
 
 const useLocationSearch = () => {
-  const [results, setResults] = useState<RestaurantInformation | undefined>();
+  const [, setResults] = useState<RestaurantInformation | undefined>();
   const setBackdrop = useSetBackdrop();
   const notification = useNotification();
 
