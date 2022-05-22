@@ -52,8 +52,6 @@ pub async fn get_all_locked_deals(
         .send()
         .await?;
 
-    dbg!(&resp);
-
     match resp.items {
         Some(ref items) => {
             for item in items {
