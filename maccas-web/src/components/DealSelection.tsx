@@ -10,7 +10,7 @@ export interface DealSelectionProps {
 
 const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
   const navigate = useNavigate();
-  const { code, setDeal, isDone, remove } = useCode();
+  const { code, setDeal, remove } = useCode();
 
   useEffect(() => {
     setDeal(selected);
@@ -18,10 +18,7 @@ const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
 
   return (
     <>
-      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={!isDone}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      {isDone && (
+      {code && (
         <Card variant="outlined">
           <CardContent style={{ margin: "25px 25px 25px 25px" }}>
             <Grid container direction="column" spacing={1}>

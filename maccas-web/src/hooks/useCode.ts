@@ -1,17 +1,22 @@
+import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import AxiosInstance from "../lib/AxiosInstance";
 import { Offer, OfferDealStackResponse } from "../types";
+import useNotification from "./useNotification";
+import useSetBackdrop from "./useSetBackdrop";
 import { useGetUserConfig } from "./useUserConfig";
 
 const useCode = () => {
   const [deal, setDeal] = useState<Offer>();
-  const [isDone, setIsDone] = useState(false);
   const [code, setResponse] = useState<OfferDealStackResponse>();
   const userConfig = useGetUserConfig();
+  const setBackdrop = useSetBackdrop();
+  const notification = useNotification();
 
   useEffect(() => {
     const get = async () => {
       try {
+        setBackdrop(true);
         const response = await AxiosInstance.post(
           `/deals/${deal?.dealUuid}`,
           null,
@@ -24,8 +29,10 @@ const useCode = () => {
             : undefined
         );
         setResponse(response.data as OfferDealStackResponse);
+      } catch (error) {
+        notification({ msg: (error as AxiosError).message, variant: "error" });
       } finally {
-        setIsDone(true);
+        setBackdrop(false);
       }
     };
 
@@ -36,19 +43,18 @@ const useCode = () => {
   }, [deal]);
 
   const remove = async () => {
-    setIsDone(false);
     try {
+      setBackdrop(true);
       const response = await AxiosInstance.delete(`/deals/${deal?.dealUuid}`);
       return response.data as OfferDealStackResponse;
     } finally {
-      setIsDone(true);
+      setBackdrop(false);
     }
   };
 
   return {
     code,
     setDeal,
-    isDone,
     remove,
   };
 };
