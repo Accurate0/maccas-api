@@ -51,10 +51,12 @@ impl Bot {
         let store_id = selected_restaurant.national_store_number.to_string();
 
         let user_id = command.user.id.as_u64().to_string();
-        let user_options = UserOptions { store_id };
+        let user_options = UserOptions {
+            store_id,
+            store_name: "NONE".to_string(),
+        };
 
-        let resp = self.api_client.kvp_set(&user_id, &user_options).await;
-        dbg!(resp);
+        let _ = self.api_client.kvp_set(&user_id, &user_options).await;
 
         command
             .edit_original_interaction_response(&ctx, |m| {
