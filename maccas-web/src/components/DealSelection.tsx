@@ -32,7 +32,7 @@ const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
                 </Typography>
                 <Typography gutterBottom>{code?.status.message}</Typography>
                 <Typography component="div" gutterBottom>
-                  <Box sx={{ fontFamily: "Monospace", fontSize: "h6.fontSize" }}>{"2321"}</Box>
+                  <Box sx={{ fontFamily: "Monospace", fontSize: "h6.fontSize" }}>{code.response?.randomCode}</Box>
                 </Typography>
               </Grid>
               <Grid item>
