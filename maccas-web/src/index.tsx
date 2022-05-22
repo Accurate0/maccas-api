@@ -8,6 +8,8 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "./styles";
 import { RecoilRoot } from "recoil";
+import Backdrop from "./components/Backdrop";
+import { SnackbarProvider } from "notistack";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
@@ -17,7 +19,10 @@ root.render(
       <RecoilRoot>
         <BrowserRouter>
           <ThemeProvider theme={theme}>
-            <App />
+            <SnackbarProvider>
+              <Backdrop />
+              <App />
+            </SnackbarProvider>
           </ThemeProvider>
         </BrowserRouter>
       </RecoilRoot>
