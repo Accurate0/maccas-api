@@ -50,6 +50,11 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 .map(|u| u.account_name.clone())
                 .collect();
 
+            let correlation_id = request
+                .headers()
+                .get(constants::CORRELATION_ID_HEADER)
+                .unwrap();
+
             match s.as_str() {
                 "/locations" => {
                     let distance = query_params.first("distance");
@@ -112,6 +117,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                     .as_str(),
                                 )
                                 .body(body)
+                                .header(constants::CORRELATION_ID_HEADER, correlation_id)
                                 .header(constants::X_API_KEY_HEADER, &config.api_key)
                                 .send()
                                 .await
@@ -135,6 +141,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             request.method().clone(),
                             format!("{}/place?text={}", constants::PLACES_API_BASE, text,).as_str(),
                         )
+                        .header(constants::CORRELATION_ID_HEADER, correlation_id)
                         .header(constants::X_API_KEY_HEADER, &config.api_key)
                         .send()
                         .await
