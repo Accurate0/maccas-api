@@ -43,7 +43,9 @@ const App = () => {
               <Grid justifyContent="space-between" container>
                 <Grid item>
                   <Typography variant="h6" color="inherit" component="div">
-                    <Link to="/">Maccas</Link>
+                    <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+                      Maccas
+                    </Link>
                   </Typography>
                 </Grid>
                 <Grid item>
