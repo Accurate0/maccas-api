@@ -244,7 +244,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         })
                         .collect();
 
-                    serde_json::to_string(&offer_list).unwrap().into_response()
+                    // this can't be safely cached due to deal volatility
+                    Response::builder()
+                        .status(200)
+                        .header(constants::CACHE_CONTROL_HEADER, "no-cache")
+                        .body(serde_json::to_string(&offer_list).unwrap().into())
+                        .unwrap()
                 }
 
                 "/deals/lock" => {
