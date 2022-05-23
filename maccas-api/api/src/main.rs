@@ -115,7 +115,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             serde_json::to_string(&resp).unwrap().into_response()
                         }
 
-                        _ => Response::builder().status(400).body("".into()).unwrap(),
+                        _ => Response::builder().status(405).body("".into()).unwrap(),
                     },
 
                     // this isn't something that will happen
