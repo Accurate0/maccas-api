@@ -14,7 +14,7 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
 
   const isOfferValid = (deal: Offer) => {
     const from = moment.utc(deal.validFromUTC);
-    const to = moment.utc(deal.localValidTo);
+    const to = moment.utc(deal.validToUTC);
     const now = new Date();
 
     return moment.utc(now).isBetween(from, to);
