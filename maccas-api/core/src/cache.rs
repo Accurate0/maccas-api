@@ -138,6 +138,7 @@ pub async fn refresh_offer_cache<'a>(
         refresh_offer_cache_for(&client, &cache_table_name, &account_name, &api_client).await?;
         remove_all_from_deal_stack_for(&api_client).await?;
     }
+
     log::info!(
         "refreshed {} account offer caches..",
         client_map.keys().len()

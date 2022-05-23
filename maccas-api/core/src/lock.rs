@@ -65,3 +65,20 @@ pub async fn get_all_locked_deals(
         None => Ok(locked_deal_list),
     }
 }
+
+pub async fn delete_all_locked_deals(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &str,
+) -> Result<(), Error> {
+    log::info!("deleting all locked deals");
+    let locked_deals = get_all_locked_deals(&client, table_name).await?;
+    for deal in locked_deals {
+        client
+            .delete_item()
+            .table_name(table_name)
+            .key(OFFER_ID, AttributeValue::S(deal))
+            .send()
+            .await?;
+    }
+    Ok(())
+}
