@@ -27,3 +27,32 @@ pub async fn get_by_order_id<'a>(
 
     Ok((offer_account_name, offer_proposition_id, offer_id))
 }
+
+pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Result<(), Error> {
+    // honestly, we don't want failures here, so we'll probably just suppress them...
+    log::info!("{}: trying to clean deal stack", api_client.username());
+    let deal_stack = api_client.offers_dealstack(None, None).await;
+    if let Ok(deal_stack) = deal_stack {
+        if let Some(deal_stack) = deal_stack.response {
+            if let Some(deal_stack) = deal_stack.deal_stack {
+                for deal in deal_stack {
+                    log::info!(
+                        "{}: removing offer -> {}",
+                        api_client.username(),
+                        deal.offer_id
+                    );
+                    api_client
+                        .remove_offer_from_offers_dealstack(
+                            deal.offer_id,
+                            &deal.offer_proposition_id.to_string(),
+                            None,
+                            None,
+                        )
+                        .await
+                        .ok();
+                }
+            }
+        }
+    };
+    Ok(())
+}
