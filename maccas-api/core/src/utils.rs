@@ -1,4 +1,5 @@
 use lambda_http::Error;
+use libmaccas::api::ApiClient;
 use std::collections::HashMap;
 use types::api::Offer;
 
