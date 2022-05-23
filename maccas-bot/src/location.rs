@@ -53,7 +53,7 @@ impl Bot {
         let user_id = command.user.id.as_u64().to_string();
         let user_options = UserOptions {
             store_id,
-            store_name: "NONE".to_string(),
+            store_name: Some("UNKNOWN".to_string()),
         };
 
         let _ = self.api_client.kvp_set(&user_id, &user_options).await;
