@@ -316,7 +316,6 @@ pub struct OfferDealStack {
 #[serde(rename_all = "camelCase")]
 pub struct DealStack {
     pub offer_id: i64,
-    #[serde(skip_serializing, skip_deserializing)]
     pub offer_proposition_id: String,
     pub state: Option<String>,
 }
