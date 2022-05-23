@@ -1,4 +1,5 @@
-import { Box, Button, Card, CardContent, Grid, Typography } from "@mui/material";
+import { Box, Button, Card, CardActions, CardContent, Grid, Typography } from "@mui/material";
+import { Container } from "@mui/system";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useCode from "../hooks/useCode";
@@ -19,37 +20,46 @@ const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
   return (
     <>
       {code && (
-        <Card variant="outlined">
-          <CardContent style={{ margin: "25px 25px 25px 25px" }}>
-            <Grid container direction="column" spacing={1}>
-              <Grid item>
-                <Typography sx={{ fontSize: 24 }} color="text.primary" gutterBottom>
-                  Offer
-                </Typography>
-                <Typography variant="h5" component="div"></Typography>
-                <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                  {selected?.name.split("\n")[0]}
-                </Typography>
-                <Typography gutterBottom>{code?.status.message}</Typography>
-                <Typography component="div" gutterBottom>
-                  <Box sx={{ fontFamily: "Monospace", fontSize: "h6.fontSize" }}>{code.response?.randomCode}</Box>
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Button
-                  color="error"
-                  variant="outlined"
-                  onClick={async () => {
-                    await remove();
-                    navigate("/");
-                  }}
-                >
-                  Remove
-                </Button>
-              </Grid>
+        <Container>
+          <Grid
+            container
+            spacing={0}
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            style={{ minHeight: "100vh" }}
+          >
+            <Grid item xs={12}>
+              <Card variant="outlined">
+                <CardContent style={{ margin: "25px 25px 25px 25px" }}>
+                  <Typography sx={{ fontSize: 24 }} color="text.primary" gutterBottom>
+                    Offer
+                  </Typography>
+                  <Typography variant="h5" component="div"></Typography>
+                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                    {selected?.name.split("\n")[0]}
+                  </Typography>
+                  <Typography gutterBottom>{code?.status.message}</Typography>
+                  <Typography component="div" gutterBottom>
+                    <Box sx={{ fontFamily: "Monospace", fontSize: "h6.fontSize" }}>{code.response?.randomCode}</Box>
+                  </Typography>
+                </CardContent>
+                <CardActions style={{ margin: "25px 25px 25px 25px" }}>
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    onClick={async () => {
+                      await remove();
+                      navigate("/");
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </CardActions>
+              </Card>
             </Grid>
-          </CardContent>
-        </Card>
+          </Grid>
+        </Container>
       )}
     </>
   );

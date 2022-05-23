@@ -1,18 +1,20 @@
-import { Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import useUserConfig from "../hooks/useUserConfig";
 
 const LocationValue = () => {
   const { config } = useUserConfig();
+  const navigate = useNavigate();
 
   return (
     <>
-      {config && (
-        <Grid container spacing={2}>
-          <Grid item alignSelf="center">
-            <Typography>Store: {config.storeName === "" ? "No Store Selected" : config.storeName}</Typography>
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item alignSelf="center">
+          <Button color="inherit" onClick={() => navigate("/location")}>
+            <Typography>Store: {config?.storeName || "No Store Selected"}</Typography>
+          </Button>
         </Grid>
-      )}
+      </Grid>
     </>
   );
 };
