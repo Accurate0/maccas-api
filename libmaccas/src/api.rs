@@ -5,7 +5,6 @@ use rand::SeedableRng;
 use reqwest::Method;
 use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 
-
 use types::maccas::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OfferResponse, RestaurantLocationResponse, TokenResponse,
@@ -57,6 +56,10 @@ impl ApiClient<'_> {
             .header("user-agent", "MCDSDK/20.0.14 (Android; 31; en-AU) GMA/6.2")
             .header("mcd-sourceapp", "GMA")
             .header("mcd-marketid", "AU");
+    }
+
+    pub fn username(&self) -> &String {
+        &self.login_username
     }
 
     pub fn set_auth_token(&mut self, auth_token: &String) {
