@@ -14,8 +14,15 @@ const LocationSelection = () => {
   };
 
   return (
-    <>
-      <Grid item paddingBottom={2}>
+    <Grid
+      container
+      spacing={0}
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+      style={{ minHeight: "100vh" }}
+    >
+      <Grid item xs={3} paddingBottom={2}>
         <TextField label="Location" value={value} onChange={(e) => setValue(e.target.value)} />
       </Grid>
       <Grid item>
@@ -28,7 +35,7 @@ const LocationSelection = () => {
           Search
         </Button>
       </Grid>
-    </>
+    </Grid>
   );
 };
 

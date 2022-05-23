@@ -38,7 +38,7 @@ const App = () => {
       </UnauthenticatedTemplate>
       <AuthenticatedTemplate>
         <Box sx={{ flexGrow: 1 }}>
-          <AppBar position="static" color="primary" elevation={0}>
+          <AppBar position="fixed" color="primary" elevation={1}>
             <Toolbar variant="dense">
               <Grid justifyContent="space-between" container>
                 <Grid item>
@@ -50,13 +50,8 @@ const App = () => {
                 </Grid>
                 <Grid item>
                   <Grid container spacing={3}>
-                    <Grid item alignSelf="center">
-                      <LocationValue />
-                    </Grid>
                     <Grid item>
-                      <Button color="inherit" onClick={() => navigate("/location")}>
-                        Change Location
-                      </Button>
+                      <LocationValue />
                     </Grid>
                     <Grid item>
                       <Button color="inherit" onClick={() => instance.logoutRedirect()}>
@@ -69,14 +64,12 @@ const App = () => {
             </Toolbar>
           </AppBar>
         </Box>
-        <Container style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "90vh" }}>
-          <Grid item container spacing={0} direction="column" alignItems="center" justifyContent="center">
-            <Routes>
-              <Route path="/" element={<DealSelector onSelection={onDealSelected} />} />
-              <Route path="/code" element={<DealSelection selected={deal} />} />
-              <Route path="/location" element={<LocationSelection />} />
-            </Routes>
-          </Grid>
+        <Container style={{ paddingTop: 50, paddingBottom: 50 }}>
+          <Routes>
+            <Route path="/" element={<DealSelector onSelection={onDealSelected} />} />
+            <Route path="/code" element={<DealSelection selected={deal} />} />
+            <Route path="/location" element={<LocationSelection />} />
+          </Routes>
         </Container>
       </AuthenticatedTemplate>
     </>
