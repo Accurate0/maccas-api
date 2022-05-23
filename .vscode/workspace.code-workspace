@@ -1,0 +1,49 @@
+{
+  "folders": [
+    {
+      "name": "maccas-api/api",
+      "path": "../maccas-api/api"
+    },
+    {
+      "name": "maccas-api/core",
+      "path": "../maccas-api/core"
+    },
+    {
+      "name": "maccas-api/refresh",
+      "path": "../maccas-api/refresh"
+    },
+    {
+      "name": "maccas-api/deals",
+      "path": "../maccas-api/deals"
+    },
+    {
+      "name": "libmaccas",
+      "path": "../libmaccas"
+    },
+    {
+      "name": "maccas-bot",
+      "path": "../maccas-bot"
+    },
+    {
+      "name": "maccas-web",
+      "path": "../maccas-web"
+    },
+    {
+      "name": "types",
+      "path": "../types"
+    },
+    {
+      "name": "maccas-core",
+      "path": "../maccas-core"
+    },
+    {
+      "name": "API",
+      "path": "../API"
+    },
+    {
+      "name": ".github",
+      "path": "../.github"
+    }
+  ],
+  "settings": {}
+}
