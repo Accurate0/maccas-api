@@ -128,7 +128,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                 .body(response.text().await?.into())
                                 .unwrap()
                         }
-                        None => Response::builder().status(400).body("".into()).unwrap(),
+                        None => Response::builder().status(401).body("".into()).unwrap(),
                     }
                 }
 
@@ -195,13 +195,13 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                         )
                                         .unwrap(),
                                     None => {
-                                        Response::builder().status(400).body("".into()).unwrap()
+                                        Response::builder().status(404).body("".into()).unwrap()
                                     }
                                 },
-                                None => Response::builder().status(400).body("".into()).unwrap(),
+                                None => Response::builder().status(404).body("".into()).unwrap(),
                             }
                         }
-                        None => Response::builder().status(400).body("".into()).unwrap(),
+                        None => Response::builder().status(404).body("".into()).unwrap(),
                     }
                 }
 
@@ -294,7 +294,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             }
                             Response::builder().status(204).body("".into()).unwrap()
                         }
-                        _ => Response::builder().status(400).body("".into()).unwrap(),
+                        _ => Response::builder().status(405).body("".into()).unwrap(),
                     }
                 }
                 _ => Response::builder().status(400).body("".into()).unwrap(),
