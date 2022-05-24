@@ -64,7 +64,7 @@ const App = () => {
             </Toolbar>
           </AppBar>
         </Box>
-        <Container style={{ paddingTop: 50, paddingBottom: 50 }}>
+        <Container>
           <Routes>
             <Route path="/" element={<DealSelector onSelection={onDealSelected} />} />
             <Route path="/code" element={<DealSelection selected={deal} />} />

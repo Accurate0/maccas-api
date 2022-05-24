@@ -13,8 +13,6 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
   const deals = useDeals();
   const mediaQuery = useMediaQuery(theme.breakpoints.down("md"));
 
-  console.log(mediaQuery);
-
   const isOfferValid = (deal: Offer) => {
     const from = moment.utc(deal.validFromUTC);
     const to = moment.utc(deal.validToUTC);
@@ -25,32 +23,35 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
 
   return (
     <>
-      <Grid container spacing={2} paddingTop={4}>
+      <Grid container spacing={2} paddingTop={8} paddingBottom={4}>
         {deals?.map((o) => (
-          <Grid item xs={6} md={4}>
+          <Grid item xs={6} md={3}>
             <Card square>
               <CardMedia component="img" image={`${IMAGE_BUCKET_BASE}/${o.imageBaseName}`} alt="green iguana" />
-              <CardContent style={{ height: mediaQuery ? "200px" : "120px", padding: "25px 25px 25px 25px" }}>
-                <Typography variant="h6" component="div">
-                  {o.name.split("\n")[0]}
-                </Typography>
-                <br />
-                <Typography variant="body2">Added: {new Date(o.CreationDateUtc).toLocaleDateString()}</Typography>
-                <br />
-                <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                  <Grid container item spacing={2}>
-                    <Grid item xs={3} md={1} style={{ color: theme.palette.text.primary }}>
-                      {isOfferValid(o) ? "✅" : "❌"}
-                    </Grid>
-                    <Grid item xs={9}>
-                      <Typography variant="caption">{o.count} available</Typography>
-                    </Grid>
+              <CardContent style={{ height: mediaQuery ? "170px" : "160px", padding: "25px 25px 25px 25px" }}>
+                <Grid container direction="column" justifyContent="space-evenly" alignItems="flex-start" spacing={2}>
+                  <Grid item xs={8}>
+                    <Typography variant={mediaQuery ? "h6" : "h5"} component="div">
+                      {o.name.split("\n")[0]}
+                    </Typography>
                   </Grid>
-                </Typography>
-                <br />
+                  <Grid item xs={4}>
+                    <Typography variant="caption">Added: {new Date(o.CreationDateUtc).toLocaleDateString()}</Typography>
+                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                      <Grid container item spacing={4}>
+                        <Grid item xs={3} md={1} style={{ color: theme.palette.text.primary }}>
+                          {isOfferValid(o) ? "✅" : "❌"}
+                        </Grid>
+                        <Grid item xs={9}>
+                          <Typography variant="caption">{o.count} available</Typography>
+                        </Grid>
+                      </Grid>
+                    </Typography>
+                  </Grid>
+                </Grid>
               </CardContent>
-              <CardActions style={{ padding: "25px 25px 25px 25px" }}>
-                <Button color="secondary" onClick={() => onSelection(o)}>
+              <CardActions>
+                <Button color="secondary" size="large" onClick={() => onSelection(o)}>
                   Select
                 </Button>
               </CardActions>
