@@ -22,6 +22,7 @@ pub struct Offer {
     pub name: String,
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
+    pub image_base_name: String,
 }
 
 impl From<crate::maccas::MaccasOffer> for Offer {
@@ -37,6 +38,7 @@ impl From<crate::maccas::MaccasOffer> for Offer {
             valid_to_utc: offer.valid_to_utc,
             name: offer.name,
             creation_date_utc: offer.creation_date_utc,
+            image_base_name: offer.image_base_name,
         }
     }
 }

@@ -74,7 +74,6 @@ pub struct MaccasOffer {
     pub short_description: String,
     #[serde(skip_serializing, skip_deserializing)]
     pub long_description: String,
-    #[serde(skip_serializing, skip_deserializing)]
     pub image_base_name: String,
     #[serde(skip_serializing, skip_deserializing)]
     pub image_base_language: String,

@@ -1,5 +1,6 @@
-import { Grid, Button, CardActions, CardContent, Typography, Paper, useMediaQuery } from "@mui/material";
+import { Grid, Button, CardActions, CardContent, Typography, useMediaQuery, CardMedia, Card } from "@mui/material";
 import moment from "moment";
+import { IMAGE_BUCKET_BASE } from "../config/api";
 import useDeals from "../hooks/useDeals";
 import { theme } from "../styles";
 import { Offer } from "../types";
@@ -27,7 +28,8 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
       <Grid container spacing={2} paddingTop={4}>
         {deals?.map((o) => (
           <Grid item xs={6} md={4}>
-            <Paper square>
+            <Card square>
+              <CardMedia component="img" image={`${IMAGE_BUCKET_BASE}/${o.imageBaseName}`} alt="green iguana" />
               <CardContent style={{ height: mediaQuery ? "200px" : "120px", padding: "25px 25px 25px 25px" }}>
                 <Typography variant="h6" component="div">
                   {o.name.split("\n")[0]}
@@ -52,7 +54,7 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
                   Select
                 </Button>
               </CardActions>
-            </Paper>
+            </Card>
           </Grid>
         ))}
       </Grid>
