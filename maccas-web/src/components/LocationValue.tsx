@@ -9,9 +9,9 @@ const LocationValue = () => {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid item alignSelf="center">
+        <Grid item alignSelf="center" alignItems="center">
           <Button color="inherit" onClick={() => navigate("/location")}>
-            <Typography>Store: {config?.storeName || "None"}</Typography>
+            <Typography variant="caption">Store: {config?.storeName || "None"}</Typography>
           </Button>
         </Grid>
       </Grid>

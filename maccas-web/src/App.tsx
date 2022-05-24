@@ -40,7 +40,7 @@ const App = () => {
         <Box sx={{ flexGrow: 1 }}>
           <AppBar position="fixed" color="primary" elevation={1}>
             <Toolbar variant="dense">
-              <Grid justifyContent="space-between" container>
+              <Grid justifyContent="space-between" alignItems="baseline" container>
                 <Grid item>
                   <Typography variant="h6" color="inherit" component="div">
                     <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
@@ -53,9 +53,9 @@ const App = () => {
                     <Grid item>
                       <LocationValue />
                     </Grid>
-                    <Grid item>
+                    <Grid item style={{ paddingLeft: 0 }}>
                       <Button color="inherit" onClick={() => instance.logoutRedirect()}>
-                        Logout
+                        <Typography variant="caption">Logout</Typography>
                       </Button>
                     </Grid>
                   </Grid>
