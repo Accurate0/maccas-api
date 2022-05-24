@@ -1,2 +1,2 @@
 
-export interface Offer { dealUuid: string, count: number, offerId: bigint, offerPropositionId: bigint, localValidFrom: string, localValidTo: string, validFromUTC: string, validToUTC: string, name: string, CreationDateUtc: string, imageBaseName: string, }
+export interface Offer { dealUuid: string, count: number, offerId: bigint, offerPropositionId: bigint, localValidFrom: string, localValidTo: string, validFromUTC: string, validToUTC: string, name: string, description: string, CreationDateUtc: string, imageBaseName: string, }

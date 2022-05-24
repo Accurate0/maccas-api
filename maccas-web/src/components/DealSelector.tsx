@@ -1,5 +1,20 @@
-import { Grid, Button, CardActions, CardContent, Typography, useMediaQuery, CardMedia, Card } from "@mui/material";
+import {
+  Grid,
+  Button,
+  CardActions,
+  CardContent,
+  Typography,
+  useMediaQuery,
+  CardMedia,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import moment from "moment";
+import { useState } from "react";
 import { IMAGE_BUCKET_BASE } from "../config/api";
 import useDeals from "../hooks/useDeals";
 import { theme } from "../styles";
@@ -12,6 +27,10 @@ export interface DealSelectorProps {
 const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
   const deals = useDeals();
   const mediaQuery = useMediaQuery(theme.breakpoints.down("md"));
+  const [open, setOpen] = useState(false);
+  const [dialogFor, setDialogFor] = useState<Offer>();
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const isOfferValid = (deal: Offer) => {
     const from = moment.utc(deal.validFromUTC);
@@ -23,6 +42,25 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
 
   return (
     <>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{dialogFor?.name.split("\n")[0]}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item>
+              <DialogContentText>Valid From: {moment.utc(dialogFor?.validFromUTC).format("LLL")}</DialogContentText>
+              <DialogContentText>Valid To: {moment.utc(dialogFor?.validToUTC).format("LLL")}</DialogContentText>
+            </Grid>
+            <Grid item>
+              <DialogContentText>{dialogFor?.description}</DialogContentText>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button color="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Grid container spacing={2} paddingTop={8} paddingBottom={4}>
         {deals?.map((o) => (
           <Grid item xs={6} md={3}>
@@ -51,9 +89,25 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
                 </Grid>
               </CardContent>
               <CardActions>
-                <Button color="secondary" size="large" onClick={() => onSelection(o)}>
-                  Select
-                </Button>
+                <Grid container justifyContent="space-between">
+                  <Grid item>
+                    <Button color="secondary" size="large" onClick={() => onSelection(o)}>
+                      Select
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      color="secondary"
+                      size="large"
+                      onClick={() => {
+                        setDialogFor(o);
+                        handleClickOpen();
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </Grid>
+                </Grid>
               </CardActions>
             </Card>
           </Grid>

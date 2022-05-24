@@ -7,7 +7,6 @@ use uuid::Uuid;
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
-    // not actually a maccas type
     pub deal_uuid: String,
     pub count: u32,
 
@@ -20,6 +19,7 @@ pub struct Offer {
     #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
+    pub description: String,
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
     pub image_base_name: String,
@@ -37,6 +37,7 @@ impl From<crate::maccas::MaccasOffer> for Offer {
             valid_from_utc: offer.valid_from_utc,
             valid_to_utc: offer.valid_to_utc,
             name: offer.name,
+            description: offer.long_description,
             creation_date_utc: offer.creation_date_utc,
             image_base_name: offer.image_base_name,
         }
