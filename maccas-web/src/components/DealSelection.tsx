@@ -12,7 +12,7 @@ export interface DealSelectionProps {
 
 const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
   const navigate = useNavigate();
-  const { code, setDeal, remove } = useCode();
+  const { code, setDeal, remove, refreshCode } = useCode();
 
   useEffect(() => {
     setDeal(selected);
@@ -47,16 +47,31 @@ const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
                   </Typography>
                 </CardContent>
                 <CardActions style={{ margin: "25px 25px 25px 25px" }}>
-                  <Button
-                    color="error"
-                    variant="outlined"
-                    onClick={async () => {
-                      await remove();
-                      navigate("/");
-                    }}
-                  >
-                    Remove
-                  </Button>
+                  <Grid container justifyContent="space-between">
+                    <Grid item>
+                      <Button
+                        color="success"
+                        variant="contained"
+                        onClick={async () => {
+                          await refreshCode();
+                        }}
+                      >
+                        Refresh
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button
+                        color="error"
+                        variant="outlined"
+                        onClick={async () => {
+                          await remove();
+                          navigate("/");
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </Grid>
+                  </Grid>
                 </CardActions>
               </Card>
             </Grid>

@@ -52,10 +52,31 @@ const useCode = () => {
     }
   };
 
+  const refreshCode = async () => {
+    try {
+      setBackdrop(true);
+      const response = await AxiosInstance.get(
+        `/code/${deal?.dealUuid}`,
+        userConfig
+          ? {
+              params: {
+                store: userConfig.storeId,
+              },
+            }
+          : undefined
+      );
+      setResponse(response.data);
+      return response.data as OfferDealStackResponse;
+    } finally {
+      setBackdrop(false);
+    }
+  };
+
   return {
     code,
     setDeal,
     remove,
+    refreshCode,
   };
 };
 
