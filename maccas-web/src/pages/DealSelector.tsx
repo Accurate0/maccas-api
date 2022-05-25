@@ -15,16 +15,18 @@ import {
 } from "@mui/material";
 import moment from "moment";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { IMAGE_BUCKET_BASE } from "../config/api";
 import useDeals from "../hooks/useDeals";
+import useSelectedDeal from "../hooks/useSelectedDeal";
 import { theme } from "../styles";
 import { Offer } from "../types";
 
-export interface DealSelectorProps {
-  onSelection: (deal?: Offer) => void;
-}
+export interface DealSelectorProps {}
 
-const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
+const DealSelector: React.FC<DealSelectorProps> = () => {
+  const navigate = useNavigate();
+  const [, setSelectedDeal] = useSelectedDeal();
   const deals = useDeals();
   const mediaQuery = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(false);
@@ -91,7 +93,14 @@ const DealSelector: React.FC<DealSelectorProps> = ({ onSelection }) => {
               <CardActions>
                 <Grid container justifyContent="space-between">
                   <Grid item>
-                    <Button color="secondary" size="large" onClick={() => onSelection(o)}>
+                    <Button
+                      color="secondary"
+                      size="large"
+                      onClick={() => {
+                        setSelectedDeal(o);
+                        navigate("/code");
+                      }}
+                    >
                       Select
                     </Button>
                   </Grid>

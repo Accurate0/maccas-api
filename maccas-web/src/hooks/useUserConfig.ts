@@ -40,15 +40,20 @@ const useUserConfig = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  return {
+    config,
+  };
+};
+
+export const useUpdateUserConfig = () => {
+  const [, setConfig] = useRecoilState(UserConfig);
+
   const updateConfig = async (c: UserOptions) => {
     setConfig(c);
     await AxiosInstance.patch("/user/config", c);
   };
 
-  return {
-    config,
-    updateConfig,
-  };
+  return updateConfig;
 };
 
 export default useUserConfig;
