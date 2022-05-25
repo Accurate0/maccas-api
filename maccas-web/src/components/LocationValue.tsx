@@ -11,7 +11,9 @@ const LocationValue = () => {
       <Grid container spacing={2}>
         <Grid item alignSelf="center" alignItems="center">
           <Button color="inherit" onClick={() => navigate("/location")}>
-            <Typography variant="caption">Store: {config?.storeName || "None"}</Typography>
+            <Typography variant="caption">
+              <b>Store: {config?.storeName || "None"}</b>
+            </Typography>
           </Button>
         </Grid>
       </Grid>

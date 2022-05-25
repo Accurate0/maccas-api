@@ -8,7 +8,7 @@ const NavBar = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="fixed" color="primary" elevation={1}>
+      <AppBar position="fixed" color="secondary" elevation={1}>
         <Toolbar variant="dense">
           <Grid justifyContent="space-between" alignItems="baseline" container>
             <Grid item>
@@ -25,7 +25,9 @@ const NavBar = () => {
                 </Grid>
                 <Grid item style={{ paddingLeft: 0 }}>
                   <Button color="inherit" onClick={() => instance.logoutRedirect()}>
-                    <Typography variant="caption">Logout</Typography>
+                    <Typography variant="caption">
+                      <b>Logout</b>
+                    </Typography>
                   </Button>
                 </Grid>
               </Grid>
