@@ -74,7 +74,7 @@ const DealSelection: React.FC<DealSelectionProps> = () => {
                           navigate("/");
                         }}
                       >
-                        Another
+                        Clear
                       </Button>
                     </Grid>
                     <Grid item>
