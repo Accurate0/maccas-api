@@ -67,6 +67,18 @@ const DealSelection: React.FC<DealSelectionProps> = () => {
                     </Grid>
                     <Grid item>
                       <Button
+                        color="info"
+                        variant="outlined"
+                        onClick={async () => {
+                          setDeal(null);
+                          navigate("/");
+                        }}
+                      >
+                        Another
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button
                         color="error"
                         variant="outlined"
                         onClick={async () => {
