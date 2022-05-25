@@ -165,8 +165,11 @@ pub async fn refresh_offer_cache_for(
     let now: DateTime<Utc> = now.into();
     let now = now.to_rfc3339();
 
+    let ignored_offers = vec![30762, 162091, 165964];
+
     let resp: Vec<types::api::Offer> = resp
         .iter_mut()
+        .filter(|offer| !ignored_offers.contains(&offer.offer_proposition_id))
         .map(|offer| types::api::Offer::from(offer.clone()))
         .collect();
 
