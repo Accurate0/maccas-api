@@ -96,7 +96,14 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             )
                             .await?;
 
-                            serde_json::to_string(&resp).unwrap().into_response()
+                            // if its none, this offer already exists, but we should provide the deal stack information
+                            // idempotent
+                            if resp.response.is_none() {
+                                let resp = api_client.offers_dealstack(None, store).await?;
+                                serde_json::to_string(&resp).unwrap().into_response()
+                            } else {
+                                serde_json::to_string(&resp).unwrap().into_response()
+                            }
                         }
 
                         Method::DELETE => {

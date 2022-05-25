@@ -1,12 +1,12 @@
 import { Button, Grid, TextField } from "@mui/material";
 import { useState } from "react";
 import useLocationSearch from "../hooks/useLocationSearch";
-import useUserConfig from "../hooks/useUserConfig";
+import { useUpdateUserConfig } from "../hooks/useUserConfig";
 
 const LocationSelection = () => {
   const [value, setValue] = useState<string>();
   const { search } = useLocationSearch();
-  const { updateConfig } = useUserConfig();
+  const updateConfig = useUpdateUserConfig();
 
   const searchAndUpdate = async (text: string) => {
     const resp = await search(text);

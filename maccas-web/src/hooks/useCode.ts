@@ -1,13 +1,14 @@
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import AxiosInstance from "../lib/AxiosInstance";
-import { Offer, OfferDealStackResponse } from "../types";
+import { OfferDealStackResponse } from "../types";
 import useNotification from "./useNotification";
+import useSelectedDeal from "./useSelectedDeal";
 import useSetBackdrop from "./useSetBackdrop";
 import { useGetUserConfig } from "./useUserConfig";
 
 const useCode = () => {
-  const [deal, setDeal] = useState<Offer>();
+  const [deal, setDeal] = useSelectedDeal();
   const [code, setResponse] = useState<OfferDealStackResponse>();
   const userConfig = useGetUserConfig();
   const setBackdrop = useSetBackdrop();
@@ -28,6 +29,7 @@ const useCode = () => {
               }
             : undefined
         );
+
         setResponse(response.data as OfferDealStackResponse);
       } catch (error) {
         notification({ msg: (error as AxiosError).message, variant: "error" });
@@ -46,6 +48,7 @@ const useCode = () => {
     try {
       setBackdrop(true);
       const response = await AxiosInstance.delete(`/deals/${deal?.dealUuid}`);
+      setDeal(null);
       return response.data as OfferDealStackResponse;
     } finally {
       setBackdrop(false);

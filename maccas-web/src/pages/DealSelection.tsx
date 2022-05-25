@@ -4,19 +4,18 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IMAGE_BUCKET_BASE } from "../config/api";
 import useCode from "../hooks/useCode";
-import { Offer } from "../types";
+import useSelectedDeal from "../hooks/useSelectedDeal";
 
-export interface DealSelectionProps {
-  selected?: Offer;
-}
+export interface DealSelectionProps {}
 
-const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
+const DealSelection: React.FC<DealSelectionProps> = () => {
+  const [selectedDeal] = useSelectedDeal();
   const navigate = useNavigate();
   const { code, setDeal, remove, refreshCode } = useCode();
 
   useEffect(() => {
-    setDeal(selected);
-  }, [selected, setDeal]);
+    setDeal(selectedDeal);
+  }, [selectedDeal, setDeal]);
 
   return (
     <>
@@ -29,17 +28,24 @@ const DealSelection: React.FC<DealSelectionProps> = ({ selected }) => {
             alignItems="center"
             justifyContent="center"
             style={{ minHeight: "100vh" }}
+            paddingTop={8}
+            paddingBottom={4}
           >
             <Grid item xs={12}>
               <Card variant="outlined">
-                <CardMedia component="img" image={`${IMAGE_BUCKET_BASE}/${selected?.imageBaseName}`} />
+                <CardMedia
+                  height="380"
+                  width="380"
+                  component="img"
+                  image={`${IMAGE_BUCKET_BASE}/${selectedDeal?.imageBaseName}`}
+                />
                 <CardContent style={{ margin: "25px 25px 25px 25px" }}>
                   <Typography sx={{ fontSize: 24 }} color="text.primary" gutterBottom>
                     Offer
                   </Typography>
                   <Typography variant="h5" component="div"></Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    {selected?.name.split("\n")[0]}
+                    {selectedDeal?.name.split("\n")[0]}
                   </Typography>
                   <Typography gutterBottom>{code?.status.message}</Typography>
                   <Typography component="div" gutterBottom>
