@@ -6,7 +6,7 @@ const AxiosInstance = axios.create({
   baseURL: "https://api.anurag.sh/maccas/v2",
 });
 
-const fetchAccessToken = () => {
+const fetchAccessToken = (): Promise<string> => {
   const accounts = MSALInstance.getAllAccounts();
 
   return new Promise((resolve) => {
