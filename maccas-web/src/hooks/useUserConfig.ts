@@ -27,7 +27,10 @@ const useUserConfig = () => {
         const response = await AxiosInstance.get("/user/config");
         setConfig(response.data as UserOptions);
       } catch (error) {
-        notification({ msg: (error as AxiosError).message, variant: "error" });
+        const err = error as AxiosError;
+        if (err.response?.status !== 404) {
+          notification({ msg: err.message, variant: "error" });
+        }
       } finally {
         setBackdrop(false);
       }
