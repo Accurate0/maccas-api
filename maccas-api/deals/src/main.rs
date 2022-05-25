@@ -218,10 +218,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...
                     let offer_list: Vec<Offer> = offer_list
                         .into_iter()
-                        .filter(|offer| {
-                            !locked_deals.contains(&offer.deal_uuid.to_string())
-                                && offer.offer_proposition_id != 30762
-                        })
+                        .filter(|offer| !locked_deals.contains(&offer.deal_uuid.to_string()))
                         .collect();
 
                     let mut count_map = HashMap::<i64, u32>::new();
