@@ -3,6 +3,7 @@ use core::cache;
 use core::config;
 use core::constants;
 use core::lock;
+use http::HeaderValue;
 use http::Method;
 use itertools::Itertools;
 use jwt::Header;
@@ -15,9 +16,11 @@ use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use std::collections::HashMap;
+use types::api::LastRefreshInformation;
 use types::api::Offer;
 use types::api::RestaurantInformation;
 use types::places::PlaceResponse;
+use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -50,12 +53,28 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 .map(|u| u.account_name.clone())
                 .collect();
 
+            let potential_header =
+                HeaderValue::from_str(&Uuid::new_v4().to_hyphenated().to_string()).unwrap();
             let correlation_id = request
                 .headers()
                 .get(constants::CORRELATION_ID_HEADER)
-                .unwrap();
+                .unwrap_or_else(|| &potential_header);
 
             match s.as_str() {
+                "/deals/last-refresh" => {
+                    let response = cache::get_refresh_time_for_offer_cache(
+                        &dynamodb_client,
+                        &config.cache_table_name,
+                    )
+                    .await?;
+
+                    let response = LastRefreshInformation {
+                        last_refresh: response,
+                    };
+
+                    serde_json::to_string(&response).unwrap().into_response()
+                }
+
                 "/locations" => {
                     let distance = query_params.first("distance");
                     let latitude = query_params.first("latitude");

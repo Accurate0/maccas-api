@@ -188,3 +188,26 @@ pub async fn refresh_offer_cache_for(
     log::info!("{}: offer cache refreshed", account_name);
     Ok(())
 }
+
+pub async fn get_refresh_time_for_offer_cache(
+    client: &aws_sdk_dynamodb::Client,
+    cache_table_name: &String,
+) -> Result<String, Error> {
+    let table_resp = client
+        .scan()
+        .limit(1)
+        .table_name(cache_table_name)
+        .send()
+        .await
+        .unwrap();
+
+    if table_resp.count == 1 {
+        Ok(table_resp.items.unwrap().first().unwrap()[LAST_REFRESH]
+            .as_s()
+            .ok()
+            .unwrap()
+            .to_string())
+    } else {
+        panic!()
+    }
+}

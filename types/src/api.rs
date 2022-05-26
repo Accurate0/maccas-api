@@ -61,3 +61,14 @@ impl From<crate::maccas::Restaurant> for RestaurantInformation {
         }
     }
 }
+
+#[derive(ts_rs::TS)]
+#[ts(
+    export,
+    export_to = "../maccas-web/src/types/LastRefreshInformation.ts"
+)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LastRefreshInformation {
+    pub last_refresh: String,
+}
