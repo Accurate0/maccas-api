@@ -6,3 +6,4 @@ export * from "./Status";
 export * from "./JwtClaim";
 export * from "./RestaurantInformation";
 export * from "./UserOptions";
+export * from "./LastRefreshInformation";
