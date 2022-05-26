@@ -151,7 +151,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         }
 
                         Method::DELETE => {
-                            let resp = api_client
+                            api_client
                                 .remove_offer_from_offers_dealstack(
                                     offer_id.parse::<i64>().unwrap(),
                                     &offer_proposition_id,
@@ -163,7 +163,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                             lock::unlock_deal(&client, &config.offer_id_table_name, deal_id)
                                 .await?;
 
-                            serde_json::to_string(&resp).unwrap().into_response()
+                            Response::builder().status(204).body("".into()).unwrap()
                         }
 
                         _ => Response::builder().status(405).body("".into()).unwrap(),
