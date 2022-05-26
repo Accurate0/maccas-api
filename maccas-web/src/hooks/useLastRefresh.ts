@@ -1,7 +1,7 @@
 import moment from "moment";
 import { useEffect } from "react";
 import AxiosInstance from "../lib/AxiosInstance";
-import { LastRefreshInformation } from "../types/LastRefreshInformation";
+import { LastRefreshInformation } from "../types";
 import useNotification from "./useNotification";
 
 const useLastRefresh = () => {
