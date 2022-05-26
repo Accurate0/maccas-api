@@ -47,9 +47,8 @@ const useCode = () => {
   const remove = async () => {
     try {
       setBackdrop(true);
-      const response = await AxiosInstance.delete(`/deals/${deal?.dealUuid}`);
+      await AxiosInstance.delete(`/deals/${deal?.dealUuid}`);
       setDeal(null);
-      return response.data as OfferDealStackResponse;
     } finally {
       setBackdrop(false);
     }
