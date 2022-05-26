@@ -187,6 +187,20 @@
         },
         "responses": []
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v2/Last-Refresh",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get Last Refresh",
+        "method": "GET",
+        "urlTemplate": "/deals/last-refresh",
+        "templateParameters": [],
+        "request": {},
+        "responses": []
+      }
     }
   ]
 }

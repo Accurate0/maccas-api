@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IMAGE_BUCKET_BASE } from "../config/api";
 import useDeals from "../hooks/useDeals";
+import useLastRefresh from "../hooks/useLastRefresh";
 import useSelectedDeal from "../hooks/useSelectedDeal";
 import { theme } from "../styles";
 import { Offer } from "../types";
@@ -33,6 +34,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
   const [dialogFor, setDialogFor] = useState<Offer>();
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  useLastRefresh();
 
   const isOfferValid = (deal: Offer) => {
     const from = moment.utc(deal.validFromUTC);
@@ -49,8 +51,10 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item>
-              <DialogContentText>Valid From: {moment.utc(dialogFor?.validFromUTC).format("LLL")}</DialogContentText>
-              <DialogContentText>Valid To: {moment.utc(dialogFor?.validToUTC).format("LLL")}</DialogContentText>
+              <DialogContentText>
+                Valid From: {moment.utc(dialogFor?.validFromUTC).local().format("LLL")}
+              </DialogContentText>
+              <DialogContentText>Valid To: {moment.utc(dialogFor?.validToUTC).local().format("LLL")}</DialogContentText>
             </Grid>
             <Grid item>
               <DialogContentText>{dialogFor?.description}</DialogContentText>
