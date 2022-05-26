@@ -25,3 +25,5 @@ aws-config = "0.12.0"
 http = "0.2.6"
 chrono = "0.4.19"
 simplelog = "0.12.0"
+uuid = { version = "0.8.2", features = ["v4"] }
+jwt = "0.16.0"

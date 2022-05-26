@@ -2,6 +2,7 @@ use aws_sdk_dynamodb::Client;
 use core::cache;
 use core::config;
 use core::constants;
+use core::lock;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
 use maccas_core::client;
@@ -27,6 +28,10 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let client_map = core::client::get_client_map(&http_client, &config, &client).await?;
 
     cache::refresh_offer_cache(&client, &config.cache_table_name, &client_map).await?;
+
+    if env == constants::DEFAULT_AWS_REGION {
+        lock::delete_all_locked_deals(&client, &config.offer_id_table_name).await?
+    }
 
     Ok(json!(
         {
