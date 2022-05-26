@@ -121,7 +121,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                     user_id: jwt.claims().oid.to_string(),
                                     deal_readable: offer_name.split("\n").collect::<Vec<&str>>()[0]
                                         .to_string(),
-                                    deal_uuid: offer_id.to_string(),
+                                    deal_uuid: deal_id.to_string(),
                                     user_readable: jwt.claims().name.to_string(),
                                     message: "Deal Used",
                                     local_time: dt.format("%a %b %e %T %Y").to_string(),
