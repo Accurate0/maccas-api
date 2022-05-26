@@ -10,6 +10,7 @@ use jwt::Header;
 use jwt::Token;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
+use libmaccas::util;
 use maccas_core::client;
 use maccas_core::logging;
 use rand::prelude::SliceRandom;
@@ -20,7 +21,6 @@ use types::api::LastRefreshInformation;
 use types::api::Offer;
 use types::api::RestaurantInformation;
 use types::places::PlaceResponse;
-use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -53,8 +53,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 .map(|u| u.account_name.clone())
                 .collect();
 
-            let potential_header =
-                HeaderValue::from_str(&Uuid::new_v4().to_hyphenated().to_string()).unwrap();
+            let potential_header = HeaderValue::from_str(util::get_uuid().as_str()).unwrap();
             let correlation_id = request
                 .headers()
                 .get(constants::CORRELATION_ID_HEADER)

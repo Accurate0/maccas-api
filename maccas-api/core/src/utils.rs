@@ -6,10 +6,11 @@ use types::api::Offer;
 pub async fn get_by_order_id<'a>(
     offer_map: &HashMap<String, Vec<Offer>>,
     deal_id: &String,
-) -> Result<(String, String, String), Error> {
+) -> Result<(String, String, String, String), Error> {
     let mut offer_account_name: Option<String> = None;
     let mut offer_proposition_id: Option<String> = None;
     let mut offer_id: Option<String> = None;
+    let mut offer_name: Option<String> = None;
 
     for (account_name, offer_list) in offer_map {
         for offer in offer_list {
@@ -17,6 +18,7 @@ pub async fn get_by_order_id<'a>(
                 offer_account_name = Some(account_name.to_string());
                 offer_proposition_id = Some(offer.offer_proposition_id.to_string());
                 offer_id = Some(offer.offer_id.to_string());
+                offer_name = Some(offer.name.to_string());
                 break;
             }
         }
@@ -25,8 +27,14 @@ pub async fn get_by_order_id<'a>(
     let offer_account_name = offer_account_name.ok_or("no account")?;
     let offer_proposition_id = offer_proposition_id.ok_or("no offer")?;
     let offer_id = offer_id.ok_or("no offer id")?;
+    let offer_name = offer_name.ok_or("no offer id")?;
 
-    Ok((offer_account_name, offer_proposition_id, offer_id))
+    Ok((
+        offer_account_name,
+        offer_proposition_id,
+        offer_id,
+        offer_name,
+    ))
 }
 
 pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Result<(), Error> {

@@ -1,15 +1,22 @@
 use aws_sdk_dynamodb::Client;
+use chrono::DateTime;
 use chrono::Duration;
+use chrono::Local;
 use core::cache;
 use core::config;
 use core::constants;
 use core::lock;
 use core::utils;
+use http::HeaderValue;
 use http::Method;
+use jwt::Header;
+use jwt::Token;
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
+use libmaccas::util;
 use maccas_core::client;
 use maccas_core::logging;
+use types::bot::UsageLog;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -44,7 +51,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             let deal_id = params.first("dealId").expect("must have id");
             let deal_id = &deal_id.to_owned();
 
-            if let Ok((account_name, offer_proposition_id, offer_id)) =
+            if let Ok((account_name, offer_proposition_id, offer_id, offer_name)) =
                 utils::get_by_order_id(&offer_map, deal_id).await
             {
                 let user = config
@@ -92,9 +99,46 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                 &client,
                                 &config.offer_id_table_name,
                                 deal_id,
-                                Duration::hours(6),
+                                Duration::hours(3),
                             )
                             .await?;
+
+                            // log usage
+                            let auth_header = request.headers().get(http::header::AUTHORIZATION);
+                            if let Some(auth_header) = auth_header {
+                                let value = auth_header.to_str().unwrap().replace("Bearer ", "");
+                                let jwt: Token<Header, types::jwt::JwtClaim, _> =
+                                    jwt::Token::parse_unverified(&value).unwrap();
+                                let potential_header =
+                                    HeaderValue::from_str(util::get_uuid().as_str()).unwrap();
+                                let correlation_id = request
+                                    .headers()
+                                    .get(constants::CORRELATION_ID_HEADER)
+                                    .unwrap_or_else(|| &potential_header);
+                                let dt: DateTime<Local> = Local::now();
+
+                                let usage_log = UsageLog {
+                                    user_id: jwt.claims().oid.to_string(),
+                                    deal_readable: offer_name.split("\n").collect::<Vec<&str>>()[0]
+                                        .to_string(),
+                                    deal_uuid: offer_id.to_string(),
+                                    user_readable: jwt.claims().name.to_string(),
+                                    message: "Deal Used",
+                                    local_time: dt.format("%a %b %e %T %Y").to_string(),
+                                };
+
+                                http_client
+                                    .request(
+                                        Method::POST,
+                                        format!("{}/log", constants::LOG_API_BASE).as_str(),
+                                    )
+                                    .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
+                                    .header(constants::CORRELATION_ID_HEADER, correlation_id)
+                                    .header(constants::X_API_KEY_HEADER, &config.api_key)
+                                    .body(serde_json::to_string(&usage_log).unwrap())
+                                    .send()
+                                    .await?;
+                            }
 
                             // if its none, this offer already exists, but we should provide the deal stack information
                             // idempotent

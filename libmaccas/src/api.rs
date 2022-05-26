@@ -9,7 +9,6 @@ use types::maccas::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OfferResponse, RestaurantLocationResponse, TokenResponse,
 };
-use uuid::Uuid;
 
 const BASE_URL: &str = "https://ap-prod.api.mcd.com";
 
@@ -52,7 +51,7 @@ impl ApiClient<'_> {
             .header("accept-language", "en-AU")
             .header("content-type", "application/json; charset=UTF-8")
             .header("mcd-clientid", client_id)
-            .header("mcd-uuid", Uuid::new_v4().to_hyphenated().to_string())
+            .header("mcd-uuid", crate::util::get_uuid())
             .header("user-agent", "MCDSDK/20.0.14 (Android; 31; en-AU) GMA/6.2")
             .header("mcd-sourceapp", "GMA")
             .header("mcd-marketid", "AU");
