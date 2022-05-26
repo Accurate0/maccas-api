@@ -662,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "maccas-bot"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1692,7 +1692,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "types"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "chrono",
  "serde",
