@@ -16,6 +16,7 @@ pub struct ApiConfig {
     pub client_secret: String,
     pub table_name: String,
     pub cache_table_name: String,
+    pub cache_table_name_v2: String,
     pub offer_id_table_name: String,
     pub api_key: String,
     pub users: Vec<ApiConfigUsers>,
@@ -62,6 +63,7 @@ async fn build_config_from_bytes(
         .try_deserialize::<ApiConfig>()
         .expect("valid configuration present")
 }
+
 pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> ApiConfig {
     let s3_client = aws_sdk_s3::Client::new(&shared_config);
     let base_config_bytes = load_base_config_from_s3(&s3_client).await;

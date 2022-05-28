@@ -29,3 +29,4 @@ reqwest-middleware = "0.1.5"
 reqwest-retry = "0.1.4"
 tokio-stream = "0.1.8"
 log = "0.4.0"
+serde_dynamo = { version = "4.0.1", features = ["aws-sdk-dynamodb+0_12"] }

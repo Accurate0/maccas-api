@@ -27,7 +27,13 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let http_client = client::get_http_client();
     let client_map = core::client::get_client_map(&http_client, &config, &client).await?;
 
-    cache::refresh_offer_cache(&client, &config.cache_table_name, &client_map).await?;
+    cache::refresh_offer_cache(
+        &client,
+        &config.cache_table_name,
+        &config.cache_table_name_v2,
+        &client_map,
+    )
+    .await?;
 
     if env == constants::DEFAULT_AWS_REGION {
         lock::delete_all_locked_deals(&client, &config.offer_id_table_name).await?
