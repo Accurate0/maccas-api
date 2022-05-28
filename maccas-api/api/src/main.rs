@@ -6,7 +6,6 @@ use core::cache;
 use core::config;
 use core::constants;
 use core::lock;
-use core::utils;
 use http::HeaderValue;
 use http::Method;
 use jwt::Header;
@@ -45,14 +44,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             let params = request.path_parameters();
             let query_params = request.query_string_parameters();
 
-            let offer_map = cache::get_all_offers_as_map(&client, &config.cache_table_name).await?;
             let store = query_params.first("store");
-
             let deal_id = params.first("dealId").expect("must have id");
             let deal_id = &deal_id.to_owned();
 
-            if let Ok((account_name, offer_proposition_id, offer_id, offer_name)) =
-                utils::get_by_order_id(&offer_map, deal_id).await
+            if let Some((account_name, offer)) =
+                cache::get_offer_by_id(deal_id, &client, &config.cache_table_name_v2).await
             {
                 let user = config
                     .users
@@ -71,6 +68,10 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                 )
                 .await?;
 
+                let offer_id = offer.offer_id;
+                let offer_proposition_id = offer.offer_proposition_id.to_string();
+                let offer_name = offer.name;
+
                 match path {
                     "/code/{dealId}" => {
                         let resp = api_client.offers_dealstack(None, store).await?;
@@ -84,10 +85,11 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                 .await?;
                             // this can cause the offer id to change.. for offers with id == 0
                             // we need to update the database to avoid inconsistency
-                            if offer_id == "0" {
+                            if offer_id == 0 {
                                 cache::refresh_offer_cache_for(
                                     &client,
                                     &config.cache_table_name,
+                                    &config.cache_table_name_v2,
                                     &account_name,
                                     &api_client,
                                 )
@@ -153,7 +155,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         Method::DELETE => {
                             api_client
                                 .remove_offer_from_offers_dealstack(
-                                    offer_id.parse::<i64>().unwrap(),
+                                    offer_id,
                                     &offer_proposition_id,
                                     None,
                                     store,
