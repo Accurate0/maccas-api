@@ -40,12 +40,14 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let context = request.request_context();
     let query_params = request.query_string_parameters();
 
+    log::info!("request: {:#?}", request);
+
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
         _ => panic!(),
     };
 
-    Ok(match resource_path {
+    let response = match resource_path {
         Some(s) => {
             let account_name_list: Vec<String> = config
                 .users
@@ -259,10 +261,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         })
                         .collect();
 
-                    // this can't be safely cached due to deal volatility
                     Response::builder()
                         .status(200)
-                        .header(http::header::CACHE_CONTROL, "no-cache")
                         .body(serde_json::to_string(&offer_list).unwrap().into())
                         .unwrap()
                 }
@@ -316,5 +316,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             }
         }
         None => Response::builder().status(400).body("".into()).unwrap(),
-    })
+    };
+
+    log::info!("response: {:#?}", response);
+    Ok(response)
 }
