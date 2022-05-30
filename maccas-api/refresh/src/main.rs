@@ -27,6 +27,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let http_client = client::get_http_client();
     let client_map = core::client::get_client_map(&http_client, &config, &client).await?;
 
+    log::info!("refresh started..");
     cache::refresh_offer_cache(
         &client,
         &config.cache_table_name,

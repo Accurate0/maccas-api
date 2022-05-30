@@ -36,7 +36,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         _ => panic!(),
     };
 
-    Ok(match resource_path {
+    log::info!("request: {:#?}", request);
+
+    let response = match resource_path {
         Some(path) => {
             let path = path.as_str();
 
@@ -129,7 +131,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                     local_time: dt.format("%a %b %e %T %Y").to_string(),
                                 };
 
-                                http_client
+                                let response = http_client
                                     .request(
                                         Method::POST,
                                         format!("{}/log", constants::LOG_API_BASE).as_str(),
@@ -139,7 +141,9 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                                     .header(constants::X_API_KEY_HEADER, &config.api_key)
                                     .body(serde_json::to_string(&usage_log).unwrap())
                                     .send()
-                                    .await?;
+                                    .await;
+
+                                log::info!("logging response: {:#?}", response);
                             }
 
                             // if its none, this offer already exists, but we should provide the deal stack information
@@ -179,5 +183,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             }
         }
         _ => Response::builder().status(400).body("".into()).unwrap(),
-    })
+    };
+
+    log::info!("response: {:#?}", response);
+    Ok(response)
 }
