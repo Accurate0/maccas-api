@@ -27,6 +27,8 @@ jobs:
           toolchain: stable
 
       - uses: Swatinem/rust-cache@v1
+        with:
+          sharedKey: lambda
 
       - name: rust-cargo-install
         uses: actions-rs/install@v0.1.2
