@@ -29,7 +29,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
   const navigate = useNavigate();
   const [, setSelectedDeal] = useSelectedDeal();
   const deals = useDeals();
-  const mediaQuery = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(false);
   const [dialogFor, setDialogFor] = useState<Offer>();
   const handleClickOpen = () => setOpen(true);
@@ -72,10 +72,10 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
           <Grid item xs={6} md={3}>
             <Card square>
               <CardMedia component="img" image={`${IMAGE_BUCKET_BASE}/${o.imageBaseName}`} alt="green iguana" />
-              <CardContent style={{ height: mediaQuery ? "170px" : "160px", padding: "25px 25px 25px 25px" }}>
+              <CardContent style={{ height: "170px", padding: "25px 25px 25px 25px" }}>
                 <Grid container direction="column" justifyContent="space-evenly" alignItems="flex-start" spacing={2}>
                   <Grid item xs={8}>
-                    <Typography variant={mediaQuery ? "h6" : "h5"} component="div">
+                    <Typography variant={isMobile ? "h6" : "h5"} component="div">
                       {o.name.split("\n")[0]}
                     </Typography>
                   </Grid>
@@ -99,7 +99,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
                   <Grid item>
                     <Button
                       color="secondary"
-                      size="large"
+                      size={isMobile ? "small" : "large"}
                       onClick={() => {
                         setSelectedDeal(o);
                         navigate("/code");
@@ -111,7 +111,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
                   <Grid item>
                     <Button
                       color="secondary"
-                      size="large"
+                      size={isMobile ? "small" : "large"}
                       onClick={() => {
                         setDialogFor(o);
                         handleClickOpen();
