@@ -69,7 +69,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
       </Dialog>
       <Grid container spacing={2} paddingTop={8} paddingBottom={4}>
         {deals?.map((o) => (
-          <Grid item xs={6} md={3}>
+          <Grid item xs={6} md={3} key={o.dealUuid}>
             <Card square>
               <CardMedia component="img" image={`${IMAGE_BUCKET_BASE}/${o.imageBaseName}`} alt="green iguana" />
               <CardContent style={{ height: "170px", padding: "25px 25px 25px 25px" }}>
@@ -81,7 +81,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
                   </Grid>
                   <Grid item xs={4}>
                     <Typography variant="caption">Added: {new Date(o.CreationDateUtc).toLocaleDateString()}</Typography>
-                    <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                    <Typography component="span" sx={{ mb: 1.5 }} color="text.secondary">
                       <Grid container item spacing={4}>
                         <Grid item xs={3} md={1} style={{ color: theme.palette.text.primary }}>
                           {isOfferValid(o) ? "✅" : "❌"}
