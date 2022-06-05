@@ -7,7 +7,7 @@ export const MSALConfig: Configuration = {
     knownAuthorities: ["https://apib2clogin.b2clogin.com/"],
   },
   cache: {
-    cacheLocation: "sessionStorage",
+    cacheLocation: "localStorage",
     storeAuthStateInCookie: false,
   },
 };
