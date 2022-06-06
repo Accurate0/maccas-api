@@ -7,3 +7,8 @@ export * from "./JwtClaim";
 export * from "./RestaurantInformation";
 export * from "./UserOptions";
 export * from "./LastRefreshInformation";
+export * from "./Address";
+export * from "./Location";
+export * from "./Restaurant";
+export * from "./RestaurantLocationList";
+export * from "./RestaurantLocationResponse";

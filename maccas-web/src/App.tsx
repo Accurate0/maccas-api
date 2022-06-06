@@ -2,7 +2,7 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/
 import { Button, Container, Grid } from "@mui/material";
 import { Routes, Route } from "react-router-dom";
 import DealSelection from "./pages/DealSelection";
-import LocationSelection from "./components/LocationSelection";
+import LocationSelection from "./pages/LocationSelection";
 import { LoginRequest } from "./config/msal";
 import DealSelector from "./pages/DealSelector";
 import NavBar from "./components/NavBar";

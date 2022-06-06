@@ -147,6 +147,11 @@ pub struct SaleAmountCondition {
     pub include_gift_coupons: bool,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(
+    export,
+    export_to = "../maccas-web/src/types/RestaurantLocationResponse.ts"
+)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantLocationResponse {
@@ -154,12 +159,19 @@ pub struct RestaurantLocationResponse {
     pub response: Option<RestaurantLocationList>,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(
+    export,
+    export_to = "../maccas-web/src/types/RestaurantLocationList.ts"
+)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantLocationList {
     pub restaurants: Vec<Restaurant>,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(export, export_to = "../maccas-web/src/types/Restaurant.ts")]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Restaurant {
@@ -179,6 +191,8 @@ pub struct Restaurant {
     pub phone_number: Option<String>,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(export, export_to = "../maccas-web/src/types/Address.ts")]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Address {
@@ -194,6 +208,8 @@ pub struct McDeliveries {
     pub mc_delivery: Vec<Value>,
 }
 
+#[derive(ts_rs::TS)]
+#[ts(export, export_to = "../maccas-web/src/types/Location.ts")]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {

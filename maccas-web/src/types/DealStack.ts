@@ -1,2 +1,2 @@
 
-export interface DealStack { offerId: bigint, state: string | null, }
+export interface DealStack { offerId: bigint, offerPropositionId: string, state: string | null, }
