@@ -49,12 +49,6 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
 
     let response = match resource_path {
         Some(s) => {
-            let account_name_list: Vec<String> = config
-                .users
-                .iter()
-                .map(|u| u.account_name.clone())
-                .collect();
-
             let potential_header = HeaderValue::from_str(util::get_uuid().as_str()).unwrap();
             let correlation_id = request
                 .headers()
@@ -82,6 +76,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                     let longitude = query_params.first("longitude");
 
                     if distance.is_some() && latitude.is_some() && longitude.is_some() {
+                        // TODO: use a service account
+                        let account_name_list: Vec<String> = config
+                            .users
+                            .iter()
+                            .map(|u| u.account_name.clone())
+                            .collect();
                         let mut rng = StdRng::from_entropy();
                         let choice = account_name_list.choose(&mut rng).unwrap().to_string();
                         let user = config
@@ -170,6 +170,12 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
                         .await
                         .unwrap();
 
+                    // TODO: use a service account
+                    let account_name_list: Vec<String> = config
+                        .users
+                        .iter()
+                        .map(|u| u.account_name.clone())
+                        .collect();
                     let mut rng = StdRng::from_entropy();
                     let choice = account_name_list.choose(&mut rng).unwrap().to_string();
                     let user = config
