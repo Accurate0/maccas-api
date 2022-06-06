@@ -19,7 +19,7 @@ const DealSelection: React.FC<DealSelectionProps> = () => {
 
   return (
     <>
-      {code && (
+      {code && selectedDeal && (
         <Container>
           <Grid
             container
