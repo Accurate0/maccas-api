@@ -19,6 +19,7 @@ pub struct Offer {
     #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
+    pub short_name: String,
     pub description: String,
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
@@ -27,6 +28,8 @@ pub struct Offer {
 
 impl From<crate::maccas::MaccasOffer> for Offer {
     fn from(offer: crate::maccas::MaccasOffer) -> Self {
+        let short_name = offer.name.split('\n').collect::<Vec<&str>>()[0].to_string();
+
         Self {
             deal_uuid: Uuid::new_v4().to_hyphenated().to_string(),
             count: 1,
@@ -37,6 +40,7 @@ impl From<crate::maccas::MaccasOffer> for Offer {
             valid_from_utc: offer.valid_from_utc,
             valid_to_utc: offer.valid_to_utc,
             name: offer.name,
+            short_name,
             description: offer.long_description,
             creation_date_utc: offer.creation_date_utc,
             image_base_name: offer.image_base_name,
