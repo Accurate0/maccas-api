@@ -28,7 +28,13 @@ pub struct Offer {
 
 impl From<crate::maccas::MaccasOffer> for Offer {
     fn from(offer: crate::maccas::MaccasOffer) -> Self {
-        let short_name = offer.name.split('\n').collect::<Vec<&str>>()[0].to_string();
+        let short_name = offer
+            .name
+            .split('\n')
+            .collect::<Vec<&str>>()
+            .first()
+            .unwrap_or(&offer.name.as_str())
+            .to_string();
 
         Self {
             deal_uuid: Uuid::new_v4().to_hyphenated().to_string(),
