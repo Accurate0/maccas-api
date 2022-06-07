@@ -36,7 +36,7 @@ const LocationSelection = () => {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               const response = await searchByPosition(position.coords.latitude, position.coords.longitude);
-              if (response.response?.restaurants) {
+              if (response.response?.restaurants?.length) {
                 setRestaurants(response.response.restaurants);
                 setDialogOpen(true);
               } else {
