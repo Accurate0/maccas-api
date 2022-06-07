@@ -45,7 +45,7 @@ const DealSelection: React.FC<DealSelectionProps> = () => {
                   </Typography>
                   <Typography variant="h5" component="div"></Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    {selectedDeal?.name.split("\n")[0]}
+                    {selectedDeal?.shortName}
                   </Typography>
                   <Typography gutterBottom>{code?.status.message}</Typography>
                   <Typography component="div" gutterBottom>

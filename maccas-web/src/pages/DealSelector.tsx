@@ -47,7 +47,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
   return (
     <>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{dialogFor?.name.split("\n")[0]}</DialogTitle>
+        <DialogTitle>{dialogFor?.shortName}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item>
@@ -57,7 +57,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
               <DialogContentText>Valid To: {moment.utc(dialogFor?.validToUTC).local().format("LLL")}</DialogContentText>
             </Grid>
             <Grid item>
-              <DialogContentText>{dialogFor?.description}</DialogContentText>
+              <DialogContentText>{dialogFor?.name}</DialogContentText>
             </Grid>
           </Grid>
         </DialogContent>
@@ -76,7 +76,7 @@ const DealSelector: React.FC<DealSelectorProps> = () => {
                 <Grid container direction="column" justifyContent="space-evenly" alignItems="flex-start" spacing={2}>
                   <Grid item xs={8}>
                     <Typography variant={isMobile ? "h6" : "h5"} component="div">
-                      {o.name.split("\n")[0]}
+                      {o.shortName}
                     </Typography>
                   </Grid>
                   <Grid item xs={4}>
