@@ -17,14 +17,21 @@ const LocationSelection = () => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [value, setValue] = useState<string>();
+  const [error, setError] = useState<boolean>();
   const { search } = useLocationSearch();
   const updateConfig = useUpdateUserConfig();
   const notification = useNotification();
   const { search: searchByPosition } = useLocations();
 
-  const searchAndUpdate = async (text: string) => {
-    const resp = await search(text);
-    await updateConfig({ storeId: resp.storeNumber.toString(), storeName: resp.name });
+  const searchAndUpdate = async (text: string | undefined) => {
+    const trimmedText = text?.trim();
+    if (trimmedText) {
+      const resp = await search(trimmedText);
+      await updateConfig({ storeId: resp.storeNumber.toString(), storeName: resp.name });
+      setError(false);
+    } else {
+      setError(true);
+    }
   };
 
   const searchByLocation = async () => {
@@ -91,6 +98,9 @@ const LocationSelection = () => {
             <TextField
               label="Location"
               value={value}
+              helperText={error ? "Enter location" : undefined}
+              error={error}
+              type="text"
               onChange={(e) => setValue(e.target.value)}
               InputProps={{
                 endAdornment: (
@@ -107,7 +117,7 @@ const LocationSelection = () => {
           <Button
             variant="contained"
             onClick={() => {
-              searchAndUpdate(value ?? "");
+              searchAndUpdate(value);
             }}
           >
             Search
