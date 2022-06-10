@@ -670,7 +670,6 @@ dependencies = [
  "simple_logger",
  "simplelog",
  "tokio",
- "types",
  "uuid",
 ]
 
@@ -1250,13 +1249,13 @@ dependencies = [
  "simplelog",
  "task-local-extensions",
  "tokio-stream",
- "types",
+ "ts-rs",
  "uuid",
 ]
 
 [[package]]
 name = "libmaccas"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "chrono",
  "http",
@@ -1268,7 +1267,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "types",
+ "ts-rs",
  "uuid",
 ]
 
@@ -2355,18 +2354,6 @@ name = "typenum"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
-
-[[package]]
-name = "types"
-version = "2.0.0"
-dependencies = [
- "chrono",
- "serde",
- "serde_derive",
- "serde_json",
- "ts-rs",
- "uuid",
-]
 
 [[package]]
 name = "ucd-trie"

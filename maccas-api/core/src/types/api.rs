@@ -26,8 +26,8 @@ pub struct Offer {
     pub image_base_name: String,
 }
 
-impl From<crate::maccas::MaccasOffer> for Offer {
-    fn from(offer: crate::maccas::MaccasOffer) -> Self {
+impl From<libmaccas::types::Offer> for Offer {
+    fn from(offer: libmaccas::types::Offer) -> Self {
         let short_name = offer
             .name
             .split('\n')

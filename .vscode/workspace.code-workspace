@@ -21,10 +21,6 @@
       "path": "../libmaccas"
     },
     {
-      "name": "types",
-      "path": "../types"
-    },
-    {
       "name": "API",
       "path": "../API"
     },

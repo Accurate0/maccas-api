@@ -1,7 +1,7 @@
+use crate::types::api::Offer;
 use lambda_http::Error;
 use libmaccas::api::ApiClient;
 use std::collections::HashMap;
-use types::api::Offer;
 
 pub async fn get_by_order_id<'a>(
     offer_map: &HashMap<String, Vec<Offer>>,

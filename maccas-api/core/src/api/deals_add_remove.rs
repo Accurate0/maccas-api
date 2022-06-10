@@ -1,5 +1,7 @@
 use crate::client::{self, get_correlation_id};
 use crate::routes::Route;
+use crate::types::jwt::JwtClaim;
+use crate::types::log::UsageLog;
 use crate::{cache, config::ApiConfig};
 use crate::{constants, lock};
 use async_trait::async_trait;
@@ -7,7 +9,6 @@ use chrono::{DateTime, Duration, Local};
 use http::{Method, Response};
 use jwt::{Header, Token};
 use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
-use types::log::UsageLog;
 
 pub struct DealsAddRemove;
 
@@ -79,7 +80,7 @@ impl Route for DealsAddRemove {
                 let auth_header = request.headers().get(http::header::AUTHORIZATION);
                 if let Some(auth_header) = auth_header {
                     let value = auth_header.to_str().unwrap().replace("Bearer ", "");
-                    let jwt: Token<Header, types::jwt::JwtClaim, _> =
+                    let jwt: Token<Header, JwtClaim, _> =
                         jwt::Token::parse_unverified(&value).unwrap();
                     let correlation_id = get_correlation_id(&request);
                     let dt: DateTime<Local> = Local::now();

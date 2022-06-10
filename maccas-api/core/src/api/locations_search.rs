@@ -1,3 +1,4 @@
+use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
     client::{self, get_correlation_id},
     config::ApiConfig,
@@ -11,7 +12,6 @@ use rand::{
     prelude::{SliceRandom, StdRng},
     SeedableRng,
 };
-use types::{api::RestaurantInformation, places::PlaceResponse};
 
 pub struct LocationsSearch;
 

@@ -1,9 +1,9 @@
 use crate::routes::Route;
+use crate::types::api::LastRefreshInformation;
 use crate::{cache, config::ApiConfig};
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, Error, IntoResponse, Request};
-use types::api::LastRefreshInformation;
 
 pub struct LastRefresh;
 
