@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 libmaccas = { path = "../../libmaccas" }
-types = { path = "../../types" }
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
@@ -37,3 +36,4 @@ simplelog = "0.12.0"
 jwt = "0.16.0"
 rand = "0.8.5"
 itertools = "0.10.3"
+ts-rs = "6.1"

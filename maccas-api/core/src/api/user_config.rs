@@ -1,3 +1,4 @@
+use crate::types::jwt::JwtClaim;
 use crate::{client, client::get_correlation_id, config::ApiConfig, constants, routes::Route};
 use async_trait::async_trait;
 use http::Response;
@@ -18,8 +19,7 @@ impl Route for UserConfig {
         Ok(match auth_header {
             Some(h) => {
                 let value = h.to_str().unwrap().replace("Bearer ", "");
-                let jwt: Token<Header, types::jwt::JwtClaim, _> =
-                    jwt::Token::parse_unverified(&value).unwrap();
+                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
                 let user_id = &jwt.claims().oid;
                 let http_client = client::get_http_client();
                 let body = request.body().clone();

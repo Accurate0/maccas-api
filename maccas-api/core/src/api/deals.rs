@@ -1,11 +1,11 @@
 use crate::routes::Route;
+use crate::types::api::Offer;
 use crate::{cache, config::ApiConfig, lock};
 use async_trait::async_trait;
 use http::Response;
 use itertools::Itertools;
 use lambda_http::{Body, Error, Request};
 use std::collections::HashMap;
-use types::api::Offer;
 
 pub struct Deals;
 

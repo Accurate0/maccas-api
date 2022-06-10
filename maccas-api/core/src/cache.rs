@@ -1,4 +1,5 @@
 use crate::constants::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL};
+use crate::types::api::Offer;
 use crate::utils;
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::DateTime;
@@ -8,7 +9,6 @@ use libmaccas::api::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
-use types::api::Offer;
 
 #[deprecated]
 pub async fn get_offers<'a>(
@@ -176,10 +176,10 @@ pub async fn refresh_offer_cache_for(
 
     let ignored_offers = vec![30762, 162091, 165964];
 
-    let resp: Vec<types::api::Offer> = resp
+    let resp: Vec<Offer> = resp
         .iter_mut()
         .filter(|offer| !ignored_offers.contains(&offer.offer_proposition_id))
-        .map(|offer| types::api::Offer::from(offer.clone()))
+        .map(|offer| Offer::from(offer.clone()))
         .collect();
 
     client

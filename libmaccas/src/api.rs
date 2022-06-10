@@ -5,7 +5,7 @@ use rand::SeedableRng;
 use reqwest::Method;
 use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 
-use types::maccas::{
+use crate::types::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OfferResponse, RestaurantLocationResponse, TokenResponse,
 };

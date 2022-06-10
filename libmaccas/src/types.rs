@@ -53,12 +53,12 @@ pub struct Status {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OfferList {
-    pub offers: Vec<MaccasOffer>,
+    pub offers: Vec<Offer>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MaccasOffer {
+pub struct Offer {
     pub offer_id: i64,
     pub offer_proposition_id: i64,
     #[serde(skip_serializing, skip_deserializing)]
