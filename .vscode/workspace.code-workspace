@@ -21,10 +21,6 @@
       "path": "../libmaccas"
     },
     {
-      "name": "maccas-web",
-      "path": "../maccas-web"
-    },
-    {
       "name": "types",
       "path": "../types"
     },

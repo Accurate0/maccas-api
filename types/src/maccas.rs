@@ -38,7 +38,7 @@ pub struct OfferResponse {
 }
 
 #[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[ts(export, export_to = "../maccas-web/src/types/Status.ts")]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     #[serde(skip_serializing, skip_deserializing)]
@@ -148,10 +148,7 @@ pub struct SaleAmountCondition {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(
-    export,
-    export_to = "../maccas-web/src/types/RestaurantLocationResponse.ts"
-)]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantLocationResponse {
@@ -160,10 +157,7 @@ pub struct RestaurantLocationResponse {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(
-    export,
-    export_to = "../maccas-web/src/types/RestaurantLocationList.ts"
-)]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantLocationList {
@@ -171,7 +165,7 @@ pub struct RestaurantLocationList {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(export, export_to = "../maccas-web/src/types/Restaurant.ts")]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Restaurant {
@@ -192,7 +186,7 @@ pub struct Restaurant {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(export, export_to = "../maccas-web/src/types/Address.ts")]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Address {
@@ -209,7 +203,7 @@ pub struct McDeliveries {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(export, export_to = "../maccas-web/src/types/Location.ts")]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {
@@ -303,10 +297,7 @@ pub struct FrequencyOfferInfo {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(
-    export,
-    export_to = "../maccas-web/src/types/OfferDealStackResponse.ts"
-)]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStackResponse {
@@ -315,7 +306,7 @@ pub struct OfferDealStackResponse {
 }
 
 #[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[ts(export, export_to = "../maccas-web/src/types/OfferDealStack.ts")]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct OfferDealStack {
     pub random_code: String,
@@ -326,7 +317,7 @@ pub struct OfferDealStack {
 }
 
 #[derive(ts_rs::TS, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[ts(export, export_to = "../maccas-web/src/types/DealStack.ts")]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct DealStack {
     pub offer_id: i64,

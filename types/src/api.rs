@@ -3,7 +3,7 @@ use serde_derive::Serialize;
 use uuid::Uuid;
 
 #[derive(ts_rs::TS)]
-#[ts(export, export_to = "../maccas-web/src/types/Offer.ts")]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
@@ -55,7 +55,7 @@ impl From<crate::maccas::MaccasOffer> for Offer {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(export, export_to = "../maccas-web/src/types/RestaurantInformation.ts")]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestaurantInformation {
@@ -73,10 +73,7 @@ impl From<crate::maccas::Restaurant> for RestaurantInformation {
 }
 
 #[derive(ts_rs::TS)]
-#[ts(
-    export,
-    export_to = "../maccas-web/src/types/LastRefreshInformation.ts"
-)]
+#[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LastRefreshInformation {
