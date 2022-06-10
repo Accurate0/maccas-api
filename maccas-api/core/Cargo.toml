@@ -1,5 +1,5 @@
 [package]
-name = "core"
+name = "libcore"
 version = "2.0.0"
 edition = "2021"
 
@@ -30,3 +30,10 @@ reqwest-retry = "0.1.4"
 tokio-stream = "0.1.8"
 log = "0.4.0"
 serde_dynamo = { version = "4.0.1", features = ["aws-sdk-dynamodb+0_12"] }
+async-trait = "0.1.56"
+task-local-extensions = "0.1.1"
+reqwest-tracing = "0.2.2"
+simplelog = "0.12.0"
+jwt = "0.16.0"
+rand = "0.8.5"
+itertools = "0.10.3"

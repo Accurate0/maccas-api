@@ -7,9 +7,8 @@ edition = "2021"
 
 [dependencies]
 libmaccas = { path = "../../libmaccas" }
-maccas-core = { path = "../../maccas-core" }
 types = { path = "../../types" }
-core = { path = "../core" }
+libcore = { path = "../core" }
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
@@ -22,11 +21,8 @@ serde_derive = "1.0.136"
 aws-sdk-dynamodb = "0.12.0"
 config = { version = "0.13.1", features = ["json"] }
 aws-config = "0.12.0"
-rand = "0.8.5"
 http = "0.2.6"
 chrono = "0.4.19"
-itertools = "0.10.3"
 aws-sdk-s3 = "0.12.0"
 simplelog = "0.12.0"
-jwt = "0.16.0"
 uuid = { version = "0.8.2", features = ["v4"] }
