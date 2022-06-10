@@ -7,7 +7,6 @@ on:
       - maccas-api/api/**
       - maccas-api/core/**
       - libmaccas/**
-      - types/**
       - .github/workflows/lambda-deploy.yml
       - .github/workflows/lambda-api.yml
 
