@@ -21,20 +21,12 @@
       "path": "../libmaccas"
     },
     {
-      "name": "maccas-bot",
-      "path": "../maccas-bot"
-    },
-    {
       "name": "maccas-web",
       "path": "../maccas-web"
     },
     {
       "name": "types",
       "path": "../types"
-    },
-    {
-      "name": "maccas-core",
-      "path": "../maccas-core"
     },
     {
       "name": "API",

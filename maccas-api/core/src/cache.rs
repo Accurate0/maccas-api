@@ -243,7 +243,7 @@ pub async fn get_offer_by_id(
     offer_id: &str,
     client: &aws_sdk_dynamodb::Client,
     cache_table_name_v2: &String,
-) -> Option<(String, Offer)> {
+) -> Result<(String, Offer), Error> {
     let resp = client
         .query()
         .table_name(cache_table_name_v2)
@@ -251,19 +251,18 @@ pub async fn get_offer_by_id(
         .expression_attribute_names("#uuid", DEAL_UUID)
         .expression_attribute_values(":offer", AttributeValue::S(offer_id.to_string()))
         .send()
-        .await
-        .unwrap();
+        .await?;
 
-    if resp.count == 1 {
-        let resp = resp.items.unwrap();
-        let resp = resp.first().unwrap();
-        let account_name = resp[ACCOUNT_NAME].as_s().ok().unwrap().to_string();
-        let offer: Offer =
-            serde_dynamo::aws_sdk_dynamodb_0_12::from_item(resp[OFFER].as_m().unwrap().clone())
-                .unwrap();
+    let resp = resp.items.ok_or("missing value")?;
+    let resp = resp.first().ok_or("missing value")?;
+    let account_name = resp[ACCOUNT_NAME]
+        .as_s()
+        .ok()
+        .ok_or("missing value")?
+        .to_string();
+    let offer: Offer = serde_dynamo::aws_sdk_dynamodb_0_12::from_item(
+        resp[OFFER].as_m().ok().ok_or("missing value")?.clone(),
+    )?;
 
-        Some((account_name, offer))
-    } else {
-        None
-    }
+    Ok((account_name, offer))
 }
