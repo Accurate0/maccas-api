@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - maccas-api/api/**
-      - maccas-api/core/**
+      - maccas-api/libcore/**
       - libmaccas/**
       - .github/workflows/lambda-deploy.yml
       - .github/workflows/lambda-api.yml
