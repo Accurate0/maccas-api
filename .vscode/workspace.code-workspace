@@ -5,8 +5,8 @@
       "path": "../maccas-api/api"
     },
     {
-      "name": "maccas-api/core",
-      "path": "../maccas-api/core"
+      "name": "maccas-api/libcore",
+      "path": "../maccas-api/libcore"
     },
     {
       "name": "maccas-api/deals",

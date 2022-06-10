@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 libmaccas = { path = "../../libmaccas" }
-libcore = { path = "../core" }
+libcore = { path = "../libcore" }
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
