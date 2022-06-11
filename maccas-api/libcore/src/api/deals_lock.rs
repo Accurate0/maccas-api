@@ -18,9 +18,9 @@ impl Executor for DealsLock {
         let deals = match request.body() {
             lambda_http::Body::Text(s) => match serde_json::from_str::<Vec<String>>(s) {
                 Ok(obj) => obj,
-                Err(_) => return Ok(Response::builder().status(400).body("".into()).unwrap()),
+                Err(_) => return Ok(Response::builder().status(400).body("".into())?),
             },
-            _ => return Ok(Response::builder().status(400).body("".into()).unwrap()),
+            _ => return Ok(Response::builder().status(400).body("".into())?),
         };
 
         Ok(match *request.method() {
@@ -31,19 +31,19 @@ impl Executor for DealsLock {
                         &dynamodb_client,
                         &config.offer_id_table_name,
                         &deal_id,
-                        Duration::seconds(duration.parse::<i64>().unwrap()),
+                        Duration::seconds(duration.parse::<i64>()?),
                     )
                     .await?;
                 }
-                Response::builder().status(204).body("".into()).unwrap()
+                Response::builder().status(204).body("".into())?
             }
             Method::DELETE => {
                 for deal_id in deals {
                     lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, &deal_id).await?;
                 }
-                Response::builder().status(204).body("".into()).unwrap()
+                Response::builder().status(204).body("".into())?
             }
-            _ => Response::builder().status(405).body("".into()).unwrap(),
+            _ => Response::builder().status(405).body("".into())?,
         })
     }
 }
