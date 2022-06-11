@@ -24,7 +24,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     request.log();
 
-    let mut dispatcher = Dispatcher::new(&config, &&dynamodb_client);
+    let mut dispatcher = Dispatcher::new(&config, &dynamodb_client);
 
     dispatcher.add_route("/deals", &Deals);
     dispatcher.add_route("/code/{dealId}", &Code);
