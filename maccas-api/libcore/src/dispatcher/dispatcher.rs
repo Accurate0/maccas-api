@@ -6,31 +6,34 @@ use crate::config::ApiConfig;
 use super::Executor;
 
 pub struct Dispatcher<'a> {
-    mappings: HashMap<String, Box<&'a (dyn Executor + Send + Sync)>>,
+    config: &'a ApiConfig,
+    dynamodb_client: &'a aws_sdk_dynamodb::Client,
+
+    routes: HashMap<String, Box<&'a (dyn Executor + Send + Sync)>>,
     middleware: Vec<Box<&'a (dyn Executor + Send + Sync)>>,
 }
 
 impl<'a> Dispatcher<'a> {
-    pub fn new() -> Self {
+    pub fn new(config: &'a ApiConfig, dynamodb_client: &'a aws_sdk_dynamodb::Client) -> Self {
         Self {
-            mappings:  HashMap::new(),
-            middleware: Vec::new()
+            routes:  HashMap::new(),
+            middleware: Vec::new(),
+            config,
+            dynamodb_client,
         }
     }
 
-    pub fn add_route(&mut self, path: &str, route: &'a (dyn Executor + Send + Sync)) {
-        self.mappings.insert(path.to_string(), Box::new(route));
+    pub fn add_route(&mut self, path: &str, executor: &'a (dyn Executor + Send + Sync)) {
+        self.routes.insert(path.to_string(), Box::new(executor));
     }
 
-    pub fn add_middleware(&mut self, middleware: &'a (dyn Executor + Send + Sync)) {
-        self.middleware.push(Box::new(middleware));
+    pub fn add_middleware(&mut self, executor: &'a (dyn Executor + Send + Sync)) {
+        self.middleware.push(Box::new(executor));
     }
 
-    pub async fn execute(
+    pub async fn dispatch(
         &self,
         request: &Request<Body>,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
     ) -> Result<Response<Body>, Error> {
         let context = request.request_context();
 
@@ -40,12 +43,12 @@ impl<'a> Dispatcher<'a> {
         };
 
         if let Some(resource_path) = resource_path {
-            if let Some(route) = self.mappings.get(&resource_path) {
+            if let Some(route) = self.routes.get(&resource_path) {
                 for middleware in &self.middleware {
-                    middleware.execute(&request, &dynamodb_client, &config).await?;
+                    middleware.execute(&request, &self.dynamodb_client, &self.config).await?;
                 }
 
-                Ok(route.execute(&request, &dynamodb_client, &config).await?)
+                Ok(route.execute(&request, &self.dynamodb_client, &self.config).await?)
             } else {
                 Ok(Response::builder().status(404).body("".into())?)
             }
