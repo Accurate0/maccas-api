@@ -4,7 +4,7 @@ use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSear
 use libcore::config::ApiConfig;
 use libcore::constants;
 use libcore::dispatcher::Dispatcher;
-use libcore::extensions::RequestExtensions;
+use libcore::extensions::{RequestExtensions, ResponseExtensions};
 use libcore::logging;
 
 #[tokio::main]
@@ -35,5 +35,8 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     dispatcher.add_route("/deals/last-refresh", &LastRefresh);
     dispatcher.add_route("/locations/search", &LocationsSearch);
 
-    Ok(dispatcher.execute(&request, &dynamodb_client, &config).await?)
+    let response = dispatcher.execute(&request, &dynamodb_client, &config).await?;
+    response.log();
+
+    Ok(response)
 }
