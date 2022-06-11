@@ -9,10 +9,6 @@
       "path": "../maccas-api/libcore"
     },
     {
-      "name": "maccas-api/deals",
-      "path": "../maccas-api/deals"
-    },
-    {
       "name": "maccas-api/refresh",
       "path": "../maccas-api/refresh"
     },
