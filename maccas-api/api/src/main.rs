@@ -1,7 +1,7 @@
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
-use libcore::api::Code;
 use libcore::api::DealsAddRemove;
+use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
 use libcore::config;
 use libcore::constants;
 use libcore::logging;
@@ -29,21 +29,23 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         _ => return Ok(Response::builder().status(403).body("".into()).unwrap()),
     };
 
-    log::info!("request: {:#?}", request);
+    log::info!("request: {:?}", request);
 
     let response = match resource_path {
         Some(path) => match path.as_str() {
+            "/deals" => Deals::execute(&request, &dynamodb_client, &config).await?,
             "/code/{dealId}" => Code::execute(&request, &dynamodb_client, &config).await?,
-
-            "/deals/{dealId}" => {
-                DealsAddRemove::execute(&request, &dynamodb_client, &config).await?
-            }
-
-            _ => Response::builder().status(400).body("".into()).unwrap(),
+            "/locations" => Locations::execute(&request, &dynamodb_client, &config).await?,
+            "/deals/lock" => DealsLock::execute(&request, &dynamodb_client, &config).await?,
+            "/user/config" => UserConfig::execute(&request, &dynamodb_client, &config).await?,
+            "/deals/{dealId}" => DealsAddRemove::execute(&request, &dynamodb_client, &config).await?,
+            "/locations/search" => LocationsSearch::execute(&request, &dynamodb_client, &config).await?,
+            "/deals/last-refresh" => LastRefresh::execute(&request, &dynamodb_client, &config).await?,
+            _ => Response::builder().status(404).body("".into()).unwrap(),
         },
         _ => Response::builder().status(400).body("".into()).unwrap(),
     };
 
-    log::info!("response: {:#?}", response);
+    log::info!("response: {:?}", response);
     Ok(response)
 }
