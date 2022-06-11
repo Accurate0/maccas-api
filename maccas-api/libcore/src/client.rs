@@ -1,13 +1,12 @@
+use crate::client;
 use crate::config::ApiConfig;
 use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
 use crate::middleware;
-use crate::{client, constants};
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, FixedOffset, Utc};
-use http::HeaderValue;
-use lambda_http::{Error, Request};
+use lambda_http::Error;
+use libmaccas::api;
 use libmaccas::api::ApiClient;
-use libmaccas::{api, util};
 use std::collections::HashMap;
 use std::time::Duration;
 use std::time::SystemTime;
@@ -29,15 +28,6 @@ pub fn get_http_client_with_headers(
         .build()
         .unwrap();
     middleware::get_middleware_http_client(client)
-}
-
-pub fn get_correlation_id(request: &Request) -> HeaderValue {
-    let potential_header = HeaderValue::from_str(util::get_uuid().as_str()).unwrap();
-    request
-        .headers()
-        .get(constants::CORRELATION_ID_HEADER)
-        .unwrap_or_else(|| &potential_header)
-        .clone()
 }
 
 pub async fn get_client_map<'a>(

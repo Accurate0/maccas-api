@@ -1,5 +1,6 @@
+use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
-use crate::{client, client::get_correlation_id, config::ApiConfig, constants, routes::Route};
+use crate::{client, config::ApiConfig, constants, routes::Route};
 use async_trait::async_trait;
 use http::Response;
 use jwt::{Header, Token};
@@ -14,7 +15,7 @@ impl Route for UserConfig {
         _dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,
     ) -> Result<Response<Body>, Error> {
-        let correlation_id = get_correlation_id(&request);
+        let correlation_id = request.get_correlation_id();
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
         Ok(match auth_header {
             Some(h) => {
