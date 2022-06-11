@@ -23,7 +23,7 @@ impl<'a> Dispatcher<'a> {
         }
     }
 
-    pub fn add_route<E: 'static>(&mut self, path: &str, executor: E) -> &mut Self
+    pub fn add_route<E: 'static>(mut self, path: &str, executor: E) -> Self
     where
         E: Executor + Send + Sync,
     {
@@ -31,7 +31,7 @@ impl<'a> Dispatcher<'a> {
         self
     }
 
-    pub fn add_middleware<E: 'static>(&mut self, executor: E) -> &mut Self
+    pub fn add_middleware<E: 'static>(mut self, executor: E) -> Self
     where
         E: Executor + Send + Sync,
     {
