@@ -1,7 +1,7 @@
 use crate::config::ApiConfig;
 use http::{Request, Response};
 use lambda_http::{request::RequestContext, Body, Error, RequestExt};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use super::Executor;
 
@@ -9,8 +9,8 @@ pub struct Dispatcher<'a> {
     config: &'a ApiConfig,
     dynamodb_client: &'a aws_sdk_dynamodb::Client,
 
-    routes: HashMap<String, Box<&'a (dyn Executor + Send + Sync)>>,
-    middleware: Vec<Box<&'a (dyn Executor + Send + Sync)>>,
+    routes: HashMap<String, Arc<dyn Executor + Send + Sync>>,
+    middleware: Vec<Arc<(dyn Executor + Send + Sync)>>,
 }
 
 impl<'a> Dispatcher<'a> {
@@ -23,13 +23,19 @@ impl<'a> Dispatcher<'a> {
         }
     }
 
-    pub fn add_route(&mut self, path: &str, executor: &'a (dyn Executor + Send + Sync)) -> &mut Self {
-        self.routes.insert(path.to_string(), Box::new(executor));
+    pub fn add_route<E: 'static>(&mut self, path: &str, executor: E) -> &mut Self
+    where
+        E: Executor + Send + Sync,
+    {
+        self.routes.insert(path.to_string(), Arc::new(executor));
         self
     }
 
-    pub fn add_middleware(&mut self, executor: &'a (dyn Executor + Send + Sync)) -> &mut Self {
-        self.middleware.push(Box::new(executor));
+    pub fn add_middleware<E: 'static>(&mut self, executor: E) -> &mut Self
+    where
+        E: Executor + Send + Sync,
+    {
+        self.middleware.push(Arc::new(executor));
         self
     }
 

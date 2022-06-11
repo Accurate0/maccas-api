@@ -21,14 +21,14 @@ async fn main() -> Result<(), Error> {
     let mut dispatcher = Dispatcher::new(&config, &dynamodb_client);
 
     dispatcher
-        .add_route("/deals", &Deals)
-        .add_route("/code/{dealId}", &Code)
-        .add_route("/locations", &Locations)
-        .add_route("/deals/lock", &DealsLock)
-        .add_route("/user/config", &UserConfig)
-        .add_route("/deals/{dealId}", &DealsAddRemove)
-        .add_route("/deals/last-refresh", &LastRefresh)
-        .add_route("/locations/search", &LocationsSearch);
+        .add_route("/deals", Deals)
+        .add_route("/code/{dealId}", Code)
+        .add_route("/locations", Locations)
+        .add_route("/deals/lock", DealsLock)
+        .add_route("/user/config", UserConfig)
+        .add_route("/deals/{dealId}", DealsAddRemove)
+        .add_route("/deals/last-refresh", LastRefresh)
+        .add_route("/locations/search", LocationsSearch);
 
     let dispatcher = &dispatcher;
 
