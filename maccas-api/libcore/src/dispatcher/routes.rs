@@ -1,12 +1,14 @@
 use crate::config::ApiConfig;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::Client;
-use lambda_http::{Body, Error, Request, Response};
+use http::{Request, Response};
+use lambda_http::{Body, Error};
 
 #[async_trait]
-pub trait Route {
+pub trait Executor {
     async fn execute(
-        request: &Request,
+        &self,
+        request: &Request<Body>,
         dynamodb_client: &Client,
         config: &ApiConfig,
     ) -> Result<Response<Body>, Error>;

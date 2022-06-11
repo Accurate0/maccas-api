@@ -1,5 +1,5 @@
 use crate::cache;
-use crate::routes::Route;
+use crate::dispatcher::Executor;
 use crate::{client, config::ApiConfig};
 use async_trait::async_trait;
 use http::Response;
@@ -8,8 +8,9 @@ use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
 pub struct Code;
 
 #[async_trait]
-impl Route for Code {
+impl Executor for Code {
     async fn execute(
+        &self,
         request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

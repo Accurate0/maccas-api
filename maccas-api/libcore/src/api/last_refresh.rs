@@ -1,4 +1,4 @@
-use crate::routes::Route;
+use crate::dispatcher::Executor;
 use crate::types::api::LastRefreshInformation;
 use crate::{cache, config::ApiConfig};
 use async_trait::async_trait;
@@ -8,8 +8,9 @@ use lambda_http::{Body, Error, IntoResponse, Request};
 pub struct LastRefresh;
 
 #[async_trait]
-impl Route for LastRefresh {
+impl Executor for LastRefresh {
     async fn execute(
+        &self,
         _request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

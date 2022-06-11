@@ -1,6 +1,6 @@
 use crate::client::{self};
 use crate::extensions::RequestExtensions;
-use crate::routes::Route;
+use crate::dispatcher::Executor;
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
 use crate::{cache, config::ApiConfig};
@@ -14,8 +14,9 @@ use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
 pub struct DealsAddRemove;
 
 #[async_trait]
-impl Route for DealsAddRemove {
+impl Executor for DealsAddRemove {
     async fn execute(
+        &self,
         request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

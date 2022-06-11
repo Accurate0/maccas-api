@@ -7,6 +7,6 @@ pub mod extensions;
 pub mod lock;
 pub mod logging;
 pub mod middleware;
-pub mod routes;
 pub mod types;
 pub mod utils;
+pub mod dispatcher;
