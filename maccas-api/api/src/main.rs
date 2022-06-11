@@ -2,7 +2,7 @@ use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use libcore::api::DealsAddRemove;
 use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
-use libcore::config;
+use libcore::config::ApiConfig;
 use libcore::constants;
 use libcore::extensions::{RequestExtensions, ResponseExtensions};
 use libcore::logging;
@@ -21,7 +21,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         .load()
         .await;
 
-    let config = config::load_from_s3(&shared_config).await;
+    let config = ApiConfig::load_from_s3(&shared_config).await;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let context = request.request_context();
 
