@@ -24,7 +24,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     request.log();
 
-    let mut dispatcher = Dispatcher::new();
+    let mut dispatcher = Dispatcher::new(&config, &&dynamodb_client);
 
     dispatcher.add_route("/deals", &Deals);
     dispatcher.add_route("/code/{dealId}", &Code);
@@ -35,7 +35,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
     dispatcher.add_route("/deals/last-refresh", &LastRefresh);
     dispatcher.add_route("/locations/search", &LocationsSearch);
 
-    let response = dispatcher.execute(&request, &dynamodb_client, &config).await?;
+    let response = dispatcher.dispatch(&request).await?;
     response.log();
 
     Ok(response)
