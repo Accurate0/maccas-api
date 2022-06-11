@@ -1,6 +1,6 @@
 use lambda_http::{service_fn, Error, Request};
-use libcore::api::DealsAddRemove;
 use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
+use libcore::api::{DealsAddRemove, Fallback};
 use libcore::config::ApiConfig;
 use libcore::constants;
 use libcore::dispatcher::Dispatcher;
@@ -19,6 +19,7 @@ async fn main() -> Result<(), Error> {
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
     let dispatcher = Dispatcher::new(&config, &dynamodb_client)
+        .set_fallback(Fallback)
         .add_route("/deals", Deals)
         .add_route("/code/{dealId}", Code)
         .add_route("/locations", Locations)
