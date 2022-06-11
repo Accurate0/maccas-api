@@ -3,7 +3,9 @@
   "clientSecret": null,
   "tableName": null,
   "cacheTableName": null,
+  "cacheTableNameV2": null,
   "offerIdTableName": null,
+  "apiKey": null,
   "users": [
     {
       "accountName": null,
