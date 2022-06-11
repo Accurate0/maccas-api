@@ -1,4 +1,5 @@
-use crate::client::{self, get_correlation_id};
+use crate::client::{self};
+use crate::extensions::RequestExtensions;
 use crate::routes::Route;
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
@@ -82,7 +83,7 @@ impl Route for DealsAddRemove {
                     let value = auth_header.to_str().unwrap().replace("Bearer ", "");
                     let jwt: Token<Header, JwtClaim, _> =
                         jwt::Token::parse_unverified(&value).unwrap();
-                    let correlation_id = get_correlation_id(&request);
+                    let correlation_id = request.get_correlation_id();
                     let dt: DateTime<Local> = Local::now();
 
                     let usage_log = UsageLog {

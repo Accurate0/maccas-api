@@ -1,6 +1,7 @@
+use crate::extensions::RequestExtensions;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
-    client::{self, get_correlation_id},
+    client::{self},
     config::ApiConfig,
     constants,
     routes::Route,
@@ -22,7 +23,7 @@ impl Route for LocationsSearch {
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,
     ) -> Result<Response<Body>, Error> {
-        let correlation_id = get_correlation_id(&request);
+        let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();
         let text = query_params.first("text").expect("must have text");
         let http_client = client::get_http_client();

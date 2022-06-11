@@ -4,6 +4,7 @@ use libcore::api::DealsAddRemove;
 use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
 use libcore::config;
 use libcore::constants;
+use libcore::extensions::{RequestExtensions, ResponseExtensions};
 use libcore::logging;
 use libcore::routes::Route;
 
@@ -29,7 +30,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         _ => return Ok(Response::builder().status(403).body("".into()).unwrap()),
     };
 
-    log::info!("request: {:?}", request);
+    request.log();
 
     let response = match resource_path {
         Some(path) => match path.as_str() {
@@ -46,6 +47,7 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         _ => Response::builder().status(400).body("".into()).unwrap(),
     };
 
-    log::info!("response: {:?}", response);
+    response.log();
+
     Ok(response)
 }
