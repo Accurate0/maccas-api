@@ -10,12 +10,7 @@ pub struct LoggingMiddleware;
 
 #[async_trait::async_trait]
 impl reqwest_middleware::Middleware for LoggingMiddleware {
-    async fn handle(
-        &self,
-        req: Request,
-        extensions: &mut Extensions,
-        next: Next<'_>,
-    ) -> Result<Response> {
+    async fn handle(&self, req: Request, extensions: &mut Extensions, next: Next<'_>) -> Result<Response> {
         log::warn!("Sending request {} {}", req.method(), req.url());
         let res = next.run(req, extensions).await?;
         log::warn!("Got response {}", res.status());
@@ -23,9 +18,7 @@ impl reqwest_middleware::Middleware for LoggingMiddleware {
     }
 }
 
-pub fn get_middleware_http_client(
-    client: reqwest::Client,
-) -> reqwest_middleware::ClientWithMiddleware {
+pub fn get_middleware_http_client(client: reqwest::Client) -> reqwest_middleware::ClientWithMiddleware {
     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
     reqwest_middleware::ClientBuilder::new(client)
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))

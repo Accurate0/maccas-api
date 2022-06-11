@@ -6,11 +6,5 @@ pub fn setup_logging() {
         .add_filter_ignore_str("tracing::span")
         .build();
 
-    TermLogger::init(
-        LevelFilter::Info,
-        term_config,
-        TerminalMode::Mixed,
-        ColorChoice::Auto,
-    )
-    .unwrap();
+    TermLogger::init(LevelFilter::Info, term_config, TerminalMode::Mixed, ColorChoice::Auto).unwrap();
 }

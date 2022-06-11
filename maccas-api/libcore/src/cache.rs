@@ -148,10 +148,7 @@ pub async fn refresh_offer_cache<'a>(
         utils::remove_all_from_deal_stack_for(&api_client).await?;
     }
 
-    log::info!(
-        "refreshed {} account offer caches..",
-        client_map.keys().len()
-    );
+    log::info!("refreshed {} account offer caches..", client_map.keys().len());
 
     Ok(())
 }
@@ -187,10 +184,7 @@ pub async fn refresh_offer_cache_for(
         .table_name(cache_table_name)
         .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
         .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-        .item(
-            OFFER_LIST,
-            AttributeValue::S(serde_json::to_string(&resp).unwrap()),
-        )
+        .item(OFFER_LIST, AttributeValue::S(serde_json::to_string(&resp).unwrap()))
         .send()
         .await?;
 
@@ -255,14 +249,9 @@ pub async fn get_offer_by_id(
 
     let resp = resp.items.ok_or("missing value")?;
     let resp = resp.first().ok_or("missing value")?;
-    let account_name = resp[ACCOUNT_NAME]
-        .as_s()
-        .ok()
-        .ok_or("missing value")?
-        .to_string();
-    let offer: Offer = serde_dynamo::aws_sdk_dynamodb_0_12::from_item(
-        resp[OFFER].as_m().ok().ok_or("missing value")?.clone(),
-    )?;
+    let account_name = resp[ACCOUNT_NAME].as_s().ok().ok_or("missing value")?.to_string();
+    let offer: Offer =
+        serde_dynamo::aws_sdk_dynamodb_0_12::from_item(resp[OFFER].as_m().ok().ok_or("missing value")?.clone())?;
 
     Ok((account_name, offer))
 }

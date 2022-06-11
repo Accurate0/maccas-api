@@ -30,12 +30,7 @@ pub async fn get_by_order_id<'a>(
     let offer_id = offer_id.ok_or("no offer id")?;
     let offer_name = offer_name.ok_or("no offer id")?;
 
-    Ok((
-        offer_account_name,
-        offer_proposition_id,
-        offer_id,
-        offer_name,
-    ))
+    Ok((offer_account_name, offer_proposition_id, offer_id, offer_name))
 }
 
 pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Result<(), Error> {
@@ -46,11 +41,7 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Resul
         if let Some(deal_stack) = deal_stack.response {
             if let Some(deal_stack) = deal_stack.deal_stack {
                 for deal in deal_stack {
-                    log::info!(
-                        "{}: removing offer -> {}",
-                        api_client.username(),
-                        deal.offer_id
-                    );
+                    log::info!("{}: removing offer -> {}", api_client.username(), deal.offer_id);
                     api_client
                         .remove_offer_from_offers_dealstack(
                             deal.offer_id,
