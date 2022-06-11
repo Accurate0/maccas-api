@@ -1,4 +1,4 @@
-use crate::{config::ApiConfig, lock, dispatcher::Executor};
+use crate::{config::ApiConfig, dispatcher::Executor, lock};
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response};
@@ -39,8 +39,7 @@ impl Executor for DealsLock {
             }
             Method::DELETE => {
                 for deal_id in deals {
-                    lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, &deal_id)
-                        .await?;
+                    lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, &deal_id).await?;
                 }
                 Response::builder().status(204).body("".into()).unwrap()
             }

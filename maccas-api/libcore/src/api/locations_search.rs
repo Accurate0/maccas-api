@@ -44,18 +44,10 @@ impl Executor for LocationsSearch {
             .unwrap();
 
         // TODO: use a service account
-        let account_name_list: Vec<String> = config
-            .users
-            .iter()
-            .map(|u| u.account_name.clone())
-            .collect();
+        let account_name_list: Vec<String> = config.users.iter().map(|u| u.account_name.clone()).collect();
         let mut rng = StdRng::from_entropy();
         let choice = account_name_list.choose(&mut rng).unwrap().to_string();
-        let user = config
-            .users
-            .iter()
-            .find(|u| u.account_name == choice)
-            .unwrap();
+        let user = config.users.iter().find(|u| u.account_name == choice).unwrap();
 
         let api_client = client::get(
             &http_client,

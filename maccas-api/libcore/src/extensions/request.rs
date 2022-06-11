@@ -22,7 +22,10 @@ impl<T: std::fmt::Debug> RequestExtensions<T> for Request<T> {
         log::info!("uri: {}", self.uri());
         log::info!("version: {:?}", self.version());
         log::info!("origin: {:?}", headers.get_or_default(ORIGIN.as_str(), "unknown"));
-        log::info!("traceparent: {:?}", headers.get_or_default(constants::CORRELATION_ID_HEADER, "none"));
+        log::info!(
+            "traceparent: {:?}",
+            headers.get_or_default(constants::CORRELATION_ID_HEADER, "none")
+        );
         log::info!("body: {:?}", self.body());
     }
 }

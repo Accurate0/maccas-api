@@ -1,6 +1,6 @@
 use crate::client::{self};
-use crate::extensions::RequestExtensions;
 use crate::dispatcher::Executor;
+use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
 use crate::{cache, config::ApiConfig};
@@ -30,11 +30,7 @@ impl Executor for DealsAddRemove {
 
         let (account_name, offer) =
             cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config
-            .users
-            .iter()
-            .find(|u| u.account_name == account_name)
-            .unwrap();
+        let user = config.users.iter().find(|u| u.account_name == account_name).unwrap();
 
         let http_client = client::get_http_client();
         let api_client = client::get(
@@ -82,8 +78,7 @@ impl Executor for DealsAddRemove {
                 let auth_header = request.headers().get(http::header::AUTHORIZATION);
                 if let Some(auth_header) = auth_header {
                     let value = auth_header.to_str().unwrap().replace("Bearer ", "");
-                    let jwt: Token<Header, JwtClaim, _> =
-                        jwt::Token::parse_unverified(&value).unwrap();
+                    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
                     let correlation_id = request.get_correlation_id();
                     let dt: DateTime<Local> = Local::now();
 
@@ -97,10 +92,7 @@ impl Executor for DealsAddRemove {
                     };
 
                     let response = http_client
-                        .request(
-                            Method::POST,
-                            format!("{}/log", constants::LOG_API_BASE).as_str(),
-                        )
+                        .request(Method::POST, format!("{}/log", constants::LOG_API_BASE).as_str())
                         .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                         .header(constants::CORRELATION_ID_HEADER, correlation_id)
                         .header(constants::X_API_KEY_HEADER, &config.api_key)
@@ -123,12 +115,7 @@ impl Executor for DealsAddRemove {
 
             Method::DELETE => {
                 api_client
-                    .remove_offer_from_offers_dealstack(
-                        offer_id,
-                        &offer_proposition_id,
-                        None,
-                        store,
-                    )
+                    .remove_offer_from_offers_dealstack(offer_id, &offer_proposition_id, None, store)
                     .await?;
 
                 lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, deal_id).await?;

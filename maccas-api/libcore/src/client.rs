@@ -19,9 +19,7 @@ pub fn get_http_client() -> reqwest_middleware::ClientWithMiddleware {
     middleware::get_middleware_http_client(client)
 }
 
-pub fn get_http_client_with_headers(
-    headers: http::HeaderMap,
-) -> reqwest_middleware::ClientWithMiddleware {
+pub fn get_http_client_with_headers(headers: http::HeaderMap) -> reqwest_middleware::ClientWithMiddleware {
     let client = reqwest::ClientBuilder::new()
         .timeout(Duration::from_secs(10))
         .default_headers(headers)
@@ -121,10 +119,7 @@ pub async fn get<'a>(
                     let diff = now - last_refresh;
 
                     if diff.num_minutes() >= 14 {
-                        log::info!(
-                            "{}: >= 14 mins since last attempt.. refreshing..",
-                            account_name
-                        );
+                        log::info!("{}: >= 14 mins since last attempt.. refreshing..", account_name);
                         let mut new_access_token = String::from("");
                         let mut new_ref_token = String::from("");
 

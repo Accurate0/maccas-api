@@ -1,6 +1,5 @@
 use http::Response;
 
-
 pub trait ResponseExtensions<T> {
     fn log(&self);
 }

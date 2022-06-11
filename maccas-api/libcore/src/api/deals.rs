@@ -17,11 +17,9 @@ impl Executor for Deals {
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,
     ) -> Result<Response<Body>, Error> {
-        let locked_deals =
-            lock::get_all_locked_deals(&dynamodb_client, &config.offer_id_table_name).await?;
+        let locked_deals = lock::get_all_locked_deals(&dynamodb_client, &config.offer_id_table_name).await?;
 
-        let offer_list =
-            cache::get_all_offers_as_vec(&dynamodb_client, &config.cache_table_name).await?;
+        let offer_list = cache::get_all_offers_as_vec(&dynamodb_client, &config.cache_table_name).await?;
 
         // filter locked deals & extras
         // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...

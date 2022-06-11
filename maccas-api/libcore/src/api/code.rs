@@ -24,11 +24,7 @@ impl Executor for Code {
 
         let (account_name, _offer) =
             cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config
-            .users
-            .iter()
-            .find(|u| u.account_name == account_name)
-            .unwrap();
+        let user = config.users.iter().find(|u| u.account_name == account_name).unwrap();
 
         let http_client = client::get_http_client();
         let api_client = client::get(
