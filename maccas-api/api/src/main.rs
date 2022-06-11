@@ -21,13 +21,13 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
         .load()
         .await;
 
-    let config = ApiConfig::load_from_s3(&shared_config).await;
+    let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let context = request.request_context();
 
     let resource_path = match context {
         RequestContext::ApiGatewayV1(r) => r.resource_path,
-        _ => return Ok(Response::builder().status(403).body("".into()).unwrap()),
+        _ => return Ok(Response::builder().status(403).body("".into())?),
     };
 
     request.log();
@@ -40,11 +40,11 @@ async fn run(request: Request) -> Result<impl IntoResponse, Error> {
             "/deals/lock" => DealsLock::execute(&request, &dynamodb_client, &config).await?,
             "/user/config" => UserConfig::execute(&request, &dynamodb_client, &config).await?,
             "/deals/{dealId}" => DealsAddRemove::execute(&request, &dynamodb_client, &config).await?,
-            "/locations/search" => LocationsSearch::execute(&request, &dynamodb_client, &config).await?,
             "/deals/last-refresh" => LastRefresh::execute(&request, &dynamodb_client, &config).await?,
-            _ => Response::builder().status(404).body("".into()).unwrap(),
+            "/locations/search" => LocationsSearch::execute(&request, &dynamodb_client, &config).await?,
+            _ => Response::builder().status(404).body("".into())?,
         },
-        _ => Response::builder().status(400).body("".into()).unwrap(),
+        _ => Response::builder().status(400).body("".into())?,
     };
 
     response.log();
