@@ -18,9 +18,7 @@ async fn main() -> Result<(), Error> {
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
-    let mut dispatcher = Dispatcher::new(&config, &dynamodb_client);
-
-    dispatcher
+    let dispatcher = Dispatcher::new(&config, &dynamodb_client)
         .add_route("/deals", Deals)
         .add_route("/code/{dealId}", Code)
         .add_route("/locations", Locations)
