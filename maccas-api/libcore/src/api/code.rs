@@ -19,12 +19,16 @@ impl Executor for Code {
         let query_params = request.query_string_parameters();
 
         let store = query_params.first("store");
-        let deal_id = path_params.first("dealId").expect("must have id");
+        let deal_id = path_params.first("dealId").ok_or("must have id")?;
         let deal_id = &deal_id.to_owned();
 
         let (account_name, _offer) =
             cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config.users.iter().find(|u| u.account_name == account_name).unwrap();
+        let user = config
+            .users
+            .iter()
+            .find(|u| u.account_name == account_name)
+            .ok_or("no account found")?;
 
         let http_client = client::get_http_client();
         let api_client = client::get(

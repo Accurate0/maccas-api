@@ -21,8 +21,8 @@ impl Executor for UserConfig {
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
         Ok(match auth_header {
             Some(h) => {
-                let value = h.to_str().unwrap().replace("Bearer ", "");
-                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
+                let value = h.to_str()?.replace("Bearer ", "");
+                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
                 let user_id = &jwt.claims().oid;
                 let http_client = client::get_http_client();
                 let body = request.body().clone();
@@ -46,13 +46,11 @@ impl Executor for UserConfig {
                     .header(constants::CORRELATION_ID_HEADER, correlation_id)
                     .header(constants::X_API_KEY_HEADER, &config.api_key)
                     .send()
-                    .await
-                    .unwrap();
+                    .await?;
 
                 Response::builder()
                     .status(response.status())
-                    .body(response.text().await?.into())
-                    .unwrap()
+                    .body(response.text().await?.into())?
             }
             None => Response::builder().status(401).body("".into()).unwrap(),
         })

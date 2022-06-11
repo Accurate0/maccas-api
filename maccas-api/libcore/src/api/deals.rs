@@ -50,7 +50,6 @@ impl Executor for Deals {
 
         Ok(Response::builder()
             .status(200)
-            .body(serde_json::to_string(&offer_list).unwrap().into())
-            .unwrap())
+            .body(serde_json::to_string(&offer_list)?.into())?)
     }
 }

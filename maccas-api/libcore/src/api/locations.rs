@@ -26,8 +26,12 @@ impl Executor for Locations {
             // TODO: use a service account
             let account_name_list: Vec<String> = config.users.iter().map(|u| u.account_name.clone()).collect();
             let mut rng = StdRng::from_entropy();
-            let choice = account_name_list.choose(&mut rng).unwrap().to_string();
-            let user = config.users.iter().find(|u| u.account_name == choice).unwrap();
+            let choice = account_name_list.choose(&mut rng).ok_or("no choice")?.to_string();
+            let user = config
+                .users
+                .iter()
+                .find(|u| u.account_name == choice)
+                .ok_or("no account")?;
 
             let http_client = client::get_http_client();
             let api_client = client::get(
@@ -43,9 +47,9 @@ impl Executor for Locations {
                 .restaurant_location(distance, latitude, longitude, None)
                 .await?;
 
-            Ok(serde_json::to_string(&resp).unwrap().into_response())
+            Ok(serde_json::to_string(&resp)?.into_response())
         } else {
-            Ok(Response::builder().status(400).body("".into()).unwrap())
+            Ok(Response::builder().status(400).body("".into())?)
         }
     }
 }

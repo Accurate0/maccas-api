@@ -30,7 +30,11 @@ impl Executor for DealsAddRemove {
 
         let (account_name, offer) =
             cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config.users.iter().find(|u| u.account_name == account_name).unwrap();
+        let user = config
+            .users
+            .iter()
+            .find(|u| u.account_name == account_name)
+            .ok_or("no account found")?;
 
         let http_client = client::get_http_client();
         let api_client = client::get(
@@ -77,8 +81,8 @@ impl Executor for DealsAddRemove {
                 // log usage
                 let auth_header = request.headers().get(http::header::AUTHORIZATION);
                 if let Some(auth_header) = auth_header {
-                    let value = auth_header.to_str().unwrap().replace("Bearer ", "");
-                    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
+                    let value = auth_header.to_str()?.replace("Bearer ", "");
+                    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
                     let correlation_id = request.get_correlation_id();
                     let dt: DateTime<Local> = Local::now();
 
@@ -96,7 +100,7 @@ impl Executor for DealsAddRemove {
                         .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                         .header(constants::CORRELATION_ID_HEADER, correlation_id)
                         .header(constants::X_API_KEY_HEADER, &config.api_key)
-                        .body(serde_json::to_string(&usage_log).unwrap())
+                        .body(serde_json::to_string(&usage_log)?)
                         .send()
                         .await;
 
@@ -107,9 +111,9 @@ impl Executor for DealsAddRemove {
                 // idempotent
                 if resp.response.is_none() {
                     let resp = api_client.offers_dealstack(None, store).await?;
-                    serde_json::to_string(&resp).unwrap().into_response()
+                    serde_json::to_string(&resp)?.into_response()
                 } else {
-                    serde_json::to_string(&resp).unwrap().into_response()
+                    serde_json::to_string(&resp)?.into_response()
                 }
             }
 
@@ -120,10 +124,10 @@ impl Executor for DealsAddRemove {
 
                 lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, deal_id).await?;
 
-                Response::builder().status(204).body("".into()).unwrap()
+                Response::builder().status(204).body("".into())?
             }
 
-            _ => Response::builder().status(405).body("".into()).unwrap(),
+            _ => Response::builder().status(405).body("".into())?,
         })
     }
 }
