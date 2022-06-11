@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "maccas-api",
+      "path": "../maccas-api"
+    },
+    {
       "name": "maccas-api/api",
       "path": "../maccas-api/api"
     },
