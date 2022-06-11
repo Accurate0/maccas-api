@@ -1,4 +1,4 @@
-use crate::routes::Route;
+use crate::dispatcher::Executor;
 use crate::types::api::Offer;
 use crate::{cache, config::ApiConfig, lock};
 use async_trait::async_trait;
@@ -10,8 +10,9 @@ use std::collections::HashMap;
 pub struct Deals;
 
 #[async_trait]
-impl Route for Deals {
+impl Executor for Deals {
     async fn execute(
+        &self,
         _request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

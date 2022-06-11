@@ -1,4 +1,4 @@
-use crate::{config::ApiConfig, lock, routes::Route};
+use crate::{config::ApiConfig, lock, dispatcher::Executor};
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response};
@@ -7,8 +7,9 @@ use lambda_http::{Body, Error, Request, RequestExt};
 pub struct DealsLock;
 
 #[async_trait]
-impl Route for DealsLock {
+impl Executor for DealsLock {
     async fn execute(
+        &self,
         request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

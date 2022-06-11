@@ -4,7 +4,7 @@ use crate::{
     client::{self},
     config::ApiConfig,
     constants,
-    routes::Route,
+    dispatcher::Executor,
 };
 use async_trait::async_trait;
 use http::Response;
@@ -17,8 +17,9 @@ use rand::{
 pub struct LocationsSearch;
 
 #[async_trait]
-impl Route for LocationsSearch {
+impl Executor for LocationsSearch {
     async fn execute(
+        &self,
         request: &Request,
         dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,

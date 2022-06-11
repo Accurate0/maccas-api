@@ -1,6 +1,7 @@
+use crate::dispatcher::Executor;
 use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
-use crate::{client, config::ApiConfig, constants, routes::Route};
+use crate::{client, config::ApiConfig, constants};
 use async_trait::async_trait;
 use http::Response;
 use jwt::{Header, Token};
@@ -9,8 +10,9 @@ use lambda_http::{Body, Error, Request};
 pub struct UserConfig;
 
 #[async_trait]
-impl Route for UserConfig {
+impl Executor for UserConfig {
     async fn execute(
+        &self,
         request: &Request,
         _dynamodb_client: &aws_sdk_dynamodb::Client,
         config: &ApiConfig,
