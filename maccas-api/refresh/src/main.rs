@@ -3,7 +3,7 @@ use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
 use libcore::cache;
 use libcore::client;
-use libcore::config;
+use libcore::config::ApiConfig;
 use libcore::constants;
 use libcore::lock;
 use libcore::logging;
@@ -22,7 +22,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         .load()
         .await;
     let env = std::env::var(constants::MACCAS_REFRESH_REGION).unwrap();
-    let config = config::load_from_s3_for_region(&shared_config, &env).await;
+    let config = ApiConfig::load_from_s3_for_region(&shared_config, &env).await;
     let client = Client::new(&shared_config);
     let http_client = client::get_http_client();
     let client_map = client::get_client_map(&http_client, &config, &client).await?;
