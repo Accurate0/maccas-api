@@ -12,7 +12,7 @@ pub struct Deals;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for Deals {
-    async fn execute(&self, _request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, _request: &Request) -> Result<Response<Body>, Error> {
         let locked_deals =
             lock::get_all_locked_deals(&ctx.dynamodb_client, &ctx.api_config.offer_id_table_name).await?;
         let offer_list = cache::get_all_offers_as_vec(&ctx.dynamodb_client, &ctx.api_config.cache_table_name).await?;

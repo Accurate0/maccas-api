@@ -12,7 +12,7 @@ pub struct UserConfig;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for UserConfig {
-    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
         // TODO: this is slow...
         let correlation_id = request.get_correlation_id();
         let auth_header = request.headers().get(http::header::AUTHORIZATION);

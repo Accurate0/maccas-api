@@ -10,7 +10,7 @@ pub struct Code;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for Code {
-    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
         let path_params = request.path_parameters();
         let query_params = request.query_string_parameters();
 

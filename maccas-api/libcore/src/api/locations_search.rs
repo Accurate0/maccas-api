@@ -18,7 +18,7 @@ pub struct LocationsSearch;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for LocationsSearch {
-    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
         let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();
         let text = query_params.first("text").expect("must have text");

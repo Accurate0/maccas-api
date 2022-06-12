@@ -13,7 +13,7 @@ pub struct Locations;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for Locations {
-    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
         let query_params = request.query_string_parameters();
         let distance = query_params.first("distance");
         let latitude = query_params.first("latitude");

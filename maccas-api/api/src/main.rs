@@ -6,7 +6,7 @@ use libcore::config::ApiConfig;
 use libcore::constants;
 use libcore::extensions::RequestExtensions;
 use libcore::logging;
-use simple_dispatcher::Dispatcher;
+use simple_dispatcher::RouteDispatcher;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -24,7 +24,7 @@ async fn main() -> Result<(), Error> {
         dynamodb_client,
     };
 
-    let ref dispatcher = Dispatcher::new(context, Fallback)
+    let ref dispatcher = RouteDispatcher::new(context, Fallback)
         .add_route("/deals", Deals)
         .add_route("/code/{dealId}", Code)
         .add_route("/locations", Locations)
