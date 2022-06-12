@@ -8,7 +8,7 @@ pub struct Fallback;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for Fallback {
-    async fn execute(&self, _request: &Request, _ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, _ctx: &Context, _request: &Request) -> Result<Response<Body>, Error> {
         Ok(Response::builder().status(404).body("".into())?)
     }
 }

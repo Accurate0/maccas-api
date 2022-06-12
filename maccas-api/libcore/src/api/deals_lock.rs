@@ -10,7 +10,7 @@ pub struct DealsLock;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for DealsLock {
-    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
         let query_params = request.query_string_parameters();
         let deals = match request.body() {
             lambda_http::Body::Text(s) => match serde_json::from_str::<Vec<String>>(s) {

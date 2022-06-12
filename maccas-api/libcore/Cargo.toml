@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 libmaccas = { path = "../../libmaccas" }
 
-simple-dispatcher = "0.1.2"
+simple-dispatcher = "0.2.0"
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
 serde = "1.0.126"

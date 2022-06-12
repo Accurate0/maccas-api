@@ -10,7 +10,7 @@ pub struct LastRefresh;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for LastRefresh {
-    async fn execute(&self, _request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, _request: &Request) -> Result<Response<Body>, Error> {
         let response =
             cache::get_refresh_time_for_offer_cache(&ctx.dynamodb_client, &ctx.api_config.cache_table_name).await?;
         let response = LastRefreshInformation { last_refresh: response };
