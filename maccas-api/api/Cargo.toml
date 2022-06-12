@@ -9,7 +9,7 @@ edition = "2021"
 libmaccas = { path = "../../libmaccas" }
 libcore = { path = "../libcore" }
 
-simple-dispatcher = "0.1.0"
+simple-dispatcher = "0.1.1"
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
 log = "0.4.14"
