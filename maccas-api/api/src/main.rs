@@ -24,7 +24,7 @@ async fn main() -> Result<(), Error> {
         dynamodb_client,
     };
 
-    let ref simple_dispatcher = Dispatcher::new(context, Fallback)
+    let ref dispatcher = Dispatcher::new(context, Fallback)
         .add_route("/deals", Deals)
         .add_route("/code/{dealId}", Code)
         .add_route("/locations", Locations)
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Error> {
     let handler = move |request: Request| async move {
         request.log();
 
-        let response = simple_dispatcher
+        let response = dispatcher
             .dispatch(&request, || -> Option<String> {
                 let context = request.request_context();
                 match context {
