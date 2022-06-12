@@ -1,25 +1,21 @@
-use crate::dispatcher::Executor;
+use super::Context;
 use crate::types::api::Offer;
-use crate::{cache, config::ApiConfig, lock};
+use crate::{cache, lock};
 use async_trait::async_trait;
 use http::Response;
 use itertools::Itertools;
 use lambda_http::{Body, Error, Request};
+use simple_dispatcher::Executor;
 use std::collections::HashMap;
 
 pub struct Deals;
 
 #[async_trait]
-impl Executor for Deals {
-    async fn execute(
-        &self,
-        _request: &Request,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
-        let locked_deals = lock::get_all_locked_deals(&dynamodb_client, &config.offer_id_table_name).await?;
-
-        let offer_list = cache::get_all_offers_as_vec(&dynamodb_client, &config.cache_table_name).await?;
+impl Executor<Context, Request, Response<Body>> for Deals {
+    async fn execute(&self, _request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
+        let locked_deals =
+            lock::get_all_locked_deals(&ctx.dynamodb_client, &ctx.api_config.offer_id_table_name).await?;
+        let offer_list = cache::get_all_offers_as_vec(&ctx.dynamodb_client, &ctx.api_config.cache_table_name).await?;
 
         // filter locked deals & extras
         // 30762 is McCafé®, Buy 5 Get 1 Free, valid till end of year...

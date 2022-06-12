@@ -58,6 +58,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "simple-dispatcher",
  "simple_logger",
  "simplelog",
  "tokio",
@@ -1246,6 +1247,7 @@ dependencies = [
  "serde_derive",
  "serde_dynamo",
  "serde_json",
+ "simple-dispatcher",
  "simplelog",
  "task-local-extensions",
  "tokio-stream",
@@ -1996,6 +1998,15 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest 0.10.3",
+]
+
+[[package]]
+name = "simple-dispatcher"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09b942defdb67c61703db91f2ed98535ff66dff027edf7e991a6768adec0c2c8"
+dependencies = [
+ "async-trait",
 ]
 
 [[package]]

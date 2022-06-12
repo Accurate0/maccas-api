@@ -1,19 +1,16 @@
-use crate::{config::ApiConfig, dispatcher::Executor, lock};
+use super::Context;
+use crate::lock;
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response};
 use lambda_http::{Body, Error, Request, RequestExt};
+use simple_dispatcher::Executor;
 
 pub struct DealsLock;
 
 #[async_trait]
-impl Executor for DealsLock {
-    async fn execute(
-        &self,
-        request: &Request,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
+impl Executor<Context, Request, Response<Body>> for DealsLock {
+    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
         let query_params = request.query_string_parameters();
         let deals = match request.body() {
             lambda_http::Body::Text(s) => match serde_json::from_str::<Vec<String>>(s) {
@@ -28,8 +25,8 @@ impl Executor for DealsLock {
                 let duration = query_params.first("duration").expect("must have duration");
                 for deal_id in deals {
                     lock::lock_deal(
-                        &dynamodb_client,
-                        &config.offer_id_table_name,
+                        &ctx.dynamodb_client,
+                        &ctx.api_config.offer_id_table_name,
                         &deal_id,
                         Duration::seconds(duration.parse::<i64>()?),
                     )
@@ -39,7 +36,7 @@ impl Executor for DealsLock {
             }
             Method::DELETE => {
                 for deal_id in deals {
-                    lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, &deal_id).await?;
+                    lock::unlock_deal(&ctx.dynamodb_client, &ctx.api_config.offer_id_table_name, &deal_id).await?;
                 }
                 Response::builder().status(204).body("".into())?
             }
