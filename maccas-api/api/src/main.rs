@@ -1,11 +1,12 @@
-use lambda_http::{service_fn, Error, Request};
-use libcore::api::{Code, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
+use lambda_http::request::RequestContext;
+use lambda_http::{service_fn, Error, Request, RequestExt};
+use libcore::api::{Code, Context, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
 use libcore::api::{DealsAddRemove, Fallback};
 use libcore::config::ApiConfig;
 use libcore::constants;
-use libcore::dispatcher::Dispatcher;
-use libcore::extensions::{RequestExtensions, ResponseExtensions};
+use libcore::extensions::RequestExtensions;
 use libcore::logging;
+use simple_dispatcher::Dispatcher;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -18,8 +19,12 @@ async fn main() -> Result<(), Error> {
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
-    let dispatcher = Dispatcher::new(&config, &dynamodb_client)
-        .set_fallback(Fallback)
+    let context = Context {
+        api_config: config,
+        dynamodb_client,
+    };
+
+    let ref simple_dispatcher = Dispatcher::new(context, Fallback)
         .add_route("/deals", Deals)
         .add_route("/code/{dealId}", Code)
         .add_route("/locations", Locations)
@@ -29,17 +34,22 @@ async fn main() -> Result<(), Error> {
         .add_route("/deals/last-refresh", LastRefresh)
         .add_route("/locations/search", LocationsSearch);
 
-    let dispatcher = &dispatcher;
-
-    let handler_func_closure = move |request: Request| async move {
+    let handler = move |request: Request| async move {
         request.log();
-        let response = dispatcher.dispatch(&request).await?;
-        response.log();
+
+        let response = simple_dispatcher
+            .dispatch(&request, || -> Option<String> {
+                let context = request.request_context();
+                match context {
+                    RequestContext::ApiGatewayV1(r) => r.resource_path,
+                    _ => None,
+                }
+            })
+            .await?;
+
         Ok(response)
     };
 
-    // Pass the closure to the runtime here.
-    lambda_http::run(service_fn(handler_func_closure)).await?;
-
+    lambda_http::run(service_fn(handler)).await?;
     Ok(())
 }

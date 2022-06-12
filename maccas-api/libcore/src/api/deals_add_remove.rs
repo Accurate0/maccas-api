@@ -1,26 +1,22 @@
+use super::Context;
+use crate::cache;
 use crate::client::{self};
-use crate::dispatcher::Executor;
 use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
-use crate::{cache, config::ApiConfig};
 use crate::{constants, lock};
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Local};
 use http::{Method, Response};
 use jwt::{Header, Token};
 use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
+use simple_dispatcher::Executor;
 
 pub struct DealsAddRemove;
 
 #[async_trait]
-impl Executor for DealsAddRemove {
-    async fn execute(
-        &self,
-        request: &Request,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
+impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
+    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
         let path_params = request.path_parameters();
         let query_params = request.query_string_parameters();
 
@@ -29,8 +25,9 @@ impl Executor for DealsAddRemove {
         let deal_id = &deal_id.to_owned();
 
         let (account_name, offer) =
-            cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config
+            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.api_config.cache_table_name_v2).await?;
+        let user = ctx
+            .api_config
             .users
             .iter()
             .find(|u| u.account_name == account_name)
@@ -39,9 +36,9 @@ impl Executor for DealsAddRemove {
         let http_client = client::get_http_client();
         let api_client = client::get(
             &http_client,
-            &dynamodb_client,
+            &ctx.dynamodb_client,
             &account_name,
-            &config,
+            &ctx.api_config,
             &user.login_username,
             &user.login_password,
         )
@@ -60,9 +57,9 @@ impl Executor for DealsAddRemove {
                 // we need to update the database to avoid inconsistency
                 if offer_id == 0 {
                     cache::refresh_offer_cache_for(
-                        &dynamodb_client,
-                        &config.cache_table_name,
-                        &config.cache_table_name_v2,
+                        &ctx.dynamodb_client,
+                        &ctx.api_config.cache_table_name,
+                        &ctx.api_config.cache_table_name_v2,
                         &account_name,
                         &api_client,
                     )
@@ -71,8 +68,8 @@ impl Executor for DealsAddRemove {
 
                 // lock the deal from appearing in GET /deals
                 lock::lock_deal(
-                    &dynamodb_client,
-                    &config.offer_id_table_name,
+                    &ctx.dynamodb_client,
+                    &ctx.api_config.offer_id_table_name,
                     deal_id,
                     Duration::hours(3),
                 )
@@ -99,7 +96,7 @@ impl Executor for DealsAddRemove {
                         .request(Method::POST, format!("{}/log", constants::LOG_API_BASE).as_str())
                         .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                         .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                        .header(constants::X_API_KEY_HEADER, &config.api_key)
+                        .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
                         .body(serde_json::to_string(&usage_log)?)
                         .send()
                         .await;
@@ -122,7 +119,7 @@ impl Executor for DealsAddRemove {
                     .remove_offer_from_offers_dealstack(offer_id, &offer_proposition_id, None, store)
                     .await?;
 
-                lock::unlock_deal(&dynamodb_client, &config.offer_id_table_name, deal_id).await?;
+                lock::unlock_deal(&ctx.dynamodb_client, &ctx.api_config.offer_id_table_name, deal_id).await?;
 
                 Response::builder().status(204).body("".into())?
             }

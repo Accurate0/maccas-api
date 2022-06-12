@@ -1,20 +1,16 @@
+use super::Context;
 use crate::cache;
-use crate::dispatcher::Executor;
-use crate::{client, config::ApiConfig};
+use crate::client;
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
+use simple_dispatcher::Executor;
 
 pub struct Code;
 
 #[async_trait]
-impl Executor for Code {
-    async fn execute(
-        &self,
-        request: &Request,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
+impl Executor<Context, Request, Response<Body>> for Code {
+    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
         let path_params = request.path_parameters();
         let query_params = request.query_string_parameters();
 
@@ -23,8 +19,9 @@ impl Executor for Code {
         let deal_id = &deal_id.to_owned();
 
         let (account_name, _offer) =
-            cache::get_offer_by_id(deal_id, &dynamodb_client, &config.cache_table_name_v2).await?;
-        let user = config
+            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.api_config.cache_table_name_v2).await?;
+        let user = ctx
+            .api_config
             .users
             .iter()
             .find(|u| u.account_name == account_name)
@@ -33,9 +30,9 @@ impl Executor for Code {
         let http_client = client::get_http_client();
         let api_client = client::get(
             &http_client,
-            &dynamodb_client,
+            &ctx.dynamodb_client,
             &account_name,
-            &config,
+            &ctx.api_config,
             &user.login_username,
             &user.login_password,
         )

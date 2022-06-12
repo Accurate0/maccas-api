@@ -1,10 +1,9 @@
+use super::Context;
 use crate::extensions::RequestExtensions;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
     client::{self},
-    config::ApiConfig,
     constants,
-    dispatcher::Executor,
 };
 use async_trait::async_trait;
 use http::Response;
@@ -13,17 +12,13 @@ use rand::{
     prelude::{SliceRandom, StdRng},
     SeedableRng,
 };
+use simple_dispatcher::Executor;
 
 pub struct LocationsSearch;
 
 #[async_trait]
-impl Executor for LocationsSearch {
-    async fn execute(
-        &self,
-        request: &Request,
-        dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
+impl Executor<Context, Request, Response<Body>> for LocationsSearch {
+    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
         let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();
         let text = query_params.first("text").expect("must have text");
@@ -35,17 +30,18 @@ impl Executor for LocationsSearch {
                 format!("{}/place?text={}", constants::PLACES_API_BASE, text,).as_str(),
             )
             .header(constants::CORRELATION_ID_HEADER, correlation_id)
-            .header(constants::X_API_KEY_HEADER, &config.api_key)
+            .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
             .send()
             .await?
             .json::<PlaceResponse>()
             .await?;
 
         // TODO: use a service account
-        let account_name_list: Vec<String> = config.users.iter().map(|u| u.account_name.clone()).collect();
+        let account_name_list: Vec<String> = ctx.api_config.users.iter().map(|u| u.account_name.clone()).collect();
         let mut rng = StdRng::from_entropy();
         let choice = account_name_list.choose(&mut rng).ok_or("no choice")?.to_string();
-        let user = config
+        let user = ctx
+            .api_config
             .users
             .iter()
             .find(|u| u.account_name == choice)
@@ -53,9 +49,9 @@ impl Executor for LocationsSearch {
 
         let api_client = client::get(
             &http_client,
-            &dynamodb_client,
+            &ctx.dynamodb_client,
             &choice,
-            &config,
+            &ctx.api_config,
             &user.login_username,
             &user.login_password,
         )

@@ -1,22 +1,18 @@
-use crate::dispatcher::Executor;
+use super::Context;
 use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
-use crate::{client, config::ApiConfig, constants};
+use crate::{client, constants};
 use async_trait::async_trait;
 use http::Response;
 use jwt::{Header, Token};
 use lambda_http::{Body, Error, Request};
+use simple_dispatcher::Executor;
 
 pub struct UserConfig;
 
 #[async_trait]
-impl Executor for UserConfig {
-    async fn execute(
-        &self,
-        request: &Request,
-        _dynamodb_client: &aws_sdk_dynamodb::Client,
-        config: &ApiConfig,
-    ) -> Result<Response<Body>, Error> {
+impl Executor<Context, Request, Response<Body>> for UserConfig {
+    async fn execute(&self, request: &Request, ctx: &Context) -> Result<Response<Body>, Error> {
         // TODO: this is slow...
         let correlation_id = request.get_correlation_id();
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
@@ -44,7 +40,7 @@ impl Executor for UserConfig {
                     )
                     .body(body)
                     .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                    .header(constants::X_API_KEY_HEADER, &config.api_key)
+                    .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
                     .send()
                     .await?;
 

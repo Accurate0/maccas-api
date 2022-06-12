@@ -17,3 +17,8 @@ pub use last_refresh::LastRefresh;
 pub use locations::Locations;
 pub use locations_search::LocationsSearch;
 pub use user_config::UserConfig;
+
+pub struct Context {
+    pub api_config: crate::config::ApiConfig,
+    pub dynamodb_client: aws_sdk_dynamodb::Client,
+}
