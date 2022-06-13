@@ -79,3 +79,11 @@ impl From<libmaccas::types::Restaurant> for RestaurantInformation {
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Error {
+    pub message: String,
+}

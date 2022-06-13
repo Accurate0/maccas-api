@@ -1195,7 +1195,7 @@ checksum = "21a41fed9d98f27ab1c6d161da622a4fa35e8a54a8adc24bbf3ddd0ef70b0e50"
 
 [[package]]
 name = "libcore"
-version = "4.1.0"
+version = "4.1.1"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -2000,9 +2000,9 @@ dependencies = [
 
 [[package]]
 name = "simple-dispatcher"
-version = "0.3.1"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74ffbe339291d2a7a1fb37d0a4eef3d9e947d5f0216c54f66f755d0f41870ed1"
+checksum = "6d305192a5d0446d88c466c942d70ba482190a24f7dfbb9e36c766410497cf03"
 dependencies = [
  "async-trait",
 ]

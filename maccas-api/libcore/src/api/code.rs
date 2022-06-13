@@ -3,8 +3,10 @@ use crate::cache;
 use crate::client;
 use crate::constants::MCDONALDS_API_DEFAULT_OFFSET;
 use crate::constants::MCDONALDS_API_DEFAULT_STORE_ID;
+use crate::types::api::Error;
 use async_trait::async_trait;
 use http::Response;
+use http::StatusCode;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use simple_dispatcher::Executor;
 use simple_dispatcher::ExecutorResult;
@@ -21,32 +23,42 @@ impl Executor<Context, Request, Response<Body>> for Code {
         let deal_id = path_params.first("dealId").ok_or("must have id")?;
         let deal_id = &deal_id.to_owned();
 
-        let (account_name, _offer) =
-            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await?;
-        let user = ctx
-            .config
-            .users
-            .iter()
-            .find(|u| u.account_name == account_name)
-            .ok_or("no account found")?;
+        if let Ok((account_name, _offer)) =
+            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
+        {
+            let user = ctx
+                .config
+                .users
+                .iter()
+                .find(|u| u.account_name == account_name)
+                .ok_or("no account found")?;
 
-        let http_client = client::get_http_client();
-        let api_client = client::get(
-            &http_client,
-            &ctx.dynamodb_client,
-            &account_name,
-            &ctx.config,
-            &user.login_username,
-            &user.login_password,
-        )
-        .await?;
-
-        let resp = api_client
-            .get_offers_dealstack(
-                MCDONALDS_API_DEFAULT_OFFSET,
-                store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+            let http_client = client::get_http_client();
+            let api_client = client::get(
+                &http_client,
+                &ctx.dynamodb_client,
+                &account_name,
+                &ctx.config,
+                &user.login_username,
+                &user.login_password,
             )
             .await?;
-        Ok(serde_json::to_string(&resp).unwrap().into_response())
+
+            let resp = api_client
+                .get_offers_dealstack(
+                    MCDONALDS_API_DEFAULT_OFFSET,
+                    store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                )
+                .await?;
+            Ok(serde_json::to_string(&resp).unwrap().into_response())
+        } else {
+            let status_code = StatusCode::NOT_FOUND;
+            return Ok(Response::builder().status(status_code.as_u16()).body(
+                serde_json::to_string(&Error {
+                    message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                })?
+                .into(),
+            )?);
+        }
     }
 }

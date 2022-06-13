@@ -1,11 +1,12 @@
+use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
 use libcore::api::{Code, Context, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
 use libcore::api::{DealsAddRemove, Fallback};
 use libcore::config::ApiConfig;
-use libcore::constants;
-use libcore::extensions::RequestExtensions;
+use libcore::extensions::{RequestExtensions, ResponseExtensions};
 use libcore::logging;
+use libcore::{constants, types};
 use simple_dispatcher::RouteDispatcher;
 
 #[tokio::main]
@@ -37,7 +38,7 @@ async fn main() -> Result<(), Error> {
     let handler = move |request: Request| async move {
         request.log();
 
-        let response = dispatcher
+        let response = match dispatcher
             .dispatch(&request, || -> Option<String> {
                 let context = request.request_context();
                 match context {
@@ -45,8 +46,21 @@ async fn main() -> Result<(), Error> {
                     _ => None,
                 }
             })
-            .await?;
+            .await
+        {
+            Ok(r) => r,
+            Err(_) => {
+                let status_code = StatusCode::INTERNAL_SERVER_ERROR;
+                return Ok(Response::builder().status(status_code.as_u16()).body(
+                    serde_json::to_string(&types::api::Error {
+                        message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                    })?
+                    .into(),
+                )?);
+            }
+        };
 
+        response.log();
         Ok(response)
     };
 
