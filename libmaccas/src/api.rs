@@ -23,7 +23,7 @@ pub struct ApiClient<'a> {
     login_password: String,
 }
 
-impl<'a> ApiClient<'a> {
+impl ApiClient<'_> {
     pub fn new(
         base_url: String,
         client: &ClientWithMiddleware,
@@ -44,7 +44,7 @@ impl<'a> ApiClient<'a> {
         }
     }
 
-    fn get_default_request(&'a self, resource: &str, method: Method) -> RequestBuilder {
+    fn get_default_request(&self, resource: &str, method: Method) -> RequestBuilder {
         let ref client_id = self.client_id;
         let ref base_url = self.base_url;
 
@@ -84,7 +84,7 @@ impl<'a> ApiClient<'a> {
         self.auth_token = Some(auth_token.to_string());
     }
 
-    pub async fn security_auth_token(&'a self) -> Response<TokenResponse> {
+    pub async fn security_auth_token(&self) -> Response<TokenResponse> {
         let default_params = [("grantType", "client_credentials")];
 
         let request = self
@@ -102,7 +102,7 @@ impl<'a> ApiClient<'a> {
         Ok(response)
     }
 
-    pub async fn customer_login(&'a self) -> Response<LoginResponse> {
+    pub async fn customer_login(&self) -> Response<LoginResponse> {
         let token = self.login_token.as_ref().ok_or("no login token set")?;
         let login_username = &self.login_username;
         let login_password = &self.login_password;
@@ -131,7 +131,7 @@ impl<'a> ApiClient<'a> {
 
     // https://ap-prod.api.mcd.com/exp/v1/offers?distance=10000&exclude=14&latitude=-32.0117&longitude=115.8845&optOuts=&timezoneOffsetInMinutes=480
     pub async fn get_offers<A, B, C, D, E>(
-        &'a self,
+        &self,
         distance: &A,
         latitude: &B,
         longitude: &C,
@@ -169,7 +169,7 @@ impl<'a> ApiClient<'a> {
 
     // https://ap-prod.api.mcd.com/exp/v1/restaurant/location?distance=20&filter=summary&latitude=-32.0117&longitude=115.8845
     pub async fn restaurant_location<A, B, C, D>(
-        &'a self,
+        &self,
         distance: &A,
         latitude: &B,
         longitude: &C,
@@ -204,7 +204,7 @@ impl<'a> ApiClient<'a> {
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/offers/details/166870
-    pub async fn offer_details<S>(&'a self, offer_id: S) -> Response<OfferDetailsResponse>
+    pub async fn offer_details<S>(&self, offer_id: S) -> Response<OfferDetailsResponse>
     where
         S: Display,
     {
@@ -224,7 +224,7 @@ impl<'a> ApiClient<'a> {
 
     // GET https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
     pub async fn get_offers_dealstack<A, B>(
-        &'a self,
+        &self,
         offset: &A,
         store_id: &B,
     ) -> Response<OfferDealStackResponse>
@@ -254,7 +254,7 @@ impl<'a> ApiClient<'a> {
 
     // POST https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/166870?offerId=1139347703&offset=480&storeId=951488
     pub async fn add_to_offers_dealstack<A, B, C>(
-        &'a self,
+        &self,
         offer_id: &A,
         offset: &B,
         store_id: &C,
@@ -289,7 +289,7 @@ impl<'a> ApiClient<'a> {
 
     // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/offer/166870?offerId=1139347703&offset=480&storeId=951488
     pub async fn remove_from_offers_dealstack<A, B, C, D>(
-        &'a self,
+        &self,
         offer_id: &A,
         offer_proposition_id: &B,
         offset: &C,
@@ -338,7 +338,7 @@ impl<'a> ApiClient<'a> {
 
     // https://ap-prod.api.mcd.com/exp/v1/customer/login/refresh
     pub async fn customer_login_refresh<S>(
-        &'a self,
+        &self,
         refresh_token: &S,
     ) -> Response<LoginRefreshResponse>
     where
