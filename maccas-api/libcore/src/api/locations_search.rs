@@ -1,4 +1,5 @@
 use super::Context;
+use crate::constants::{LOCATION_SEARCH_DISTANCE, MCDONALDS_API_DEFAULT_FILTER};
 use crate::extensions::RequestExtensions;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
@@ -63,12 +64,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
                 let lat = response.geometry.location.lat;
                 let lng = response.geometry.location.lng;
                 let resp = api_client
-                    .restaurant_location(
-                        Some(&constants::LOCATION_SEARCH_DISTANCE.to_string()),
-                        Some(&lat.to_string()),
-                        Some(&lng.to_string()),
-                        None,
-                    )
+                    .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, MCDONALDS_API_DEFAULT_FILTER)
                     .await?;
 
                 match resp.response {

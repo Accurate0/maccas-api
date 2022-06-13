@@ -25,3 +25,7 @@ pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 pub const CORRELATION_ID_HEADER: &str = "traceparent";
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
+pub const MCDONALDS_API_BASE_URL: &str = "https://ap-prod.api.mcd.com";
+pub const MCDONALDS_API_DEFAULT_OFFSET: &str = "480";
+pub const MCDONALDS_API_DEFAULT_STORE_ID: &str = "951488";
+pub const MCDONALDS_API_DEFAULT_FILTER: &str = "summary";

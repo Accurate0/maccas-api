@@ -5,7 +5,7 @@ use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::DateTime;
 use chrono::{Duration, Utc};
 use lambda_runtime::Error;
-use libmaccas::api::ApiClient;
+use libmaccas::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
@@ -161,7 +161,7 @@ pub async fn refresh_offer_cache_for(
     api_client: &ApiClient<'_>,
 ) -> Result<(), Error> {
     let mut resp = api_client
-        .get_offers(None)
+        .get_offers("10000", "37.4219", "-122.084", "", "480")
         .await?
         .response
         .expect("to have response")

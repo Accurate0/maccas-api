@@ -1,18 +1,19 @@
-use http_auth_basic::Credentials;
-use rand::distributions::{Alphanumeric, DistString};
-use rand::rngs::StdRng;
-use rand::SeedableRng;
-use reqwest::Method;
-use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
+use std::fmt::Display;
 
 use crate::types::{
     LoginRefreshResponse, LoginResponse, OfferDealStackResponse, OfferDetailsResponse,
     OfferResponse, RestaurantLocationResponse, TokenResponse,
 };
-
-const BASE_URL: &str = "https://ap-prod.api.mcd.com";
+use crate::Response;
+use rand::distributions::{Alphanumeric, DistString};
+use rand::rngs::StdRng;
+use rand::SeedableRng;
+use reqwest::Method;
+use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
+use uuid::Uuid;
 
 pub struct ApiClient<'a> {
+    base_url: String,
     client: &'a ClientWithMiddleware,
     auth_token: Option<String>,
     login_token: Option<String>,
@@ -22,8 +23,9 @@ pub struct ApiClient<'a> {
     login_password: String,
 }
 
-impl ApiClient<'_> {
+impl<'a> ApiClient<'a> {
     pub fn new(
+        base_url: String,
         client: &ClientWithMiddleware,
         client_id: String,
         client_secret: String,
@@ -31,6 +33,7 @@ impl ApiClient<'_> {
         login_password: String,
     ) -> ApiClient {
         ApiClient {
+            base_url,
             client,
             login_token: None,
             auth_token: None,
@@ -41,68 +44,72 @@ impl ApiClient<'_> {
         }
     }
 
-    fn get_default_request(&self, resource: &str, method: Method) -> RequestBuilder {
-        let client_id = &self.client_id;
+    fn get_default_request(&'a self, resource: &str, method: Method) -> RequestBuilder {
+        let ref client_id = self.client_id;
+        let ref base_url = self.base_url;
+
         return self
             .client
-            .request(method, format!("{BASE_URL}/{resource}"))
+            .request(method, format!("{base_url}/{resource}"))
             .header("accept-encoding", "gzip")
             .header("accept-charset", "UTF-8")
             .header("accept-language", "en-AU")
             .header("content-type", "application/json; charset=UTF-8")
             .header("mcd-clientid", client_id)
-            .header("mcd-uuid", crate::util::get_uuid())
+            .header("mcd-uuid", Self::get_uuid())
             .header("user-agent", "MCDSDK/20.0.14 (Android; 31; en-AU) GMA/6.2")
             .header("mcd-sourceapp", "GMA")
             .header("mcd-marketid", "AU");
+    }
+
+    pub fn get_uuid() -> String {
+        Uuid::new_v4().to_hyphenated().to_string()
     }
 
     pub fn username(&self) -> &String {
         &self.login_username
     }
 
-    pub fn set_auth_token(&mut self, auth_token: &String) {
+    pub fn set_login_token<S>(&mut self, login_token: S)
+    where
+        S: Display,
+    {
+        self.login_token = Some(login_token.to_string());
+    }
+
+    pub fn set_auth_token<S>(&mut self, auth_token: S)
+    where
+        S: Display,
+    {
         self.auth_token = Some(auth_token.to_string());
     }
 
-    pub async fn security_auth_token(&mut self) -> reqwest_middleware::Result<TokenResponse> {
+    pub async fn security_auth_token(&'a self) -> Response<TokenResponse> {
         let default_params = [("grantType", "client_credentials")];
-
-        let client_id = &self.client_id;
-        let client_secret = &self.client_secret;
-
-        let credentials = Credentials::new(client_id, client_secret);
 
         let request = self
             .get_default_request("v1/security/auth/token", Method::POST)
             .query(&default_params)
-            .header("authorization", credentials.as_http_header())
-            .header("mcd-clientsecret", client_secret)
+            .basic_auth(&self.client_id, Some(&self.client_secret))
+            .header("mcd-clientsecret", &self.client_secret)
             .header(
                 "content-type",
                 "application/x-www-form-urlencoded; charset=UTF-8",
             );
 
-        let response = request
-            .send()
-            .await?
-            .json::<TokenResponse>()
-            .await
-            .expect("error deserializing payload");
-
-        self.login_token = Some(response.response.token.clone());
+        let response = request.send().await?.json::<TokenResponse>().await?;
 
         Ok(response)
     }
 
-    pub async fn customer_login(&mut self) -> reqwest_middleware::Result<LoginResponse> {
-        let token: &String = self.login_token.as_ref().unwrap();
+    pub async fn customer_login(&'a self) -> Response<LoginResponse> {
+        let token = self.login_token.as_ref().ok_or("no login token set")?;
         let login_username = &self.login_username;
         let login_password = &self.login_password;
         let mut rng = StdRng::from_entropy();
         let device_id = Alphanumeric.sample_string(&mut rng, 16);
 
-        let creds = serde_json::json!({
+        let credentials = serde_json::json!({
             "credentials": {
                 "loginUsername": login_username,
                 "password": login_password,
@@ -113,72 +120,75 @@ impl ApiClient<'_> {
 
         let request = self
             .get_default_request("exp/v1/customer/login", Method::POST)
-            .header("authorization", format!("Bearer {token}"))
+            .bearer_auth(token)
             .header("x-acf-sensor-data", std::include_str!("sensor.data"))
-            .json(&creds);
+            .json(&credentials);
 
-        let response = request
-            .send()
-            .await?
-            .json::<LoginResponse>()
-            .await
-            .expect("error deserializing payload");
-
-        self.auth_token = Some(response.response.access_token.clone());
+        let response = request.send().await?.json::<LoginResponse>().await?;
 
         Ok(response)
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/offers?distance=10000&exclude=14&latitude=-32.0117&longitude=115.8845&optOuts=&timezoneOffsetInMinutes=480
-    pub async fn get_offers(
-        &self,
-        params: Option<Vec<(String, String)>>,
-    ) -> reqwest_middleware::Result<OfferResponse> {
-        let default_params = match params {
-            Some(p) => p,
-            None => Vec::from([
-                (String::from("distance"), String::from("10000")),
-                (String::from("latitude"), String::from("37.4219")),
-                (String::from("longitude"), String::from("-122.084")),
-                (String::from("optOuts"), String::from("")),
-                (String::from("timezoneOffsetInMinutes"), String::from("480")),
-            ]),
-        };
+    pub async fn get_offers<A, B, C, D, E>(
+        &'a self,
+        distance: &A,
+        latitude: &B,
+        longitude: &C,
+        opt_outs: &D,
+        timezone_offset_in_minutes: &E,
+    ) -> Response<OfferResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+        C: Display + ?Sized,
+        D: Display + ?Sized,
+        E: Display + ?Sized,
+    {
+        let params = Vec::from([
+            (String::from("distance"), distance.to_string()),
+            (String::from("latitude"), latitude.to_string()),
+            (String::from("longitude"), longitude.to_string()),
+            (String::from("optOuts"), opt_outs.to_string()),
+            (
+                String::from("timezoneOffsetInMinutes"),
+                timezone_offset_in_minutes.to_string(),
+            ),
+        ]);
 
-        let token: &String = self.auth_token.as_ref().unwrap();
-
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
         let request = self
             .get_default_request("exp/v1/offers", Method::GET)
-            .query(&default_params)
-            .header("authorization", format!("Bearer {token}"));
+            .query(&params)
+            .bearer_auth(token);
 
-        let response = request
-            .send()
-            .await?
-            .json::<OfferResponse>()
-            .await
-            .expect("error deserializing payload");
+        let response = request.send().await?.json::<OfferResponse>().await?;
 
         Ok(response)
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/restaurant/location?distance=20&filter=summary&latitude=-32.0117&longitude=115.8845
-    pub async fn restaurant_location(
-        &self,
-        distance: Option<&str>,
-        latitude: Option<&str>,
-        longitude: Option<&str>,
-        filter: Option<&str>,
-    ) -> reqwest_middleware::Result<RestaurantLocationResponse> {
+    pub async fn restaurant_location<A, B, C, D>(
+        &'a self,
+        distance: &A,
+        latitude: &B,
+        longitude: &C,
+        filter: &D,
+    ) -> Response<RestaurantLocationResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+        C: Display + ?Sized,
+        D: Display + ?Sized,
+    {
         let params = Vec::from([
-            (String::from("distance"), distance.unwrap_or("20")),
-            (String::from("latitude"), latitude.unwrap_or("-32.0117")),
-            (String::from("longitude"), longitude.unwrap_or("115.8845")),
-            (String::from("filter"), filter.unwrap_or("summary")),
+            (String::from("distance"), distance.to_string()),
+            (String::from("latitude"), latitude.to_string()),
+            (String::from("longitude"), longitude.to_string()),
+            (String::from("filter"), filter.to_string()),
         ]);
 
-        let token: &String = self.auth_token.as_ref().unwrap();
-
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
         let request = self
             .get_default_request("exp/v1/restaurant/location", Method::GET)
             .query(&params)
@@ -188,77 +198,76 @@ impl ApiClient<'_> {
             .send()
             .await?
             .json::<RestaurantLocationResponse>()
-            .await
-            .expect("error deserializing payload");
+            .await?;
 
         Ok(response)
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/offers/details/166870
-    pub async fn offer_details(
-        &self,
-        offer_id: &String,
-    ) -> reqwest_middleware::Result<OfferDetailsResponse> {
-        let token: &String = self.auth_token.as_ref().unwrap();
+    pub async fn offer_details<S>(&'a self, offer_id: S) -> Response<OfferDetailsResponse>
+    where
+        S: Display,
+    {
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
 
         let request = self
             .get_default_request(
                 format!("exp/v1/offers/details/{offer_id}").as_str(),
                 Method::GET,
             )
-            .header("authorization", format!("Bearer {token}"));
+            .bearer_auth(token);
 
-        let response = request
-            .send()
-            .await?
-            .json::<OfferDetailsResponse>()
-            .await
-            .expect("error deserializing payload");
+        let response = request.send().await?.json::<OfferDetailsResponse>().await?;
 
         Ok(response)
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
-    pub async fn offers_dealstack(
-        &self,
-        offset: Option<&str>,
-        store_id: Option<&str>,
-    ) -> reqwest_middleware::Result<OfferDealStackResponse> {
-        let token: &String = self.auth_token.as_ref().unwrap();
+    pub async fn get_offers_dealstack<A, B>(
+        &'a self,
+        offset: &A,
+        store_id: &B,
+    ) -> Response<OfferDealStackResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+    {
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
         let params = Vec::from([
-            (String::from("offset"), offset.unwrap_or("480")),
-            (String::from("storeId"), store_id.unwrap_or("951488")),
+            (String::from("offset"), offset.to_string()),
+            (String::from("storeId"), store_id.to_string()),
         ]);
 
         let request = self
             .get_default_request("exp/v1/offers/dealstack", Method::GET)
             .query(&params)
-            .header("authorization", format!("Bearer {token}"));
+            .bearer_auth(token);
 
         let response = request
             .send()
             .await?
             .json::<OfferDealStackResponse>()
-            .await
-            .expect("error deserializing payload");
+            .await?;
 
         Ok(response)
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/166870?offerId=1139347703&offset=480&storeId=951488
-    pub async fn add_offer_to_offers_dealstack(
-        &self,
-        offer_id: &String,
-        offset: Option<&str>,
-        store_id: Option<&str>,
-    ) -> reqwest_middleware::Result<OfferDealStackResponse> {
-        let token: &String = self.auth_token.as_ref().unwrap();
-        let store_id = store_id.unwrap_or("951488");
-        let offset = offset.unwrap_or("480").to_string();
-
+    pub async fn add_to_offers_dealstack<A, B, C>(
+        &'a self,
+        offer_id: &A,
+        offset: &B,
+        store_id: &C,
+    ) -> Response<OfferDealStackResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+        C: Display + ?Sized,
+    {
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
         let params = Vec::from([
-            (String::from("offset"), offset.as_str()),
-            (String::from("storeId"), store_id),
+            (String::from("offset"), offset.to_string()),
+            (String::from("storeId"), store_id.to_string()),
         ]);
 
         let request = self
@@ -273,38 +282,40 @@ impl ApiClient<'_> {
             .send()
             .await?
             .json::<OfferDealStackResponse>()
-            .await
-            .expect("error deserializing payload");
+            .await?;
 
         Ok(response)
     }
 
     // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/offer/166870?offerId=1139347703&offset=480&storeId=951488
-    pub async fn remove_offer_from_offers_dealstack(
-        &self,
-        offer_id: i64,
-        offer_proposition_id: &String,
-        offset: Option<i64>,
-        store_id: Option<&str>,
-    ) -> reqwest_middleware::Result<OfferDealStackResponse> {
-        let store_id = store_id.unwrap_or("951488");
-        let offer_id = offer_id.to_string();
-        let offset = offset.unwrap_or(480).to_string();
+    pub async fn remove_from_offers_dealstack<A, B, C, D>(
+        &'a self,
+        offer_id: &A,
+        offer_proposition_id: &B,
+        offset: &C,
+        store_id: &D,
+    ) -> Response<OfferDealStackResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+        C: Display + ?Sized,
+        D: Display + ?Sized,
+    {
         // the app sends a body, but this request works without it
         // but we're pretending to be the app :)
         let body = serde_json::json!(
             {
-                "storeId": store_id,
-                "offerId": offer_id,
-                "offset": offset,
+                "storeId": store_id.to_string(),
+                "offerId": offer_id.to_string().parse::<i64>()?,
+                "offset": offset.to_string().parse::<i64>()?,
             }
         );
 
-        let token: &String = self.auth_token.as_ref().unwrap();
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
         let params = Vec::from([
-            (String::from("offerId"), offer_id.as_str()),
-            (String::from("offset"), offset.as_str()),
-            (String::from("storeId"), store_id),
+            (String::from("offerId"), offer_id.to_string()),
+            (String::from("offset"), offset.to_string()),
+            (String::from("storeId"), store_id.to_string()),
         ]);
 
         let request = self
@@ -320,32 +331,28 @@ impl ApiClient<'_> {
             .send()
             .await?
             .json::<OfferDealStackResponse>()
-            .await
-            .expect("error deserializing payload");
+            .await?;
 
         Ok(response)
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/customer/login/refresh
-    pub async fn customer_login_refresh(
-        &self,
-        refresh_token: &String,
-    ) -> reqwest_middleware::Result<LoginRefreshResponse> {
-        let token: &String = self.auth_token.as_ref().unwrap();
-
-        let body = serde_json::json!({ "refreshToken": refresh_token });
+    pub async fn customer_login_refresh<S>(
+        &'a self,
+        refresh_token: &S,
+    ) -> Response<LoginRefreshResponse>
+    where
+        S: Display + ?Sized,
+    {
+        let token = self.auth_token.as_ref().ok_or("no auth token set")?;
+        let body = serde_json::json!({ "refreshToken": refresh_token.to_string() });
 
         let request = self
             .get_default_request("exp/v1/customer/login/refresh", Method::POST)
             .bearer_auth(token)
             .json(&body);
 
-        let response = request
-            .send()
-            .await?
-            .json::<LoginRefreshResponse>()
-            .await
-            .expect("error deserializing payload");
+        let response = request.send().await?.json::<LoginRefreshResponse>().await?;
 
         Ok(response)
     }

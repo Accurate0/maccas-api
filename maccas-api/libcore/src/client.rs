@@ -1,12 +1,11 @@
 use crate::client;
 use crate::config::ApiConfig;
-use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
+use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, MCDONALDS_API_BASE_URL, REFRESH_TOKEN};
 use crate::middleware;
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, FixedOffset, Utc};
 use lambda_http::Error;
-use libmaccas::api;
-use libmaccas::api::ApiClient;
+use libmaccas::ApiClient;
 use std::collections::HashMap;
 use std::time::Duration;
 use std::time::SystemTime;
@@ -58,8 +57,9 @@ pub async fn get<'a>(
     api_config: &'a ApiConfig,
     login_username: &'a String,
     login_password: &'a String,
-) -> Result<api::ApiClient<'a>, Error> {
-    let mut api_client = api::ApiClient::new(
+) -> Result<ApiClient<'a>, Error> {
+    let mut api_client = ApiClient::new(
+        MCDONALDS_API_BASE_URL.to_string(),
         http_client,
         api_config.client_id.clone(),
         api_config.client_secret.clone(),
@@ -77,8 +77,11 @@ pub async fn get<'a>(
     match resp.item {
         None => {
             log::info!("{}: nothing in db, requesting..", account_name);
-            let _ = api_client.security_auth_token().await?;
+            let response = api_client.security_auth_token().await?;
+            api_client.set_login_token(&response.response.token);
+
             let response = api_client.customer_login().await?;
+            api_client.set_auth_token(&response.response.access_token);
 
             let now = SystemTime::now();
             let now: DateTime<Utc> = now.into();
@@ -96,6 +99,7 @@ pub async fn get<'a>(
                 .send()
                 .await?;
         }
+
         Some(ref item) => {
             log::info!("{}: tokens in db, trying..", account_name);
             let refresh_token = match item[REFRESH_TOKEN].as_s() {
@@ -127,14 +131,19 @@ pub async fn get<'a>(
                         if res.response.is_some() {
                             let unwrapped_res = res.response.unwrap();
                             log::info!("refresh success..");
+
                             new_access_token = unwrapped_res.access_token;
                             new_ref_token = unwrapped_res.refresh_token;
                         } else if res.status.code != 20000 {
-                            api_client.security_auth_token().await?;
-                            let res = api_client.customer_login().await?;
+                            let response = api_client.security_auth_token().await?;
+                            api_client.set_login_token(&response.response.token);
+
+                            let response = api_client.customer_login().await?;
+                            api_client.set_auth_token(&response.response.access_token);
+
                             log::info!("refresh failed, logged in again..");
-                            new_access_token = res.response.access_token;
-                            new_ref_token = res.response.refresh_token;
+                            new_access_token = response.response.access_token;
+                            new_ref_token = response.response.refresh_token;
                         }
 
                         api_client.set_auth_token(&new_access_token);
