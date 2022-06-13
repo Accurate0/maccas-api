@@ -49,7 +49,8 @@ async fn main() -> Result<(), Error> {
             .await
         {
             Ok(r) => r,
-            Err(_) => {
+            Err(e) => {
+                log::error!("{:?}", e);
                 let status_code = StatusCode::INTERNAL_SERVER_ERROR;
                 return Ok(Response::builder().status(status_code.as_u16()).body(
                     serde_json::to_string(&types::api::Error {
