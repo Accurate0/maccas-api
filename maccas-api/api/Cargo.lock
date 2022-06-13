@@ -53,7 +53,6 @@ dependencies = [
  "lambda_http",
  "lambda_runtime",
  "libcore",
- "libmaccas",
  "log",
  "serde",
  "serde_derive",
