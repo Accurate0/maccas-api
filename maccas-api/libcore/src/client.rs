@@ -54,22 +54,19 @@ pub async fn get<'a>(
     http_client: &'a reqwest_middleware::ClientWithMiddleware,
     client: &'a aws_sdk_dynamodb::Client,
     account_name: &'a String,
-    api_config: &'a ApiConfig,
+    config: &'a ApiConfig,
     login_username: &'a String,
     login_password: &'a String,
 ) -> Result<ApiClient<'a>, Error> {
     let mut api_client = ApiClient::new(
         MCDONALDS_API_BASE_URL.to_string(),
         http_client,
-        api_config.client_id.clone(),
-        api_config.client_secret.clone(),
-        login_username.clone(),
-        login_password.clone(),
+        config.client_id.clone(),
     );
 
     let resp = client
         .get_item()
-        .table_name(&api_config.table_name)
+        .table_name(&config.table_name)
         .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
         .send()
         .await?;
@@ -77,10 +74,10 @@ pub async fn get<'a>(
     match resp.item {
         None => {
             log::info!("{}: nothing in db, requesting..", account_name);
-            let response = api_client.security_auth_token().await?;
+            let response = api_client.security_auth_token(&config.client_secret).await?;
             api_client.set_login_token(&response.response.token);
 
-            let response = api_client.customer_login().await?;
+            let response = api_client.customer_login(login_username, login_password).await?;
             api_client.set_auth_token(&response.response.access_token);
 
             let now = SystemTime::now();
@@ -91,7 +88,7 @@ pub async fn get<'a>(
 
             client
                 .put_item()
-                .table_name(&api_config.table_name)
+                .table_name(&config.table_name)
                 .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
                 .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
                 .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
@@ -135,10 +132,10 @@ pub async fn get<'a>(
                             new_access_token = unwrapped_res.access_token;
                             new_ref_token = unwrapped_res.refresh_token;
                         } else if res.status.code != 20000 {
-                            let response = api_client.security_auth_token().await?;
+                            let response = api_client.security_auth_token(&config.client_secret).await?;
                             api_client.set_login_token(&response.response.token);
 
-                            let response = api_client.customer_login().await?;
+                            let response = api_client.customer_login(login_username, login_password).await?;
                             api_client.set_auth_token(&response.response.access_token);
 
                             log::info!("refresh failed, logged in again..");
@@ -149,7 +146,7 @@ pub async fn get<'a>(
                         api_client.set_auth_token(&new_access_token);
                         client
                             .put_item()
-                            .table_name(&api_config.table_name)
+                            .table_name(&config.table_name)
                             .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
                             .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
                             .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))

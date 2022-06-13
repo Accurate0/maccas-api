@@ -145,7 +145,7 @@ pub async fn refresh_offer_cache<'a>(
             &api_client,
         )
         .await?;
-        utils::remove_all_from_deal_stack_for(&api_client).await?;
+        utils::remove_all_from_deal_stack_for(&api_client, account_name).await?;
     }
 
     log::info!("refreshed {} account offer caches..", client_map.keys().len());

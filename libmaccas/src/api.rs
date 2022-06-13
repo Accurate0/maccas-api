@@ -18,29 +18,16 @@ pub struct ApiClient<'a> {
     auth_token: Option<String>,
     login_token: Option<String>,
     client_id: String,
-    client_secret: String,
-    login_username: String,
-    login_password: String,
 }
 
 impl ApiClient<'_> {
-    pub fn new(
-        base_url: String,
-        client: &ClientWithMiddleware,
-        client_id: String,
-        client_secret: String,
-        login_username: String,
-        login_password: String,
-    ) -> ApiClient {
+    pub fn new(base_url: String, client: &ClientWithMiddleware, client_id: String) -> ApiClient {
         ApiClient {
             base_url,
             client,
             login_token: None,
             auth_token: None,
             client_id,
-            client_secret,
-            login_username,
-            login_password,
         }
     }
 
@@ -66,10 +53,6 @@ impl ApiClient<'_> {
         Uuid::new_v4().to_hyphenated().to_string()
     }
 
-    pub fn username(&self) -> &String {
-        &self.login_username
-    }
-
     pub fn set_login_token<S>(&mut self, login_token: S)
     where
         S: Display,
@@ -84,14 +67,16 @@ impl ApiClient<'_> {
         self.auth_token = Some(auth_token.to_string());
     }
 
-    pub async fn security_auth_token(&self) -> Response<TokenResponse> {
+    pub async fn security_auth_token<A>(&self, client_secret: &A) -> Response<TokenResponse>
+    where
+        A: Display + ?Sized,
+    {
         let default_params = [("grantType", "client_credentials")];
-
         let request = self
             .get_default_request("v1/security/auth/token", Method::POST)
             .query(&default_params)
-            .basic_auth(&self.client_id, Some(&self.client_secret))
-            .header("mcd-clientsecret", &self.client_secret)
+            .basic_auth(&self.client_id, Some(client_secret))
+            .header("mcd-clientsecret", client_secret.to_string())
             .header(
                 "content-type",
                 "application/x-www-form-urlencoded; charset=UTF-8",
@@ -102,17 +87,23 @@ impl ApiClient<'_> {
         Ok(response)
     }
 
-    pub async fn customer_login(&self) -> Response<LoginResponse> {
+    pub async fn customer_login<A, B>(
+        &self,
+        login_username: &A,
+        login_password: &B,
+    ) -> Response<LoginResponse>
+    where
+        A: Display + ?Sized,
+        B: Display + ?Sized,
+    {
         let token = self.login_token.as_ref().ok_or("no login token set")?;
-        let login_username = &self.login_username;
-        let login_password = &self.login_password;
         let mut rng = StdRng::from_entropy();
         let device_id = Alphanumeric.sample_string(&mut rng, 16);
 
         let credentials = serde_json::json!({
             "credentials": {
-                "loginUsername": login_username,
-                "password": login_password,
+                "loginUsername": login_username.to_string(),
+                "password": login_password.to_string(),
                 "type": "email"
             },
             "deviceId": device_id
