@@ -204,9 +204,9 @@ impl ApiClient<'_> {
     }
 
     // https://ap-prod.api.mcd.com/exp/v1/offers/details/166870
-    pub async fn offer_details<S>(&self, offer_id: S) -> Response<OfferDetailsResponse>
+    pub async fn offer_details<S>(&self, offer_id: &S) -> Response<OfferDetailsResponse>
     where
-        S: Display,
+        S: Display + ?Sized,
     {
         let token = self.auth_token.as_ref().ok_or("no auth token set")?;
 
