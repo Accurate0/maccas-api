@@ -7,18 +7,18 @@ use crate::{
 };
 use async_trait::async_trait;
 use http::Response;
-use lambda_http::{Body, Error, Request, RequestExt};
+use lambda_http::{Body, Request, RequestExt};
 use rand::{
     prelude::{SliceRandom, StdRng},
     SeedableRng,
 };
-use simple_dispatcher::Executor;
+use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct LocationsSearch;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for LocationsSearch {
-    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();
         let text = query_params.first("text").expect("must have text");
@@ -30,18 +30,18 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
                 format!("{}/place?text={}", constants::PLACES_API_BASE, text,).as_str(),
             )
             .header(constants::CORRELATION_ID_HEADER, correlation_id)
-            .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
+            .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
             .send()
             .await?
             .json::<PlaceResponse>()
             .await?;
 
         // TODO: use a service account
-        let account_name_list: Vec<String> = ctx.api_config.users.iter().map(|u| u.account_name.clone()).collect();
+        let account_name_list: Vec<String> = ctx.config.users.iter().map(|u| u.account_name.clone()).collect();
         let mut rng = StdRng::from_entropy();
         let choice = account_name_list.choose(&mut rng).ok_or("no choice")?.to_string();
         let user = ctx
-            .api_config
+            .config
             .users
             .iter()
             .find(|u| u.account_name == choice)
@@ -51,7 +51,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
             &http_client,
             &ctx.dynamodb_client,
             &choice,
-            &ctx.api_config,
+            &ctx.config,
             &user.login_username,
             &user.login_password,
         )

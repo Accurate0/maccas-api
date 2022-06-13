@@ -2,18 +2,18 @@ use super::Context;
 use crate::client;
 use async_trait::async_trait;
 use http::Response;
-use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
+use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use rand::{
     prelude::{SliceRandom, StdRng},
     SeedableRng,
 };
-use simple_dispatcher::Executor;
+use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Locations;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for Locations {
-    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let query_params = request.query_string_parameters();
         let distance = query_params.first("distance");
         let latitude = query_params.first("latitude");
@@ -21,11 +21,11 @@ impl Executor<Context, Request, Response<Body>> for Locations {
 
         if distance.is_some() && latitude.is_some() && longitude.is_some() {
             // TODO: use a service account
-            let account_name_list: Vec<String> = ctx.api_config.users.iter().map(|u| u.account_name.clone()).collect();
+            let account_name_list: Vec<String> = ctx.config.users.iter().map(|u| u.account_name.clone()).collect();
             let mut rng = StdRng::from_entropy();
             let choice = account_name_list.choose(&mut rng).ok_or("no choice")?.to_string();
             let user = ctx
-                .api_config
+                .config
                 .users
                 .iter()
                 .find(|u| u.account_name == choice)
@@ -36,7 +36,7 @@ impl Executor<Context, Request, Response<Body>> for Locations {
                 &http_client,
                 &ctx.dynamodb_client,
                 &choice,
-                &ctx.api_config,
+                &ctx.config,
                 &user.login_username,
                 &user.login_password,
             )

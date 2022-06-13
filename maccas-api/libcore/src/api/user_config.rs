@@ -5,14 +5,14 @@ use crate::{client, constants};
 use async_trait::async_trait;
 use http::Response;
 use jwt::{Header, Token};
-use lambda_http::{Body, Error, Request};
-use simple_dispatcher::Executor;
+use lambda_http::{Body, Request};
+use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct UserConfig;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for UserConfig {
-    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         // TODO: this is slow...
         let correlation_id = request.get_correlation_id();
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
@@ -40,7 +40,7 @@ impl Executor<Context, Request, Response<Body>> for UserConfig {
                     )
                     .body(body)
                     .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                    .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
+                    .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
                     .send()
                     .await?;
 

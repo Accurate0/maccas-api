@@ -20,7 +20,7 @@ async fn main() -> Result<(), Error> {
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
     let context = Context {
-        api_config: config,
+        config,
         dynamodb_client,
     };
 
