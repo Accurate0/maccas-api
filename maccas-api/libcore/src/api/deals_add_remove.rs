@@ -9,14 +9,14 @@ use async_trait::async_trait;
 use chrono::{DateTime, Duration, Local};
 use http::{Method, Response};
 use jwt::{Header, Token};
-use lambda_http::{Body, Error, IntoResponse, Request, RequestExt};
-use simple_dispatcher::Executor;
+use lambda_http::{Body, IntoResponse, Request, RequestExt};
+use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct DealsAddRemove;
 
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
-    async fn execute(&self, ctx: &Context, request: &Request) -> Result<Response<Body>, Error> {
+    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let path_params = request.path_parameters();
         let query_params = request.query_string_parameters();
 
@@ -25,9 +25,9 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
         let deal_id = &deal_id.to_owned();
 
         let (account_name, offer) =
-            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.api_config.cache_table_name_v2).await?;
+            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await?;
         let user = ctx
-            .api_config
+            .config
             .users
             .iter()
             .find(|u| u.account_name == account_name)
@@ -38,7 +38,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
             &http_client,
             &ctx.dynamodb_client,
             &account_name,
-            &ctx.api_config,
+            &ctx.config,
             &user.login_username,
             &user.login_password,
         )
@@ -58,8 +58,8 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                 if offer_id == 0 {
                     cache::refresh_offer_cache_for(
                         &ctx.dynamodb_client,
-                        &ctx.api_config.cache_table_name,
-                        &ctx.api_config.cache_table_name_v2,
+                        &ctx.config.cache_table_name,
+                        &ctx.config.cache_table_name_v2,
                         &account_name,
                         &api_client,
                     )
@@ -69,7 +69,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                 // lock the deal from appearing in GET /deals
                 lock::lock_deal(
                     &ctx.dynamodb_client,
-                    &ctx.api_config.offer_id_table_name,
+                    &ctx.config.offer_id_table_name,
                     deal_id,
                     Duration::hours(3),
                 )
@@ -96,7 +96,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         .request(Method::POST, format!("{}/log", constants::LOG_API_BASE).as_str())
                         .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                         .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                        .header(constants::X_API_KEY_HEADER, &ctx.api_config.api_key)
+                        .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
                         .body(serde_json::to_string(&usage_log)?)
                         .send()
                         .await;
@@ -119,7 +119,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                     .remove_offer_from_offers_dealstack(offer_id, &offer_proposition_id, None, store)
                     .await?;
 
-                lock::unlock_deal(&ctx.dynamodb_client, &ctx.api_config.offer_id_table_name, deal_id).await?;
+                lock::unlock_deal(&ctx.dynamodb_client, &ctx.config.offer_id_table_name, deal_id).await?;
 
                 Response::builder().status(204).body("".into())?
             }
