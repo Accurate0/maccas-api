@@ -1,6 +1,8 @@
 use super::Context;
 use crate::cache;
 use crate::client;
+use crate::constants::MCDONALDS_API_DEFAULT_OFFSET;
+use crate::constants::MCDONALDS_API_DEFAULT_STORE_ID;
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
@@ -39,7 +41,12 @@ impl Executor<Context, Request, Response<Body>> for Code {
         )
         .await?;
 
-        let resp = api_client.offers_dealstack(None, store).await?;
+        let resp = api_client
+            .get_offers_dealstack(
+                MCDONALDS_API_DEFAULT_OFFSET,
+                store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+            )
+            .await?;
         Ok(serde_json::to_string(&resp).unwrap().into_response())
     }
 }

@@ -1,7 +1,11 @@
-use crate::types::api::Offer;
+use crate::{
+    constants::{MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID},
+    types::api::Offer,
+};
 use lambda_http::Error;
-use libmaccas::api::ApiClient;
+use libmaccas::ApiClient;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 #[deprecated]
 pub async fn get_by_order_id<'a>(
@@ -36,18 +40,22 @@ pub async fn get_by_order_id<'a>(
 pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Result<(), Error> {
     // honestly, we don't want failures here, so we'll probably just suppress them...
     log::info!("{}: trying to clean deal stack", api_client.username());
-    let deal_stack = api_client.offers_dealstack(None, None).await;
+    let deal_stack = api_client
+        .get_offers_dealstack(MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID)
+        .await;
     if let Ok(deal_stack) = deal_stack {
         if let Some(deal_stack) = deal_stack.response {
             if let Some(deal_stack) = deal_stack.deal_stack {
                 for deal in deal_stack {
                     log::info!("{}: removing offer -> {}", api_client.username(), deal.offer_id);
+                    // let store_id = store_id.unwrap_or("951488");
+                    // let offset = offset.unwrap_or(480).to_string();
                     api_client
-                        .remove_offer_from_offers_dealstack(
-                            deal.offer_id,
-                            &deal.offer_proposition_id.to_string(),
-                            None,
-                            None,
+                        .remove_from_offers_dealstack(
+                            &deal.offer_id,
+                            &deal.offer_proposition_id,
+                            MCDONALDS_API_DEFAULT_OFFSET,
+                            MCDONALDS_API_DEFAULT_STORE_ID,
                         )
                         .await
                         .ok();
@@ -56,4 +64,8 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Resul
         }
     };
     Ok(())
+}
+
+pub fn get_uuid() -> String {
+    Uuid::new_v4().to_hyphenated().to_string()
 }

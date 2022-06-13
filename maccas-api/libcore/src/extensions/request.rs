@@ -1,7 +1,5 @@
+use crate::{constants, extensions::HeaderMapExtensions, utils::get_uuid};
 use http::{header::ORIGIN, HeaderValue, Request};
-use libmaccas::util;
-
-use crate::{constants, extensions::HeaderMapExtensions};
 
 pub trait RequestExtensions<T> {
     fn get_correlation_id(&self) -> HeaderValue;
@@ -12,7 +10,7 @@ impl<T: std::fmt::Debug> RequestExtensions<T> for Request<T> {
     fn get_correlation_id(&self) -> HeaderValue {
         self.headers()
             .get(constants::CORRELATION_ID_HEADER)
-            .unwrap_or(&HeaderValue::from_str(util::get_uuid().as_str()).unwrap())
+            .unwrap_or(&HeaderValue::from_str(get_uuid().as_str()).unwrap())
             .clone()
     }
 

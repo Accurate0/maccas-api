@@ -1,6 +1,7 @@
 use super::Context;
 use crate::cache;
 use crate::client::{self};
+use crate::constants::{MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID};
 use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
@@ -51,7 +52,13 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
         Ok(match *request.method() {
             Method::POST => {
                 let resp = api_client
-                    .add_offer_to_offers_dealstack(&offer_proposition_id, None, store)
+                    // let store_id = store_id.unwrap_or("951488");
+                    // let offset = offset.unwrap_or("480").to_string();
+                    .add_to_offers_dealstack(
+                        &offer_proposition_id,
+                        MCDONALDS_API_DEFAULT_OFFSET,
+                        store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                    )
                     .await?;
                 // this can cause the offer id to change.. for offers with id == 0
                 // we need to update the database to avoid inconsistency
@@ -107,7 +114,12 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                 // if its none, this offer already exists, but we should provide the deal stack information
                 // idempotent
                 if resp.response.is_none() {
-                    let resp = api_client.offers_dealstack(None, store).await?;
+                    let resp = api_client
+                        .get_offers_dealstack(
+                            MCDONALDS_API_DEFAULT_OFFSET,
+                            store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                        )
+                        .await?;
                     serde_json::to_string(&resp)?.into_response()
                 } else {
                     serde_json::to_string(&resp)?.into_response()
@@ -115,8 +127,15 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
             }
 
             Method::DELETE => {
+                // let store_id = store_id.unwrap_or("951488");
+                // let offset = offset.unwrap_or(480).to_string();
                 api_client
-                    .remove_offer_from_offers_dealstack(offer_id, &offer_proposition_id, None, store)
+                    .remove_from_offers_dealstack(
+                        &offer_id,
+                        &offer_proposition_id,
+                        MCDONALDS_API_DEFAULT_OFFSET,
+                        store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                    )
                     .await?;
 
                 lock::unlock_deal(&ctx.dynamodb_client, &ctx.config.offer_id_table_name, deal_id).await?;

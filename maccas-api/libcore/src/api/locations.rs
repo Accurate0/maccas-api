@@ -1,5 +1,5 @@
 use super::Context;
-use crate::client;
+use crate::{client, constants::MCDONALDS_API_DEFAULT_FILTER};
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
@@ -20,6 +20,9 @@ impl Executor<Context, Request, Response<Body>> for Locations {
         let longitude = query_params.first("longitude");
 
         if distance.is_some() && latitude.is_some() && longitude.is_some() {
+            let distance = distance.unwrap();
+            let latitude = latitude.unwrap();
+            let longitude = longitude.unwrap();
             // TODO: use a service account
             let account_name_list: Vec<String> = ctx.config.users.iter().map(|u| u.account_name.clone()).collect();
             let mut rng = StdRng::from_entropy();
@@ -42,7 +45,7 @@ impl Executor<Context, Request, Response<Body>> for Locations {
             )
             .await?;
             let resp = api_client
-                .restaurant_location(distance, latitude, longitude, None)
+                .restaurant_location(distance, latitude, longitude, MCDONALDS_API_DEFAULT_FILTER)
                 .await?;
 
             Ok(serde_json::to_string(&resp)?.into_response())
