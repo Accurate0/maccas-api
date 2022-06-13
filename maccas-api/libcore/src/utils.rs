@@ -37,9 +37,9 @@ pub async fn get_by_order_id<'a>(
     Ok((offer_account_name, offer_proposition_id, offer_id, offer_name))
 }
 
-pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Result<(), Error> {
+pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_name: &String) -> Result<(), Error> {
     // honestly, we don't want failures here, so we'll probably just suppress them...
-    log::info!("{}: trying to clean deal stack", api_client.username());
+    log::info!("{}: trying to clean deal stack", account_name);
     let deal_stack = api_client
         .get_offers_dealstack(MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID)
         .await;
@@ -47,7 +47,7 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>) -> Resul
         if let Some(deal_stack) = deal_stack.response {
             if let Some(deal_stack) = deal_stack.deal_stack {
                 for deal in deal_stack {
-                    log::info!("{}: removing offer -> {}", api_client.username(), deal.offer_id);
+                    log::info!("{}: removing offer -> {}", account_name, deal.offer_id);
                     // let store_id = store_id.unwrap_or("951488");
                     // let offset = offset.unwrap_or(480).to_string();
                     api_client
