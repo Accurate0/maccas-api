@@ -1,12 +1,12 @@
 use aws_sdk_dynamodb::Client;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
-use libcore::cache;
-use libcore::client;
-use libcore::config::ApiConfig;
-use libcore::constants;
-use libcore::lock;
-use libcore::logging;
+use libapi::cache;
+use libapi::client;
+use libapi::config::ApiConfig;
+use libapi::constants;
+use libapi::lock;
+use libapi::logging;
 use serde_json::{json, Value};
 
 #[tokio::main]

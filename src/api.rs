@@ -1,12 +1,12 @@
 use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
-use libcore::api::{Code, Context, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
-use libcore::api::{DealsAddRemove, Fallback};
-use libcore::config::ApiConfig;
-use libcore::extensions::{RequestExtensions, ResponseExtensions};
-use libcore::logging;
-use libcore::{constants, types};
+use libapi::api::{Code, Context, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
+use libapi::api::{DealsAddRemove, Fallback};
+use libapi::config::ApiConfig;
+use libapi::extensions::{RequestExtensions, ResponseExtensions};
+use libapi::logging;
+use libapi::{constants, types};
 use simple_dispatcher::RouteDispatcher;
 
 #[tokio::main]

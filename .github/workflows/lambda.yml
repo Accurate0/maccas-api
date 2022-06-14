@@ -1,12 +1,8 @@
-name: lambda-refresh
+name: lambda
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - refresh/**
-      - libcore/**
-      - .github/workflows/lambda-refresh.yml
 
 concurrency:
   group: environment-${{ github.ref }}-${{ github.workflow }}
@@ -37,14 +33,19 @@ jobs:
       - name: install zig
         run: pip3 install ziglang
 
-      - name: cargo build
-        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip
-        working-directory: "./refresh"
+      - name: cargo build api
+        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip --bin api
+
+      - name: publish lambda ${{ inputs.lambda_name }}
+        run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://target/lambda/api/bootstrap.zip --region ap-southeast-2
+
+      - name: cargo build refresh
+        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip --bin refresh
 
       - uses: actions/upload-artifact@v3
         with:
           name: refresh
-          path: ./refresh/target/lambda/refresh/bootstrap.zip
+          path: ./target/lambda/refresh/bootstrap.zip
 
   deploy:
     needs: build
