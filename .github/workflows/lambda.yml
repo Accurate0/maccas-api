@@ -22,35 +22,59 @@ jobs:
           profile: minimal
           toolchain: stable
 
-      - uses: Swatinem/rust-cache@v1
+      - name: cargo build
+        run: cargo build --release --target x86_64-unknown-linux-musl
+
+      - name: create zip (api)
+        run: |
+          mv ./target/x86_64-unknown-linux-musl/release/api ./bootstrap
+          strip ./bootstrap
+          zip -r bootstrap.zip ./bootstrap
+
+      - name: upload api artifact
+        uses: actions/upload-artifact@v3
         with:
-          key: lambda
+          name: api
+          path: ./bootstrap.zip
 
-      - name: rust-cargo-install
-        uses: actions-rs/install@v0.1.2
+      - name: remove zip (api)
+        run: |
+          rm -f ./bootstrap.zip
+
+      - name: create zip (service)
+        run: |
+          mv ./target/x86_64-unknown-linux-musl/release/service ./bootstrap
+          strip ./bootstrap
+          zip -r bootstrap.zip ./bootstrap
+
+      - name: upload service artifact
+        uses: actions/upload-artifact@v3
         with:
-          crate: cargo-lambda
-          version: 0.6.1
-          use-tool-cache: true
+          name: service
+          path: ./bootstrap.zip
 
-      - name: install zig
-        run: pip3 install ziglang
+      - name: remove zip (service)
+        run: |
+          rm -f ./bootstrap.zip
 
-      - name: cargo build api
-        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip --bin api
+  deploy-api:
+    needs: build
+    runs-on: ubuntu-latest
 
-      - name: publish lambda ${{ inputs.lambda_name }}
-        run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://target/lambda/api/bootstrap.zip --region ap-southeast-2
+    name: deploy api
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: cargo build refresh
-        run: cargo lambda build --release --target x86_64-unknown-linux-musl --output-format zip --bin refresh
-
-      - uses: actions/upload-artifact@v3
+    steps:
+      - uses: actions/download-artifact@v3
         with:
-          name: refresh
-          path: ./target/lambda/refresh/bootstrap.zip
+          name: api
 
-  deploy:
+      - name: deploy api
+        run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+  deploy-refresh:
     needs: build
     runs-on: ubuntu-latest
     strategy:
@@ -70,7 +94,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: refresh
+          name: service
 
       - name: deploy ${{ matrix.region }}
         run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}

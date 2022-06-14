@@ -49,5 +49,5 @@ name = "api"
 path = "src/api.rs"
 
 [[bin]]
-name = "refresh"
-path = "src/refresh.rs"
+name = "service"
+path = "src/service.rs"
