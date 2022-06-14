@@ -1256,19 +1256,17 @@ dependencies = [
 
 [[package]]
 name = "libmaccas"
-version = "2.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90c7a669e1a4b35172779cc33f20cfae2f31984fb3175c181408089c6ba37687"
 dependencies = [
- "chrono",
  "http",
- "http-auth-basic",
  "rand",
  "reqwest",
  "reqwest-middleware",
- "reqwest-retry",
  "serde",
  "serde_derive",
  "serde_json",
- "ts-rs",
  "uuid",
 ]
 

@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libmaccas = { path = "../../libmaccas" }
-
+libmaccas = "0.1.1"
 simple-dispatcher = "0.3.1"
+
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
 serde = "1.0.126"

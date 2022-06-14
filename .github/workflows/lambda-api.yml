@@ -4,9 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - maccas-api/api/**
-      - maccas-api/libcore/**
-      - libmaccas/**
+      - api/**
+      - libcore/**
       - .github/workflows/lambda-deploy.yml
       - .github/workflows/lambda-api.yml
 
@@ -18,7 +17,7 @@ jobs:
   _:
     uses: ./.github/workflows/lambda-deploy.yml
     with:
-      directory: "./maccas-api/api"
+      directory: "./api"
       lambda_name: "MaccasApi-v2"
       zip_path: "api"
     secrets:
