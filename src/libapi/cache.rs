@@ -136,20 +136,30 @@ pub async fn refresh_offer_cache<'a>(
     cache_table_name_v2: &'a String,
     client_map: &'a HashMap<String, ApiClient<'_>>,
 ) -> Result<(), Error> {
+    let mut failed_accounts = Vec::new();
+
     for (account_name, api_client) in client_map {
-        refresh_offer_cache_for(
+        match refresh_offer_cache_for(
             &client,
             &cache_table_name,
             &cache_table_name_v2,
             &account_name,
             &api_client,
         )
-        .await?;
-        utils::remove_all_from_deal_stack_for(&api_client, account_name).await?;
+        .await
+        {
+            Ok(_) => {
+                utils::remove_all_from_deal_stack_for(&api_client, account_name).await?;
+            }
+            Err(e) => {
+                log::error!("{}: {}", account_name, e);
+                failed_accounts.push(account_name);
+            }
+        };
     }
 
     log::info!("refreshed {} account offer caches..", client_map.keys().len());
-
+    log::error!("failed: {:#?}", failed_accounts);
     Ok(())
 }
 
