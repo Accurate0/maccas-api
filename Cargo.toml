@@ -42,7 +42,7 @@ tokio = "1.6.1"
 
 [lib]
 name = "libapi"
-path = "src/lib/lib.rs"
+path = "src/libapi/lib.rs"
 
 [[bin]]
 name = "api"
