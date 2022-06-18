@@ -15,6 +15,7 @@ pub const DEFAULT_AWS_REGION: &str = "ap-southeast-2";
 pub const BASE_CONFIG_FILE: &str = "base-config.json";
 pub const ALL_ACCOUNTS_FILE: &str = "accounts.json";
 pub const REGION_ACCOUNTS_FILE: &str = "accounts-{region}.json";
+pub const SENSOR_DATA_FILE: &str = "sensor-data.json";
 pub const MACCAS_REFRESH_REGION: &str = "AWS_REGION";
 pub const KVP_API_BASE: &str = "https://api.anurag.sh/kvp/v1";
 pub const PLACES_API_BASE: &str = "https://api.anurag.sh/places/v1";

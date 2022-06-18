@@ -3,5 +3,6 @@ config.json
 base-config.json
 accounts-*.json
 accounts.json
+sensor-data.json
 
 config.yml

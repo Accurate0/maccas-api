@@ -77,7 +77,9 @@ pub async fn get<'a>(
             let response = api_client.security_auth_token(&config.client_secret).await?;
             api_client.set_login_token(&response.response.token);
 
-            let response = api_client.customer_login(login_username, login_password).await?;
+            let response = api_client
+                .customer_login(login_username, login_password, &config.sensor_data)
+                .await?;
             api_client.set_auth_token(&response.response.access_token);
 
             let now = SystemTime::now();
@@ -135,7 +137,9 @@ pub async fn get<'a>(
                             let response = api_client.security_auth_token(&config.client_secret).await?;
                             api_client.set_login_token(&response.response.token);
 
-                            let response = api_client.customer_login(login_username, login_password).await?;
+                            let response = api_client
+                                .customer_login(login_username, login_password, &config.sensor_data)
+                                .await?;
                             api_client.set_auth_token(&response.response.access_token);
 
                             log::info!("refresh failed, logged in again..");
