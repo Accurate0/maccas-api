@@ -48,7 +48,7 @@ impl Executor<Context, Request, Response<Body>> for UserConfig {
                     .status(response.status())
                     .body(response.text().await?.into())?
             }
-            None => Response::builder().status(401).body("".into()).unwrap(),
+            None => Response::builder().status(401).body(Body::Empty).unwrap(),
         })
     }
 }

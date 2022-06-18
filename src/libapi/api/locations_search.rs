@@ -70,12 +70,12 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
                 match resp.response {
                     Some(list) => match list.restaurants.first() {
                         Some(res) => serde_json::to_value(RestaurantInformation::from(res.clone()))?.into_response(),
-                        None => Response::builder().status(404).body("".into())?,
+                        None => Response::builder().status(404).body(Body::Empty)?,
                     },
-                    None => Response::builder().status(404).body("".into())?,
+                    None => Response::builder().status(404).body(Body::Empty)?,
                 }
             }
-            None => Response::builder().status(404).body("".into())?,
+            None => Response::builder().status(404).body(Body::Empty)?,
         })
     }
 }

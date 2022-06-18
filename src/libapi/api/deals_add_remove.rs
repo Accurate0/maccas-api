@@ -145,10 +145,10 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
 
                     lock::unlock_deal(&ctx.dynamodb_client, &ctx.config.offer_id_table_name, deal_id).await?;
 
-                    Response::builder().status(204).body("".into())?
+                    Response::builder().status(204).body(Body::Empty)?
                 }
 
-                _ => Response::builder().status(405).body("".into())?,
+                _ => Response::builder().status(405).body(Body::Empty)?,
             })
         } else {
             let status_code = StatusCode::NOT_FOUND;

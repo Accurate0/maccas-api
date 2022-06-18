@@ -15,9 +15,9 @@ impl Executor<Context, Request, Response<Body>> for DealsLock {
         let deals = match request.body() {
             lambda_http::Body::Text(s) => match serde_json::from_str::<Vec<String>>(s) {
                 Ok(obj) => obj,
-                Err(_) => return Ok(Response::builder().status(400).body("".into())?),
+                Err(_) => return Ok(Response::builder().status(400).body(Body::Empty)?),
             },
-            _ => return Ok(Response::builder().status(400).body("".into())?),
+            _ => return Ok(Response::builder().status(400).body(Body::Empty)?),
         };
 
         Ok(match *request.method() {
@@ -32,15 +32,15 @@ impl Executor<Context, Request, Response<Body>> for DealsLock {
                     )
                     .await?;
                 }
-                Response::builder().status(204).body("".into())?
+                Response::builder().status(204).body(Body::Empty)?
             }
             Method::DELETE => {
                 for deal_id in deals {
                     lock::unlock_deal(&ctx.dynamodb_client, &ctx.config.offer_id_table_name, &deal_id).await?;
                 }
-                Response::builder().status(204).body("".into())?
+                Response::builder().status(204).body(Body::Empty)?
             }
-            _ => Response::builder().status(405).body("".into())?,
+            _ => Response::builder().status(405).body(Body::Empty)?,
         })
     }
 }
