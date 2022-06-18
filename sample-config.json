@@ -5,6 +5,7 @@
   "cacheTableName": null,
   "cacheTableNameV2": null,
   "offerIdTableName": null,
+  "sensorData": null,
   "apiKey": null,
   "users": [
     {
