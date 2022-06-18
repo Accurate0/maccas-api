@@ -4,6 +4,7 @@ use crate::client;
 use crate::constants::MCDONALDS_API_DEFAULT_OFFSET;
 use crate::constants::MCDONALDS_API_DEFAULT_STORE_ID;
 use crate::types::api::Error;
+use crate::types::api::OfferResponse;
 use async_trait::async_trait;
 use http::Response;
 use http::StatusCode;
@@ -50,15 +51,17 @@ impl Executor<Context, Request, Response<Body>> for Code {
                     store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
                 )
                 .await?;
-            Ok(serde_json::to_string(&resp).unwrap().into_response())
+
+            let resp = OfferResponse::from(resp);
+            Ok(serde_json::to_value(&resp).unwrap().into_response())
         } else {
             let status_code = StatusCode::NOT_FOUND;
-            return Ok(Response::builder().status(status_code.as_u16()).body(
+            Ok(Response::builder().status(status_code.as_u16()).body(
                 serde_json::to_string(&Error {
                     message: status_code.canonical_reason().ok_or("no value")?.to_string(),
                 })?
                 .into(),
-            )?);
+            )?)
         }
     }
 }

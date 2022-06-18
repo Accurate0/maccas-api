@@ -4,7 +4,7 @@ use crate::{cache, lock};
 use async_trait::async_trait;
 use http::Response;
 use itertools::Itertools;
-use lambda_http::{Body, Request};
+use lambda_http::{Body, IntoResponse, Request};
 use simple_dispatcher::{Executor, ExecutorResult};
 use std::collections::HashMap;
 
@@ -42,8 +42,6 @@ impl Executor<Context, Request, Response<Body>> for Deals {
             })
             .collect();
 
-        Ok(Response::builder()
-            .status(200)
-            .body(serde_json::to_string(&offer_list)?.into())?)
+        Ok(serde_json::to_value(&offer_list)?.into_response())
     }
 }
