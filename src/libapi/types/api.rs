@@ -58,9 +58,26 @@ impl From<libmaccas::types::Offer> for Offer {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RestaurantAddress {
+    pub address_line: String,
+}
+
+impl From<libmaccas::types::Address> for RestaurantAddress {
+    fn from(res: libmaccas::types::Address) -> Self {
+        Self {
+            address_line: res.address_line1,
+        }
+    }
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RestaurantInformation {
     pub name: String,
     pub store_number: i64,
+    pub address: RestaurantAddress,
 }
 
 impl From<libmaccas::types::Restaurant> for RestaurantInformation {
@@ -68,6 +85,7 @@ impl From<libmaccas::types::Restaurant> for RestaurantInformation {
         Self {
             name: res.name.clone(),
             store_number: res.national_store_number,
+            address: RestaurantAddress::from(res.address),
         }
     }
 }
@@ -86,4 +104,22 @@ pub struct LastRefreshInformation {
 #[serde(rename_all = "camelCase")]
 pub struct Error {
     pub message: String,
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OfferResponse {
+    pub random_code: String,
+    pub message: String,
+}
+
+impl From<libmaccas::types::OfferDealStackResponse> for OfferResponse {
+    fn from(res: libmaccas::types::OfferDealStackResponse) -> Self {
+        Self {
+            random_code: res.response.expect("must have deal stack response").random_code,
+            message: res.status.message,
+        }
+    }
 }

@@ -8,7 +8,7 @@ use crate::{
 };
 use async_trait::async_trait;
 use http::Response;
-use lambda_http::{Body, Request, RequestExt};
+use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use rand::{
     prelude::{SliceRandom, StdRng},
     SeedableRng,
@@ -69,9 +69,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
 
                 match resp.response {
                     Some(list) => match list.restaurants.first() {
-                        Some(res) => Response::builder()
-                            .status(200)
-                            .body(serde_json::to_string(&RestaurantInformation::from(res.clone()))?.into())?,
+                        Some(res) => serde_json::to_value(RestaurantInformation::from(res.clone()))?.into_response(),
                         None => Response::builder().status(404).body("".into())?,
                     },
                     None => Response::builder().status(404).body("".into())?,

@@ -3,7 +3,7 @@ use crate::cache;
 use crate::client::{self};
 use crate::constants::{MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID};
 use crate::extensions::RequestExtensions;
-use crate::types::api::Error;
+use crate::types::api::{Error, OfferResponse};
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
 use crate::{constants, lock};
@@ -116,17 +116,19 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
 
                     // if its none, this offer already exists, but we should provide the deal stack information
                     // idempotent
-                    if resp.response.is_none() {
-                        let resp = api_client
+                    let resp = if resp.response.is_none() {
+                        api_client
                             .get_offers_dealstack(
                                 MCDONALDS_API_DEFAULT_OFFSET,
                                 store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
                             )
-                            .await?;
-                        serde_json::to_string(&resp)?.into_response()
+                            .await?
                     } else {
-                        serde_json::to_string(&resp)?.into_response()
-                    }
+                        resp
+                    };
+
+                    let resp = OfferResponse::from(resp);
+                    serde_json::to_value(&resp)?.into_response()
                 }
 
                 Method::DELETE => {
@@ -150,12 +152,12 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
             })
         } else {
             let status_code = StatusCode::NOT_FOUND;
-            return Ok(Response::builder().status(status_code.as_u16()).body(
+            Ok(Response::builder().status(status_code.as_u16()).body(
                 serde_json::to_string(&Error {
                     message: status_code.canonical_reason().ok_or("no value")?.to_string(),
                 })?
                 .into(),
-            )?);
+            )?)
         }
     }
 }

@@ -52,12 +52,12 @@ async fn main() -> Result<(), Error> {
             Err(e) => {
                 log::error!("{:?}", e);
                 let status_code = StatusCode::INTERNAL_SERVER_ERROR;
-                return Ok(Response::builder().status(status_code.as_u16()).body(
+                Response::builder().status(status_code.as_u16()).body(
                     serde_json::to_string(&types::api::Error {
                         message: status_code.canonical_reason().ok_or("no value")?.to_string(),
                     })?
                     .into(),
-                )?);
+                )?
             }
         };
 

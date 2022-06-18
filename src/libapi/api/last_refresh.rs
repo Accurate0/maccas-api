@@ -15,6 +15,6 @@ impl Executor<Context, Request, Response<Body>> for LastRefresh {
             cache::get_refresh_time_for_offer_cache(&ctx.dynamodb_client, &ctx.config.cache_table_name).await?;
         let response = LastRefreshInformation { last_refresh: response };
 
-        Ok(serde_json::to_string(&response)?.into_response())
+        Ok(serde_json::to_value(&response)?.into_response())
     }
 }

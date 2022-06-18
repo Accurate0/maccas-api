@@ -1,5 +1,5 @@
 use super::Context;
-use crate::{client, constants::MCDONALDS_API_DEFAULT_FILTER};
+use crate::{client, constants::MCDONALDS_API_DEFAULT_FILTER, types::api::RestaurantInformation};
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
@@ -48,7 +48,15 @@ impl Executor<Context, Request, Response<Body>> for Locations {
                 .restaurant_location(distance, latitude, longitude, MCDONALDS_API_DEFAULT_FILTER)
                 .await?;
 
-            Ok(serde_json::to_string(&resp)?.into_response())
+            let mut location_list = Vec::new();
+            let response = resp.response;
+            if let Some(response) = response {
+                for restaurant in response.restaurants {
+                    location_list.push(RestaurantInformation::from(restaurant));
+                }
+            }
+
+            Ok(serde_json::to_value(&location_list)?.into_response())
         } else {
             Ok(Response::builder().status(400).body("".into())?)
         }
