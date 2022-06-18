@@ -58,7 +58,7 @@ impl Executor<Context, Request, Response<Body>> for Locations {
 
             Ok(serde_json::to_value(&location_list)?.into_response())
         } else {
-            Ok(Response::builder().status(400).body("".into())?)
+            Ok(Response::builder().status(400).body(Body::Empty)?)
         }
     }
 }
