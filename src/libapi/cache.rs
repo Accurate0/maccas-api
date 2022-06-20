@@ -1,4 +1,5 @@
-use crate::constants::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL};
+use crate::constants::db::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL};
+use crate::constants::mc_donalds;
 use crate::types::api::Offer;
 use crate::utils;
 use aws_sdk_dynamodb::model::AttributeValue;
@@ -9,20 +10,6 @@ use libmaccas::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
-
-#[deprecated]
-pub async fn get_offers<'a>(
-    client: &aws_sdk_dynamodb::Client,
-    cache_table_name: &'a String,
-    account_name_list: &'a Vec<String>,
-) -> Result<HashMap<&'a String, Option<Vec<Offer>>>, Error> {
-    let mut offer_map = HashMap::<&String, Option<Vec<Offer>>>::new();
-    for account_name in account_name_list {
-        let resp = get_offer_for(&client, &cache_table_name, &account_name).await?;
-        offer_map.insert(account_name, resp);
-    }
-    Ok(offer_map)
-}
 
 pub async fn get_all_offers_as_map(
     client: &aws_sdk_dynamodb::Client,
@@ -171,7 +158,13 @@ pub async fn refresh_offer_cache_for(
     api_client: &ApiClient<'_>,
 ) -> Result<(), Error> {
     let mut resp = api_client
-        .get_offers("10000", "37.4219", "-122.084", "", "480")
+        .get_offers(
+            mc_donalds::default::DISTANCE,
+            mc_donalds::default::LATITUDE,
+            mc_donalds::default::LONGITUDE,
+            "",
+            mc_donalds::default::OFFSET,
+        )
         .await?
         .response
         .expect("to have response")

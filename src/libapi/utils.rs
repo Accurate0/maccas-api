@@ -1,7 +1,4 @@
-use crate::{
-    constants::{MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID},
-    types::api::Offer,
-};
+use crate::{constants::mc_donalds, types::api::Offer};
 use lambda_http::Error;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
@@ -41,7 +38,7 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_
     // honestly, we don't want failures here, so we'll probably just suppress them...
     log::info!("{}: trying to clean deal stack", account_name);
     let deal_stack = api_client
-        .get_offers_dealstack(MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID)
+        .get_offers_dealstack(mc_donalds::default::OFFSET, mc_donalds::default::STORE_ID)
         .await;
     if let Ok(deal_stack) = deal_stack {
         if let Some(deal_stack) = deal_stack.response {
@@ -54,8 +51,8 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_
                         .remove_from_offers_dealstack(
                             &deal.offer_id,
                             &deal.offer_proposition_id,
-                            MCDONALDS_API_DEFAULT_OFFSET,
-                            MCDONALDS_API_DEFAULT_STORE_ID,
+                            mc_donalds::default::OFFSET,
+                            mc_donalds::default::STORE_ID,
                         )
                         .await
                         .ok();

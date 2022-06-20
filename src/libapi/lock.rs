@@ -1,4 +1,4 @@
-use crate::constants::{OFFER_ID, TTL};
+use crate::constants::db::{OFFER_ID, TTL};
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, Duration, Utc};
 use lambda_http::Error;

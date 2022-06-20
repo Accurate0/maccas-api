@@ -21,7 +21,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         .region(constants::DEFAULT_AWS_REGION)
         .load()
         .await;
-    let env = std::env::var(constants::MACCAS_REFRESH_REGION).unwrap();
+    let env = std::env::var(constants::AWS_REGION).unwrap();
     let config = ApiConfig::load_from_s3_for_region(&shared_config, &env).await?;
     let client = Client::new(&shared_config);
     let http_client = client::get_http_client();

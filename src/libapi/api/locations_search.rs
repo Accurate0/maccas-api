@@ -1,5 +1,5 @@
 use super::Context;
-use crate::constants::{LOCATION_SEARCH_DISTANCE, MCDONALDS_API_DEFAULT_FILTER};
+use crate::constants::{api_base, mc_donalds, LOCATION_SEARCH_DISTANCE};
 use crate::extensions::RequestExtensions;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
@@ -28,7 +28,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
         let response = http_client
             .request(
                 request.method().clone(),
-                format!("{}/place?text={}", constants::PLACES_API_BASE, text,).as_str(),
+                format!("{}/place?text={}", api_base::PLACES, text,).as_str(),
             )
             .header(constants::CORRELATION_ID_HEADER, correlation_id)
             .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
@@ -64,7 +64,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
                 let lat = response.geometry.location.lat;
                 let lng = response.geometry.location.lng;
                 let resp = api_client
-                    .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, MCDONALDS_API_DEFAULT_FILTER)
+                    .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, mc_donalds::default::FILTER)
                     .await?;
 
                 match resp.response {

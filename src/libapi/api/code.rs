@@ -1,8 +1,7 @@
 use super::Context;
 use crate::cache;
 use crate::client;
-use crate::constants::MCDONALDS_API_DEFAULT_OFFSET;
-use crate::constants::MCDONALDS_API_DEFAULT_STORE_ID;
+use crate::constants::mc_donalds;
 use crate::types::api::Error;
 use crate::types::api::OfferResponse;
 use async_trait::async_trait;
@@ -47,8 +46,8 @@ impl Executor<Context, Request, Response<Body>> for Code {
 
             let resp = api_client
                 .get_offers_dealstack(
-                    MCDONALDS_API_DEFAULT_OFFSET,
-                    store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                    mc_donalds::default::OFFSET,
+                    store.unwrap_or(mc_donalds::default::STORE_ID),
                 )
                 .await?;
 

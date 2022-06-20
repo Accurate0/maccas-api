@@ -1,7 +1,7 @@
 use super::Context;
 use crate::cache;
 use crate::client::{self};
-use crate::constants::{MCDONALDS_API_DEFAULT_OFFSET, MCDONALDS_API_DEFAULT_STORE_ID};
+use crate::constants::{api_base, mc_donalds};
 use crate::extensions::RequestExtensions;
 use crate::types::api::{Error, OfferResponse};
 use crate::types::jwt::JwtClaim;
@@ -59,8 +59,8 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         // let offset = offset.unwrap_or("480").to_string();
                         .add_to_offers_dealstack(
                             &offer_proposition_id,
-                            MCDONALDS_API_DEFAULT_OFFSET,
-                            store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                            mc_donalds::default::OFFSET,
+                            store.unwrap_or(mc_donalds::default::STORE_ID),
                         )
                         .await?;
                     // this can cause the offer id to change.. for offers with id == 0
@@ -103,7 +103,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         };
 
                         let response = http_client
-                            .request(Method::POST, format!("{}/log", constants::LOG_API_BASE).as_str())
+                            .request(Method::POST, format!("{}/log", api_base::LOG).as_str())
                             .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                             .header(constants::CORRELATION_ID_HEADER, correlation_id)
                             .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
@@ -119,8 +119,8 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                     let resp = if resp.response.is_none() {
                         api_client
                             .get_offers_dealstack(
-                                MCDONALDS_API_DEFAULT_OFFSET,
-                                store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                                mc_donalds::default::OFFSET,
+                                store.unwrap_or(mc_donalds::default::STORE_ID),
                             )
                             .await?
                     } else {
@@ -138,8 +138,8 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         .remove_from_offers_dealstack(
                             &offer_id,
                             &offer_proposition_id,
-                            MCDONALDS_API_DEFAULT_OFFSET,
-                            store.unwrap_or(MCDONALDS_API_DEFAULT_STORE_ID),
+                            mc_donalds::default::OFFSET,
+                            store.unwrap_or(mc_donalds::default::STORE_ID),
                         )
                         .await?;
 

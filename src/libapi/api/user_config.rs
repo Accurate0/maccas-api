@@ -1,4 +1,5 @@
 use super::Context;
+use crate::constants::api_base;
 use crate::extensions::RequestExtensions;
 use crate::types::jwt::JwtClaim;
 use crate::{client, constants};
@@ -30,13 +31,7 @@ impl Executor<Context, Request, Response<Body>> for UserConfig {
                 let response = http_client
                     .request(
                         request.method().clone(),
-                        format!(
-                            "{}/{}{}",
-                            constants::KVP_API_BASE,
-                            constants::MACCAS_WEB_API_PREFIX,
-                            user_id
-                        )
-                        .as_str(),
+                        format!("{}/{}{}", api_base::KVP, constants::MACCAS_WEB_API_PREFIX, user_id).as_str(),
                     )
                     .body(body)
                     .header(constants::CORRELATION_ID_HEADER, correlation_id)

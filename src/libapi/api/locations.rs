@@ -1,5 +1,5 @@
 use super::Context;
-use crate::{client, constants::MCDONALDS_API_DEFAULT_FILTER, types::api::RestaurantInformation};
+use crate::{client, constants::mc_donalds, types::api::RestaurantInformation};
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
@@ -45,7 +45,7 @@ impl Executor<Context, Request, Response<Body>> for Locations {
             )
             .await?;
             let resp = api_client
-                .restaurant_location(distance, latitude, longitude, MCDONALDS_API_DEFAULT_FILTER)
+                .restaurant_location(distance, latitude, longitude, mc_donalds::default::FILTER)
                 .await?;
 
             let mut location_list = Vec::new();
