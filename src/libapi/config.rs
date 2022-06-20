@@ -25,22 +25,12 @@ pub struct ApiConfig {
     pub users: Vec<ApiConfigUsers>,
 }
 
-#[deprecated]
-pub fn load(config: &str) -> ApiConfig {
-    Config::builder()
-        .add_source(config::File::from_str(config, config::FileFormat::Yaml))
-        .build()
-        .unwrap()
-        .try_deserialize::<ApiConfig>()
-        .expect("valid configuration present")
-}
-
 impl ApiConfig {
     async fn load_base_config_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, Error> {
         let resp = client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::BASE_CONFIG_FILE)
+            .key(constants::config::BASE_FILE)
             .send()
             .await?;
         Ok(resp.body.collect().await?)
@@ -50,7 +40,7 @@ impl ApiConfig {
         let resp = client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::SENSOR_DATA_FILE)
+            .key(constants::config::SENSOR_DATA_FILE)
             .send()
             .await?;
         Ok(resp.body.collect().await?)
@@ -86,7 +76,7 @@ impl ApiConfig {
         let resp = s3_client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::ALL_ACCOUNTS_FILE)
+            .key(constants::config::ALL_ACCOUNTS_FILE)
             .send()
             .await?;
         let all_accounts_bytes = resp.body.collect().await?;
@@ -102,7 +92,7 @@ impl ApiConfig {
         let resp = s3_client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::REGION_ACCOUNTS_FILE.replace("{region}", region))
+            .key(constants::config::REGION_ACCOUNTS_FILE.replace("{region}", region))
             .send()
             .await?;
         let accounts_bytes = resp.body.collect().await?;

@@ -1,6 +1,7 @@
 use crate::client;
 use crate::config::ApiConfig;
-use crate::constants::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, MCDONALDS_API_BASE_URL, REFRESH_TOKEN};
+use crate::constants::db::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
+use crate::constants::mc_donalds;
 use crate::middleware;
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, FixedOffset, Utc};
@@ -59,7 +60,7 @@ pub async fn get<'a>(
     login_password: &'a String,
 ) -> Result<ApiClient<'a>, Error> {
     let mut api_client = ApiClient::new(
-        MCDONALDS_API_BASE_URL.to_string(),
+        mc_donalds::default::BASE_URL.to_string(),
         http_client,
         config.client_id.clone(),
     );
