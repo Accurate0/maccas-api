@@ -67,7 +67,7 @@ impl Executor<Context, Request, Response<Body>> for LocationsSearch {
                     .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, mc_donalds::default::FILTER)
                     .await?;
 
-                match resp.response {
+                match resp.body.response {
                     Some(list) => match list.restaurants.first() {
                         Some(res) => serde_json::to_value(RestaurantInformation::from(res.clone()))?.into_response(),
                         None => Response::builder().status(404).body(Body::Empty)?,

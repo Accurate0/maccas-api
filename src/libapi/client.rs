@@ -76,18 +76,18 @@ pub async fn get<'a>(
         None => {
             log::info!("{}: nothing in db, requesting..", account_name);
             let response = api_client.security_auth_token(&config.client_secret).await?;
-            api_client.set_login_token(&response.response.token);
+            api_client.set_login_token(&response.body.response.token);
 
             let response = api_client
                 .customer_login(login_username, login_password, &config.sensor_data)
                 .await?;
-            api_client.set_auth_token(&response.response.access_token);
+            api_client.set_auth_token(&response.body.response.access_token);
 
             let now = SystemTime::now();
             let now: DateTime<Utc> = now.into();
             let now = now.to_rfc3339();
 
-            let resp = response.response;
+            let resp = response.body.response;
 
             client
                 .put_item()
@@ -128,24 +128,24 @@ pub async fn get<'a>(
                         let mut new_ref_token = String::from("");
 
                         let res = api_client.customer_login_refresh(refresh_token).await?;
-                        if res.response.is_some() {
-                            let unwrapped_res = res.response.unwrap();
+                        if res.body.response.is_some() {
+                            let unwrapped_res = res.body.response.unwrap();
                             log::info!("refresh success..");
 
                             new_access_token = unwrapped_res.access_token;
                             new_ref_token = unwrapped_res.refresh_token;
-                        } else if res.status.code != 20000 {
+                        } else if res.body.status.code != 20000 {
                             let response = api_client.security_auth_token(&config.client_secret).await?;
-                            api_client.set_login_token(&response.response.token);
+                            api_client.set_login_token(&response.body.response.token);
 
                             let response = api_client
                                 .customer_login(login_username, login_password, &config.sensor_data)
                                 .await?;
-                            api_client.set_auth_token(&response.response.access_token);
+                            api_client.set_auth_token(&response.body.response.access_token);
 
                             log::info!("refresh failed, logged in again..");
-                            new_access_token = response.response.access_token;
-                            new_ref_token = response.response.refresh_token;
+                            new_access_token = response.body.response.access_token;
+                            new_ref_token = response.body.response.refresh_token;
                         }
 
                         api_client.set_auth_token(&new_access_token);

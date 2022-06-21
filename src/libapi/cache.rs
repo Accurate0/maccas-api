@@ -166,6 +166,7 @@ pub async fn refresh_offer_cache_for(
             mc_donalds::default::OFFSET,
         )
         .await?
+        .body
         .response
         .expect("to have response")
         .offers;
