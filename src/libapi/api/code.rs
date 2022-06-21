@@ -51,7 +51,7 @@ impl Executor<Context, Request, Response<Body>> for Code {
                 )
                 .await?;
 
-            let resp = OfferResponse::from(resp);
+            let resp = OfferResponse::from(resp.body);
             Ok(serde_json::to_value(&resp).unwrap().into_response())
         } else {
             let status_code = StatusCode::NOT_FOUND;

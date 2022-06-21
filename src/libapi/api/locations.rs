@@ -49,7 +49,7 @@ impl Executor<Context, Request, Response<Body>> for Locations {
                 .await?;
 
             let mut location_list = Vec::new();
-            let response = resp.response;
+            let response = resp.body.response;
             if let Some(response) = response {
                 for restaurant in response.restaurants {
                     location_list.push(RestaurantInformation::from(restaurant));

@@ -41,12 +41,10 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_
         .get_offers_dealstack(mc_donalds::default::OFFSET, mc_donalds::default::STORE_ID)
         .await;
     if let Ok(deal_stack) = deal_stack {
-        if let Some(deal_stack) = deal_stack.response {
+        if let Some(deal_stack) = deal_stack.body.response {
             if let Some(deal_stack) = deal_stack.deal_stack {
                 for deal in deal_stack {
                     log::info!("{}: removing offer -> {}", account_name, deal.offer_id);
-                    // let store_id = store_id.unwrap_or("951488");
-                    // let offset = offset.unwrap_or(480).to_string();
                     api_client
                         .remove_from_offers_dealstack(
                             &deal.offer_id,

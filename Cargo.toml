@@ -7,7 +7,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libmaccas = "0.2.0"
+libmaccas = "0.5.1"
 simple-dispatcher = "0.3.1"
 
 lambda_runtime = "0.5.1"

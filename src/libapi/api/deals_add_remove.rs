@@ -1,11 +1,11 @@
 use super::Context;
-use crate::cache;
-use crate::client::{self};
+use crate::client;
 use crate::constants::{api_base, mc_donalds};
 use crate::extensions::RequestExtensions;
 use crate::types::api::{Error, OfferResponse};
 use crate::types::jwt::JwtClaim;
 use crate::types::log::UsageLog;
+use crate::{cache, types};
 use crate::{constants, lock};
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Local};
@@ -50,19 +50,18 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
 
             let offer_id = offer.offer_id;
             let offer_proposition_id = offer.offer_proposition_id.to_string();
-            let offer_name = offer.name;
+            let short_name = offer.short_name;
 
             Ok(match *request.method() {
                 Method::POST => {
                     let resp = api_client
-                        // let store_id = store_id.unwrap_or("951488");
-                        // let offset = offset.unwrap_or("480").to_string();
                         .add_to_offers_dealstack(
                             &offer_proposition_id,
                             mc_donalds::default::OFFSET,
                             store.unwrap_or(mc_donalds::default::STORE_ID),
                         )
                         .await?;
+
                     // this can cause the offer id to change.. for offers with id == 0
                     // we need to update the database to avoid inconsistency
                     if offer_id == 0 {
@@ -81,9 +80,22 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         &ctx.dynamodb_client,
                         &ctx.config.offer_id_table_name,
                         deal_id,
-                        Duration::hours(3),
+                        Duration::hours(6),
                     )
                     .await?;
+
+                    // if adding to the deal stack fails, we fail...
+                    // we let the code above lock the deal though.
+                    // likely case is someone redeeming a deal but also removing it..
+                    // this lock will keep it removed and provide an error
+                    if !resp.status.is_success() {
+                        return Ok(Response::builder().status(400).body(
+                            serde_json::to_string(&types::api::Error {
+                                message: "McDonald's API failed on deal stack operation.".to_string(),
+                            })?
+                            .into(),
+                        )?);
+                    }
 
                     // log usage
                     let auth_header = request.headers().get(http::header::AUTHORIZATION);
@@ -95,14 +107,14 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
 
                         let usage_log = UsageLog {
                             user_id: jwt.claims().oid.to_string(),
-                            deal_readable: offer_name.split("\n").collect::<Vec<&str>>()[0].to_string(),
+                            deal_readable: short_name,
                             deal_uuid: deal_id.to_string(),
                             user_readable: jwt.claims().name.to_string(),
                             message: "Deal Used",
                             local_time: dt.format("%a %b %e %T %Y").to_string(),
                         };
 
-                        let response = http_client
+                        let resp = http_client
                             .request(Method::POST, format!("{}/log", api_base::LOG).as_str())
                             .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
                             .header(constants::CORRELATION_ID_HEADER, correlation_id)
@@ -110,31 +122,18 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                             .body(serde_json::to_string(&usage_log)?)
                             .send()
                             .await;
-
-                        log::info!("logging response: {:#?}", response);
+                        match resp {
+                            Ok(_) => {}
+                            Err(e) => log::error!("{:?}", e),
+                        }
                     }
 
-                    // if its none, this offer already exists, but we should provide the deal stack information
-                    // idempotent
-                    let resp = if resp.response.is_none() {
-                        api_client
-                            .get_offers_dealstack(
-                                mc_donalds::default::OFFSET,
-                                store.unwrap_or(mc_donalds::default::STORE_ID),
-                            )
-                            .await?
-                    } else {
-                        resp
-                    };
-
-                    let resp = OfferResponse::from(resp);
+                    let resp = OfferResponse::from(resp.body);
                     serde_json::to_value(&resp)?.into_response()
                 }
 
                 Method::DELETE => {
-                    // let store_id = store_id.unwrap_or("951488");
-                    // let offset = offset.unwrap_or(480).to_string();
-                    api_client
+                    let resp = api_client
                         .remove_from_offers_dealstack(
                             &offer_id,
                             &offer_proposition_id,
@@ -144,8 +143,16 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         .await?;
 
                     lock::unlock_deal(&ctx.dynamodb_client, &ctx.config.offer_id_table_name, deal_id).await?;
-
-                    Response::builder().status(204).body(Body::Empty)?
+                    if resp.status.is_success() {
+                        Response::builder().status(204).body(Body::Empty)?
+                    } else {
+                        Response::builder().status(400).body(
+                            serde_json::to_string(&types::api::Error {
+                                message: "McDonald's API failed on deal stack operation.".to_string(),
+                            })?
+                            .into(),
+                        )?
+                    }
                 }
 
                 _ => Response::builder().status(405).body(Body::Empty)?,
