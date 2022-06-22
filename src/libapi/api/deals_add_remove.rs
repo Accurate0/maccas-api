@@ -1,16 +1,13 @@
 use super::Context;
 use crate::client;
-use crate::constants::{api_base, mc_donalds};
-use crate::extensions::RequestExtensions;
+use crate::constants::mc_donalds;
+use crate::lock;
+use crate::logging::log_deal_use;
 use crate::types::api::{Error, OfferResponse};
-use crate::types::jwt::JwtClaim;
-use crate::types::log::UsageLog;
 use crate::{cache, types};
-use crate::{constants, lock};
 use async_trait::async_trait;
-use chrono::{DateTime, Duration, Local};
+use chrono::Duration;
 use http::{Method, Response, StatusCode};
-use jwt::{Header, Token};
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use simple_dispatcher::{Executor, ExecutorResult};
 
@@ -88,7 +85,9 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                     // we let the code above lock the deal though.
                     // likely case is someone redeeming a deal but also removing it..
                     // this lock will keep it removed and provide an error
-                    if !resp.status.is_success() {
+                    // 409 Conflict means the offer already exists
+                    // 404 when offer is already redeemed
+                    if !resp.status.is_success() && resp.status.as_u16() != 409 {
                         return Ok(Response::builder().status(400).body(
                             serde_json::to_string(&types::api::Error {
                                 message: "McDonald's API failed on deal stack operation.".to_string(),
@@ -97,36 +96,18 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                         )?);
                     }
 
-                    // log usage
-                    let auth_header = request.headers().get(http::header::AUTHORIZATION);
-                    if let Some(auth_header) = auth_header {
-                        let value = auth_header.to_str()?.replace("Bearer ", "");
-                        let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
-                        let correlation_id = request.get_correlation_id();
-                        let dt: DateTime<Local> = Local::now();
-
-                        let usage_log = UsageLog {
-                            user_id: jwt.claims().oid.to_string(),
-                            deal_readable: short_name,
-                            deal_uuid: deal_id.to_string(),
-                            user_readable: jwt.claims().name.to_string(),
-                            message: "Deal Used",
-                            local_time: dt.format("%a %b %e %T %Y").to_string(),
-                        };
-
-                        let resp = http_client
-                            .request(Method::POST, format!("{}/log", api_base::LOG).as_str())
-                            .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
-                            .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                            .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
-                            .body(serde_json::to_string(&usage_log)?)
-                            .send()
-                            .await;
-                        match resp {
-                            Ok(_) => {}
-                            Err(e) => log::error!("{:?}", e),
-                        }
-                    }
+                    // if we get 409 Conflict. offer already exists
+                    let resp = if resp.status.as_u16() == 409 {
+                        api_client
+                            .get_offers_dealstack(
+                                mc_donalds::default::OFFSET,
+                                store.unwrap_or(mc_donalds::default::STORE_ID),
+                            )
+                            .await?
+                    } else {
+                        log_deal_use(&http_client, &request, &short_name, &deal_id, &ctx.config.api_key).await;
+                        resp
+                    };
 
                     let resp = OfferResponse::from(resp.body);
                     serde_json::to_value(&resp)?.into_response()
