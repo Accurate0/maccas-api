@@ -37,7 +37,7 @@ impl From<libmaccas::types::Offer> for Offer {
             .to_string();
 
         Self {
-            deal_uuid: Uuid::new_v4().to_hyphenated().to_string(),
+            deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
             count: 1,
             offer_id: offer.offer_id,
             offer_proposition_id: offer.offer_proposition_id,
