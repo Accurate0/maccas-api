@@ -117,11 +117,11 @@ pub async fn set_offer_for(
     Ok(())
 }
 
-pub async fn refresh_offer_cache<'a>(
+pub async fn refresh_offer_cache(
     client: &aws_sdk_dynamodb::Client,
-    cache_table_name: &'a String,
-    cache_table_name_v2: &'a String,
-    client_map: &'a HashMap<String, ApiClient<'_>>,
+    cache_table_name: &String,
+    cache_table_name_v2: &String,
+    client_map: &HashMap<String, ApiClient<'_>>,
 ) -> Result<(), Error> {
     let mut failed_accounts = Vec::new();
 
