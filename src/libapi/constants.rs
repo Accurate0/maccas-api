@@ -7,6 +7,7 @@ pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 pub const CORRELATION_ID_HEADER: &str = "traceparent";
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
+pub const DEFAULT_TIMEZONE: chrono_tz::Tz = chrono_tz::Australia::Perth;
 
 pub mod mc_donalds {
     pub mod default {
