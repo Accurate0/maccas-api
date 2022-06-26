@@ -23,7 +23,7 @@ http-auth-basic = "0.3.3"
 aws-config = "0.12.0"
 http = "0.2.6"
 chrono = "0.4.19"
-aws-sdk-s3 = "0.12.0"
+aws-sdk-s3 = "0.14.0"
 aws-types = "0.12.0"
 reqwest = { version = "0.11.10", features = ["json", "gzip"] }
 reqwest-middleware = "0.1.5"
