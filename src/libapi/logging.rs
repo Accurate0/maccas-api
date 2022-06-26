@@ -1,17 +1,18 @@
-use std::fmt::Debug;
-
+use crate::constants::DEFAULT_TIMEZONE;
 use crate::extensions::RequestExtensions;
-use chrono::{DateTime, Local};
+use crate::{
+    constants::{self, api_base},
+    types::{jwt::JwtClaim, log::UsageLog},
+};
+use chrono::TimeZone;
+use chrono::Utc;
+use chrono_tz::Tz;
 use http::Method;
 use http::Request;
 use jwt::{Header, Token};
 use reqwest_middleware::ClientWithMiddleware;
 use simplelog::*;
-
-use crate::{
-    constants::{self, api_base},
-    types::{jwt::JwtClaim, log::UsageLog},
-};
+use std::fmt::Debug;
 
 pub fn setup_logging() {
     let term_config = ConfigBuilder::new().set_level_padding(LevelPadding::Right).build();
@@ -24,6 +25,7 @@ pub async fn log_deal_use<T: Debug>(
     short_name: &String,
     deal_id: &String,
     api_key: &String,
+    timezone: &String,
 ) {
     // log usage
     let auth_header = request.headers().get(http::header::AUTHORIZATION);
@@ -31,7 +33,8 @@ pub async fn log_deal_use<T: Debug>(
         let value = auth_header.to_str().unwrap().replace("Bearer ", "");
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
         let correlation_id = request.get_correlation_id();
-        let dt: DateTime<Local> = Local::now();
+        let tz: Tz = timezone.parse().unwrap_or(DEFAULT_TIMEZONE);
+        let dt = tz.from_utc_datetime(&Utc::now().naive_utc());
 
         let usage_log = UsageLog {
             user_id: jwt.claims().oid.to_string(),
@@ -39,7 +42,7 @@ pub async fn log_deal_use<T: Debug>(
             deal_uuid: deal_id.to_string(),
             user_readable: jwt.claims().name.to_string(),
             message: "Deal Used",
-            local_time: dt.format("%a %b %e %T %Y").to_string(),
+            local_time: dt.format("%r %v %Z").to_string(),
         };
 
         let resp = http_client

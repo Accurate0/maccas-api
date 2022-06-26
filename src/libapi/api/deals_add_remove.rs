@@ -105,7 +105,15 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                             )
                             .await?
                     } else {
-                        log_deal_use(&http_client, &request, &short_name, &deal_id, &ctx.config.api_key).await;
+                        log_deal_use(
+                            &http_client,
+                            &request,
+                            &short_name,
+                            &deal_id,
+                            &ctx.config.api_key,
+                            &ctx.config.local_time_zone,
+                        )
+                        .await;
                         resp
                     };
 

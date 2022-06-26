@@ -14,6 +14,7 @@ pub struct ApiConfigUsers {
 #[derive(serde::Deserialize, std::fmt::Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
+    pub local_time_zone: String,
     pub client_id: String,
     pub client_secret: String,
     pub table_name: String,
