@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     pub deal_uuid: String,

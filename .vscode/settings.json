@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["donalds", "libcore", "MSAL", "reqwest", "simplelog"]
+  "cSpell.words": [
+    "donalds",
+    "ETAG",
+    "itertools",
+    "libcore",
+    "MSAL",
+    "reqwest",
+    "simplelog"
+  ]
 }

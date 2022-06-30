@@ -47,4 +47,6 @@ pub mod db {
     pub const VALUE: &str = "value";
     pub const OFFER_ID: &str = "offer_id";
     pub const TTL: &str = "ttl";
+    pub const USER_ID: &str = "user_id";
+    pub const USER_CONFIG: &str = "user_config";
 }

@@ -1,6 +1,6 @@
 use super::Context;
 use crate::types::api::Offer;
-use crate::{cache, lock};
+use crate::{db, lock};
 use async_trait::async_trait;
 use http::Response;
 use itertools::Itertools;
@@ -14,7 +14,7 @@ pub struct Deals;
 impl Executor<Context, Request, Response<Body>> for Deals {
     async fn execute(&self, ctx: &Context, _request: &Request) -> ExecutorResult<Response<Body>> {
         let locked_deals = lock::get_all_locked_deals(&ctx.dynamodb_client, &ctx.config.offer_id_table_name).await?;
-        let offer_list = cache::get_all_offers_as_vec(&ctx.dynamodb_client, &ctx.config.cache_table_name).await?;
+        let offer_list = db::get_all_offers_as_vec(&ctx.dynamodb_client, &ctx.config.cache_table_name).await?;
 
         // filter locked deals
         let offer_list: Vec<Offer> = offer_list
