@@ -1,11 +1,15 @@
 use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
-use libapi::api::{Code, Context, Deals, DealsLock, LastRefresh, Locations, LocationsSearch, UserConfig};
-use libapi::api::{DealsAddRemove, Fallback};
 use libapi::config::ApiConfig;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
+use libapi::routes::deals;
+use libapi::routes::fallback::Fallback;
+use libapi::routes::locations;
+use libapi::routes::user;
+use libapi::routes::Context;
+use libapi::routes::{code, statistics};
 use libapi::{constants, types};
 use simple_dispatcher::RouteDispatcher;
 
@@ -26,14 +30,16 @@ async fn main() -> Result<(), Error> {
     };
 
     let ref dispatcher = RouteDispatcher::new(context, Fallback)
-        .add_route("/deals", Deals)
-        .add_route("/code/{dealId}", Code)
-        .add_route("/locations", Locations)
-        .add_route("/deals/lock", DealsLock)
-        .add_route("/user/config", UserConfig)
-        .add_route("/deals/{dealId}", DealsAddRemove)
-        .add_route("/deals/last-refresh", LastRefresh)
-        .add_route("/locations/search", LocationsSearch);
+        .add_route("/deals", deals::Deals)
+        .add_route("/code/{dealId}", code::Code)
+        .add_route("/locations", locations::Locations)
+        .add_route("/deals/lock", deals::LockUnlock)
+        .add_route("/user/config", user::Config)
+        .add_route("/deals/{dealId}", deals::AddRemove)
+        .add_route("/locations/search", locations::Search)
+        .add_route("/deals/last-refresh", deals::LastRefresh)
+        .add_route("/statistics/account", statistics::Account)
+        .add_route("/statistics/total-accounts", statistics::TotalAccounts);
 
     let handler = move |request: Request| async move {
         request.log();

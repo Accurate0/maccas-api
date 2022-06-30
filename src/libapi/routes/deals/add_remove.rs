@@ -1,8 +1,8 @@
-use super::Context;
 use crate::client;
 use crate::constants::mc_donalds;
 use crate::lock;
 use crate::logging::log_deal_use;
+use crate::routes::Context;
 use crate::types::api::{Error, OfferResponse};
 use crate::{db, types};
 use async_trait::async_trait;
@@ -11,10 +11,10 @@ use http::{Method, Response, StatusCode};
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use simple_dispatcher::{Executor, ExecutorResult};
 
-pub struct DealsAddRemove;
+pub struct AddRemove;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
+impl Executor<Context, Request, Response<Body>> for AddRemove {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let path_params = request.path_parameters();
 

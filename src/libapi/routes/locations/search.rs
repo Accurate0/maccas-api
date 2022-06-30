@@ -1,6 +1,6 @@
-use super::Context;
 use crate::constants::{api_base, mc_donalds, LOCATION_SEARCH_DISTANCE};
 use crate::extensions::RequestExtensions;
+use crate::routes::Context;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
     client::{self},
@@ -15,10 +15,10 @@ use rand::{
 };
 use simple_dispatcher::{Executor, ExecutorResult};
 
-pub struct LocationsSearch;
+pub struct Search;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for LocationsSearch {
+impl Executor<Context, Request, Response<Body>> for Search {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();

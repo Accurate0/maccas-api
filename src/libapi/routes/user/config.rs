@@ -1,5 +1,5 @@
-use super::Context;
 use crate::db;
+use crate::routes::Context;
 use crate::types::jwt::JwtClaim;
 use crate::types::user::UserOptions;
 use async_trait::async_trait;
@@ -8,10 +8,10 @@ use jwt::{Header, Token};
 use lambda_http::{Body, IntoResponse, Request};
 use simple_dispatcher::{Executor, ExecutorResult};
 
-pub struct UserConfig;
+pub struct Config;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for UserConfig {
+impl Executor<Context, Request, Response<Body>> for Config {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
         Ok(match auth_header {

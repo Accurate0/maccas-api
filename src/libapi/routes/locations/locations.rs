@@ -1,4 +1,4 @@
-use super::Context;
+use crate::routes::Context;
 use crate::{client, constants::mc_donalds, types::api::RestaurantInformation};
 use async_trait::async_trait;
 use http::Response;
