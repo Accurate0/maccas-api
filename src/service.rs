@@ -40,10 +40,17 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         lock::delete_all_locked_deals(&client, &config.offer_id_table_name).await?
     }
 
+    let status_code = if failed_accounts.len() > 0 {
+        log::error!("failed: {:#?}", failed_accounts);
+        400
+    } else {
+        204
+    };
+
     Ok(json!(
         {
             "isBase64Encoded": false,
-            "statusCode": if failed_accounts.len() > 0 { 400 } else { 204 },
+            "statusCode": status_code,
             "headers": {},
             "body": ""
         }
