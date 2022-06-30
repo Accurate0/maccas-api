@@ -13,7 +13,7 @@ simple-dispatcher = "0.3.1"
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
 serde = "1.0.126"
-serde_json = "1.0.79"
+serde_json = "1.0.82"
 serde_derive = "1.0.136"
 openssl = { version = "0.10", features = ["vendored"] }
 aws-sdk-dynamodb = "0.12.0"
