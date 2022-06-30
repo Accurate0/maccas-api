@@ -147,7 +147,6 @@ pub async fn refresh_offer_cache(
     }
 
     log::info!("refreshed {} account offer caches..", client_map.keys().len());
-    log::error!("failed: {:#?}", failed_accounts);
     Ok(failed_accounts)
 }
 
