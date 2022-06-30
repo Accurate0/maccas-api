@@ -1,5 +1,5 @@
-use super::Context;
 use crate::db;
+use crate::routes::Context;
 use crate::types::api::LastRefreshInformation;
 use async_trait::async_trait;
 use http::Response;

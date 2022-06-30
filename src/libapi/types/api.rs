@@ -1,5 +1,9 @@
+use crypto::digest::Digest;
+use crypto::sha1::Sha1;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use std::collections::HashMap;
+use std::hash::Hash;
 use uuid::Uuid;
 
 #[derive(ts_rs::TS)]
@@ -123,3 +127,29 @@ impl From<libmaccas::types::OfferDealStackResponse> for OfferResponse {
         }
     }
 }
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AccountResponse(HashMap<String, i64>);
+
+impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
+    fn from(res: HashMap<String, Vec<Offer>>) -> Self {
+        let res = res
+            .iter()
+            .map(|(key, value)| {
+                let mut hasher = Sha1::new();
+                hasher.input_str(key);
+
+                (hasher.result_str()[..6].to_owned(), value.len() as i64)
+            })
+            .collect();
+
+        Self(res)
+    }
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TotalAccountsResponse(pub i64);

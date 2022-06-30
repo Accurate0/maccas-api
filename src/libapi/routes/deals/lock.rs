@@ -1,15 +1,15 @@
-use super::Context;
 use crate::lock;
+use crate::routes::Context;
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response};
 use lambda_http::{Body, Request, RequestExt};
 use simple_dispatcher::{Executor, ExecutorResult};
 
-pub struct DealsLock;
+pub struct LockUnlock;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for DealsLock {
+impl Executor<Context, Request, Response<Body>> for LockUnlock {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let query_params = request.query_string_parameters();
         let deals = match request.body() {

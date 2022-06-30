@@ -1,6 +1,6 @@
 [package]
 name = "api"
-version = "2.3.4"
+version = "0.1.0"
 edition = "2021"
 publish = false
 
@@ -41,6 +41,7 @@ itertools = "0.10.3"
 ts-rs = "6.1"
 tokio = "1.6.1"
 chrono-tz = "0.6.1"
+rust-crypto = "0.2.36"
 
 [lib]
 name = "libapi"
