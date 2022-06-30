@@ -31,10 +31,10 @@ async fn main() -> Result<(), Error> {
 
     let ref dispatcher = RouteDispatcher::new(context, Fallback)
         .add_route("/deals", deals::Deals)
+        .add_route("/user/config", user::Config)
         .add_route("/code/{dealId}", code::Code)
         .add_route("/locations", locations::Locations)
         .add_route("/deals/lock", deals::LockUnlock)
-        .add_route("/user/config", user::Config)
         .add_route("/deals/{dealId}", deals::AddRemove)
         .add_route("/locations/search", locations::Search)
         .add_route("/deals/last-refresh", deals::LastRefresh)
