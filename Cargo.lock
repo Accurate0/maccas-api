@@ -1215,9 +1215,9 @@ checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
 
 [[package]]
 name = "libmaccas"
-version = "0.6.0"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ff1cbef22fcce295eead21b247bc0daef01d1077335c1193f5c35f3d89dc85f"
+checksum = "585c7a14ff0194035a2bdee01e36bf072af6013fc8f97839cf44eb53fc619d7d"
 dependencies = [
  "http",
  "rand 0.8.5",
@@ -1226,6 +1226,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "tracing",
  "uuid",
 ]
 
