@@ -28,7 +28,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let client_map = client::get_client_map(&http_client, &config, &client).await?;
 
     log::info!("refresh started..");
-    db::refresh_offer_cache(
+    let failed_accounts = db::refresh_offer_cache(
         &client,
         &config.cache_table_name,
         &config.cache_table_name_v2,
@@ -43,7 +43,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     Ok(json!(
         {
             "isBase64Encoded": false,
-            "statusCode": 204,
+            "statusCode": if failed_accounts.len() > 0 { 400 } else { 204 },
             "headers": {},
             "body": ""
         }

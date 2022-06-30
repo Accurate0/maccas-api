@@ -77,7 +77,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "ts-rs",
- "uuid 1.1.2",
+ "uuid",
 ]
 
 [[package]]
@@ -1215,9 +1215,9 @@ checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
 
 [[package]]
 name = "libmaccas"
-version = "0.5.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2745ac68bbb3bed3d5d65984d0de83f17cb5ca7bd7bf7f3f25010ea620504d3d"
+checksum = "6ff1cbef22fcce295eead21b247bc0daef01d1077335c1193f5c35f3d89dc85f"
 dependencies = [
  "http",
  "rand 0.8.5",
@@ -1226,7 +1226,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "uuid 0.8.2",
+ "uuid",
 ]
 
 [[package]]
@@ -2477,15 +2477,6 @@ name = "urlencoding"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b90931029ab9b034b300b797048cf23723400aa757e8a2bfb9d748102f9821"
-
-[[package]]
-name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-dependencies = [
- "getrandom",
-]
 
 [[package]]
 name = "uuid"

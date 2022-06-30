@@ -123,7 +123,7 @@ pub async fn refresh_offer_cache(
     cache_table_name: &String,
     cache_table_name_v2: &String,
     client_map: &HashMap<String, ApiClient<'_>>,
-) -> Result<(), Error> {
+) -> Result<Vec<String>, Error> {
     let mut failed_accounts = Vec::new();
 
     for (account_name, api_client) in client_map {
@@ -141,14 +141,14 @@ pub async fn refresh_offer_cache(
             }
             Err(e) => {
                 log::error!("{}: {}", account_name, e);
-                failed_accounts.push(account_name);
+                failed_accounts.push(account_name.clone());
             }
         };
     }
 
     log::info!("refreshed {} account offer caches..", client_map.keys().len());
     log::error!("failed: {:#?}", failed_accounts);
-    Ok(())
+    Ok(failed_accounts)
 }
 
 pub async fn refresh_offer_cache_for(
@@ -176,7 +176,8 @@ pub async fn refresh_offer_cache_for(
     let now: DateTime<Utc> = now.into();
     let now = now.to_rfc3339();
 
-    let ignored_offers = vec![30762, 162091, 165964];
+    // zh-CHS ???
+    let ignored_offers = vec![30762, 162091, 165964, 2946152, 3067279];
 
     let resp: Vec<Offer> = resp
         .iter_mut()
