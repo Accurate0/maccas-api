@@ -4,7 +4,7 @@ use crate::constants::mc_donalds;
 use crate::lock;
 use crate::logging::log_deal_use;
 use crate::types::api::{Error, OfferResponse};
-use crate::{cache, types};
+use crate::{db, types};
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response, StatusCode};
@@ -22,7 +22,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
         let deal_id = &deal_id.to_owned();
 
         if let Ok((account_name, offer)) =
-            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
+            db::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
         {
             let query_params = request.query_string_parameters();
             let store = query_params.first("store");
@@ -62,7 +62,7 @@ impl Executor<Context, Request, Response<Body>> for DealsAddRemove {
                     // this can cause the offer id to change.. for offers with id == 0
                     // we need to update the database to avoid inconsistency
                     if offer_id == 0 {
-                        cache::refresh_offer_cache_for(
+                        db::refresh_offer_cache_for(
                             &ctx.dynamodb_client,
                             &ctx.config.cache_table_name,
                             &ctx.config.cache_table_name_v2,

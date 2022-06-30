@@ -1,10 +1,10 @@
 use aws_sdk_dynamodb::Client;
 use lambda_runtime::LambdaEvent;
 use lambda_runtime::{service_fn, Error};
-use libapi::cache;
 use libapi::client;
 use libapi::config::ApiConfig;
 use libapi::constants;
+use libapi::db;
 use libapi::lock;
 use libapi::logging;
 use serde_json::{json, Value};
@@ -28,7 +28,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let client_map = client::get_client_map(&http_client, &config, &client).await?;
 
     log::info!("refresh started..");
-    cache::refresh_offer_cache(
+    db::refresh_offer_cache(
         &client,
         &config.cache_table_name,
         &config.cache_table_name_v2,

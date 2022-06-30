@@ -4,6 +4,7 @@
   "clientSecret": null,
   "tableName": null,
   "cacheTableName": null,
+  "userConfigTableName": null,
   "cacheTableNameV2": null,
   "offerIdTableName": null,
   "sensorData": null,

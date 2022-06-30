@@ -1,7 +1,7 @@
 use super::Context;
-use crate::cache;
 use crate::client;
 use crate::constants::mc_donalds;
+use crate::db;
 use crate::types::api::Error;
 use crate::types::api::OfferResponse;
 use async_trait::async_trait;
@@ -24,7 +24,7 @@ impl Executor<Context, Request, Response<Body>> for Code {
         let deal_id = &deal_id.to_owned();
 
         if let Ok((account_name, _offer)) =
-            cache::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
+            db::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
         {
             let user = ctx
                 .config

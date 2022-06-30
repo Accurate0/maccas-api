@@ -1,12 +1,11 @@
 use super::Context;
-use crate::constants::api_base;
-use crate::extensions::RequestExtensions;
+use crate::db;
 use crate::types::jwt::JwtClaim;
-use crate::{client, constants};
+use crate::types::user::UserOptions;
 use async_trait::async_trait;
-use http::Response;
+use http::{Method, Response};
 use jwt::{Header, Token};
-use lambda_http::{Body, Request};
+use lambda_http::{Body, IntoResponse, Request};
 use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct UserConfig;
@@ -14,36 +13,49 @@ pub struct UserConfig;
 #[async_trait]
 impl Executor<Context, Request, Response<Body>> for UserConfig {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
-        // TODO: this is slow...
-        let correlation_id = request.get_correlation_id();
         let auth_header = request.headers().get(http::header::AUTHORIZATION);
         Ok(match auth_header {
             Some(h) => {
                 let value = h.to_str()?.replace("Bearer ", "");
                 let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
                 let user_id = &jwt.claims().oid;
-                let http_client = client::get_http_client();
                 let body = match request.body() {
                     lambda_http::Body::Text(s) => s.clone(),
                     _ => String::new(),
                 };
 
-                let response = http_client
-                    .request(
-                        request.method().clone(),
-                        format!("{}/{}{}", api_base::KVP, constants::MACCAS_WEB_API_PREFIX, user_id).as_str(),
-                    )
-                    .body(body)
-                    .header(constants::CORRELATION_ID_HEADER, correlation_id)
-                    .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
-                    .send()
-                    .await?;
+                match *request.method() {
+                    Method::GET => {
+                        match db::get_config_by_user_id(
+                            &ctx.dynamodb_client,
+                            &ctx.config.user_config_table_name,
+                            user_id,
+                        )
+                        .await
+                        {
+                            Ok(config) => serde_json::to_value(&config)?.into_response(),
+                            Err(_) => Response::builder().status(404).body(Body::Empty)?,
+                        }
+                    }
 
-                Response::builder()
-                    .status(response.status())
-                    .body(response.text().await?.into())?
+                    Method::POST => match serde_json::from_str::<UserOptions>(&body) {
+                        Ok(ref new_config) => {
+                            db::set_config_by_user_id(
+                                &ctx.dynamodb_client,
+                                &ctx.config.user_config_table_name,
+                                user_id,
+                                new_config,
+                            )
+                            .await?;
+                            Response::builder().status(204).body(Body::Empty)?
+                        }
+                        Err(_) => Response::builder().status(400).body(Body::Empty)?,
+                    },
+
+                    _ => Response::builder().status(405).body(Body::Empty)?,
+                }
             }
-            None => Response::builder().status(401).body(Body::Empty).unwrap(),
+            None => Response::builder().status(401).body(Body::Empty)?,
         })
     }
 }

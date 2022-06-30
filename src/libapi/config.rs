@@ -18,6 +18,7 @@ pub struct ApiConfig {
     pub client_id: String,
     pub client_secret: String,
     pub table_name: String,
+    pub user_config_table_name: String,
     pub cache_table_name: String,
     pub cache_table_name_v2: String,
     pub offer_id_table_name: String,

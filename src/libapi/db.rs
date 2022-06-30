@@ -1,11 +1,12 @@
-use crate::constants::db::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL};
+use crate::constants::db::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL, USER_CONFIG, USER_ID};
 use crate::constants::mc_donalds;
 use crate::types::api::Offer;
+use crate::types::user::UserOptions;
 use crate::utils;
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::DateTime;
 use chrono::{Duration, Utc};
-use lambda_runtime::Error;
+use lambda_http::Error;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
@@ -254,4 +255,48 @@ pub async fn get_offer_by_id(
     let offer: Offer = serde_dynamo::from_item(resp[OFFER].as_m().ok().ok_or("missing value")?.clone())?;
 
     Ok((account_name, offer))
+}
+
+pub async fn get_config_by_user_id(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &String,
+    user_id: &str,
+) -> Result<UserOptions, Error> {
+    let resp = client
+        .query()
+        .table_name(table_name)
+        .key_condition_expression("#id = :user_id")
+        .expression_attribute_names("#id", USER_ID)
+        .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
+        .send()
+        .await?;
+
+    if resp.items().ok_or("no user config found")?.len() == 1 {
+        let item = resp.items().unwrap().first().unwrap();
+        let config: UserOptions = serde_dynamo::from_item(item[USER_CONFIG].as_m().ok().ok_or("no config")?.clone())?;
+
+        Ok(config)
+    } else {
+        Err("error fetching user config".into())
+    }
+}
+
+pub async fn set_config_by_user_id(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &String,
+    user_id: &str,
+    user_config: &UserOptions,
+) -> Result<(), Error> {
+    client
+        .put_item()
+        .table_name(table_name)
+        .item(USER_ID, AttributeValue::S(user_id.to_string()))
+        .item(
+            USER_CONFIG,
+            AttributeValue::M(serde_dynamo::to_item(user_config).unwrap()),
+        )
+        .send()
+        .await?;
+
+    Ok(())
 }
