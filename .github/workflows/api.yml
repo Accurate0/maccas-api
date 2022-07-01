@@ -24,4 +24,4 @@ jobs:
         uses: azure/arm-deploy@v1
         with:
           resourceGroupName: "general-api-group"
-          template: ./API/maccas-api-v2-deploy.json
+          template: ./API/maccas-api-v1-deploy.json
