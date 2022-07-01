@@ -32,10 +32,11 @@ pub async fn get_client_map<'a>(
     http_client: &'a reqwest_middleware::ClientWithMiddleware,
     config: &'a ApiConfig,
     client: &'a aws_sdk_dynamodb::Client,
-) -> Result<HashMap<String, ApiClient<'a>>, Error> {
+) -> Result<(HashMap<String, ApiClient<'a>>, Vec<String>), Error> {
+    let mut failed_accounts = Vec::new();
     let mut client_map = HashMap::<String, ApiClient<'_>>::new();
     for user in &config.users {
-        let api_client = client::get(
+        match client::get(
             http_client,
             &client,
             &user.account_name,
@@ -43,12 +44,19 @@ pub async fn get_client_map<'a>(
             &user.login_username,
             &user.login_password,
         )
-        .await?;
-
-        client_map.insert(user.account_name.clone(), api_client);
+        .await
+        {
+            Ok(c) => {
+                client_map.insert(user.account_name.clone(), c);
+            }
+            Err(e) => {
+                failed_accounts.push(user.account_name.clone());
+                log::error!("could not login into {} because {}", user, e);
+            }
+        };
     }
 
-    Ok(client_map)
+    Ok((client_map, failed_accounts))
 }
 
 pub async fn get<'a>(

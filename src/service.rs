@@ -25,7 +25,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
     let config = ApiConfig::load_from_s3_for_region(&shared_config, &env).await?;
     let client = Client::new(&shared_config);
     let http_client = client::get_http_client();
-    let client_map = client::get_client_map(&http_client, &config, &client).await?;
+    let (client_map, login_failed_accounts) = client::get_client_map(&http_client, &config, &client).await?;
 
     log::info!("refresh started..");
     let failed_accounts = db::refresh_offer_cache(
@@ -40,9 +40,10 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         lock::delete_all_locked_deals(&client, &config.offer_id_table_name).await?
     }
 
-    if failed_accounts.len() > 0 {
+    if failed_accounts.len() > 0 || login_failed_accounts.len() > 0 {
         log::error!("failed: {:#?}", failed_accounts);
-        return Err(format!("{} accounts failed to update", failed_accounts.len()).into());
+        log::error!("login failed: {:#?}", login_failed_accounts);
+        return Err("accounts failed to update".into());
     }
 
     Ok(json!(

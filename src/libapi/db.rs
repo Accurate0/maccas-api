@@ -157,7 +157,7 @@ pub async fn refresh_offer_cache_for(
     account_name: &String,
     api_client: &ApiClient<'_>,
 ) -> Result<(), Error> {
-    let mut resp = api_client
+    match api_client
         .get_offers(
             mc_donalds::default::DISTANCE,
             mc_donalds::default::LATITUDE,
@@ -168,48 +168,52 @@ pub async fn refresh_offer_cache_for(
         .await?
         .body
         .response
-        .expect("to have response")
-        .offers;
+    {
+        Some(resp) => {
+            let mut resp = resp.offers;
 
-    let now = SystemTime::now();
-    let now: DateTime<Utc> = now.into();
-    let now = now.to_rfc3339();
+            let now = SystemTime::now();
+            let now: DateTime<Utc> = now.into();
+            let now = now.to_rfc3339();
 
-    // zh-CHS ???
-    let ignored_offers = vec![30762, 162091, 165964, 2946152, 3067279];
+            // zh-CHS ???
+            let ignored_offers = vec![30762, 162091, 165964, 2946152, 3067279];
 
-    let resp: Vec<Offer> = resp
-        .iter_mut()
-        .filter(|offer| !ignored_offers.contains(&offer.offer_proposition_id))
-        .map(|offer| Offer::from(offer.clone()))
-        .collect();
+            let resp: Vec<Offer> = resp
+                .iter_mut()
+                .filter(|offer| !ignored_offers.contains(&offer.offer_proposition_id))
+                .map(|offer| Offer::from(offer.clone()))
+                .collect();
 
-    client
-        .put_item()
-        .table_name(cache_table_name)
-        .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
-        .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-        .item(OFFER_LIST, AttributeValue::S(serde_json::to_string(&resp).unwrap()))
-        .send()
-        .await?;
+            client
+                .put_item()
+                .table_name(cache_table_name)
+                .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                .item(LAST_REFRESH, AttributeValue::S(now.clone()))
+                .item(OFFER_LIST, AttributeValue::S(serde_json::to_string(&resp).unwrap()))
+                .send()
+                .await?;
 
-    let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(6)).unwrap();
-    // v2 cache structure
-    for item in &resp {
-        client
-            .put_item()
-            .table_name(cache_table_name_v2)
-            .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
-            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
-            .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-            .item(OFFER, AttributeValue::M(serde_dynamo::to_item(item).unwrap()))
-            .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
-            .send()
-            .await?;
+            let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(6)).unwrap();
+            // v2 cache structure
+            for item in &resp {
+                client
+                    .put_item()
+                    .table_name(cache_table_name_v2)
+                    .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
+                    .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                    .item(LAST_REFRESH, AttributeValue::S(now.clone()))
+                    .item(OFFER, AttributeValue::M(serde_dynamo::to_item(item).unwrap()))
+                    .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
+                    .send()
+                    .await?;
+            }
+
+            log::info!("{}: offer cache refreshed", account_name);
+            Ok(())
+        }
+        None => Err(format!("could not get offers for {}", account_name).into()),
     }
-
-    log::info!("{}: offer cache refreshed", account_name);
-    Ok(())
 }
 
 pub async fn get_refresh_time_for_offer_cache(
