@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::constants;
 use aws_sdk_s3::types::AggregatedBytes;
 use config::Config;
@@ -9,6 +11,12 @@ pub struct ApiConfigUsers {
     pub account_name: String,
     pub login_username: String,
     pub login_password: String,
+}
+
+impl Display for ApiConfigUsers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("email: {}", self.login_username))
+    }
 }
 
 #[derive(serde::Deserialize, std::fmt::Debug)]
