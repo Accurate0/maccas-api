@@ -1,5 +1,5 @@
 [package]
-name = "api"
+name = "maccas-api"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -45,12 +45,16 @@ rust-crypto = "0.2.36"
 
 [lib]
 name = "libapi"
-path = "src/libapi/lib.rs"
+path = "src/lib/lib.rs"
 
 [[bin]]
 name = "api"
-path = "src/api.rs"
+path = "src/bin/api.rs"
 
 [[bin]]
 name = "service"
-path = "src/service.rs"
+path = "src/bin/service.rs"
+
+[[bin]]
+name = "authoriser"
+path = "src/bin/authoriser.rs"
