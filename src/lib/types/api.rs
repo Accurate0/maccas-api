@@ -1,5 +1,6 @@
-use crypto::digest::Digest;
-use crypto::sha1::Sha1;
+use crate::utils::get_short_sha1;
+use itertools::Itertools;
+use libmaccas::types::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
@@ -131,6 +132,15 @@ impl From<libmaccas::types::OfferDealStackResponse> for OfferResponse {
 #[derive(ts_rs::TS)]
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OfferPointsResponse {
+    pub offer_response: OfferResponse,
+    pub points_response: PointsResponse,
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AccountResponse(HashMap<String, i64>);
 
 impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
@@ -138,10 +148,8 @@ impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
         let res = res
             .iter()
             .map(|(key, value)| {
-                let mut hasher = Sha1::new();
-                hasher.input_str(key);
-
-                (hasher.result_str()[..6].to_owned(), value.len() as i64)
+                let hash = get_short_sha1(&key);
+                (hash, value.len() as i64)
             })
             .collect();
 
@@ -153,3 +161,47 @@ impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TotalAccountsResponse(pub i64);
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PointsResponse {
+    pub total_points: i64,
+    pub life_time_points: i64,
+}
+
+impl From<PointInformationResponse> for PointsResponse {
+    fn from(res: PointInformationResponse) -> Self {
+        Self {
+            total_points: res.total_points,
+            life_time_points: res.life_time_points,
+        }
+    }
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AccountPointMap {
+    pub name: String,
+    pub total_points: i64,
+}
+
+#[derive(ts_rs::TS)]
+#[ts(export)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AccountPointResponse(Vec<AccountPointMap>);
+
+impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
+    fn from(res: HashMap<String, PointsResponse>) -> Self {
+        Self(
+            res.iter()
+                .map(|(key, value)| AccountPointMap {
+                    name: key.to_string(),
+                    total_points: value.total_points,
+                })
+                .sorted_by(|a, b| b.total_points.cmp(&a.total_points))
+                .collect(),
+        )
+    }
+}

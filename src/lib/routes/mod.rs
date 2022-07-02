@@ -3,6 +3,7 @@ pub mod deal;
 pub mod deals;
 pub mod fallback;
 pub mod locations;
+pub mod points;
 pub mod statistics;
 pub mod user;
 

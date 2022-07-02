@@ -31,6 +31,7 @@ pub struct ApiConfig {
     pub cache_table_name: String,
     pub cache_table_name_v2: String,
     pub offer_id_table_name: String,
+    pub point_table_name: String,
     pub sensor_data: String,
     pub api_key: String,
     pub users: Option<Vec<UserAccount>>,
