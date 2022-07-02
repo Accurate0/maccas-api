@@ -135,6 +135,28 @@
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Deals-GET",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get Specific Deal",
+        "method": "GET",
+        "urlTemplate": "/deal/{dealId}",
+        "templateParameters": [
+          {
+            "name": "dealId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "request": {
+          "queryParameters": []
+        },
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Deals-POST",
       "dependsOn": [],
       "properties": {

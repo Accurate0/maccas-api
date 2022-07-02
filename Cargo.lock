@@ -1225,6 +1225,7 @@ dependencies = [
  "lambda_runtime",
  "libmaccas",
  "log",
+ "mime",
  "openssl",
  "rand 0.8.5",
  "reqwest",
