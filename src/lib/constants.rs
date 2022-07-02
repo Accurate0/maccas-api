@@ -36,10 +36,12 @@ pub mod config {
 
 pub mod db {
     pub const ACCOUNT_NAME: &str = "account_name";
+    pub const ACCOUNT_HASH: &str = "account_hash";
     pub const ACCOUNT_INFO: &str = "account_info";
     pub const ACCESS_TOKEN: &str = "access_token";
     pub const REFRESH_TOKEN: &str = "refresh_token";
     pub const LAST_REFRESH: &str = "last_refresh";
+    pub const POINT_INFO: &str = "point_info";
     pub const OFFER_LIST: &str = "offer_list";
     pub const OFFER: &str = "offer";
     pub const DATA_TYPE: &str = "data_type";
@@ -50,4 +52,5 @@ pub mod db {
     pub const TTL: &str = "ttl";
     pub const USER_ID: &str = "user_id";
     pub const USER_CONFIG: &str = "user_config";
+    pub const USER_NAME: &str = "user_name";
 }

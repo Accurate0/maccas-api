@@ -1,4 +1,5 @@
 use crate::{constants::mc_donalds, types::api::Offer};
+use crypto::{digest::Digest, sha1::Sha1};
 use lambda_http::Error;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
@@ -63,4 +64,10 @@ pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_
 
 pub fn get_uuid() -> String {
     Uuid::new_v4().as_hyphenated().to_string()
+}
+
+pub fn get_short_sha1(key: &String) -> String {
+    let mut hasher = Sha1::new();
+    hasher.input_str(key);
+    hasher.result_str()[..6].to_owned()
 }

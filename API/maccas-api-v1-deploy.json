@@ -251,6 +251,48 @@
         "request": {},
         "responses": []
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Get-Points",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get Point List",
+        "method": "GET",
+        "urlTemplate": "/points",
+        "templateParameters": [],
+        "request": {},
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Points-AccountId-GET",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get Random Code for Point Account",
+        "method": "GET",
+        "urlTemplate": "/points/{accountId}",
+        "templateParameters": [
+          {
+            "name": "accountId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "store",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        "responses": []
+      }
     }
   ]
 }

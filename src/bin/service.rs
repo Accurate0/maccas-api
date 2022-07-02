@@ -30,13 +30,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         client::get_client_map(&http_client, &config, account_list, &client).await?;
 
     log::info!("refresh started..");
-    let failed_accounts = db::refresh_offer_cache(
-        &client,
-        &config.cache_table_name,
-        &config.cache_table_name_v2,
-        &client_map,
-    )
-    .await?;
+    let failed_accounts = db::refresh_offer_cache(&client, &config, &client_map).await?;
 
     if env == constants::DEFAULT_AWS_REGION {
         lock::delete_all_locked_deals(&client, &config.offer_id_table_name).await?

@@ -19,6 +19,7 @@ impl Executor<Context, Request, Response<Body>> for Config {
                 let value = h.to_str()?.replace("Bearer ", "");
                 let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
                 let user_id = &jwt.claims().oid;
+                let user_name = &jwt.claims().name;
                 let body = match request.body() {
                     lambda_http::Body::Text(s) => s.clone(),
                     _ => String::new(),
@@ -45,6 +46,7 @@ impl Executor<Context, Request, Response<Body>> for Config {
                                 &ctx.config.user_config_table_name,
                                 user_id,
                                 new_config,
+                                user_name,
                             )
                             .await?;
                             Response::builder().status(204).body(Body::Empty)?
