@@ -54,7 +54,3 @@ path = "src/bin/api.rs"
 [[bin]]
 name = "service"
 path = "src/bin/service.rs"
-
-[[bin]]
-name = "authoriser"
-path = "src/bin/authoriser.rs"

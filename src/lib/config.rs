@@ -4,22 +4,23 @@ use crate::constants;
 use aws_sdk_s3::types::AggregatedBytes;
 use config::Config;
 use lambda_http::Error;
+use serde::{Deserialize, Serialize};
 
-#[derive(serde::Deserialize, std::fmt::Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiConfigUsers {
+pub struct UserAccount {
     pub account_name: String,
     pub login_username: String,
     pub login_password: String,
 }
 
-impl Display for ApiConfigUsers {
+impl Display for UserAccount {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("email: {}", self.login_username))
     }
 }
 
-#[derive(serde::Deserialize, std::fmt::Debug)]
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub local_time_zone: String,
@@ -32,7 +33,8 @@ pub struct ApiConfig {
     pub offer_id_table_name: String,
     pub sensor_data: String,
     pub api_key: String,
-    pub users: Vec<ApiConfigUsers>,
+    pub users: Option<Vec<UserAccount>>,
+    pub service_account: UserAccount,
 }
 
 impl ApiConfig {
@@ -58,24 +60,29 @@ impl ApiConfig {
 
     async fn build_config_from_bytes(
         base_config: &AggregatedBytes,
-        accounts: &AggregatedBytes,
         sensor_data: &AggregatedBytes,
+        accounts: Option<&AggregatedBytes>,
     ) -> Result<Self, Error> {
-        Ok(Config::builder()
+        let config = Config::builder()
             .add_source(config::File::from_str(
                 std::str::from_utf8(&base_config.clone().into_bytes())?,
                 config::FileFormat::Json,
             ))
             .add_source(config::File::from_str(
+                std::str::from_utf8(&sensor_data.clone().into_bytes())?,
+                config::FileFormat::Json,
+            ));
+
+        let config = if let Some(accounts) = accounts {
+            config.add_source(config::File::from_str(
                 std::str::from_utf8(&accounts.clone().into_bytes())?,
                 config::FileFormat::Json,
             ))
-            .add_source(config::File::from_str(
-                std::str::from_utf8(&sensor_data.clone().into_bytes())?,
-                config::FileFormat::Json,
-            ))
-            .build()?
-            .try_deserialize::<Self>()?)
+        } else {
+            config
+        };
+
+        Ok(config.build()?.try_deserialize::<Self>()?)
     }
 
     pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> Result<Self, Error> {
@@ -83,18 +90,13 @@ impl ApiConfig {
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
         let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;
 
-        let resp = s3_client
-            .get_object()
-            .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::config::ALL_ACCOUNTS_FILE)
-            .send()
-            .await?;
-        let all_accounts_bytes = resp.body.collect().await?;
-
-        Ok(Self::build_config_from_bytes(&base_config_bytes, &all_accounts_bytes, &sensor_data_bytes).await?)
+        Ok(Self::build_config_from_bytes(&base_config_bytes, &sensor_data_bytes, None).await?)
     }
 
-    pub async fn load_from_s3_for_region(shared_config: &aws_types::SdkConfig, region: &String) -> Result<Self, Error> {
+    pub async fn load_from_s3_with_region_accounts(
+        shared_config: &aws_types::SdkConfig,
+        region: &String,
+    ) -> Result<Self, Error> {
         let s3_client = aws_sdk_s3::Client::new(&shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
         let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;
@@ -107,6 +109,6 @@ impl ApiConfig {
             .await?;
         let accounts_bytes = resp.body.collect().await?;
 
-        Ok(Self::build_config_from_bytes(&base_config_bytes, &accounts_bytes, &sensor_data_bytes).await?)
+        Ok(Self::build_config_from_bytes(&base_config_bytes, &sensor_data_bytes, Some(&accounts_bytes)).await?)
     }
 }

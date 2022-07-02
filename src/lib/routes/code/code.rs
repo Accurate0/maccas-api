@@ -23,26 +23,11 @@ impl Executor<Context, Request, Response<Body>> for Code {
         let deal_id = path_params.first("dealId").ok_or("must have id")?;
         let deal_id = &deal_id.to_owned();
 
-        if let Ok((account_name, _offer)) =
+        if let Ok((account, _offer)) =
             db::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
         {
-            let user = ctx
-                .config
-                .users
-                .iter()
-                .find(|u| u.account_name == account_name)
-                .ok_or("no account found")?;
-
             let http_client = client::get_http_client();
-            let api_client = client::get(
-                &http_client,
-                &ctx.dynamodb_client,
-                &account_name,
-                &ctx.config,
-                &user.login_username,
-                &user.login_password,
-            )
-            .await?;
+            let api_client = client::get(&http_client, &ctx.dynamodb_client, &ctx.config, &account).await?;
 
             let resp = api_client
                 .get_offers_dealstack(

@@ -15,5 +15,10 @@
       "loginUsername": null,
       "loginPassword": null
     }
-  ]
+  ],
+  "serviceAccount": {
+    "accountName": null,
+    "loginUsername": null,
+    "loginPassword": null
+  }
 }

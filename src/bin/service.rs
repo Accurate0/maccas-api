@@ -22,10 +22,12 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, Error> {
         .load()
         .await;
     let env = std::env::var(constants::AWS_REGION).unwrap();
-    let config = ApiConfig::load_from_s3_for_region(&shared_config, &env).await?;
+    let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env).await?;
     let client = Client::new(&shared_config);
     let http_client = client::get_http_client();
-    let (client_map, login_failed_accounts) = client::get_client_map(&http_client, &config, &client).await?;
+    let account_list = config.users.as_ref().ok_or("must have account list")?;
+    let (client_map, login_failed_accounts) =
+        client::get_client_map(&http_client, &config, account_list, &client).await?;
 
     log::info!("refresh started..");
     let failed_accounts = db::refresh_offer_cache(

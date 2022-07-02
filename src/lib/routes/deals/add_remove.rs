@@ -21,29 +21,14 @@ impl Executor<Context, Request, Response<Body>> for AddRemove {
         let deal_id = path_params.first("dealId").expect("must have id");
         let deal_id = &deal_id.to_owned();
 
-        if let Ok((account_name, offer)) =
+        if let Ok((account, offer)) =
             db::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
         {
             let query_params = request.query_string_parameters();
             let store = query_params.first("store");
 
-            let user = ctx
-                .config
-                .users
-                .iter()
-                .find(|u| u.account_name == account_name)
-                .ok_or("no account found")?;
-
             let http_client = client::get_http_client();
-            let api_client = client::get(
-                &http_client,
-                &ctx.dynamodb_client,
-                &account_name,
-                &ctx.config,
-                &user.login_username,
-                &user.login_password,
-            )
-            .await?;
+            let api_client = client::get(&http_client, &ctx.dynamodb_client, &ctx.config, &account).await?;
 
             let offer_id = offer.offer_id;
             let offer_proposition_id = offer.offer_proposition_id.to_string();
@@ -66,7 +51,7 @@ impl Executor<Context, Request, Response<Body>> for AddRemove {
                             &ctx.dynamodb_client,
                             &ctx.config.cache_table_name,
                             &ctx.config.cache_table_name_v2,
-                            &account_name,
+                            &account,
                             &api_client,
                         )
                         .await?;
