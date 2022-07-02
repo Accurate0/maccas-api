@@ -1,4 +1,5 @@
 pub mod code;
+pub mod deal;
 pub mod deals;
 pub mod fallback;
 pub mod locations;

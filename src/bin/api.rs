@@ -4,12 +4,12 @@ use lambda_http::{service_fn, Error, Request, RequestExt};
 use libapi::config::ApiConfig;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
-use libapi::routes::deals;
 use libapi::routes::fallback::Fallback;
 use libapi::routes::locations;
 use libapi::routes::user;
 use libapi::routes::Context;
 use libapi::routes::{code, statistics};
+use libapi::routes::{deal, deals};
 use libapi::{constants, types};
 use simple_dispatcher::RouteDispatcher;
 
@@ -32,9 +32,10 @@ async fn main() -> Result<(), Error> {
     let ref dispatcher = RouteDispatcher::new(context, Fallback)
         .add_route("/deals", deals::Deals)
         .add_route("/user/config", user::Config)
+        .add_route("/deal/{dealId}", deal::Deal)
         .add_route("/code/{dealId}", code::Code)
-        .add_route("/locations", locations::Locations)
         .add_route("/deals/lock", deals::LockUnlock)
+        .add_route("/locations", locations::Locations)
         .add_route("/deals/{dealId}", deals::AddRemove)
         .add_route("/locations/search", locations::Search)
         .add_route("/deals/last-refresh", deals::LastRefresh)

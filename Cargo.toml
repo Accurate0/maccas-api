@@ -42,6 +42,7 @@ ts-rs = "6.1"
 tokio = "1.6.1"
 chrono-tz = "0.6.1"
 rust-crypto = "0.2.36"
+mime = "0.3.16"
 
 [lib]
 name = "libapi"
