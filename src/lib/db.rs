@@ -1,4 +1,7 @@
-use crate::constants::db::{ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL, USER_CONFIG, USER_ID};
+use crate::config::UserAccount;
+use crate::constants::db::{
+    ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_LIST, TTL, USER_CONFIG, USER_ID,
+};
 use crate::constants::mc_donalds;
 use crate::types::api::Offer;
 use crate::types::user::UserOptions;
@@ -122,26 +125,18 @@ pub async fn refresh_offer_cache(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
     cache_table_name_v2: &String,
-    client_map: &HashMap<String, ApiClient<'_>>,
+    client_map: &HashMap<UserAccount, ApiClient<'_>>,
 ) -> Result<Vec<String>, Error> {
     let mut failed_accounts = Vec::new();
 
-    for (account_name, api_client) in client_map {
-        match refresh_offer_cache_for(
-            &client,
-            &cache_table_name,
-            &cache_table_name_v2,
-            &account_name,
-            &api_client,
-        )
-        .await
-        {
+    for (account, api_client) in client_map {
+        match refresh_offer_cache_for(&client, &cache_table_name, &cache_table_name_v2, &account, &api_client).await {
             Ok(_) => {
-                utils::remove_all_from_deal_stack_for(&api_client, account_name).await?;
+                utils::remove_all_from_deal_stack_for(&api_client, &account.account_name).await?;
             }
             Err(e) => {
-                log::error!("{}: {}", account_name, e);
-                failed_accounts.push(account_name.clone());
+                log::error!("{}: {}", account, e);
+                failed_accounts.push(account.account_name.clone());
             }
         };
     }
@@ -154,7 +149,7 @@ pub async fn refresh_offer_cache_for(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
     cache_table_name_v2: &String,
-    account_name: &String,
+    account: &UserAccount,
     api_client: &ApiClient<'_>,
 ) -> Result<(), Error> {
     match api_client
@@ -188,7 +183,7 @@ pub async fn refresh_offer_cache_for(
             client
                 .put_item()
                 .table_name(cache_table_name)
-                .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
                 .item(LAST_REFRESH, AttributeValue::S(now.clone()))
                 .item(OFFER_LIST, AttributeValue::S(serde_json::to_string(&resp).unwrap()))
                 .send()
@@ -201,18 +196,18 @@ pub async fn refresh_offer_cache_for(
                     .put_item()
                     .table_name(cache_table_name_v2)
                     .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
-                    .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                    .item(ACCOUNT_INFO, AttributeValue::M(serde_dynamo::to_item(account)?))
                     .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-                    .item(OFFER, AttributeValue::M(serde_dynamo::to_item(item).unwrap()))
+                    .item(OFFER, AttributeValue::M(serde_dynamo::to_item(item)?))
                     .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
                     .send()
                     .await?;
             }
 
-            log::info!("{}: offer cache refreshed", account_name);
+            log::info!("{}: offer cache refreshed", account);
             Ok(())
         }
-        None => Err(format!("could not get offers for {}", account_name).into()),
+        None => Err(format!("could not get offers for {}", account).into()),
     }
 }
 
@@ -243,7 +238,7 @@ pub async fn get_offer_by_id(
     offer_id: &str,
     client: &aws_sdk_dynamodb::Client,
     cache_table_name_v2: &String,
-) -> Result<(String, Offer), Error> {
+) -> Result<(UserAccount, Offer), Error> {
     let resp = client
         .query()
         .table_name(cache_table_name_v2)
@@ -255,10 +250,10 @@ pub async fn get_offer_by_id(
 
     let resp = resp.items.ok_or("missing value")?;
     let resp = resp.first().ok_or("missing value")?;
-    let account_name = resp[ACCOUNT_NAME].as_s().ok().ok_or("missing value")?.to_string();
+    let account = serde_dynamo::from_item(resp[ACCOUNT_INFO].as_m().ok().ok_or("missing value")?.clone())?;
     let offer: Offer = serde_dynamo::from_item(resp[OFFER].as_m().ok().ok_or("missing value")?.clone())?;
 
-    Ok((account_name, offer))
+    Ok((account, offer))
 }
 
 pub async fn get_config_by_user_id(

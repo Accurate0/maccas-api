@@ -9,10 +9,6 @@ use crate::{
 use async_trait::async_trait;
 use http::Response;
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
-use rand::{
-    prelude::{SliceRandom, StdRng},
-    SeedableRng,
-};
 use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Search;
@@ -37,24 +33,11 @@ impl Executor<Context, Request, Response<Body>> for Search {
             .json::<PlaceResponse>()
             .await?;
 
-        // TODO: use a service account
-        let account_name_list: Vec<String> = ctx.config.users.iter().map(|u| u.account_name.clone()).collect();
-        let mut rng = StdRng::from_entropy();
-        let choice = account_name_list.choose(&mut rng).ok_or("no choice")?.to_string();
-        let user = ctx
-            .config
-            .users
-            .iter()
-            .find(|u| u.account_name == choice)
-            .ok_or("no account")?;
-
         let api_client = client::get(
             &http_client,
             &ctx.dynamodb_client,
-            &choice,
             &ctx.config,
-            &user.login_username,
-            &user.login_password,
+            &ctx.config.service_account,
         )
         .await?;
         let response = response.result;

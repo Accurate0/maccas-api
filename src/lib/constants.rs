@@ -36,6 +36,7 @@ pub mod config {
 
 pub mod db {
     pub const ACCOUNT_NAME: &str = "account_name";
+    pub const ACCOUNT_INFO: &str = "account_info";
     pub const ACCESS_TOKEN: &str = "access_token";
     pub const REFRESH_TOKEN: &str = "refresh_token";
     pub const LAST_REFRESH: &str = "last_refresh";

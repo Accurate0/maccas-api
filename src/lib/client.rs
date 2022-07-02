@@ -1,5 +1,5 @@
 use crate::client;
-use crate::config::ApiConfig;
+use crate::config::{ApiConfig, UserAccount};
 use crate::constants::db::{ACCESS_TOKEN, ACCOUNT_NAME, LAST_REFRESH, REFRESH_TOKEN};
 use crate::constants::mc_donalds;
 use crate::middleware;
@@ -31,23 +31,15 @@ pub fn get_http_client_with_headers(headers: http::HeaderMap) -> reqwest_middlew
 pub async fn get_client_map<'a>(
     http_client: &'a reqwest_middleware::ClientWithMiddleware,
     config: &'a ApiConfig,
+    account_list: &'a Vec<UserAccount>,
     client: &'a aws_sdk_dynamodb::Client,
-) -> Result<(HashMap<String, ApiClient<'a>>, Vec<String>), Error> {
+) -> Result<(HashMap<UserAccount, ApiClient<'a>>, Vec<String>), Error> {
     let mut failed_accounts = Vec::new();
-    let mut client_map = HashMap::<String, ApiClient<'_>>::new();
-    for user in &config.users {
-        match client::get(
-            http_client,
-            &client,
-            &user.account_name,
-            &config,
-            &user.login_username,
-            &user.login_password,
-        )
-        .await
-        {
+    let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
+    for user in account_list {
+        match client::get(http_client, &client, &config, &user).await {
             Ok(c) => {
-                client_map.insert(user.account_name.clone(), c);
+                client_map.insert(user.clone(), c);
             }
             Err(e) => {
                 failed_accounts.push(user.account_name.clone());
@@ -62,10 +54,8 @@ pub async fn get_client_map<'a>(
 pub async fn get<'a>(
     http_client: &'a reqwest_middleware::ClientWithMiddleware,
     client: &'a aws_sdk_dynamodb::Client,
-    account_name: &'a String,
     config: &'a ApiConfig,
-    login_username: &'a String,
-    login_password: &'a String,
+    account: &'a UserAccount,
 ) -> Result<ApiClient<'a>, Error> {
     let mut api_client = ApiClient::new(
         mc_donalds::default::BASE_URL.to_string(),
@@ -76,18 +66,18 @@ pub async fn get<'a>(
     let resp = client
         .get_item()
         .table_name(&config.table_name)
-        .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+        .key(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
         .send()
         .await?;
 
     match resp.item {
         None => {
-            log::info!("{}: nothing in db, requesting..", account_name);
+            log::info!("{}: nothing in db, requesting..", account.account_name);
             let response = api_client.security_auth_token(&config.client_secret).await?;
             api_client.set_login_token(&response.body.response.token);
 
             let response = api_client
-                .customer_login(login_username, login_password, &config.sensor_data)
+                .customer_login(&account.login_username, &account.login_password, &config.sensor_data)
                 .await?;
             api_client.set_auth_token(&response.body.response.access_token);
 
@@ -100,7 +90,7 @@ pub async fn get<'a>(
             client
                 .put_item()
                 .table_name(&config.table_name)
-                .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
                 .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
                 .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
                 .item(LAST_REFRESH, AttributeValue::S(now))
@@ -109,7 +99,7 @@ pub async fn get<'a>(
         }
 
         Some(ref item) => {
-            log::info!("{}: tokens in db, trying..", account_name);
+            log::info!("{}: tokens in db, trying..", account.account_name);
             let refresh_token = match item[REFRESH_TOKEN].as_s() {
                 Ok(s) => s,
                 _ => panic!(),
@@ -131,7 +121,7 @@ pub async fn get<'a>(
                     let diff = now - last_refresh;
 
                     if diff.num_minutes() >= 14 {
-                        log::info!("{}: >= 14 mins since last attempt.. refreshing..", account_name);
+                        log::info!("{}: >= 14 mins since last attempt.. refreshing..", account.account_name);
                         let mut new_access_token = String::from("");
                         let mut new_ref_token = String::from("");
 
@@ -147,7 +137,7 @@ pub async fn get<'a>(
                             api_client.set_login_token(&response.body.response.token);
 
                             let response = api_client
-                                .customer_login(login_username, login_password, &config.sensor_data)
+                                .customer_login(&account.login_username, &account.login_password, &config.sensor_data)
                                 .await?;
                             api_client.set_auth_token(&response.body.response.access_token);
 
@@ -160,7 +150,7 @@ pub async fn get<'a>(
                         client
                             .put_item()
                             .table_name(&config.table_name)
-                            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+                            .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
                             .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
                             .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
                             .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
