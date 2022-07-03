@@ -286,7 +286,9 @@ pub async fn refresh_offer_cache_for(
                 .send()
                 .await?;
 
-            let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(6)).unwrap();
+            // keep older deals around for 12hrs
+            // hotlinking etc
+            let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
             // v2 cache structure
             for item in &resp {
                 client
