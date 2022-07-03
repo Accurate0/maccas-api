@@ -165,6 +165,7 @@ pub struct TotalAccountsResponse(pub i64);
 #[derive(ts_rs::TS)]
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PointsResponse {
     pub total_points: i64,
     pub life_time_points: i64,
@@ -182,6 +183,7 @@ impl From<PointInformationResponse> for PointsResponse {
 #[derive(ts_rs::TS)]
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountPointMap {
     pub name: String,
     pub total_points: i64,
