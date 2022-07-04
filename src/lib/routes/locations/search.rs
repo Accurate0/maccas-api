@@ -14,7 +14,7 @@ use simple_dispatcher::{Executor, ExecutorResult};
 pub struct Search;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for Search {
+impl Executor<Context<'_>, Request, Response<Body>> for Search {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let correlation_id = request.get_correlation_id();
         let query_params = request.query_string_parameters();
@@ -33,13 +33,16 @@ impl Executor<Context, Request, Response<Body>> for Search {
             .json::<PlaceResponse>()
             .await?;
 
-        let api_client = client::get(
-            &http_client,
-            &ctx.dynamodb_client,
-            &ctx.config,
-            &ctx.config.service_account,
-        )
-        .await?;
+        let api_client = ctx
+            .database
+            .get_specific_client(
+                &http_client,
+                &ctx.config.client_id,
+                &ctx.config.client_secret,
+                &ctx.config.sensor_data,
+                &ctx.config.service_account,
+            )
+            .await?;
         let response = response.result;
 
         Ok(match response {

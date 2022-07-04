@@ -3,6 +3,7 @@ use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
 use libapi::config::ApiConfig;
+use libapi::database::DynamoDatabase;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
 use libapi::routes;
@@ -24,10 +25,11 @@ async fn main() -> Result<(), Error> {
 
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
+    let database = DynamoDatabase::new(&dynamodb_client, &config);
 
     let context = routes::Context {
         config,
-        dynamodb_client,
+        database: Box::new(database),
     };
 
     let ref dispatcher = RouteDispatcher::new(context, Fallback)

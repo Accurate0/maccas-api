@@ -1,6 +1,5 @@
 use crate::client;
 use crate::constants::mc_donalds;
-use crate::db;
 use crate::routes::Context;
 use crate::types::api::Error;
 use crate::types::api::OfferResponse;
@@ -14,7 +13,7 @@ use simple_dispatcher::ExecutorResult;
 pub struct Code;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for Code {
+impl Executor<Context<'_>, Request, Response<Body>> for Code {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let path_params = request.path_parameters();
         let query_params = request.query_string_parameters();
@@ -23,11 +22,18 @@ impl Executor<Context, Request, Response<Body>> for Code {
         let deal_id = path_params.first("dealId").ok_or("must have id")?;
         let deal_id = &deal_id.to_owned();
 
-        if let Ok((account, _offer)) =
-            db::get_offer_by_id(deal_id, &ctx.dynamodb_client, &ctx.config.cache_table_name_v2).await
-        {
+        if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
             let http_client = client::get_http_client();
-            let api_client = client::get(&http_client, &ctx.dynamodb_client, &ctx.config, &account).await?;
+            let api_client = ctx
+                .database
+                .get_specific_client(
+                    &http_client,
+                    &ctx.config.client_id,
+                    &ctx.config.client_secret,
+                    &ctx.config.sensor_data,
+                    &account,
+                )
+                .await?;
 
             let resp = api_client
                 .get_offers_dealstack(
