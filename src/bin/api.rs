@@ -1,12 +1,13 @@
+use anyhow::Context;
 use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
 use libapi::config::ApiConfig;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
+use libapi::routes;
 use libapi::routes::fallback::Fallback;
 use libapi::routes::user;
-use libapi::routes::Context;
 use libapi::routes::{code, statistics};
 use libapi::routes::{deal, deals};
 use libapi::routes::{locations, points};
@@ -24,7 +25,7 @@ async fn main() -> Result<(), Error> {
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
-    let context = Context {
+    let context = routes::Context {
         config,
         dynamodb_client,
     };
@@ -63,7 +64,7 @@ async fn main() -> Result<(), Error> {
                 let status_code = StatusCode::INTERNAL_SERVER_ERROR;
                 Response::builder().status(status_code.as_u16()).body(
                     serde_json::to_string(&types::api::Error {
-                        message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                        message: status_code.canonical_reason().context("no value")?.to_string(),
                     })?
                     .into(),
                 )?

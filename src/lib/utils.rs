@@ -1,6 +1,6 @@
 use crate::{constants::mc_donalds, types::api::Offer};
+use anyhow::Context;
 use crypto::{digest::Digest, sha1::Sha1};
-use lambda_http::Error;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -9,7 +9,7 @@ use uuid::Uuid;
 pub async fn get_by_order_id<'a>(
     offer_map: &HashMap<String, Vec<Offer>>,
     deal_id: &String,
-) -> Result<(String, String, String, String), Error> {
+) -> Result<(String, String, String, String), anyhow::Error> {
     let mut offer_account_name: Option<String> = None;
     let mut offer_proposition_id: Option<String> = None;
     let mut offer_id: Option<String> = None;
@@ -27,15 +27,18 @@ pub async fn get_by_order_id<'a>(
         }
     }
 
-    let offer_account_name = offer_account_name.ok_or("no account")?;
-    let offer_proposition_id = offer_proposition_id.ok_or("no offer")?;
-    let offer_id = offer_id.ok_or("no offer id")?;
-    let offer_name = offer_name.ok_or("no offer id")?;
+    let offer_account_name = offer_account_name.context("no account")?;
+    let offer_proposition_id = offer_proposition_id.context("no offer")?;
+    let offer_id = offer_id.context("no offer id")?;
+    let offer_name = offer_name.context("no offer id")?;
 
     Ok((offer_account_name, offer_proposition_id, offer_id, offer_name))
 }
 
-pub async fn remove_all_from_deal_stack_for(api_client: &ApiClient<'_>, account_name: &String) -> Result<(), Error> {
+pub async fn remove_all_from_deal_stack_for(
+    api_client: &ApiClient<'_>,
+    account_name: &String,
+) -> Result<(), anyhow::Error> {
     // honestly, we don't want failures here, so we'll probably just suppress them...
     log::info!("{}: trying to clean deal stack", account_name);
     let deal_stack = api_client

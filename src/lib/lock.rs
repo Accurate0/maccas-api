@@ -1,14 +1,13 @@
 use crate::constants::db::{OFFER_ID, TTL};
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::{DateTime, Duration, Utc};
-use lambda_http::Error;
 
 pub async fn lock_deal(
     client: &aws_sdk_dynamodb::Client,
     table_name: &str,
     deal_id: &str,
     duration: Duration,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     let utc: DateTime<Utc> = Utc::now().checked_add_signed(duration).unwrap();
 
     client
@@ -22,7 +21,11 @@ pub async fn lock_deal(
     Ok(())
 }
 
-pub async fn unlock_deal(client: &aws_sdk_dynamodb::Client, table_name: &str, deal_id: &str) -> Result<(), Error> {
+pub async fn unlock_deal(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &str,
+    deal_id: &str,
+) -> Result<(), anyhow::Error> {
     client
         .delete_item()
         .table_name(table_name)
@@ -33,7 +36,10 @@ pub async fn unlock_deal(client: &aws_sdk_dynamodb::Client, table_name: &str, de
     Ok(())
 }
 
-pub async fn get_all_locked_deals(client: &aws_sdk_dynamodb::Client, table_name: &str) -> Result<Vec<String>, Error> {
+pub async fn get_all_locked_deals(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &str,
+) -> Result<Vec<String>, anyhow::Error> {
     let mut locked_deal_list = Vec::<String>::new();
     let utc: DateTime<Utc> = Utc::now();
     let resp = client
@@ -59,7 +65,7 @@ pub async fn get_all_locked_deals(client: &aws_sdk_dynamodb::Client, table_name:
     }
 }
 
-pub async fn delete_all_locked_deals(client: &aws_sdk_dynamodb::Client, table_name: &str) -> Result<(), Error> {
+pub async fn delete_all_locked_deals(client: &aws_sdk_dynamodb::Client, table_name: &str) -> Result<(), anyhow::Error> {
     log::info!("deleting all locked deals");
     let locked_deals = get_all_locked_deals(&client, table_name).await?;
     for deal in locked_deals {
