@@ -3,7 +3,6 @@ use std::fmt::Display;
 use crate::constants;
 use aws_sdk_s3::types::AggregatedBytes;
 use config::Config;
-use lambda_http::Error;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, Clone)]
@@ -39,7 +38,7 @@ pub struct ApiConfig {
 }
 
 impl ApiConfig {
-    async fn load_base_config_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, Error> {
+    async fn load_base_config_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, anyhow::Error> {
         let resp = client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
@@ -49,7 +48,7 @@ impl ApiConfig {
         Ok(resp.body.collect().await?)
     }
 
-    async fn load_sensor_data_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, Error> {
+    async fn load_sensor_data_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, anyhow::Error> {
         let resp = client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
@@ -63,7 +62,7 @@ impl ApiConfig {
         base_config: &AggregatedBytes,
         sensor_data: &AggregatedBytes,
         accounts: Option<&AggregatedBytes>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, anyhow::Error> {
         let config = Config::builder()
             .add_source(config::File::from_str(
                 std::str::from_utf8(&base_config.clone().into_bytes())?,
@@ -86,7 +85,7 @@ impl ApiConfig {
         Ok(config.build()?.try_deserialize::<Self>()?)
     }
 
-    pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> Result<Self, Error> {
+    pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(&shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
         let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;
@@ -97,7 +96,7 @@ impl ApiConfig {
     pub async fn load_from_s3_with_region_accounts(
         shared_config: &aws_types::SdkConfig,
         region: &String,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(&shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
         let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;

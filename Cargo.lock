@@ -1175,10 +1175,11 @@ checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
 
 [[package]]
 name = "libmaccas"
-version = "0.9.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19a494cb1d05ccd75375ffa6c1c0d41203c39128ea76e2061cee675edcdb3741"
+checksum = "a35b86220a6c88b4d343e398aed4f01c151ea27d883ad980ffb8688bcca8ad08"
 dependencies = [
+ "anyhow",
  "http",
  "rand 0.8.5",
  "reqwest",
@@ -1209,6 +1210,7 @@ dependencies = [
 name = "maccas-api"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "aws-config",
  "aws-sdk-dynamodb",

@@ -7,10 +7,10 @@ use crate::constants::mc_donalds;
 use crate::types::api::{Offer, PointsResponse};
 use crate::types::user::UserOptions;
 use crate::utils::{self, get_short_sha1};
+use anyhow::{bail, Context};
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::DateTime;
 use chrono::{Duration, Utc};
-use lambda_http::Error;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
 use std::time::SystemTime;
@@ -19,7 +19,7 @@ use tokio_stream::StreamExt;
 pub async fn get_all_offers_as_map(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
-) -> Result<HashMap<String, Vec<Offer>>, Error> {
+) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error> {
     let mut offer_map = HashMap::<String, Vec<Offer>>::new();
 
     let table_resp: Result<Vec<_>, _> = client
@@ -47,7 +47,7 @@ pub async fn get_all_offers_as_map(
 pub async fn get_all_offers_as_vec(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
-) -> Result<Vec<Offer>, Error> {
+) -> Result<Vec<Offer>, anyhow::Error> {
     let mut offer_list = Vec::<Offer>::new();
 
     let table_resp: Result<Vec<_>, _> = client
@@ -76,7 +76,7 @@ pub async fn get_offer_for(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
     account_name: &String,
-) -> Result<Option<Vec<Offer>>, Error> {
+) -> Result<Option<Vec<Offer>>, anyhow::Error> {
     let table_resp = client
         .get_item()
         .table_name(cache_table_name)
@@ -102,7 +102,7 @@ pub async fn set_offer_for(
     cache_table_name: &String,
     account_name: &String,
     offer_list: &Vec<Offer>,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     let now = SystemTime::now();
     let now: DateTime<Utc> = now.into();
     let now = now.to_rfc3339();
@@ -126,7 +126,7 @@ pub async fn refresh_offer_cache(
     client: &aws_sdk_dynamodb::Client,
     config: &ApiConfig,
     client_map: &HashMap<UserAccount, ApiClient<'_>>,
-) -> Result<Vec<String>, Error> {
+) -> Result<Vec<String>, anyhow::Error> {
     let mut failed_accounts = Vec::new();
 
     for (account, api_client) in client_map {
@@ -159,7 +159,7 @@ pub async fn refresh_point_cache_for(
     point_table_name: &String,
     account: &UserAccount,
     api_client: &ApiClient<'_>,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     match api_client.get_customer_points().await {
         Ok(resp) => {
             let now = SystemTime::now();
@@ -185,14 +185,14 @@ pub async fn refresh_point_cache_for(
                 .await?;
             Ok(())
         }
-        Err(e) => Err(format!("could not get points for {} because {}", account, e).into()),
+        Err(e) => bail!("could not get points for {} because {}", account, e),
     }
 }
 
 pub async fn get_point_map(
     client: &aws_sdk_dynamodb::Client,
     point_table_name: &String,
-) -> Result<HashMap<String, PointsResponse>, Error> {
+) -> Result<HashMap<String, PointsResponse>, anyhow::Error> {
     let mut point_map = HashMap::<String, PointsResponse>::new();
 
     let table_resp: Result<Vec<_>, _> = client
@@ -221,7 +221,7 @@ pub async fn get_points_by_account_hash(
     client: &aws_sdk_dynamodb::Client,
     table_name: &String,
     account_hash: &str,
-) -> Result<(UserAccount, PointsResponse), Error> {
+) -> Result<(UserAccount, PointsResponse), anyhow::Error> {
     let resp = client
         .query()
         .table_name(table_name)
@@ -231,14 +231,16 @@ pub async fn get_points_by_account_hash(
         .send()
         .await?;
 
-    if resp.items().ok_or("no user config found")?.len() == 1 {
+    if resp.items().context("no user config found")?.len() == 1 {
         let item = resp.items().unwrap().first().unwrap();
-        let account: UserAccount = serde_dynamo::from_item(item[ACCOUNT_INFO].as_m().ok().ok_or("no config")?.clone())?;
-        let points: PointsResponse = serde_dynamo::from_item(item[POINT_INFO].as_m().ok().ok_or("no config")?.clone())?;
+        let account: UserAccount =
+            serde_dynamo::from_item(item[ACCOUNT_INFO].as_m().ok().context("no config")?.clone())?;
+        let points: PointsResponse =
+            serde_dynamo::from_item(item[POINT_INFO].as_m().ok().context("no config")?.clone())?;
 
         Ok((account, points))
     } else {
-        Err("error fetching user config".into())
+        bail!("error fetching user config")
     }
 }
 
@@ -248,7 +250,7 @@ pub async fn refresh_offer_cache_for(
     cache_table_name_v2: &String,
     account: &UserAccount,
     api_client: &ApiClient<'_>,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     match api_client
         .get_offers(
             mc_donalds::default::DISTANCE,
@@ -306,14 +308,14 @@ pub async fn refresh_offer_cache_for(
             log::info!("{}: offer cache refreshed", account);
             Ok(())
         }
-        None => Err(format!("could not get offers for {}", account).into()),
+        None => bail!("could not get offers for {}", account),
     }
 }
 
 pub async fn get_refresh_time_for_offer_cache(
     client: &aws_sdk_dynamodb::Client,
     cache_table_name: &String,
-) -> Result<String, Error> {
+) -> Result<String, anyhow::Error> {
     let table_resp = client
         .scan()
         .limit(1)
@@ -337,7 +339,7 @@ pub async fn get_offer_by_id(
     offer_id: &str,
     client: &aws_sdk_dynamodb::Client,
     cache_table_name_v2: &String,
-) -> Result<(UserAccount, Offer), Error> {
+) -> Result<(UserAccount, Offer), anyhow::Error> {
     let resp = client
         .query()
         .table_name(cache_table_name_v2)
@@ -347,10 +349,10 @@ pub async fn get_offer_by_id(
         .send()
         .await?;
 
-    let resp = resp.items.ok_or("missing value")?;
-    let resp = resp.first().ok_or("missing value")?;
-    let account = serde_dynamo::from_item(resp[ACCOUNT_INFO].as_m().ok().ok_or("missing value")?.clone())?;
-    let offer: Offer = serde_dynamo::from_item(resp[OFFER].as_m().ok().ok_or("missing value")?.clone())?;
+    let resp = resp.items.context("missing value")?;
+    let resp = resp.first().context("missing value")?;
+    let account = serde_dynamo::from_item(resp[ACCOUNT_INFO].as_m().ok().context("missing value")?.clone())?;
+    let offer: Offer = serde_dynamo::from_item(resp[OFFER].as_m().ok().context("missing value")?.clone())?;
 
     Ok((account, offer))
 }
@@ -359,7 +361,7 @@ pub async fn get_config_by_user_id(
     client: &aws_sdk_dynamodb::Client,
     table_name: &String,
     user_id: &str,
-) -> Result<UserOptions, Error> {
+) -> Result<UserOptions, anyhow::Error> {
     let resp = client
         .query()
         .table_name(table_name)
@@ -369,13 +371,13 @@ pub async fn get_config_by_user_id(
         .send()
         .await?;
 
-    if resp.items().ok_or("no user config found")?.len() == 1 {
+    if resp.items().context("no user config found")?.len() == 1 {
         let item = resp.items().unwrap().first().unwrap();
-        let config: UserOptions = serde_dynamo::from_item(item[USER_CONFIG].as_m().ok().ok_or("no config")?.clone())?;
+        let config: UserOptions = serde_dynamo::from_item(item[USER_CONFIG].as_m().ok().context("no config")?.clone())?;
 
         Ok(config)
     } else {
-        Err("error fetching user config".into())
+        bail!("error fetching user config")
     }
 }
 
@@ -385,7 +387,7 @@ pub async fn set_config_by_user_id(
     user_id: &str,
     user_config: &UserOptions,
     user_name: &String,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     client
         .put_item()
         .table_name(table_name)
