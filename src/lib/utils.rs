@@ -1,39 +1,7 @@
-use crate::{constants::mc_donalds, types::api::Offer};
-use anyhow::Context;
+use crate::constants::mc_donalds;
 use crypto::{digest::Digest, sha1::Sha1};
 use libmaccas::ApiClient;
-use std::collections::HashMap;
 use uuid::Uuid;
-
-#[deprecated]
-pub async fn get_by_order_id<'a>(
-    offer_map: &HashMap<String, Vec<Offer>>,
-    deal_id: &String,
-) -> Result<(String, String, String, String), anyhow::Error> {
-    let mut offer_account_name: Option<String> = None;
-    let mut offer_proposition_id: Option<String> = None;
-    let mut offer_id: Option<String> = None;
-    let mut offer_name: Option<String> = None;
-
-    for (account_name, offer_list) in offer_map {
-        for offer in offer_list {
-            if *offer.deal_uuid == *deal_id {
-                offer_account_name = Some(account_name.to_string());
-                offer_proposition_id = Some(offer.offer_proposition_id.to_string());
-                offer_id = Some(offer.offer_id.to_string());
-                offer_name = Some(offer.name.to_string());
-                break;
-            }
-        }
-    }
-
-    let offer_account_name = offer_account_name.context("no account")?;
-    let offer_proposition_id = offer_proposition_id.context("no offer")?;
-    let offer_id = offer_id.context("no offer id")?;
-    let offer_name = offer_name.context("no offer id")?;
-
-    Ok((offer_account_name, offer_proposition_id, offer_id, offer_name))
-}
 
 pub async fn remove_all_from_deal_stack_for(
     api_client: &ApiClient<'_>,

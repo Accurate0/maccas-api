@@ -1,3 +1,5 @@
+use crate::database::Database;
+
 pub mod code;
 pub mod deal;
 pub mod deals;
@@ -7,7 +9,7 @@ pub mod points;
 pub mod statistics;
 pub mod user;
 
-pub struct Context {
+pub struct Context<'a> {
     pub config: crate::config::ApiConfig,
-    pub dynamodb_client: aws_sdk_dynamodb::Client,
+    pub database: Box<dyn Database + Send + Sync + 'a>,
 }

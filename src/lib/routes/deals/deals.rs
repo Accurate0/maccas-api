@@ -1,6 +1,5 @@
 use crate::routes::Context;
 use crate::types::api::Offer;
-use crate::{db, lock};
 use async_trait::async_trait;
 use http::Response;
 use itertools::Itertools;
@@ -11,10 +10,10 @@ use std::collections::HashMap;
 pub struct Deals;
 
 #[async_trait]
-impl Executor<Context, Request, Response<Body>> for Deals {
+impl Executor<Context<'_>, Request, Response<Body>> for Deals {
     async fn execute(&self, ctx: &Context, _request: &Request) -> ExecutorResult<Response<Body>> {
-        let locked_deals = lock::get_all_locked_deals(&ctx.dynamodb_client, &ctx.config.offer_id_table_name).await?;
-        let offer_list = db::get_all_offers_as_vec(&ctx.dynamodb_client, &ctx.config.cache_table_name).await?;
+        let locked_deals = ctx.database.get_all_locked_deals().await?;
+        let offer_list = ctx.database.get_all_offers_as_vec().await?;
 
         // filter locked deals
         let offer_list: Vec<Offer> = offer_list
