@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 libmaccas = "0.11.0"
-simple-dispatcher = "0.3.1"
+simple-dispatcher = "0.4.0"
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
@@ -30,7 +30,7 @@ reqwest-middleware = "0.1.5"
 reqwest-retry = "0.1.4"
 tokio-stream = "0.1.8"
 log = "0.4.0"
-serde_dynamo = { version = "4.0.1", features = ["aws-sdk-dynamodb+0_12"] }
+serde_dynamo = { version = "4.0.3", features = ["aws-sdk-dynamodb+0_12"] }
 async-trait = "0.1.56"
 task-local-extensions = "0.1.1"
 reqwest-tracing = "0.3.0"

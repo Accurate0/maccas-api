@@ -2013,9 +2013,9 @@ dependencies = [
 
 [[package]]
 name = "serde_dynamo"
-version = "4.0.2"
+version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb37769ece4c364ead6366ea877876279c1a16315b589063faff2710a35351af"
+checksum = "696a0aeda3610233966ffb3948bdda6266eac569892699b9a9761dfd1c10c71c"
 dependencies = [
  "aws-sdk-dynamodb",
  "serde",
@@ -2069,9 +2069,9 @@ dependencies = [
 
 [[package]]
 name = "simple-dispatcher"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79c2bd975b9b188adf7fc1d00c8e80d6b6d16b0baf11d9801b09d94fea6930f6"
+checksum = "729218d5d810b1a040814fd1ced5933c6f08301e972fab5820390525f5077125"
 dependencies = [
  "async-trait",
 ]
