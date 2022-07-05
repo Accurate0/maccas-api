@@ -57,7 +57,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
                     }
 
                     // lock the deal from appearing in GET /deals
-                    ctx.database.lock_deal(deal_id, Duration::hours(6)).await?;
+                    ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
 
                     // if adding to the deal stack fails, we fail...
                     // we let the code above lock the deal though.
