@@ -1,3 +1,3 @@
-mod deal;
+mod get_deal;
 
-pub use deal::Deal;
+pub use get_deal::Deal;

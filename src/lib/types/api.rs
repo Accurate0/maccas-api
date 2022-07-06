@@ -148,7 +148,7 @@ impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
         let res = res
             .iter()
             .map(|(key, value)| {
-                let hash = get_short_sha1(&key);
+                let hash = get_short_sha1(key);
                 (hash, value.len() as i64)
             })
             .collect();

@@ -22,8 +22,8 @@ use tokio_stream::StreamExt;
 pub trait Database {
     async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error>;
     async fn get_all_offers_as_vec(&self) -> Result<Vec<Offer>, anyhow::Error>;
-    async fn get_offer_for(&self, account_name: &String) -> Result<Option<Vec<Offer>>, anyhow::Error>;
-    async fn set_offer_for(&self, account_name: &String, offer_list: &Vec<Offer>) -> Result<(), anyhow::Error>;
+    async fn get_offer_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error>;
+    async fn set_offer_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
@@ -50,23 +50,23 @@ pub trait Database {
         &self,
         user_id: &str,
         user_config: &UserOptions,
-        user_name: &String,
+        user_name: &str,
     ) -> Result<(), anyhow::Error>;
     async fn get_specific_client<'a>(
         &self,
         http_client: &'a reqwest_middleware::ClientWithMiddleware,
-        client_id: &'a String,
-        client_secret: &'a String,
-        sensor_data: &'a String,
+        client_id: &'a str,
+        client_secret: &'a str,
+        sensor_data: &'a str,
         account: &'a UserAccount,
     ) -> Result<ApiClient<'a>, anyhow::Error>;
     async fn get_client_map<'a>(
         &self,
         http_client: &'a reqwest_middleware::ClientWithMiddleware,
-        client_id: &'a String,
-        client_secret: &'a String,
-        sensor_data: &'a String,
-        account_list: &'a Vec<UserAccount>,
+        client_id: &'a str,
+        client_secret: &'a str,
+        sensor_data: &'a str,
+        account_list: &'a [UserAccount],
     ) -> Result<(HashMap<UserAccount, ApiClient<'a>>, Vec<String>), anyhow::Error>;
     async fn lock_deal(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error>;
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error>;
@@ -156,7 +156,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         Ok(offer_list)
     }
 
-    async fn get_offer_for(&self, account_name: &String) -> Result<Option<Vec<Offer>>, anyhow::Error> {
+    async fn get_offer_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error> {
         let table_resp = self
             .client
             .get_item()
@@ -178,7 +178,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         })
     }
 
-    async fn set_offer_for(&self, account_name: &String, offer_list: &Vec<Offer>) -> Result<(), anyhow::Error> {
+    async fn set_offer_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
         let now = now.to_rfc3339();
@@ -205,9 +205,9 @@ impl<'a> Database for DynamoDatabase<'a> {
         let mut failed_accounts = Vec::new();
 
         for (account, api_client) in client_map {
-            match self.refresh_offer_cache_for(&account, &api_client).await {
+            match self.refresh_offer_cache_for(account, api_client).await {
                 Ok(_) => {
-                    utils::remove_all_from_deal_stack_for(&api_client, &account.account_name).await?;
+                    utils::remove_all_from_deal_stack_for(api_client, &account.account_name).await?;
                     self.refresh_point_cache_for(account, api_client).await?;
                 }
                 Err(e) => {
@@ -440,7 +440,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         &self,
         user_id: &str,
         user_config: &UserOptions,
-        user_name: &String,
+        user_name: &str,
     ) -> Result<(), anyhow::Error> {
         self.client
             .put_item()
@@ -460,15 +460,15 @@ impl<'a> Database for DynamoDatabase<'a> {
     async fn get_specific_client<'b>(
         &self,
         http_client: &'b reqwest_middleware::ClientWithMiddleware,
-        client_id: &'b String,
-        client_secret: &'b String,
-        sensor_data: &'b String,
+        client_id: &'b str,
+        client_secret: &'b str,
+        sensor_data: &'b str,
         account: &'b UserAccount,
     ) -> Result<ApiClient<'b>, anyhow::Error> {
         let mut api_client = ApiClient::new(
             mc_donalds::default::BASE_URL.to_string(),
             http_client,
-            client_id.clone(),
+            client_id.to_string(),
         );
 
         let resp = self
@@ -580,16 +580,16 @@ impl<'a> Database for DynamoDatabase<'a> {
     async fn get_client_map<'b>(
         &self,
         http_client: &'b reqwest_middleware::ClientWithMiddleware,
-        client_id: &'b String,
-        client_secret: &'b String,
-        sensor_data: &'b String,
-        account_list: &'b Vec<UserAccount>,
+        client_id: &'b str,
+        client_secret: &'b str,
+        sensor_data: &'b str,
+        account_list: &'b [UserAccount],
     ) -> Result<(HashMap<UserAccount, ApiClient<'b>>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
         let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
         for user in account_list {
             match self
-                .get_specific_client(http_client, client_id, client_secret, sensor_data, &user)
+                .get_specific_client(http_client, client_id, client_secret, sensor_data, user)
                 .await
             {
                 Ok(c) => {

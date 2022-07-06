@@ -25,7 +25,7 @@ pub async fn log_deal_use<T: Debug>(
     short_name: &String,
     deal_id: &String,
     api_key: &String,
-    timezone: &String,
+    timezone: &str,
 ) {
     // log usage
     let auth_header = request.headers().get(http::header::AUTHORIZATION);

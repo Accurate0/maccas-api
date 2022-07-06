@@ -35,7 +35,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             &config.client_id,
             &config.client_secret,
             &config.sensor_data,
-            &account_list,
+            account_list,
         )
         .await?;
 
@@ -46,7 +46,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         database.delete_all_locked_deals().await?
     }
 
-    if failed_accounts.len() > 0 || login_failed_accounts.len() > 0 {
+    if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("failed: {:#?}", failed_accounts);
         log::error!("login failed: {:#?}", login_failed_accounts);
         bail!("accounts failed to update")

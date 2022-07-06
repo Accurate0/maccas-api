@@ -1,3 +1,3 @@
-mod code;
+mod get_code;
 
-pub use code::Code;
+pub use get_code::Code;

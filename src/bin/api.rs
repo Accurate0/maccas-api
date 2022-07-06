@@ -32,7 +32,7 @@ async fn main() -> Result<(), Error> {
         database: Box::new(database),
     };
 
-    let ref dispatcher = RouteDispatcher::new(context, Fallback)
+    let dispatcher = &RouteDispatcher::new(context, Fallback)
         .add_route("/deals", deals::Deals)
         .add_route("/points", points::Points)
         .add_route("/user/config", user::Config)

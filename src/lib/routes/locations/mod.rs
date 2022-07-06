@@ -1,5 +1,5 @@
-mod locations;
+mod get_locations;
 mod search;
 
-pub use locations::Locations;
+pub use get_locations::Locations;
 pub use search::Search;
