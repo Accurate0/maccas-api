@@ -20,7 +20,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for GetById {
         let account_id = &account_id.to_owned();
 
         Ok(
-            if let Ok((account, points_response)) = ctx.database.get_points_by_account_hash(&account_id).await {
+            if let Ok((account, points_response)) = ctx.database.get_points_by_account_hash(account_id).await {
                 let query_params = request.query_string_parameters();
                 let store = query_params.first("store");
 

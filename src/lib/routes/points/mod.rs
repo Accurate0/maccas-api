@@ -1,5 +1,5 @@
 mod get_by_id;
-mod points;
+mod get_points;
 
 pub use get_by_id::GetById;
-pub use points::Points;
+pub use get_points::Points;

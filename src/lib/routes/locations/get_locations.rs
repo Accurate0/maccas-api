@@ -15,11 +15,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for Locations {
         let latitude = query_params.first("latitude");
         let longitude = query_params.first("longitude");
 
-        if distance.is_some() && latitude.is_some() && longitude.is_some() {
-            let distance = distance.unwrap();
-            let latitude = latitude.unwrap();
-            let longitude = longitude.unwrap();
-
+        if let (Some(distance), Some(latitude), Some(longitude)) = (distance, latitude, longitude) {
             let http_client = client::get_http_client();
             let api_client = ctx
                 .database

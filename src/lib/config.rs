@@ -76,17 +76,17 @@ impl ApiConfig {
     }
 
     pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> Result<Self, anyhow::Error> {
-        let s3_client = aws_sdk_s3::Client::new(&shared_config);
+        let s3_client = aws_sdk_s3::Client::new(shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
 
-        Ok(Self::build_config_from_bytes(&base_config_bytes, None).await?)
+        Self::build_config_from_bytes(&base_config_bytes, None).await
     }
 
     pub async fn load_from_s3_with_region_accounts(
         shared_config: &aws_types::SdkConfig,
-        region: &String,
+        region: &str,
     ) -> Result<Self, anyhow::Error> {
-        let s3_client = aws_sdk_s3::Client::new(&shared_config);
+        let s3_client = aws_sdk_s3::Client::new(shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
 
         let resp = s3_client
@@ -97,6 +97,6 @@ impl ApiConfig {
             .await?;
         let accounts_bytes = resp.body.collect().await?;
 
-        Ok(Self::build_config_from_bytes(&base_config_bytes, Some(&accounts_bytes)).await?)
+        Self::build_config_from_bytes(&base_config_bytes, Some(&accounts_bytes)).await
     }
 }

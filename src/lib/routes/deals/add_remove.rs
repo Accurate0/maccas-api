@@ -85,9 +85,9 @@ impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
                     } else {
                         log_deal_use(
                             &http_client,
-                            &request,
+                            request,
                             &short_name,
-                            &deal_id,
+                            deal_id,
                             &ctx.config.api_key,
                             &ctx.config.local_time_zone,
                         )

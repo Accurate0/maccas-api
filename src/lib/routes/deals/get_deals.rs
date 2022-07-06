@@ -26,9 +26,9 @@ impl Executor<Context<'_>, Request, Response<Body>> for Deals {
             match count_map.get(&offer.offer_proposition_id) {
                 Some(count) => {
                     let count = count + 1;
-                    count_map.insert(offer.offer_proposition_id.clone(), count)
+                    count_map.insert(offer.offer_proposition_id, count)
                 }
-                None => count_map.insert(offer.offer_proposition_id.clone(), 1),
+                None => count_map.insert(offer.offer_proposition_id, 1),
             };
         }
 
