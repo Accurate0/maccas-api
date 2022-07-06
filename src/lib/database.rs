@@ -1,4 +1,4 @@
-use crate::config::{ApiConfig, UserAccount};
+use crate::config::{Tables, UserAccount};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST,
     POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
@@ -85,15 +85,15 @@ pub struct DynamoDatabase<'a> {
 }
 
 impl<'a> DynamoDatabase<'a> {
-    pub fn new(client: &'a aws_sdk_dynamodb::Client, config: &ApiConfig) -> Self {
+    pub fn new(client: &'a aws_sdk_dynamodb::Client, tables: &Tables) -> Self {
         Self {
             client,
-            table_name: config.table_name.to_owned(),
-            user_config_table_name: config.user_config_table_name.to_owned(),
-            cache_table_name: config.cache_table_name.to_owned(),
-            cache_table_name_v2: config.cache_table_name_v2.to_owned(),
-            offer_id_table_name: config.offer_id_table_name.to_owned(),
-            point_table_name: config.point_table_name.to_owned(),
+            table_name: tables.token_cache.to_owned(),
+            user_config_table_name: tables.user_config.to_owned(),
+            cache_table_name: tables.offer_cache.to_owned(),
+            cache_table_name_v2: tables.offer_cache_v2.to_owned(),
+            offer_id_table_name: tables.offer_id.to_owned(),
+            point_table_name: tables.points.to_owned(),
         }
     }
 

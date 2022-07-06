@@ -2,12 +2,14 @@
   "localTimeZone": null,
   "clientId": null,
   "clientSecret": null,
-  "tableName": null,
-  "cacheTableName": null,
-  "userConfigTableName": null,
-  "cacheTableNameV2": null,
-  "offerIdTableName": null,
-  "pointTableName": null,
+  "tables": {
+    "tokenCache": null,
+    "userConfig": null,
+    "offerCache": null,
+    "offerCacheV2": null,
+    "offerId": null,
+    "points": null
+  },
   "sensorData": null,
   "apiKey": null,
   "users": [

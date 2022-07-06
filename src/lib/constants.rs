@@ -31,7 +31,6 @@ pub mod config {
     pub const BASE_FILE: &str = "base-config.json";
     pub const ALL_ACCOUNTS_FILE: &str = "accounts.json";
     pub const REGION_ACCOUNTS_FILE: &str = "accounts-{region}.json";
-    pub const SENSOR_DATA_FILE: &str = "sensor-data.json";
 }
 
 pub mod db {
