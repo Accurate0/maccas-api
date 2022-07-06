@@ -19,18 +19,24 @@ impl Display for UserAccount {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Tables {
+    pub token_cache: String,
+    pub user_config: String,
+    pub offer_cache: String,
+    pub offer_cache_v2: String,
+    pub offer_id: String,
+    pub points: String,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub local_time_zone: String,
     pub client_id: String,
     pub client_secret: String,
-    pub table_name: String,
-    pub user_config_table_name: String,
-    pub cache_table_name: String,
-    pub cache_table_name_v2: String,
-    pub offer_id_table_name: String,
-    pub point_table_name: String,
+    pub tables: Tables,
     pub sensor_data: String,
     pub api_key: String,
     pub users: Option<Vec<UserAccount>>,
@@ -48,30 +54,14 @@ impl ApiConfig {
         Ok(resp.body.collect().await?)
     }
 
-    async fn load_sensor_data_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, anyhow::Error> {
-        let resp = client
-            .get_object()
-            .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::config::SENSOR_DATA_FILE)
-            .send()
-            .await?;
-        Ok(resp.body.collect().await?)
-    }
-
     async fn build_config_from_bytes(
         base_config: &AggregatedBytes,
-        sensor_data: &AggregatedBytes,
         accounts: Option<&AggregatedBytes>,
     ) -> Result<Self, anyhow::Error> {
-        let config = Config::builder()
-            .add_source(config::File::from_str(
-                std::str::from_utf8(&base_config.clone().into_bytes())?,
-                config::FileFormat::Json,
-            ))
-            .add_source(config::File::from_str(
-                std::str::from_utf8(&sensor_data.clone().into_bytes())?,
-                config::FileFormat::Json,
-            ));
+        let config = Config::builder().add_source(config::File::from_str(
+            std::str::from_utf8(&base_config.clone().into_bytes())?,
+            config::FileFormat::Json,
+        ));
 
         let config = if let Some(accounts) = accounts {
             config.add_source(config::File::from_str(
@@ -88,9 +78,8 @@ impl ApiConfig {
     pub async fn load_from_s3(shared_config: &aws_types::SdkConfig) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(&shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
-        let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;
 
-        Ok(Self::build_config_from_bytes(&base_config_bytes, &sensor_data_bytes, None).await?)
+        Ok(Self::build_config_from_bytes(&base_config_bytes, None).await?)
     }
 
     pub async fn load_from_s3_with_region_accounts(
@@ -99,7 +88,6 @@ impl ApiConfig {
     ) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(&shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
-        let sensor_data_bytes = Self::load_sensor_data_from_s3(&s3_client).await?;
 
         let resp = s3_client
             .get_object()
@@ -109,6 +97,6 @@ impl ApiConfig {
             .await?;
         let accounts_bytes = resp.body.collect().await?;
 
-        Ok(Self::build_config_from_bytes(&base_config_bytes, &sensor_data_bytes, Some(&accounts_bytes)).await?)
+        Ok(Self::build_config_from_bytes(&base_config_bytes, Some(&accounts_bytes)).await?)
     }
 }

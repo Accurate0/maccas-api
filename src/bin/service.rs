@@ -26,7 +26,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .unwrap();
     let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env).await?;
     let client = Client::new(&shared_config);
-    let database = DynamoDatabase::new(&client, &config);
+    let database = DynamoDatabase::new(&client, &config.tables);
     let http_client = client::get_http_client();
     let account_list = config.users.as_ref().context("must have account list")?;
     let (client_map, login_failed_accounts) = database
