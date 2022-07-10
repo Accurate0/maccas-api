@@ -27,6 +27,7 @@ pub trait Database {
     async fn refresh_offer_cache(
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
+        ignored_offer_ids: &[i64],
     ) -> Result<Vec<String>, anyhow::Error>;
     async fn refresh_point_cache_for(
         &self,
@@ -42,6 +43,7 @@ pub trait Database {
         &self,
         account: &UserAccount,
         api_client: &ApiClient<'_>,
+        ignored_offer_ids: &[i64],
     ) -> Result<(), anyhow::Error>;
     async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error>;
     async fn get_offer_by_id(&self, offer_id: &str) -> Result<(UserAccount, Offer), anyhow::Error>;
@@ -201,11 +203,15 @@ impl<'a> Database for DynamoDatabase<'a> {
     async fn refresh_offer_cache(
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
+        ignored_offer_ids: &[i64],
     ) -> Result<Vec<String>, anyhow::Error> {
         let mut failed_accounts = Vec::new();
 
         for (account, api_client) in client_map {
-            match self.refresh_offer_cache_for(account, api_client).await {
+            match self
+                .refresh_offer_cache_for(account, api_client, ignored_offer_ids)
+                .await
+            {
                 Ok(_) => {
                     utils::remove_all_from_deal_stack_for(api_client, &account.account_name).await?;
                     self.refresh_point_cache_for(account, api_client).await?;
@@ -312,6 +318,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         &self,
         account: &UserAccount,
         api_client: &ApiClient<'_>,
+        ignored_offer_ids: &[i64],
     ) -> Result<(), anyhow::Error> {
         match api_client
             .get_offers(
@@ -332,12 +339,9 @@ impl<'a> Database for DynamoDatabase<'a> {
                 let now: DateTime<Utc> = now.into();
                 let now = now.to_rfc3339();
 
-                // zh-CHS ???
-                let ignored_offers = vec![30762, 162091, 165964, 2946152, 3067279];
-
                 let resp: Vec<Offer> = resp
                     .iter_mut()
-                    .filter(|offer| !ignored_offers.contains(&offer.offer_proposition_id))
+                    .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
                     .map(|offer| Offer::from(offer.clone()))
                     .collect();
 

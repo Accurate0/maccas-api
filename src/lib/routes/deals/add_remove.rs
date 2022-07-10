@@ -53,7 +53,9 @@ impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
                     // this can cause the offer id to change.. for offers with id == 0
                     // we need to update the database to avoid inconsistency
                     if offer_id == 0 {
-                        ctx.database.refresh_offer_cache_for(&account, &api_client).await?;
+                        ctx.database
+                            .refresh_offer_cache_for(&account, &api_client, &ctx.config.ignored_offer_ids)
+                            .await?;
                     }
 
                     // lock the deal from appearing in GET /deals
