@@ -1,0 +1,23 @@
+{
+    "localTimeZone": "Australia/Perth",
+    "clientId": "",
+    "clientSecret": "",
+    "ignoredOfferIds": [
+        30762,
+        162091,
+        165964,
+        2946152,
+        3067279
+    ],
+    "tables": {
+        "tokenCache": "MaccasApiDb",
+        "userConfig": "MaccasApiUserConfig-v2",
+        "offerCache": "MaccasApiCache",
+        "offerCacheV2": "MaccasApiCache-v2",
+        "offerId": "MaccasApiOfferId",
+        "points": "MaccasApiPointDb"
+    },
+    "apiKey": "",
+    "serviceAccount": {},
+    "sensorData": ""
+}

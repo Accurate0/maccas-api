@@ -111,3 +111,25 @@ jobs:
 
       - name: deploy ${{ matrix.region }}
         run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
+
+  upload-config:
+    runs-on: ubuntu-latest
+
+    name: upload config
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Accurate0/modify-json@main
+          with:
+            __inputFile: ./config.json
+            __outputFile: ./base-config.json
+            api_key: ${{ secrets.API_CONFIG_API_KEY }}
+            client_id: ${{ secrets.API_CONFIG_CLIENT_ID }}
+            client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
+            sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
+            service_account: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT }}
+      - name: upload to s3
+        run: aws s3 cp base-config.json s3://maccas-application-config/base-config.json
