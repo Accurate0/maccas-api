@@ -36,6 +36,7 @@ pub struct ApiConfig {
     pub local_time_zone: String,
     pub client_id: String,
     pub client_secret: String,
+    pub ignored_offer_ids: Vec<i64>,
     pub tables: Tables,
     pub sensor_data: String,
     pub api_key: String,

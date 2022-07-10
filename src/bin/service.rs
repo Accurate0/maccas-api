@@ -40,7 +40,9 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .await?;
 
     log::info!("refresh started..");
-    let failed_accounts = database.refresh_offer_cache(&client_map).await?;
+    let failed_accounts = database
+        .refresh_offer_cache(&client_map, &config.ignored_offer_ids)
+        .await?;
 
     if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("failed: {:#?}", failed_accounts);

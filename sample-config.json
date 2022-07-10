@@ -2,6 +2,7 @@
   "localTimeZone": null,
   "clientId": null,
   "clientSecret": null,
+  "ignoredOfferIds": [],
   "tables": {
     "tokenCache": null,
     "userConfig": null,
