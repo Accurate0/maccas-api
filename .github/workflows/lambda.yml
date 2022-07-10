@@ -123,13 +123,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: Accurate0/modify-json@main
-          with:
-            __inputFile: ./config.json
-            __outputFile: ./base-config.json
-            api_key: ${{ secrets.API_CONFIG_API_KEY }}
-            client_id: ${{ secrets.API_CONFIG_CLIENT_ID }}
-            client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
-            sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
-            service_account: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT }}
+        with:
+          __inputFile: ./config.json
+          __outputFile: ./base-config.json
+          api_key: ${{ secrets.API_CONFIG_API_KEY }}
+          client_id: ${{ secrets.API_CONFIG_CLIENT_ID }}
+          client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
+          sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
+          service_account: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT }}
       - name: upload to s3
         run: aws s3 cp base-config.json s3://maccas-application-config/base-config.json
