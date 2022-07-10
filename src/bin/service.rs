@@ -26,7 +26,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .unwrap();
     let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env).await?;
     let client = Client::new(&shared_config);
-    let database = DynamoDatabase::new(&client, &config.tables);
+    let database: Box<dyn Database> = Box::new(DynamoDatabase::new(&client, &config.tables));
     let http_client = client::get_http_client();
     let account_list = config.users.as_ref().context("must have account list")?;
     let (client_map, login_failed_accounts) = database
@@ -41,10 +41,6 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
 
     log::info!("refresh started..");
     let failed_accounts = database.refresh_offer_cache(&client_map).await?;
-
-    if env == constants::DEFAULT_AWS_REGION {
-        database.delete_all_locked_deals().await?
-    }
 
     if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("failed: {:#?}", failed_accounts);
