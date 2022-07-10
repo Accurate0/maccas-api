@@ -18,6 +18,10 @@
         "points": "MaccasApiPointDb"
     },
     "apiKey": "",
-    "serviceAccount": {},
+    "serviceAccount": {
+        "accountName": "",
+        "loginUsername": "",
+        "loginPassword": ""
+    },
     "sensorData": ""
 }
