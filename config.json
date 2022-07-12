@@ -1,7 +1,7 @@
 {
     "localTimeZone": "Australia/Perth",
-    "clientId": "",
-    "clientSecret": "",
+    "clientId": null,
+    "clientSecret": null,
     "ignoredOfferIds": [
         30762,
         162091,
@@ -17,11 +17,11 @@
         "offerId": "MaccasApiOfferId",
         "points": "MaccasApiPointDb"
     },
-    "apiKey": "",
+    "apiKey": null,
     "serviceAccount": {
-        "accountName": "",
-        "loginUsername": "",
-        "loginPassword": ""
+        "accountName": null,
+        "loginUsername": null,
+        "loginPassword": null
     },
-    "sensorData": ""
+    "sensorData": null
 }
