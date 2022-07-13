@@ -76,7 +76,7 @@
           "queryParameters": [
             {
               "name": "store",
-              "type": "string",
+              "type": "number",
               "required": false
             }
           ]
@@ -174,7 +174,7 @@
           "queryParameters": [
             {
               "name": "store",
-              "type": "string",
+              "type": "number",
               "required": false
             }
           ]
@@ -202,7 +202,7 @@
           "queryParameters": [
             {
               "name": "store",
-              "type": "string",
+              "type": "number",
               "required": false
             }
           ]
@@ -286,7 +286,7 @@
           "queryParameters": [
             {
               "name": "store",
-              "type": "string",
+              "type": "number",
               "required": false
             }
           ]
