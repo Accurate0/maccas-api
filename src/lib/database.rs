@@ -301,16 +301,16 @@ impl<'a> Database for DynamoDatabase<'a> {
             .send()
             .await?;
 
-        if resp.items().context("no user config found")?.len() == 1 {
+        if resp.items().context("no account found")?.len() == 1 {
             let item = resp.items().unwrap().first().unwrap();
             let account: UserAccount =
-                serde_dynamo::from_item(item[ACCOUNT_INFO].as_m().ok().context("no config")?.clone())?;
+                serde_dynamo::from_item(item[ACCOUNT_INFO].as_m().ok().context("no account")?.clone())?;
             let points: PointsResponse =
-                serde_dynamo::from_item(item[POINT_INFO].as_m().ok().context("no config")?.clone())?;
+                serde_dynamo::from_item(item[POINT_INFO].as_m().ok().context("no points")?.clone())?;
 
             Ok((account, points))
         } else {
-            bail!("error fetching user config")
+            bail!("error getting account information")
         }
     }
 
@@ -436,7 +436,7 @@ impl<'a> Database for DynamoDatabase<'a> {
 
             Ok(config)
         } else {
-            bail!("error fetching user config")
+            bail!("error fetching user config for {}", user_id)
         }
     }
 
