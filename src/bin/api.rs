@@ -47,7 +47,7 @@ async fn main() -> Result<(), Error> {
         .add_route("/statistics/account", statistics::Account)
         .add_route("/statistics/total-accounts", statistics::TotalAccounts);
 
-    let handler = move |request: Request| async move {
+    let handler = |request: Request| async move {
         request.log();
 
         let response = match dispatcher
