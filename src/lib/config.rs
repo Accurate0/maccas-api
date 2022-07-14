@@ -42,6 +42,7 @@ pub struct ApiConfig {
     pub api_key: String,
     pub users: Option<Vec<UserAccount>>,
     pub service_account: UserAccount,
+    pub discord_webhooks: Vec<String>,
 }
 
 impl ApiConfig {
