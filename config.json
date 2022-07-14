@@ -23,5 +23,6 @@
         "loginUsername": null,
         "loginPassword": null
     },
-    "sensorData": null
+    "sensorData": null,
+    "discordWebhooks": []
 }
