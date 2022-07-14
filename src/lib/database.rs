@@ -44,7 +44,7 @@ pub trait Database {
         account: &UserAccount,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
-    ) -> Result<(), anyhow::Error>;
+    ) -> Result<Vec<Offer>, anyhow::Error>;
     async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error>;
     async fn get_offer_by_id(&self, offer_id: &str) -> Result<(UserAccount, Offer), anyhow::Error>;
     async fn get_config_by_user_id(&self, user_id: &str) -> Result<UserOptions, anyhow::Error>;
@@ -319,7 +319,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         account: &UserAccount,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<Vec<Offer>, anyhow::Error> {
         match api_client
             .get_offers(
                 mc_donalds::default::DISTANCE,
@@ -372,7 +372,7 @@ impl<'a> Database for DynamoDatabase<'a> {
                 }
 
                 log::info!("{}: offer cache refreshed", account);
-                Ok(())
+                Ok(resp)
             }
             None => bail!("could not get offers for {}", account),
         }

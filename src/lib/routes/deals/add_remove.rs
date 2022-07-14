@@ -1,9 +1,9 @@
-use crate::client;
 use crate::constants::mc_donalds;
 use crate::logging::log_deal_use;
-use crate::routes::Context;
 use crate::types;
 use crate::types::api::{Error, OfferResponse};
+use crate::{client, routes};
+use anyhow::Context;
 use async_trait::async_trait;
 use chrono::Duration;
 use http::{Method, Response, StatusCode};
@@ -13,8 +13,8 @@ use simple_dispatcher::{Executor, ExecutorResult};
 pub struct AddRemove;
 
 #[async_trait]
-impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
-    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
+impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
+    async fn execute(&self, ctx: &routes::Context, request: &Request) -> ExecutorResult<Response<Body>> {
         let path_params = request.path_parameters();
 
         let deal_id = path_params.first("dealId").expect("must have id");
@@ -38,10 +38,13 @@ impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
 
             let offer_id = offer.offer_id;
             let offer_proposition_id = offer.offer_proposition_id.to_string();
-            let short_name = offer.short_name;
+            let short_name = offer.short_name.to_string();
 
             Ok(match *request.method() {
                 Method::POST => {
+                    // lock the deal from appearing in GET /deals
+                    ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
+
                     let resp = api_client
                         .add_to_offers_dealstack(
                             &offer_proposition_id,
@@ -52,14 +55,24 @@ impl Executor<Context<'_>, Request, Response<Body>> for AddRemove {
 
                     // this can cause the offer id to change.. for offers with id == 0
                     // we need to update the database to avoid inconsistency
-                    if offer_id == 0 {
-                        ctx.database
+                    // but we also need to find the uuid for the refreshed deal and lock it
+                    // only need to do this when the deal was successfully added, otherwise the refresh won't
+                    // get any new offer_id
+                    if resp.status.is_success() && offer_id == 0 {
+                        let new_offers = ctx
+                            .database
                             .refresh_offer_cache_for(&account, &api_client, &ctx.config.ignored_offer_ids)
                             .await?;
-                    }
 
-                    // lock the deal from appearing in GET /deals
-                    ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
+                        let new_offer_to_lock = new_offers
+                            .iter()
+                            .find(|new_offer| **new_offer == offer)
+                            .context("must find current offer in new offers list")?;
+
+                        ctx.database
+                            .lock_deal(&new_offer_to_lock.deal_uuid, Duration::hours(12))
+                            .await?;
+                    }
 
                     // if adding to the deal stack fails, we fail...
                     // we let the code above lock the deal though.
