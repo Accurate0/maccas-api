@@ -40,7 +40,7 @@ pub async fn log_deal_use<T: Debug>(
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
 
         if ignored_user_ids.iter().any(|user_id| *user_id == jwt.claims().oid) {
-            log::info!("refusing to log for {}", jwt.claims().oid);
+            log::info!("refusing to log for {}/{}", jwt.claims().oid, jwt.claims().name);
             return;
         }
 
