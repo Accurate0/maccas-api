@@ -4,12 +4,11 @@ use libmaccas::types::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
-use std::hash::Hash;
 use uuid::Uuid;
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Hash)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     pub deal_uuid: String,
@@ -56,6 +55,23 @@ impl From<libmaccas::types::Offer> for Offer {
             creation_date_utc: offer.creation_date_utc,
             image_base_name: offer.image_base_name,
         }
+    }
+}
+
+impl PartialEq for Offer {
+    fn eq(&self, other: &Self) -> bool {
+        // Everything except for count, offer_id for equality checks
+        self.deal_uuid == other.deal_uuid
+            && self.offer_proposition_id == other.offer_proposition_id
+            && self.local_valid_from == other.local_valid_from
+            && self.local_valid_to == other.local_valid_to
+            && self.valid_from_utc == other.valid_from_utc
+            && self.valid_to_utc == other.valid_to_utc
+            && self.name == other.name
+            && self.short_name == other.short_name
+            && self.description == other.description
+            && self.creation_date_utc == other.creation_date_utc
+            && self.image_base_name == other.image_base_name
     }
 }
 
