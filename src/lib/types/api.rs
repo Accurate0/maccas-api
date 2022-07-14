@@ -60,9 +60,8 @@ impl From<libmaccas::types::Offer> for Offer {
 
 impl PartialEq for Offer {
     fn eq(&self, other: &Self) -> bool {
-        // Everything except for count, offer_id for equality checks
-        self.deal_uuid == other.deal_uuid
-            && self.offer_proposition_id == other.offer_proposition_id
+        // Everything except for count, offer_id, or uuid for equality checks
+        self.offer_proposition_id == other.offer_proposition_id
             && self.local_valid_from == other.local_valid_from
             && self.local_valid_to == other.local_valid_to
             && self.valid_from_utc == other.valid_from_utc
