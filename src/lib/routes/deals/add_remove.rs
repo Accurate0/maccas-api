@@ -66,7 +66,7 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
 
                         let new_offer_to_lock = new_offers
                             .iter()
-                            .find(|new_offer| **new_offer == offer)
+                            .find(|&new_offer| *new_offer == offer)
                             .context("must find current offer in new offers list")?;
 
                         ctx.database
