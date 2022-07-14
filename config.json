@@ -24,5 +24,16 @@
         "loginPassword": null
     },
     "sensorData": null,
-    "discordWebhooks": []
+    "discord": {
+        "webhooks": [
+            null
+        ],
+        "avatarUrl": "https://cdn.discordapp.com/avatars/965917339910565950/2ac054150c83c111f00e9aacbcd58a41.webp",
+        "username": "Maccas"
+    },
+    "log": {
+        "ignoredUserIds": [
+            "e87c3b0d-5ecc-4052-8b7b-c457138ce72f"
+        ]
+    }
 }
