@@ -101,10 +101,11 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                         log_deal_use(
                             &http_client,
                             request,
+                            &ctx.config.log.ignored_user_ids,
                             &short_name,
                             deal_id,
-                            &ctx.config.api_key,
-                            &ctx.config.local_time_zone,
+                            &offer.image_base_name,
+                            &ctx.config,
                         )
                         .await;
                         resp

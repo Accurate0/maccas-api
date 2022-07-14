@@ -30,6 +30,20 @@ pub struct Tables {
     pub points: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscordConfig {
+    pub webhooks: Vec<String>,
+    pub avatar_url: String,
+    pub username: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct LogConfig {
+    pub ignored_user_ids: Vec<String>,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
@@ -42,7 +56,8 @@ pub struct ApiConfig {
     pub api_key: String,
     pub users: Option<Vec<UserAccount>>,
     pub service_account: UserAccount,
-    pub discord_webhooks: Vec<String>,
+    pub discord: DiscordConfig,
+    pub log: LogConfig,
 }
 
 impl ApiConfig {

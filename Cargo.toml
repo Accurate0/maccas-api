@@ -44,6 +44,9 @@ chrono-tz = "0.6.1"
 rust-crypto = "0.2.36"
 mime = "0.3.16"
 anyhow = "1.0.58"
+# for webhook models
+twilight-model = "0.11.2"
+twilight-util = { version = "0.11.1", features = ["builder"] }
 
 [lib]
 name = "libapi"

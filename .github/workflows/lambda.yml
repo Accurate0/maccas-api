@@ -131,7 +131,7 @@ jobs:
           client_id: ${{ secrets.API_CONFIG_CLIENT_ID }}
           client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
           sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
-          discord_webhooks: ${{ secrets.API_CONFIG_DISCORD_WEBHOOKS }}
+          discord__webhooks: ${{ secrets.API_CONFIG_DISCORD_WEBHOOKS }}
           service_account__account_name: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT_NAME }}
           service_account__login_username: ${{ secrets.API_CONFIG_SERVICE_USERNAME }}
           service_account__login_password: ${{ secrets.API_CONFIG_SERVICE_PASSWORD }}
