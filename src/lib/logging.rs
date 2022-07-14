@@ -1,7 +1,7 @@
 use crate::config::ApiConfig;
 use crate::constants::{mc_donalds, DEFAULT_TIMEZONE};
 use crate::extensions::RequestExtensions;
-use crate::webhook::{execute_discord_webhook, DiscordWebhookMessage};
+use crate::webhook::DiscordWebhookMessage;
 use crate::{
     constants::{self, api_base},
     types::{jwt::JwtClaim, log::UsageLog},
@@ -92,10 +92,10 @@ pub async fn log_deal_use<T: Debug>(
 
         match embed.validate() {
             Ok(embed) => {
-                message.embeds.push(embed.build());
+                message.add_embed(embed.build());
 
                 for webhook_url in &config.discord.webhooks {
-                    let resp = execute_discord_webhook(http_client, webhook_url, &message).await;
+                    let resp = message.send(http_client, webhook_url).await;
                     match resp {
                         Ok(_) => {}
                         Err(e) => log::error!("{:?}", e),

@@ -6,11 +6,11 @@ use twilight_model::channel::embed::Embed;
 
 #[derive(Serialize, Debug, Default)]
 pub struct DiscordWebhookMessage {
-    pub content: Option<String>,
-    pub username: Option<String>,
-    pub avatar_url: Option<String>,
-    pub tts: bool,
-    pub embeds: Vec<Embed>,
+    content: Option<String>,
+    username: Option<String>,
+    avatar_url: Option<String>,
+    tts: bool,
+    embeds: Vec<Embed>,
 }
 
 impl DiscordWebhookMessage {
@@ -23,18 +23,22 @@ impl DiscordWebhookMessage {
             embeds: vec![],
         }
     }
-}
 
-pub async fn execute_discord_webhook(
-    http_client: &ClientWithMiddleware,
-    webhook_url: &String,
-    message: &DiscordWebhookMessage,
-) -> Result<Response, anyhow::Error> {
-    let response = http_client
-        .post(webhook_url)
-        .header(CONTENT_TYPE, mime::APPLICATION_JSON.to_string())
-        .body(serde_json::to_string(message)?)
-        .send()
-        .await?;
-    Ok(response)
+    pub fn add_embed(&mut self, embed: Embed) -> &Self {
+        self.embeds.push(embed);
+        self
+    }
+
+    pub async fn send(
+        &self,
+        http_client: &ClientWithMiddleware,
+        webhook_url: &String,
+    ) -> Result<Response, anyhow::Error> {
+        Ok(http_client
+            .post(webhook_url)
+            .header(CONTENT_TYPE, mime::APPLICATION_JSON.to_string())
+            .body(serde_json::to_string(&self)?)
+            .send()
+            .await?)
+    }
 }
