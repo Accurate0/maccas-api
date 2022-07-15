@@ -18,6 +18,7 @@ use simple_dispatcher::RouteDispatcher;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     logging::setup_logging();
+    logging::dump_build_details();
     let shared_config = aws_config::from_env()
         .region(constants::DEFAULT_AWS_REGION)
         .load()
