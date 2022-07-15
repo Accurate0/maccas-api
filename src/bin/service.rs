@@ -12,6 +12,7 @@ use serde_json::{json, Value};
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     logging::setup_logging();
+    logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
 }

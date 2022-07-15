@@ -48,6 +48,9 @@ twilight-model = "0.11.2"
 twilight-util = { version = "0.11.1", features = ["builder"] }
 fern = "0.6.1"
 
+[build-dependencies]
+vergen = "7.2.1"
+
 [lib]
 name = "libapi"
 path = "src/lib/lib.rs"

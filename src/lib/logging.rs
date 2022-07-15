@@ -14,14 +14,29 @@ use http::Method;
 use http::Request;
 use jwt::{Header, Token};
 use reqwest_middleware::ClientWithMiddleware;
+use std::ffi::OsStr;
 use std::fmt::Debug;
+use std::path::Path;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
 
 pub fn setup_logging() {
     fern::Dispatch::new()
         .format(|out, message, record| {
-            out.finish(format_args!("[{}][{}] {}", record.level(), record.target(), message))
+            let file = Path::new(record.file().unwrap_or("unknown"))
+                .file_name()
+                .unwrap_or_else(|| OsStr::new("unknown"))
+                .to_str()
+                .unwrap_or("unknown");
+
+            out.finish(format_args!(
+                "[{}][{}][{}:{}] {}",
+                record.level(),
+                record.target(),
+                file,
+                record.line().unwrap_or(0),
+                message
+            ))
         })
         .level(log::LevelFilter::Info)
         .level_for("aws_smithy_http_tower::parse_response", log::LevelFilter::Warn)
@@ -115,4 +130,11 @@ pub async fn log_deal_use<T: Debug>(
     } else {
         log::info!("request with no auth header, skipping deal log");
     }
+}
+
+pub fn dump_build_details() {
+    log::info!("maccas-api v{}", env!("VERGEN_BUILD_SEMVER"));
+    log::info!("build: {}", env!("VERGEN_BUILD_TIMESTAMP"));
+    log::info!("hash: {}", env!("VERGEN_GIT_SHA"));
+    log::info!("rustc: {}", env!("VERGEN_RUSTC_SEMVER"));
 }
