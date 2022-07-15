@@ -70,7 +70,10 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                             .find(|new_offer| **new_offer == offer)
                             .context("must find current offer in new offers list")?;
 
-                        log::info!("located matching deal in after refresh: {}", offer.deal_uuid);
+                        log::info!(
+                            "located matching deal in after refresh: {}",
+                            new_matching_offer.deal_uuid
+                        );
                         // update the new offer with the old uuid
                         // no need to lock it anymore
                         new_matching_offer.deal_uuid = offer.deal_uuid.clone();
