@@ -59,19 +59,24 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                     // only need to do this when the deal was successfully added, otherwise the refresh won't
                     // get any new offer_id
                     if resp.status.is_success() && offer_id == 0 {
-                        let new_offers = ctx
+                        log::info!("offer_id = 0, refreshing account: {}", account);
+                        let mut new_offers = ctx
                             .database
                             .refresh_offer_cache_for(&account, &api_client, &ctx.config.ignored_offer_ids)
                             .await?;
 
-                        let new_offer_to_lock = new_offers
-                            .iter()
-                            .find(|&new_offer| *new_offer == offer)
+                        let mut new_matching_offer = new_offers
+                            .iter_mut()
+                            .find(|new_offer| **new_offer == offer)
                             .context("must find current offer in new offers list")?;
 
-                        ctx.database
-                            .lock_deal(&new_offer_to_lock.deal_uuid, Duration::hours(12))
-                            .await?;
+                        log::info!("located matching deal in after refresh: {}", offer.deal_uuid);
+                        // update the new offer with the old uuid
+                        // no need to lock it anymore
+                        new_matching_offer.deal_uuid = offer.deal_uuid.clone();
+
+                        ctx.database.set_offers_for(&account.account_name, &new_offers).await?;
+                        log::info!("updated uuid, and saved: {}", offer.deal_uuid);
                     }
 
                     // if adding to the deal stack fails, we fail...

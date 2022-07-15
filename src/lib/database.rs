@@ -22,8 +22,8 @@ use tokio_stream::StreamExt;
 pub trait Database {
     async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error>;
     async fn get_all_offers_as_vec(&self) -> Result<Vec<Offer>, anyhow::Error>;
-    async fn get_offer_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error>;
-    async fn set_offer_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error>;
+    async fn get_offers_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error>;
+    async fn set_offers_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
@@ -158,7 +158,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         Ok(offer_list)
     }
 
-    async fn get_offer_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error> {
+    async fn get_offers_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error> {
         let table_resp = self
             .client
             .get_item()
@@ -180,7 +180,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         })
     }
 
-    async fn set_offer_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error> {
+    async fn set_offers_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
         let now = now.to_rfc3339();
