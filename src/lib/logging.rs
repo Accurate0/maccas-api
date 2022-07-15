@@ -21,13 +21,7 @@ use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource
 pub fn setup_logging() {
     fern::Dispatch::new()
         .format(|out, message, record| {
-            out.finish(format_args!(
-                "{}[{}][{}] {}",
-                chrono::Local::now().format("[%Y-%m-%d %H:%M:%S]"),
-                record.level(),
-                record.target(),
-                message
-            ))
+            out.finish(format_args!("[{}][{}] {}", record.level(), record.target(), message))
         })
         .level(log::LevelFilter::Info)
         .level_for("aws_smithy_http_tower::parse_response", log::LevelFilter::Warn)
