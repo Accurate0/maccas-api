@@ -65,21 +65,33 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                             .refresh_offer_cache_for(&account, &api_client, &ctx.config.ignored_offer_ids)
                             .await?;
 
-                        let mut new_matching_offer = new_offers
+                        match new_offers
                             .iter_mut()
                             .find(|new_offer| **new_offer == offer)
-                            .context("must find current offer in new offers list")?;
+                            .context("must find current offer in new offers list")
+                        {
+                            Ok(new_matching_offer) => {
+                                log::info!(
+                                    "located matching deal in after refresh: {}",
+                                    new_matching_offer.deal_uuid
+                                );
+                                // update the new offer with the old uuid
+                                // no need to lock it anymore
+                                new_matching_offer.deal_uuid = offer.deal_uuid.clone();
 
-                        log::info!(
-                            "located matching deal in after refresh: {}",
-                            new_matching_offer.deal_uuid
-                        );
-                        // update the new offer with the old uuid
-                        // no need to lock it anymore
-                        new_matching_offer.deal_uuid = offer.deal_uuid.clone();
-
-                        ctx.database.set_offers_for(&account.account_name, &new_offers).await?;
-                        log::info!("updated uuid, and saved: {}", offer.deal_uuid);
+                                ctx.database.set_offers_for(&account.account_name, &new_offers).await?;
+                                log::info!("updated uuid, and saved: {}", offer.deal_uuid);
+                            }
+                            Err(e) => {
+                                // log error and dump information
+                                // we can survive with this error
+                                log::error!("failed to find matching offer in new offers list: {}", e);
+                                log::error!("{:#?}", &offer);
+                                log::error!("{:#?}", &new_offers);
+                                log::error!("{:#?}", &account);
+                                log::error!("{:#?}", &api_client);
+                            }
+                        };
                     }
 
                     // if adding to the deal stack fails, we fail...
