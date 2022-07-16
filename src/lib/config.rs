@@ -42,12 +42,12 @@ pub struct DiscordConfig {
 #[serde(rename_all = "camelCase")]
 pub struct LogConfig {
     pub ignored_user_ids: Vec<String>,
+    pub local_time_zone: String,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
-    pub local_time_zone: String,
     pub client_id: String,
     pub client_secret: String,
     pub ignored_offer_ids: Vec<i64>,

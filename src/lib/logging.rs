@@ -68,7 +68,7 @@ pub async fn log_deal_use<T: Debug>(
         }
 
         let correlation_id = request.get_correlation_id();
-        let tz: Tz = config.local_time_zone.parse().unwrap_or(DEFAULT_TIMEZONE);
+        let tz: Tz = config.log.local_time_zone.parse().unwrap_or(DEFAULT_TIMEZONE);
         let dt = tz.from_utc_datetime(&Utc::now().naive_utc());
 
         let usage_log = UsageLog {
