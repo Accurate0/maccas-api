@@ -12,8 +12,8 @@ use crate::routes::statistics::account_docs::*;
 use crate::routes::statistics::total_accounts_docs::*;
 use crate::routes::user::config_docs::*;
 use crate::types::api::{
-    AccountPointResponse, AccountResponse, Error, LastRefreshInformation, Offer, OfferResponse, RestaurantAddress,
-    RestaurantInformation,
+    AccountPointMap, AccountPointResponse, AccountResponse, Error, LastRefreshInformation, Offer, OfferResponse,
+    RestaurantAddress, RestaurantInformation,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
@@ -47,7 +47,8 @@ use utoipa::OpenApi;
         AccountResponse,
         UserOptions,
         RestaurantAddress,
-        AccountPointResponse
+        AccountPointResponse,
+        AccountPointMap
     )
 )]
 pub struct ApiDoc;
