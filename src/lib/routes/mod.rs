@@ -4,6 +4,7 @@ pub mod auth_fallback;
 pub mod code;
 pub mod deal;
 pub mod deals;
+pub mod docs;
 pub mod fallback;
 pub mod locations;
 pub mod points;

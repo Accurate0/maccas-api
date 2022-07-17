@@ -9,6 +9,19 @@ use std::collections::HashMap;
 
 pub struct Deals;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/deals",
+        responses(
+            (status = 200, description = "List of available deals", body = [Offer]),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "deals",
+    )]
+    pub fn deals() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Deals {
     async fn execute(&self, ctx: &Context, _request: &Request) -> ExecutorResult<Response<Body>> {

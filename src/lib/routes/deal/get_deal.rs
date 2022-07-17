@@ -9,6 +9,23 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Deal;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/deal/{dealId}",
+        responses(
+            (status = 200, description = "Information for specified deal", body = Offer),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("dealId" = String, path, description = "The deal id to add"),
+        ),
+        tag = "deals",
+    )]
+    pub fn get_deal() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Deal {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

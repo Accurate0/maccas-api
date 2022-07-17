@@ -4,12 +4,14 @@ use libmaccas::types::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
+use utoipa::Component;
 use uuid::Uuid;
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct Offer {
     pub deal_uuid: String,
     pub count: u32,
@@ -77,6 +79,7 @@ impl PartialEq for Offer {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct RestaurantAddress {
     pub address_line: String,
 }
@@ -93,6 +96,7 @@ impl From<libmaccas::types::Address> for RestaurantAddress {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct RestaurantInformation {
     pub name: String,
     pub store_number: i64,
@@ -113,6 +117,7 @@ impl From<libmaccas::types::Restaurant> for RestaurantInformation {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }
@@ -121,6 +126,7 @@ pub struct LastRefreshInformation {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct Error {
     pub message: String,
 }
@@ -129,6 +135,7 @@ pub struct Error {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct OfferResponse {
     pub random_code: String,
     pub message: String,
@@ -147,6 +154,7 @@ impl From<libmaccas::types::OfferDealStackResponse> for OfferResponse {
 #[ts(export)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Component)]
 pub struct OfferPointsResponse {
     pub offer_response: OfferResponse,
     pub points_response: PointsResponse,
@@ -154,7 +162,7 @@ pub struct OfferPointsResponse {
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 pub struct AccountResponse(HashMap<String, i64>);
 
 impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
@@ -173,12 +181,12 @@ impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 pub struct TotalAccountsResponse(pub i64);
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 #[serde(rename_all = "camelCase")]
 pub struct PointsResponse {
     pub total_points: i64,
@@ -196,7 +204,7 @@ impl From<PointInformationResponse> for PointsResponse {
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountPointMap {
     pub name: String,
@@ -205,7 +213,7 @@ pub struct AccountPointMap {
 
 #[derive(ts_rs::TS)]
 #[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 pub struct AccountPointResponse(Vec<AccountPointMap>);
 
 impl From<HashMap<String, PointsResponse>> for AccountPointResponse {

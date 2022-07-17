@@ -12,6 +12,24 @@ use simple_dispatcher::ExecutorResult;
 
 pub struct Code;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/code/{dealId}",
+        responses(
+            (status = 200, description = "Random code for specified deal", body = OfferResponse),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("dealId" = String, path, description = "The deal id to add"),
+            ("store" = Option<i64>, query, description = "The selected store"),
+        ),
+        tag = "deals",
+    )]
+    pub fn get_code() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Code {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

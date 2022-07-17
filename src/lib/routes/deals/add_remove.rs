@@ -12,6 +12,41 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct AddRemove;
 
+pub mod docs {
+    #[utoipa::path(
+        post,
+        path = "/deals/{dealId}",
+        responses(
+            (status = 200, description = "Added a deal", body = OfferResponse),
+            (status = 400, description = "Error on McDonald's side", body = Error),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("dealId" = String, path, description = "The deal id to add"),
+            ("store" = Option<i64>, query, description = "The selected store"),
+        ),
+        tag = "deals",
+    )]
+    pub fn add_deal() {}
+
+    #[utoipa::path(
+        delete,
+        path = "/deals/{dealId}",
+        responses(
+            (status = 204, description = "Removed a deal"),
+            (status = 400, description = "Error on McDonald's side", body = Error),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("dealId" = String, path, description = "The deal id to remove"),
+        ),
+        tag = "deals",
+    )]
+    pub fn remove_deal() {}
+}
+
 #[async_trait]
 impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
     async fn execute(&self, ctx: &routes::Context, request: &Request) -> ExecutorResult<Response<Body>> {
