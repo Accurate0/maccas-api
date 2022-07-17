@@ -3,6 +3,7 @@ pub mod client;
 pub mod config;
 pub mod constants;
 pub mod database;
+pub mod doc;
 pub mod extensions;
 pub mod logging;
 pub mod routes;

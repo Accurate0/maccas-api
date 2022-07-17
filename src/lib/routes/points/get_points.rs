@@ -6,6 +6,19 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Points;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/points",
+        responses(
+            (status = 200, description = "List of all account points", body = AccountPointResponse),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "points",
+    )]
+    pub fn points() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Points {
     async fn execute(&self, ctx: &Context, _request: &Request) -> ExecutorResult<Response<Body>> {

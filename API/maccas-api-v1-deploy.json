@@ -293,6 +293,20 @@
         },
         "responses": []
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Docs-OpenApi-GET",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get OpenApi spec",
+        "method": "GET",
+        "urlTemplate": "/docs/openapi",
+        "templateParameters": [],
+        "request": {},
+        "responses": []
+      }
     }
   ]
 }

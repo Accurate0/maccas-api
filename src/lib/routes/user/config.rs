@@ -9,6 +9,36 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Config;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/user/config",
+        responses(
+            (status = 200, description = "Config for current user", body = UserOptions),
+            (status = 404, description = "No config for this user"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "config",
+    )]
+    pub fn get_user_config() {}
+
+    #[utoipa::path(
+        post,
+        path = "/user/config",
+        request_body(
+            content = UserOptions,
+            content_type = "application/json",
+        ),
+        responses(
+            (status = 204, description = "Updated config"),
+            (status = 404, description = "No config for this user"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "config",
+    )]
+    pub fn update_user_config() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Config {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

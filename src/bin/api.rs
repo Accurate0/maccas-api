@@ -7,10 +7,10 @@ use libapi::config::ApiConfig;
 use libapi::database::DynamoDatabase;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
-use libapi::routes;
 use libapi::routes::auth_fallback::AuthFallback;
 use libapi::routes::fallback::Fallback;
 use libapi::routes::user;
+use libapi::routes::{self, docs};
 use libapi::routes::{code, statistics};
 use libapi::routes::{deal, deals};
 use libapi::routes::{locations, points};
@@ -41,6 +41,7 @@ async fn main() -> Result<(), Error> {
         .add_route("/deal/{dealId}", deal::Deal)
         .add_route("/code/{dealId}", code::Code)
         .add_route("/deals/lock", deals::LockUnlock)
+        .add_route("/docs/openapi", docs::GetOpenApi)
         .add_route("/locations", locations::Locations)
         .add_route("/deals/{dealId}", deals::AddRemove)
         .add_route("/locations/search", locations::Search)

@@ -13,6 +13,23 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Search;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/locations/search",
+        responses(
+            (status = 200, description = "Closest location near specified text", body = RestaurantInformation),
+            (status = 404, description = "No locations found"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("text" = String, query, description = "Text to search by"),
+        ),
+        tag = "location",
+    )]
+    pub fn search_locations() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Search {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

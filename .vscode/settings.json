@@ -5,8 +5,10 @@
     "itertools",
     "libcore",
     "MSAL",
+    "openapi",
     "reqwest",
     "simplelog",
+    "utoipa",
     "vergen"
   ]
 }

@@ -11,6 +11,23 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct GetById;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/points/{accountId}",
+        responses(
+            (status = 200, description = "List of all account points", body = OfferResponse),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("accountId" = String, path, description = "The account id"),
+            ("store" = Option<i64>, query, description = "The selected store"),
+        ),
+        tag = "points",
+    )]
+    pub fn get_points_by_id() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for GetById {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

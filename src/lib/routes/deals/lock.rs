@@ -7,6 +7,40 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct LockUnlock;
 
+pub mod docs {
+    #[utoipa::path(
+        post,
+        path = "/deals/lock",
+        request_body(
+            content = [String],
+            content_type = "application/json",
+        ),
+        responses(
+            (status = 204, description = "Locked deals"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "deals",
+    )]
+    #[deprecated]
+    pub fn lock_deal() {}
+
+    #[utoipa::path(
+        delete,
+        path = "/deals/lock",
+        request_body(
+            content = [String],
+            content_type = "application/json",
+        ),
+        responses(
+            (status = 204, description = "Unlocked deals"),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        tag = "deals",
+    )]
+    #[deprecated]
+    pub fn unlock_deal() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for LockUnlock {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {

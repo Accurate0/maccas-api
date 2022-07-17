@@ -7,6 +7,24 @@ use simple_dispatcher::{Executor, ExecutorResult};
 
 pub struct Locations;
 
+pub mod docs {
+    #[utoipa::path(
+        get,
+        path = "/locations",
+        responses(
+            (status = 200, description = "List of locations near specified coordinates", body = [RestaurantInformation]),
+            (status = 500, description = "Internal Server Error", body = Error),
+        ),
+        params(
+            ("distance" = f64, query, description = "search distance"),
+            ("latitude" = f64, query, description = "latitude"),
+            ("longitude" = f64, query, description = "longitude"),
+        ),
+        tag = "location",
+    )]
+    pub fn get_locations() {}
+}
+
 #[async_trait]
 impl Executor<Context<'_>, Request, Response<Body>> for Locations {
     async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
