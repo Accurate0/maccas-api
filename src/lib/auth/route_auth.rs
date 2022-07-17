@@ -4,7 +4,7 @@ use lambda_http::Request;
 use crate::{routes::Context, types::jwt::JwtClaim};
 
 pub fn check_route_auth(path: &str, context: &Context, request: &Request) -> bool {
-    let allowed_users = &context.config.routes.allowed_user_ids;
+    let allowed_users = &context.config.protected_routes.allowed_user_ids;
 
     let auth_header = request.headers().get(http::header::AUTHORIZATION);
     if let Some(auth_header) = auth_header {

@@ -47,7 +47,7 @@ pub struct LogConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RouteConfig {
+pub struct ProtectedRouteConfig {
     pub allowed_user_ids: Vec<String>,
 }
 
@@ -64,7 +64,7 @@ pub struct ApiConfig {
     pub service_account: UserAccount,
     pub discord: DiscordConfig,
     pub log: LogConfig,
-    pub routes: RouteConfig,
+    pub protected_routes: ProtectedRouteConfig,
 }
 
 impl ApiConfig {
