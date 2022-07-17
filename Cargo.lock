@@ -2223,9 +2223,9 @@ dependencies = [
 
 [[package]]
 name = "simple-dispatcher"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2f6952100d66f9cc525d596097d60203d1754af599d9c05067c3d6d32398b54"
+checksum = "5694fe0ba40dabe16b194fe43df3a5d1245ce88547f273c3297d8b8ef4319f25"
 dependencies = [
  "async-trait",
 ]

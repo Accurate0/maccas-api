@@ -45,6 +45,12 @@ pub struct LogConfig {
     pub local_time_zone: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct RouteConfig {
+    pub allowed_user_ids: Vec<String>,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
@@ -58,6 +64,7 @@ pub struct ApiConfig {
     pub service_account: UserAccount,
     pub discord: DiscordConfig,
     pub log: LogConfig,
+    pub routes: RouteConfig,
 }
 
 impl ApiConfig {

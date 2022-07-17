@@ -2,11 +2,13 @@ use anyhow::Context;
 use http::{Response, StatusCode};
 use lambda_http::request::RequestContext;
 use lambda_http::{service_fn, Error, Request, RequestExt};
+use libapi::auth::check_route_auth;
 use libapi::config::ApiConfig;
 use libapi::database::DynamoDatabase;
 use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
 use libapi::routes;
+use libapi::routes::auth_fallback::AuthFallback;
 use libapi::routes::fallback::Fallback;
 use libapi::routes::user;
 use libapi::routes::{code, statistics};
@@ -33,20 +35,21 @@ async fn main() -> Result<(), Error> {
         database: Box::new(database),
     };
 
-    let dispatcher = &RouteDispatcher::new(context, Fallback)
+    let dispatcher = &RouteDispatcher::new(context, Fallback, AuthFallback)
         .add_route("/deals", deals::Deals)
-        .add_route("/points", points::Points)
         .add_route("/user/config", user::Config)
         .add_route("/deal/{dealId}", deal::Deal)
         .add_route("/code/{dealId}", code::Code)
         .add_route("/deals/lock", deals::LockUnlock)
         .add_route("/locations", locations::Locations)
         .add_route("/deals/{dealId}", deals::AddRemove)
-        .add_route("/points/{accountId}", points::GetById)
         .add_route("/locations/search", locations::Search)
         .add_route("/deals/last-refresh", deals::LastRefresh)
         .add_route("/statistics/account", statistics::Account)
-        .add_route("/statistics/total-accounts", statistics::TotalAccounts);
+        .add_route("/statistics/total-accounts", statistics::TotalAccounts)
+        .add_protected_route("/points", points::Points)
+        .add_protected_route("/points/{accountId}", points::GetById)
+        .add_router_protector(check_route_auth);
 
     let handler = |request: Request| async move {
         request.log();

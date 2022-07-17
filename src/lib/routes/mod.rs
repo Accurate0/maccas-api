@@ -1,5 +1,6 @@
 use crate::database::Database;
 
+pub mod auth_fallback;
 pub mod code;
 pub mod deal;
 pub mod deals;
