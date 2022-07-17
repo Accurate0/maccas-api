@@ -1,5 +1,5 @@
 use crate::routes::code::get_code_docs::*;
-use crate::routes::deal::docs::*;
+use crate::routes::deal::get_deal_docs::*;
 use crate::routes::deals::add_remove_docs::*;
 use crate::routes::deals::get_deals_docs::*;
 use crate::routes::deals::last_refresh_docs::*;
