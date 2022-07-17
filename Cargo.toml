@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 libmaccas = "0.11.4"
-simple-dispatcher = "0.4.0"
+simple-dispatcher = "0.5.0"
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
