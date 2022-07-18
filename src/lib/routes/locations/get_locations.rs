@@ -13,6 +13,7 @@ pub mod docs {
         path = "/locations",
         responses(
             (status = 200, description = "List of locations near specified coordinates", body = [RestaurantInformation]),
+            (status = 400, description = "Invalid/missing parameters"),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(

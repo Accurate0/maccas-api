@@ -19,7 +19,7 @@ pub mod docs {
         responses(
             (status = 200, description = "Added a deal", body = OfferResponse),
             (status = 400, description = "Error on McDonald's side", body = Error),
-            (status = 404, description = "Deal not found"),
+            (status = 404, description = "Deal not found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(
@@ -36,7 +36,7 @@ pub mod docs {
         responses(
             (status = 204, description = "Removed a deal"),
             (status = 400, description = "Error on McDonald's side", body = Error),
-            (status = 404, description = "Deal not found"),
+            (status = 404, description = "Deal not found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(

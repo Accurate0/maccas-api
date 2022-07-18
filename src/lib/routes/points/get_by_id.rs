@@ -2,10 +2,10 @@ use crate::{
     client,
     constants::mc_donalds,
     routes::Context,
-    types::api::{OfferPointsResponse, OfferResponse},
+    types::api::{Error, OfferPointsResponse, OfferResponse},
 };
 use async_trait::async_trait;
-use http::Response;
+use http::{Response, StatusCode};
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use simple_dispatcher::{Executor, ExecutorResult};
 
@@ -17,6 +17,7 @@ pub mod docs {
         path = "/points/{accountId}",
         responses(
             (status = 200, description = "Random code for account", body = OfferResponse),
+            (status = 404, description = "Account not found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(
@@ -68,7 +69,13 @@ impl Executor<Context<'_>, Request, Response<Body>> for GetById {
                 })?
                 .into_response()
             } else {
-                Response::builder().status(404).body(Body::Empty)?
+                let status_code = StatusCode::NOT_FOUND;
+                Response::builder().status(status_code.as_u16()).body(
+                    serde_json::to_string(&Error {
+                        message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                    })?
+                    .into(),
+                )?
             },
         )
     }

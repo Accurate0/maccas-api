@@ -1,13 +1,14 @@
 use crate::constants::{api_base, mc_donalds, LOCATION_SEARCH_DISTANCE};
 use crate::extensions::RequestExtensions;
 use crate::routes::Context;
+use crate::types::api::Error;
 use crate::types::{api::RestaurantInformation, places::PlaceResponse};
 use crate::{
     client::{self},
     constants,
 };
 use async_trait::async_trait;
-use http::Response;
+use http::{Response, StatusCode};
 use lambda_http::{Body, IntoResponse, Request, RequestExt};
 use simple_dispatcher::{Executor, ExecutorResult};
 
@@ -19,7 +20,7 @@ pub mod docs {
         path = "/locations/search",
         responses(
             (status = 200, description = "Closest location near specified text", body = RestaurantInformation),
-            (status = 404, description = "No locations found"),
+            (status = 404, description = "No locations found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(
@@ -62,7 +63,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for Search {
             .await?;
         let response = response.result;
 
-        Ok(match response {
+        let response = match response {
             Some(response) => {
                 let lat = response.geometry.location.lat;
                 let lng = response.geometry.location.lng;
@@ -72,13 +73,27 @@ impl Executor<Context<'_>, Request, Response<Body>> for Search {
 
                 match resp.body.response {
                     Some(list) => match list.restaurants.first() {
-                        Some(res) => serde_json::to_value(RestaurantInformation::from(res.clone()))?.into_response(),
-                        None => Response::builder().status(404).body(Body::Empty)?,
+                        Some(res) => {
+                            Some(serde_json::to_value(RestaurantInformation::from(res.clone()))?.into_response())
+                        }
+                        None => None,
                     },
-                    None => Response::builder().status(404).body(Body::Empty)?,
+                    None => None,
                 }
             }
-            None => Response::builder().status(404).body(Body::Empty)?,
+            None => None,
+        };
+
+        Ok(if let Some(response) = response {
+            response
+        } else {
+            let status_code = StatusCode::NOT_FOUND;
+            Response::builder().status(status_code.as_u16()).body(
+                serde_json::to_string(&Error {
+                    message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                })?
+                .into(),
+            )?
         })
     }
 }

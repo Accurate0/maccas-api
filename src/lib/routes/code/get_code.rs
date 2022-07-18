@@ -18,7 +18,7 @@ pub mod docs {
         path = "/code/{dealId}",
         responses(
             (status = 200, description = "Random code for specified deal", body = OfferResponse),
-            (status = 404, description = "Deal not found"),
+            (status = 404, description = "Deal not found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(

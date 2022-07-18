@@ -1,4 +1,4 @@
-use crate::routes::Context;
+use crate::{routes::Context, types::api::Error};
 use async_trait::async_trait;
 use http::{
     header::{CACHE_CONTROL, CONTENT_TYPE},
@@ -15,7 +15,7 @@ pub mod docs {
         path = "/deal/{dealId}",
         responses(
             (status = 200, description = "Information for specified deal", body = Offer),
-            (status = 404, description = "Deal not found"),
+            (status = 404, description = "Deal not found", body = Error),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(
@@ -41,7 +41,13 @@ impl Executor<Context<'_>, Request, Response<Body>> for Deal {
                 .header(CACHE_CONTROL, "max-age=900")
                 .body(serde_json::to_string(&offer)?.into())?
         } else {
-            Response::builder().status(404).body(Body::Empty)?
+            let status_code = StatusCode::NOT_FOUND;
+            Response::builder().status(status_code.as_u16()).body(
+                serde_json::to_string(&Error {
+                    message: status_code.canonical_reason().ok_or("no value")?.to_string(),
+                })?
+                .into(),
+            )?
         })
     }
 }
