@@ -16,7 +16,7 @@ pub mod docs {
         get,
         path = "/points/{accountId}",
         responses(
-            (status = 200, description = "List of all account points", body = OfferResponse),
+            (status = 200, description = "Random code for account", body = OfferResponse),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         params(
