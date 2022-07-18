@@ -30,8 +30,7 @@ pub mod docs {
             content_type = "application/json",
         ),
         responses(
-            (status = 204, description = "Updated config"),
-            (status = 404, description = "No config for this user"),
+            (status = 204, description = "Updated/created config"),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
         tag = "config",
