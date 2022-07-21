@@ -11,7 +11,7 @@ libmaccas = "0.16.0"
 simple-dispatcher = "0.5.0"
 
 # incompatible .into_response
-lambda_runtime = "0.5.1"
+lambda_runtime = "0.6.0"
 lambda_http = "0.5.1"
 
 serde = "1.0.139"
