@@ -59,6 +59,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for Search {
                 &ctx.config.client_secret,
                 &ctx.config.sensor_data,
                 &ctx.config.service_account,
+                false,
             )
             .await?;
         let response = response.result;

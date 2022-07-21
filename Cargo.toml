@@ -47,6 +47,8 @@ twilight-model = "0.11.2"
 twilight-util = { version = "0.11.1", features = ["builder"] }
 fern = "0.6.1"
 utoipa = "1.1.0"
+# imap = "3.0.0-alpha.7"
+# regex = "1.6.0"
 
 [build-dependencies]
 vergen = "7.2.1"
@@ -62,3 +64,7 @@ path = "src/bin/api.rs"
 [[bin]]
 name = "service"
 path = "src/bin/service.rs"
+
+# [[bin]]
+# name = "accounts"
+# path = "src/bin/accounts.rs"

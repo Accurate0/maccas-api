@@ -68,6 +68,7 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                     &ctx.config.client_secret,
                     &ctx.config.sensor_data,
                     &account,
+                    false,
                 )
                 .await?;
 

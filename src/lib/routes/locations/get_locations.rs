@@ -44,6 +44,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for Locations {
                     &ctx.config.client_secret,
                     &ctx.config.sensor_data,
                     &ctx.config.service_account,
+                    false,
                 )
                 .await?;
             let resp = api_client
