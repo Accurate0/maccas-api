@@ -1,7 +1,7 @@
 use crate::config::{Tables, UserAccount};
 use crate::constants::db::{
-    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST,
-    POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
+    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID,
+    OFFER_LIST, POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds;
 use crate::types::api::{Offer, PointsResponse};
@@ -14,6 +14,9 @@ use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use http::StatusCode;
 use libmaccas::ApiClient;
+use rand::distributions::{Alphanumeric, DistString};
+use rand::prelude::StdRng;
+use rand::SeedableRng;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
@@ -490,8 +493,16 @@ impl<'a> Database for DynamoDatabase<'a> {
                 let response = api_client.security_auth_token(client_secret).await?;
                 api_client.set_login_token(&response.body.response.token);
 
+                let mut rng = StdRng::from_entropy();
+                let device_id = Alphanumeric.sample_string(&mut rng, 16);
+
                 let response = api_client
-                    .customer_login(&account.login_username, &account.login_password, sensor_data)
+                    .customer_login(
+                        &account.login_username,
+                        &account.login_password,
+                        sensor_data,
+                        &device_id,
+                    )
                     .await?;
                 api_client.set_auth_token(&response.body.response.access_token);
 
@@ -508,12 +519,26 @@ impl<'a> Database for DynamoDatabase<'a> {
                     .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
                     .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
                     .item(LAST_REFRESH, AttributeValue::S(now))
+                    .item(DEVICE_ID, AttributeValue::S(device_id))
                     .send()
                     .await?;
             }
 
             Some(ref item) => {
                 log::info!("{}: tokens in db, trying..", account.account_name);
+
+                let device_id = item.get(DEVICE_ID);
+                let device_id = match device_id {
+                    Some(device_id) => match device_id.as_s() {
+                        Ok(s) => s.clone(),
+                        _ => bail!("missing refresh token for {}", account.account_name),
+                    },
+                    None => {
+                        let mut rng = StdRng::from_entropy();
+                        Alphanumeric.sample_string(&mut rng, 16)
+                    }
+                };
+
                 let refresh_token = match item[REFRESH_TOKEN].as_s() {
                     Ok(s) => s,
                     _ => bail!("missing refresh token for {}", account.account_name),
@@ -551,7 +576,12 @@ impl<'a> Database for DynamoDatabase<'a> {
                                 api_client.set_login_token(&response.body.response.token);
 
                                 let response = api_client
-                                    .customer_login(&account.login_username, &account.login_password, &sensor_data)
+                                    .customer_login(
+                                        &account.login_username,
+                                        &account.login_password,
+                                        &sensor_data,
+                                        &device_id,
+                                    )
                                     .await?;
 
                                 log::info!("refresh failed, logged in again..");
@@ -569,6 +599,7 @@ impl<'a> Database for DynamoDatabase<'a> {
                                 .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
                                 .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
                                 .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
+                                .item(DEVICE_ID, AttributeValue::S(device_id))
                                 .send()
                                 .await?;
                         }
