@@ -37,6 +37,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             &config.client_secret,
             &config.sensor_data,
             account_list,
+            false,
         )
         .await?;
 

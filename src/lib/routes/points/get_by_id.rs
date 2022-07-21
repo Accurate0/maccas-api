@@ -51,6 +51,7 @@ impl Executor<Context<'_>, Request, Response<Body>> for GetById {
                         &ctx.config.client_secret,
                         &ctx.config.sensor_data,
                         &account,
+                        false,
                     )
                     .await?;
 

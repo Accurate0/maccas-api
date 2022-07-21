@@ -9,7 +9,7 @@ use crate::types::user::UserOptions;
 use crate::utils::{self, get_short_sha1};
 use anyhow::{bail, Context};
 use async_trait::async_trait;
-use aws_sdk_dynamodb::model::AttributeValue;
+use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use http::StatusCode;
@@ -64,6 +64,7 @@ pub trait Database {
         client_secret: &'a str,
         sensor_data: &'a str,
         account: &'a UserAccount,
+        force_refresh: bool,
     ) -> Result<ApiClient<'a>, anyhow::Error>;
     async fn get_client_map<'a>(
         &self,
@@ -72,11 +73,14 @@ pub trait Database {
         client_secret: &'a str,
         sensor_data: &'a str,
         account_list: &'a [UserAccount],
+        force_refresh: bool,
     ) -> Result<(HashMap<UserAccount, ApiClient<'a>>, Vec<String>), anyhow::Error>;
     async fn lock_deal(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error>;
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error>;
     async fn get_all_locked_deals(&self) -> Result<Vec<String>, anyhow::Error>;
     async fn delete_all_locked_deals(&self) -> Result<(), anyhow::Error>;
+    async fn get_device_id_for(&self, account_name: &str) -> Result<Option<String>, anyhow::Error>;
+    async fn set_device_id_for(&self, account_name: &str, device_id: &str) -> Result<(), anyhow::Error>;
 }
 
 pub struct DynamoDatabase<'a> {
@@ -317,6 +321,43 @@ impl<'a> Database for DynamoDatabase<'a> {
         }
     }
 
+    async fn get_device_id_for(&self, account_name: &str) -> Result<Option<String>, anyhow::Error> {
+        let resp = self
+            .client
+            .get_item()
+            .table_name(&self.table_name)
+            .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .send()
+            .await?;
+
+        let item = resp.item;
+        if item.is_none() {
+            return Ok(None);
+        } else {
+            let item = item.unwrap();
+            match item.get(DEVICE_ID) {
+                Some(s) => return Ok(Some(s.as_s().unwrap().clone())),
+                None => Ok(None),
+            }
+        }
+    }
+
+    async fn set_device_id_for(&self, account_name: &str, device_id: &str) -> Result<(), anyhow::Error> {
+        self.client
+            .update_item()
+            .table_name(&self.table_name)
+            .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .attribute_updates(
+                DEVICE_ID,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::S(device_id.to_string()))
+                    .build(),
+            )
+            .send()
+            .await?;
+
+        Ok(())
+    }
     async fn refresh_offer_cache_for(
         &self,
         account: &UserAccount,
@@ -471,6 +512,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         client_secret: &'b str,
         sensor_data: &'b str,
         account: &'b UserAccount,
+        force_refresh: bool,
     ) -> Result<ApiClient<'b>, anyhow::Error> {
         let mut api_client = ApiClient::new(
             mc_donalds::default::BASE_URL.to_string(),
@@ -486,49 +528,19 @@ impl<'a> Database for DynamoDatabase<'a> {
             .send()
             .await?;
 
-        match resp.item {
-            None => {
-                log::info!("{}: nothing in db, requesting..", account.account_name);
-
-                let response = api_client.security_auth_token(client_secret).await?;
-                api_client.set_login_token(&response.body.response.token);
-
-                let mut rng = StdRng::from_entropy();
-                let device_id = Alphanumeric.sample_string(&mut rng, 16);
-
-                let response = api_client
-                    .customer_login(
-                        &account.login_username,
-                        &account.login_password,
-                        sensor_data,
-                        &device_id,
-                    )
-                    .await?;
-                api_client.set_auth_token(&response.body.response.access_token);
-
-                let now = SystemTime::now();
-                let now: DateTime<Utc> = now.into();
-                let now = now.to_rfc3339();
-
-                let resp = response.body.response;
-
-                self.client
-                    .put_item()
-                    .table_name(&self.table_name)
-                    .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
-                    .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
-                    .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
-                    .item(LAST_REFRESH, AttributeValue::S(now))
-                    .item(DEVICE_ID, AttributeValue::S(device_id))
-                    .send()
-                    .await?;
+        if resp.item.is_none() || force_refresh {
+            log::info!("{}: nothing in db, requesting..", account.account_name);
+            if force_refresh {
+                log::info!("{}: refresh forced", account.account_name);
             }
 
-            Some(ref item) => {
-                log::info!("{}: tokens in db, trying..", account.account_name);
+            let response = api_client.security_auth_token(client_secret).await?;
+            api_client.set_login_token(&response.body.response.token);
 
+            let device_id = if force_refresh && resp.item.is_some() {
+                let item = resp.item.unwrap();
                 let device_id = item.get(DEVICE_ID);
-                let device_id = match device_id {
+                match device_id {
                     Some(device_id) => match device_id.as_s() {
                         Ok(s) => s.clone(),
                         _ => bail!("missing refresh token for {}", account.account_name),
@@ -537,75 +549,124 @@ impl<'a> Database for DynamoDatabase<'a> {
                         let mut rng = StdRng::from_entropy();
                         Alphanumeric.sample_string(&mut rng, 16)
                     }
-                };
+                }
+            } else {
+                let mut rng = StdRng::from_entropy();
+                Alphanumeric.sample_string(&mut rng, 16)
+            };
 
-                let refresh_token = match item[REFRESH_TOKEN].as_s() {
-                    Ok(s) => s,
-                    _ => bail!("missing refresh token for {}", account.account_name),
-                };
+            let response = api_client
+                .customer_login(
+                    &account.login_username,
+                    &account.login_password,
+                    sensor_data,
+                    &device_id,
+                )
+                .await?;
+            api_client.set_auth_token(&response.body.response.access_token);
 
-                match item[ACCESS_TOKEN].as_s() {
-                    Ok(s) => api_client.set_auth_token(s),
-                    _ => bail!("missing access token for {}", account.account_name),
-                };
+            let now = SystemTime::now();
+            let now: DateTime<Utc> = now.into();
+            let now = now.to_rfc3339();
 
-                match item[LAST_REFRESH].as_s() {
-                    Ok(s) => {
-                        let now = SystemTime::now();
-                        let now: DateTime<Utc> = now.into();
-                        let now: DateTime<FixedOffset> = DateTime::from(now);
+            let resp = response.body.response;
 
-                        let last_refresh = DateTime::parse_from_rfc3339(s).context("Invalid date string")?;
+            self.client
+                .put_item()
+                .table_name(&self.table_name)
+                .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+                .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
+                .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
+                .item(LAST_REFRESH, AttributeValue::S(now))
+                .item(DEVICE_ID, AttributeValue::S(device_id))
+                .send()
+                .await?;
+        } else {
+            match resp.item {
+                None => {}
+                Some(ref item) => {
+                    log::info!("{}: tokens in db, trying..", account.account_name);
 
-                        let diff = now - last_refresh;
-
-                        if diff.num_minutes() >= 14 {
-                            log::info!("{}: >= 14 mins since last attempt.. refreshing..", account.account_name);
-
-                            let res = api_client.customer_login_refresh(refresh_token).await?;
-                            let (new_access_token, new_ref_token) = if res.status == StatusCode::OK {
-                                let unwrapped_res = res.body.response.unwrap();
-                                log::info!("refresh success..");
-
-                                let new_access_token = unwrapped_res.access_token;
-                                let new_ref_token = unwrapped_res.refresh_token;
-
-                                (new_access_token, new_ref_token)
-                            } else {
-                                let response = api_client.security_auth_token(client_secret).await?;
-                                api_client.set_login_token(&response.body.response.token);
-
-                                let response = api_client
-                                    .customer_login(
-                                        &account.login_username,
-                                        &account.login_password,
-                                        &sensor_data,
-                                        &device_id,
-                                    )
-                                    .await?;
-
-                                log::info!("refresh failed, logged in again..");
-                                let new_access_token = response.body.response.access_token;
-                                let new_ref_token = response.body.response.refresh_token;
-
-                                (new_access_token, new_ref_token)
-                            };
-
-                            api_client.set_auth_token(&new_access_token);
-                            self.client
-                                .put_item()
-                                .table_name(&self.table_name)
-                                .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
-                                .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
-                                .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
-                                .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
-                                .item(DEVICE_ID, AttributeValue::S(device_id))
-                                .send()
-                                .await?;
+                    let device_id = item.get(DEVICE_ID);
+                    let device_id = match device_id {
+                        Some(device_id) => match device_id.as_s() {
+                            Ok(s) => s.clone(),
+                            _ => bail!("missing refresh token for {}", account.account_name),
+                        },
+                        None => {
+                            let mut rng = StdRng::from_entropy();
+                            Alphanumeric.sample_string(&mut rng, 16)
                         }
-                    }
-                    _ => bail!("missing last refresh time for {}", account.account_name),
-                };
+                    };
+
+                    let refresh_token = match item[REFRESH_TOKEN].as_s() {
+                        Ok(s) => s,
+                        _ => bail!("missing refresh token for {}", account.account_name),
+                    };
+
+                    match item[ACCESS_TOKEN].as_s() {
+                        Ok(s) => api_client.set_auth_token(s),
+                        _ => bail!("missing access token for {}", account.account_name),
+                    };
+
+                    match item[LAST_REFRESH].as_s() {
+                        Ok(s) => {
+                            let now = SystemTime::now();
+                            let now: DateTime<Utc> = now.into();
+                            let now: DateTime<FixedOffset> = DateTime::from(now);
+
+                            let last_refresh = DateTime::parse_from_rfc3339(s).context("Invalid date string")?;
+
+                            let diff = now - last_refresh;
+
+                            if diff.num_minutes() >= 14 {
+                                log::info!("{}: >= 14 mins since last attempt.. refreshing..", account.account_name);
+
+                                let res = api_client.customer_login_refresh(refresh_token).await?;
+                                let (new_access_token, new_ref_token) = if res.status == StatusCode::OK {
+                                    let unwrapped_res = res.body.response.unwrap();
+                                    log::info!("refresh success..");
+
+                                    let new_access_token = unwrapped_res.access_token;
+                                    let new_ref_token = unwrapped_res.refresh_token;
+
+                                    (new_access_token, new_ref_token)
+                                } else {
+                                    let response = api_client.security_auth_token(client_secret).await?;
+                                    api_client.set_login_token(&response.body.response.token);
+
+                                    let response = api_client
+                                        .customer_login(
+                                            &account.login_username,
+                                            &account.login_password,
+                                            &sensor_data,
+                                            &device_id,
+                                        )
+                                        .await?;
+
+                                    log::info!("refresh failed, logged in again..");
+                                    let new_access_token = response.body.response.access_token;
+                                    let new_ref_token = response.body.response.refresh_token;
+
+                                    (new_access_token, new_ref_token)
+                                };
+
+                                api_client.set_auth_token(&new_access_token);
+                                self.client
+                                    .put_item()
+                                    .table_name(&self.table_name)
+                                    .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+                                    .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
+                                    .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
+                                    .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
+                                    .item(DEVICE_ID, AttributeValue::S(device_id))
+                                    .send()
+                                    .await?;
+                            }
+                        }
+                        _ => bail!("missing last refresh time for {}", account.account_name),
+                    };
+                }
             }
         }
 
@@ -619,12 +680,13 @@ impl<'a> Database for DynamoDatabase<'a> {
         client_secret: &'b str,
         sensor_data: &'b str,
         account_list: &'b [UserAccount],
+        force_refresh: bool,
     ) -> Result<(HashMap<UserAccount, ApiClient<'b>>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
         let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
         for user in account_list {
             match self
-                .get_specific_client(http_client, client_id, client_secret, sensor_data, user)
+                .get_specific_client(http_client, client_id, client_secret, sensor_data, user, force_refresh)
                 .await
             {
                 Ok(c) => {
