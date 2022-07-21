@@ -543,7 +543,7 @@ impl<'a> Database for DynamoDatabase<'a> {
                 match device_id {
                     Some(device_id) => match device_id.as_s() {
                         Ok(s) => s.clone(),
-                        _ => bail!("missing refresh token for {}", account.account_name),
+                        _ => bail!("invalid device id for {}", account.account_name),
                     },
                     None => {
                         let mut rng = StdRng::from_entropy();
@@ -599,15 +599,34 @@ impl<'a> Database for DynamoDatabase<'a> {
                         }
                     };
 
-                    let refresh_token = match item[REFRESH_TOKEN].as_s() {
-                        Ok(s) => s,
-                        _ => bail!("missing refresh token for {}", account.account_name),
+                    // if missing force a refresh and re-exec
+                    let refresh_token = item.get(REFRESH_TOKEN);
+                    let refresh_token = match refresh_token {
+                        Some(refresh_token) => match refresh_token.as_s() {
+                            Ok(s) => s.clone(),
+                            _ => bail!("invalid refresh token for {}", account.account_name),
+                        },
+                        None => {
+                            return self
+                                .get_specific_client(http_client, client_id, client_secret, sensor_data, account, true)
+                                .await;
+                        }
                     };
 
-                    match item[ACCESS_TOKEN].as_s() {
-                        Ok(s) => api_client.set_auth_token(s),
-                        _ => bail!("missing access token for {}", account.account_name),
+                    let access_token = item.get(ACCESS_TOKEN);
+                    let access_token = match access_token {
+                        Some(access_token) => match access_token.as_s() {
+                            Ok(s) => s.clone(),
+                            _ => bail!("invalid access token for {}", account.account_name),
+                        },
+                        None => {
+                            return self
+                                .get_specific_client(http_client, client_id, client_secret, sensor_data, account, true)
+                                .await;
+                        }
                     };
+
+                    api_client.set_auth_token(&access_token);
 
                     match item[LAST_REFRESH].as_s() {
                         Ok(s) => {
@@ -622,7 +641,7 @@ impl<'a> Database for DynamoDatabase<'a> {
                             if diff.num_minutes() >= 14 {
                                 log::info!("{}: >= 14 mins since last attempt.. refreshing..", account.account_name);
 
-                                let res = api_client.customer_login_refresh(refresh_token).await?;
+                                let res = api_client.customer_login_refresh(&refresh_token).await?;
                                 let (new_access_token, new_ref_token) = if res.status == StatusCode::OK {
                                     let unwrapped_res = res.body.response.unwrap();
                                     log::info!("refresh success..");
