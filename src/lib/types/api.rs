@@ -1,6 +1,6 @@
 use crate::utils::get_short_sha1;
 use itertools::Itertools;
-use libmaccas::types::PointInformationResponse;
+use libmaccas::types::response::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
@@ -32,8 +32,8 @@ pub struct Offer {
     pub image_base_name: String,
 }
 
-impl From<libmaccas::types::Offer> for Offer {
-    fn from(offer: libmaccas::types::Offer) -> Self {
+impl From<libmaccas::types::response::Offer> for Offer {
+    fn from(offer: libmaccas::types::response::Offer) -> Self {
         let short_name = offer
             .name
             .split('\n')
@@ -84,8 +84,8 @@ pub struct RestaurantAddress {
     pub address_line: String,
 }
 
-impl From<libmaccas::types::Address> for RestaurantAddress {
-    fn from(res: libmaccas::types::Address) -> Self {
+impl From<libmaccas::types::response::Address> for RestaurantAddress {
+    fn from(res: libmaccas::types::response::Address) -> Self {
         Self {
             address_line: res.address_line1,
         }
@@ -103,8 +103,8 @@ pub struct RestaurantInformation {
     pub address: RestaurantAddress,
 }
 
-impl From<libmaccas::types::Restaurant> for RestaurantInformation {
-    fn from(res: libmaccas::types::Restaurant) -> Self {
+impl From<libmaccas::types::response::Restaurant> for RestaurantInformation {
+    fn from(res: libmaccas::types::response::Restaurant) -> Self {
         Self {
             name: res.name.clone(),
             store_number: res.national_store_number,
@@ -141,8 +141,8 @@ pub struct OfferResponse {
     pub message: String,
 }
 
-impl From<libmaccas::types::OfferDealStackResponse> for OfferResponse {
-    fn from(res: libmaccas::types::OfferDealStackResponse) -> Self {
+impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse {
+    fn from(res: libmaccas::types::response::OfferDealStackResponse) -> Self {
         Self {
             random_code: res.response.expect("must have deal stack response").random_code,
             message: res.status.message,
