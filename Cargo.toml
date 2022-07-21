@@ -7,12 +7,12 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libmaccas = "0.11.4"
+libmaccas = "0.16.0"
 simple-dispatcher = "0.5.0"
 
 lambda_runtime = "0.5.1"
 lambda_http = "0.5.1"
-serde = "1.0.139"
+serde = "1.0.140"
 serde_json = "1.0.82"
 serde_derive = "1.0.136"
 openssl = { version = "0.10", features = ["vendored"] }
