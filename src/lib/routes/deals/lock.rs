@@ -19,6 +19,9 @@ pub mod docs {
             (status = 204, description = "Locked deals"),
             (status = 500, description = "Internal Server Error", body = Error),
         ),
+        params(
+            ("duration" = i64, path, description = "the lock duration in seconds"),
+        ),
         tag = "deals",
     )]
     #[deprecated]
