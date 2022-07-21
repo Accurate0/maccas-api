@@ -11,7 +11,7 @@ libmaccas = "0.16.0"
 simple-dispatcher = "0.5.0"
 
 lambda_runtime = "0.5.1"
-lambda_http = "0.5.1"
+lambda_http = "0.6.0"
 serde = "1.0.139"
 serde_json = "1.0.82"
 serde_derive = "1.0.136"
