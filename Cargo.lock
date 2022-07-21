@@ -1323,7 +1323,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "ts-rs",
- "twilight-model",
+ "twilight-model 0.12.1",
  "twilight-util",
  "utoipa",
  "uuid",
@@ -2576,12 +2576,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "twilight-model"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdfde904abf82ed754dd29e013720ebd8441ca616f8b035305dc1c310188d48c"
+dependencies = [
+ "bitflags",
+ "serde",
+ "serde-value",
+ "serde_repr",
+ "time 0.3.11",
+ "tracing",
+]
+
+[[package]]
 name = "twilight-util"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a00a54f7f0d756fa4dd52fb08144a5cad7daad1a454b330ce6ab16bdbab750d8"
 dependencies = [
- "twilight-model",
+ "twilight-model 0.11.3",
  "twilight-validate",
 ]
 
@@ -2591,7 +2605,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82d6f675e4b2aecbe60105ef40d5d88e08f0c6f5c23d9a3f93a6e3ed82c810db"
 dependencies = [
- "twilight-model",
+ "twilight-model 0.11.3",
 ]
 
 [[package]]
