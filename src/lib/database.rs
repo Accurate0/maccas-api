@@ -331,14 +331,13 @@ impl<'a> Database for DynamoDatabase<'a> {
             .await?;
 
         let item = resp.item;
-        if item.is_none() {
-            return Ok(None);
-        } else {
-            let item = item.unwrap();
+        if let Some(item) = item {
             match item.get(DEVICE_ID) {
                 Some(s) => return Ok(Some(s.as_s().unwrap().clone())),
                 None => Ok(None),
             }
+        } else {
+            return Ok(None);
         }
     }
 
