@@ -181,8 +181,8 @@ impl Executor<routes::Context<'_>, Request, Response<Body>> for AddRemove {
                         )
                         .await?;
 
-                    ctx.database.unlock_deal(deal_id).await?;
                     if resp.status.is_success() {
+                        ctx.database.unlock_deal(deal_id).await?;
                         Response::builder().status(204).body(Body::Empty)?
                     } else {
                         Response::builder().status(400).body(
