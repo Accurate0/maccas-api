@@ -64,7 +64,7 @@ pub trait Database {
         client_secret: &'a str,
         sensor_data: &'a str,
         account: &'a UserAccount,
-        force_refresh: bool,
+        force_login: bool,
     ) -> Result<ApiClient<'a>, anyhow::Error>;
     async fn get_client_map<'a>(
         &self,
@@ -73,7 +73,7 @@ pub trait Database {
         client_secret: &'a str,
         sensor_data: &'a str,
         account_list: &'a [UserAccount],
-        force_refresh: bool,
+        force_login: bool,
     ) -> Result<(HashMap<UserAccount, ApiClient<'a>>, Vec<String>), anyhow::Error>;
     async fn lock_deal(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error>;
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error>;
@@ -511,7 +511,7 @@ impl<'a> Database for DynamoDatabase<'a> {
         client_secret: &'b str,
         sensor_data: &'b str,
         account: &'b UserAccount,
-        force_refresh: bool,
+        force_login: bool,
     ) -> Result<ApiClient<'b>, anyhow::Error> {
         let mut api_client = ApiClient::new(
             mc_donalds::default::BASE_URL.to_string(),
@@ -527,16 +527,16 @@ impl<'a> Database for DynamoDatabase<'a> {
             .send()
             .await?;
 
-        if resp.item.is_none() || force_refresh {
+        if resp.item.is_none() || force_login {
             log::info!("{}: nothing in db, requesting..", account.account_name);
-            if force_refresh {
-                log::info!("{}: refresh forced", account.account_name);
+            if force_login {
+                log::info!("{}: login forced", account.account_name);
             }
 
             let response = api_client.security_auth_token(client_secret).await?;
             api_client.set_login_token(&response.body.response.token);
 
-            let device_id = if force_refresh && resp.item.is_some() {
+            let device_id = if force_login && resp.item.is_some() {
                 let item = resp.item.unwrap();
                 let device_id = item.get(DEVICE_ID);
                 match device_id {
@@ -698,13 +698,13 @@ impl<'a> Database for DynamoDatabase<'a> {
         client_secret: &'b str,
         sensor_data: &'b str,
         account_list: &'b [UserAccount],
-        force_refresh: bool,
+        force_login: bool,
     ) -> Result<(HashMap<UserAccount, ApiClient<'b>>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
         let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
         for user in account_list {
             match self
-                .get_specific_client(http_client, client_id, client_secret, sensor_data, user, force_refresh)
+                .get_specific_client(http_client, client_id, client_secret, sensor_data, user, force_login)
                 .await
             {
                 Ok(c) => {
