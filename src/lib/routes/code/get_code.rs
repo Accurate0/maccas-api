@@ -1,6 +1,7 @@
 use crate::client;
 use crate::constants::mc_donalds;
 use crate::routes::Context;
+use crate::types::api::ApiError;
 use crate::types::api::Error;
 use crate::types::api::OfferResponse;
 use async_trait::async_trait;
@@ -18,8 +19,8 @@ pub mod docs {
         path = "/code/{dealId}",
         responses(
             (status = 200, description = "Random code for specified deal", body = OfferResponse),
-            (status = 404, description = "Deal not found", body = Error),
-            (status = 500, description = "Internal Server Error", body = Error),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error"),
         ),
         params(
             ("dealId" = String, path, description = "The deal id to add"),
@@ -66,9 +67,9 @@ impl Executor<Context<'_>, Request, Response<Body>> for Code {
         } else {
             let status_code = StatusCode::NOT_FOUND;
             Ok(Response::builder().status(status_code.as_u16()).body(
-                serde_json::to_string(&Error {
+                serde_json::to_string(&Error::NotFound(ApiError {
                     message: status_code.canonical_reason().ok_or("no value")?.to_string(),
-                })?
+                }))?
                 .into(),
             )?)
         }

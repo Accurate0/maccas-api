@@ -1,26 +1,36 @@
-use anyhow::Context;
-use http::{Response, StatusCode};
-use lambda_http::request::RequestContext;
-use lambda_http::{service_fn, Error, Request, RequestExt};
-use libapi::auth::check_route_auth;
+use lambda_http::Error as LambdaError;
 use libapi::config::ApiConfig;
+use libapi::constants;
 use libapi::database::DynamoDatabase;
-use libapi::extensions::{RequestExtensions, ResponseExtensions};
 use libapi::logging;
-use libapi::routes::auth_fallback::AuthFallback;
-use libapi::routes::fallback::Fallback;
-use libapi::routes::user;
-use libapi::routes::{self, docs};
-use libapi::routes::{code, statistics};
-use libapi::routes::{deal, deals};
-use libapi::routes::{locations, points};
-use libapi::{constants, types};
-use simple_dispatcher::RouteDispatcher;
+use libapi::routes;
+use libapi::routes::deal::get_deal::get_deal;
+use libapi::routes::deals::add_remove::add_deal;
+use libapi::routes::deals::add_remove::remove_deal;
+use libapi::routes::deals::get_deals::get_deals;
+use libapi::routes::deals::last_refresh::last_refresh;
+use libapi::routes::docs::openapi::get_openapi;
+use libapi::routes::locations::get_locations::get_locations;
+use libapi::routes::locations::search::search_locations;
+use libapi::routes::points::get_by_id::get_points_by_id;
+use libapi::routes::points::get_points::get_points;
+use libapi::routes::statistics::account::get_accounts;
+use libapi::routes::statistics::total_accounts::get_total_accounts;
+use libapi::routes::user::config::get_user_config;
+use libapi::routes::user::config::update_user_config;
+use rocket::http::Method;
+use rocket::Config;
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
+use rocket_lamb::RocketExt;
+
+#[macro_use]
+extern crate rocket;
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), LambdaError> {
     logging::setup_logging();
     logging::dump_build_details();
+    let is_aws = std::env::var(constants::AWS_LAMBDA_FUNCTION_NAME).is_ok();
     let shared_config = aws_config::from_env()
         .region(constants::DEFAULT_AWS_REGION)
         .load()
@@ -28,60 +38,63 @@ async fn main() -> Result<(), Error> {
 
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let database = DynamoDatabase::new(&dynamodb_client, &config.tables);
+    let database = DynamoDatabase::new(dynamodb_client, &config.tables);
 
     let context = routes::Context {
         config,
         database: Box::new(database),
     };
 
-    let dispatcher = &RouteDispatcher::new(context, Fallback, AuthFallback)
-        .add_route("/deals", deals::Deals)
-        .add_route("/user/config", user::Config)
-        .add_route("/deal/{dealId}", deal::Deal)
-        .add_route("/code/{dealId}", code::Code)
-        .add_route("/deals/lock", deals::LockUnlock)
-        .add_route("/docs/openapi", docs::GetOpenApi)
-        .add_route("/locations", locations::Locations)
-        .add_route("/deals/{dealId}", deals::AddRemove)
-        .add_route("/locations/search", locations::Search)
-        .add_route("/deals/last-refresh", deals::LastRefresh)
-        .add_route("/statistics/account", statistics::Account)
-        .add_route("/statistics/total-accounts", statistics::TotalAccounts)
-        .add_protected_route("/points", points::Points)
-        .add_protected_route("/points/{accountId}", points::GetById)
-        .add_router_protector(check_route_auth);
-
-    let handler = |request: Request| async move {
-        request.log();
-
-        let response = match dispatcher
-            .dispatch(&request, || -> Option<String> {
-                let context = request.request_context();
-                match context {
-                    RequestContext::ApiGatewayV1(r) => r.resource_path,
-                    _ => None,
-                }
-            })
-            .await
-        {
-            Ok(r) => r,
-            Err(e) => {
-                log::error!("{:?}", e);
-                let status_code = StatusCode::INTERNAL_SERVER_ERROR;
-                Response::builder().status(status_code.as_u16()).body(
-                    serde_json::to_string(&types::api::Error {
-                        message: status_code.canonical_reason().context("no value")?.to_string(),
-                    })?
-                    .into(),
-                )?
-            }
-        };
-
-        response.log();
-        Ok(response)
+    let config = Config {
+        cli_colors: !is_aws,
+        ..Default::default()
     };
 
-    lambda_http::run(service_fn(handler)).await?;
+    let rocket = rocket::build()
+        .manage(context)
+        .mount(
+            "/",
+            routes![
+                get_openapi,
+                get_deal,
+                get_deals,
+                add_deal,
+                remove_deal,
+                last_refresh,
+                get_locations,
+                search_locations,
+                get_points_by_id,
+                get_points,
+                get_accounts,
+                get_total_accounts,
+                get_user_config,
+                update_user_config
+            ],
+        )
+        .configure(config);
+
+    if is_aws {
+        rocket.lambda().launch().await
+    } else {
+        let allowed_origins = AllowedOrigins::some_exact(&["https://maccas.anurag.sh", "http://localhost:3000"]);
+        let cors = rocket_cors::CorsOptions {
+            allowed_origins,
+            allowed_methods: vec![Method::Get, Method::Post, Method::Delete]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+            allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
+            allow_credentials: true,
+            ..Default::default()
+        }
+        .to_cors()?;
+        match rocket.attach(cors).launch().await {
+            Ok(_) => {
+                log::info!("exiting...")
+            }
+            Err(e) => log::error!("error during launch: {}", e),
+        };
+    }
+
     Ok(())
 }

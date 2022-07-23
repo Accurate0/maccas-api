@@ -1,6 +1,7 @@
 pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
 pub const DEFAULT_AWS_REGION: &str = "ap-southeast-2";
 pub const AWS_REGION: &str = "AWS_REGION";
+pub const AWS_LAMBDA_FUNCTION_NAME: &str = "AWS_LAMBDA_FUNCTION_NAME";
 pub const X_API_KEY_HEADER: &str = "X-Api-Key";
 pub const MACCAS_WEB_API_PREFIX: &str = "MACCAS_WEB_";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
@@ -13,7 +14,7 @@ pub mod mc_donalds {
     pub mod default {
         pub const BASE_URL: &str = "https://ap-prod.api.mcd.com";
         pub const OFFSET: &str = "480";
-        pub const STORE_ID: &str = "951488";
+        pub const STORE_ID: i64 = 951488;
         pub const FILTER: &str = "summary";
         pub const DISTANCE: &str = "10000";
         pub const LATITUDE: &str = "37.4219";

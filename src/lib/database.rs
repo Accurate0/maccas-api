@@ -83,8 +83,8 @@ pub trait Database {
     async fn set_device_id_for(&self, account_name: &str, device_id: &str) -> Result<(), anyhow::Error>;
 }
 
-pub struct DynamoDatabase<'a> {
-    client: &'a aws_sdk_dynamodb::Client,
+pub struct DynamoDatabase {
+    client: aws_sdk_dynamodb::Client,
     table_name: String,
     user_config_table_name: String,
     cache_table_name: String,
@@ -93,8 +93,8 @@ pub struct DynamoDatabase<'a> {
     point_table_name: String,
 }
 
-impl<'a> DynamoDatabase<'a> {
-    pub fn new(client: &'a aws_sdk_dynamodb::Client, tables: &Tables) -> Self {
+impl DynamoDatabase {
+    pub fn new(client: aws_sdk_dynamodb::Client, tables: &Tables) -> Self {
         Self {
             client,
             table_name: tables.token_cache.to_owned(),
@@ -105,14 +105,10 @@ impl<'a> DynamoDatabase<'a> {
             point_table_name: tables.points.to_owned(),
         }
     }
-
-    pub fn get_raw_client(&self) -> &aws_sdk_dynamodb::Client {
-        self.client
-    }
 }
 
 #[async_trait]
-impl<'a> Database for DynamoDatabase<'a> {
+impl Database for DynamoDatabase {
     async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error> {
         let mut offer_map = HashMap::<String, Vec<Offer>>::new();
 

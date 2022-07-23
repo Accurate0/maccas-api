@@ -1,23 +1,16 @@
-use crate::{constants::api_base, doc::openapi::ApiDoc, routes::Context};
-use async_trait::async_trait;
-use http::Response;
-use lambda_http::{Body, IntoResponse, Request};
-use simple_dispatcher::{Executor, ExecutorResult};
+use crate::{constants::api_base, doc::openapi::ApiDoc, types::error::ApiError};
+use rocket::serde::json::Json;
 use utoipa::{
-    openapi::{InfoBuilder, Server},
+    openapi::{self, InfoBuilder, Server},
     OpenApi,
 };
 
-pub struct GetOpenApi;
+#[get("/docs/openapi")]
+pub fn get_openapi() -> Result<Json<openapi::OpenApi>, ApiError> {
+    let mut spec = ApiDoc::openapi();
+    let info = InfoBuilder::new().title("Maccas API").version("v1");
+    spec.servers = Some(vec![Server::new(api_base::THIS)]);
+    spec.info = info.build();
 
-#[async_trait]
-impl Executor<Context<'_>, Request, Response<Body>> for GetOpenApi {
-    async fn execute(&self, _ctx: &Context, _request: &Request) -> ExecutorResult<Response<Body>> {
-        let mut spec = ApiDoc::openapi();
-        let info = InfoBuilder::new().title("Maccas API").version("v1");
-        spec.servers = Some(vec![Server::new(api_base::THIS)]);
-        spec.info = info.build();
-
-        Ok(spec.to_json()?.into_response())
-    }
+    Ok(Json(spec))
 }
