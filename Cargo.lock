@@ -2540,7 +2540,7 @@ dependencies = [
 [[package]]
 name = "rocket_lamb"
 version = "0.6.0"
-source = "git+https://github.com/Accurate0/rocket-lamb.git#1acabe2c6982e2850e299e3ffc59393518942db8"
+source = "git+https://github.com/Accurate0/rocket-lamb.git?rev=044ac92#044ac92a3c75b09c8eba042f3dcf68d4fa735177"
 dependencies = [
  "failure",
  "http 0.1.21",
