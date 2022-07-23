@@ -19,7 +19,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 aws-sdk-dynamodb = "0.15.0"
 config = { version = "0.13.1", features = ["yaml"] }
 uuid = { version = "1.1.2", features = ["v4"] }
-aws-config = "0.15.0"
+aws-config = "0.46.0"
 http = "0.2.6"
 chrono = "0.4.19"
 aws-sdk-s3 = "0.15.0"
