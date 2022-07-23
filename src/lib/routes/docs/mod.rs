@@ -1,3 +1,1 @@
-mod openapi;
-
-pub use openapi::GetOpenApi;
+pub mod openapi;

@@ -127,15 +127,6 @@ pub struct LastRefreshInformation {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(Component)]
-pub struct Error {
-    pub message: String,
-}
-
-#[derive(ts_rs::TS)]
-#[ts(export)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[derive(Component)]
 pub struct OfferResponse {
     pub random_code: String,
     pub message: String,

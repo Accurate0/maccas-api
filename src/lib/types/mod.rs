@@ -1,4 +1,5 @@
 pub mod api;
+pub mod error;
 pub mod jwt;
 pub mod log;
 pub mod places;
