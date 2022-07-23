@@ -193,7 +193,7 @@ pub async fn remove_deal(
             ctx.database.unlock_deal(deal_id).await?;
             Ok(Status::NoContent)
         } else {
-            Err(ApiError::NotFound)
+            Err(ApiError::McDonaldsError)
         }
     } else {
         Err(ApiError::NotFound)
