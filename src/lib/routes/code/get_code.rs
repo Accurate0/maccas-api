@@ -1,77 +1,54 @@
-use crate::client;
-use crate::constants::mc_donalds;
-use crate::routes::Context;
-use crate::types::api::ApiError;
-use crate::types::api::Error;
-use crate::types::api::OfferResponse;
-use async_trait::async_trait;
-use http::Response;
-use http::StatusCode;
-use lambda_http::{Body, IntoResponse, Request, RequestExt};
-use simple_dispatcher::Executor;
-use simple_dispatcher::ExecutorResult;
+use crate::{
+    client,
+    constants::mc_donalds,
+    routes,
+    types::{api::OfferResponse, error::ApiError},
+};
+use rocket::{serde::json::Json, State};
 
-pub struct Code;
+#[utoipa::path(
+    get,
+    path = "/code/{dealId}",
+    responses(
+        (status = 200, description = "Random code for specified deal", body = OfferResponse),
+        (status = 404, description = "Deal not found"),
+        (status = 500, description = "Internal Server Error"),
+    ),
+    params(
+        ("dealId" = String, path, description = "The deal id to add"),
+        ("store" = Option<i64>, query, description = "The selected store"),
+    ),
+    tag = "deals",
+)]
+#[get("/code/<deal_id>?<store>")]
+pub async fn get_code(
+    ctx: &State<routes::Context<'_>>,
+    deal_id: &str,
+    store: Option<i64>,
+) -> Result<Json<OfferResponse>, ApiError> {
+    if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
+        let http_client = client::get_http_client();
+        let api_client = ctx
+            .database
+            .get_specific_client(
+                &http_client,
+                &ctx.config.client_id,
+                &ctx.config.client_secret,
+                &ctx.config.sensor_data,
+                &account,
+                false,
+            )
+            .await?;
 
-pub mod docs {
-    #[utoipa::path(
-        get,
-        path = "/code/{dealId}",
-        responses(
-            (status = 200, description = "Random code for specified deal", body = OfferResponse),
-            (status = 404, description = "Deal not found"),
-            (status = 500, description = "Internal Server Error"),
-        ),
-        params(
-            ("dealId" = String, path, description = "The deal id to add"),
-            ("store" = Option<i64>, query, description = "The selected store"),
-        ),
-        tag = "deals",
-    )]
-    pub fn get_code() {}
-}
+        let resp = api_client
+            .get_offers_dealstack(
+                mc_donalds::default::OFFSET,
+                &store.unwrap_or(mc_donalds::default::STORE_ID),
+            )
+            .await?;
 
-#[async_trait]
-impl Executor<Context<'_>, Request, Response<Body>> for Code {
-    async fn execute(&self, ctx: &Context, request: &Request) -> ExecutorResult<Response<Body>> {
-        let path_params = request.path_parameters();
-        let query_params = request.query_string_parameters();
-
-        let store = query_params.first("store");
-        let deal_id = path_params.first("dealId").ok_or("must have id")?;
-        let deal_id = &deal_id.to_owned();
-
-        if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
-            let http_client = client::get_http_client();
-            let api_client = ctx
-                .database
-                .get_specific_client(
-                    &http_client,
-                    &ctx.config.client_id,
-                    &ctx.config.client_secret,
-                    &ctx.config.sensor_data,
-                    &account,
-                    false,
-                )
-                .await?;
-
-            let resp = api_client
-                .get_offers_dealstack(
-                    mc_donalds::default::OFFSET,
-                    store.unwrap_or(mc_donalds::default::STORE_ID),
-                )
-                .await?;
-
-            let resp = OfferResponse::from(resp.body);
-            Ok(serde_json::to_value(&resp).unwrap().into_response())
-        } else {
-            let status_code = StatusCode::NOT_FOUND;
-            Ok(Response::builder().status(status_code.as_u16()).body(
-                serde_json::to_string(&Error::NotFound(ApiError {
-                    message: status_code.canonical_reason().ok_or("no value")?.to_string(),
-                }))?
-                .into(),
-            )?)
-        }
+        Ok(Json(OfferResponse::from(resp.body)))
+    } else {
+        Err(ApiError::NotFound)
     }
 }

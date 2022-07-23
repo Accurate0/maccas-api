@@ -4,8 +4,6 @@ use crate::types::error::ApiError;
 use rocket::serde::json::Json;
 use rocket::State;
 
-pub struct LastRefresh;
-
 #[utoipa::path(
         get,
         path = "/deals/last-refresh",
