@@ -1,3 +1,4 @@
+use crate::routes::code::get_code::*;
 use crate::routes::deal::get_deal::*;
 use crate::routes::deals::add_remove::*;
 use crate::routes::deals::get_deals::*;
@@ -19,6 +20,7 @@ use utoipa::OpenApi;
 #[derive(OpenApi)]
 #[openapi(
     handlers(
+        get_code,
         get_deals,
         add_deal,
         remove_deal,

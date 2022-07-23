@@ -10,8 +10,6 @@ use chrono::Duration;
 use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 
-pub struct AddRemove;
-
 #[utoipa::path(
         post,
         path = "/deals/{dealId}",

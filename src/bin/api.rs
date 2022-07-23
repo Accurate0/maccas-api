@@ -4,6 +4,7 @@ use libapi::constants;
 use libapi::database::DynamoDatabase;
 use libapi::logging;
 use libapi::routes;
+use libapi::routes::code::get_code::get_code;
 use libapi::routes::deal::get_deal::get_deal;
 use libapi::routes::deals::add_remove::add_deal;
 use libapi::routes::deals::add_remove::remove_deal;
@@ -55,6 +56,7 @@ async fn main() -> Result<(), LambdaError> {
         .mount(
             "/",
             routes![
+                get_code,
                 get_openapi,
                 get_deal,
                 get_deals,
