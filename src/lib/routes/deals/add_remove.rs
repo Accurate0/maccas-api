@@ -51,6 +51,27 @@ pub async fn add_deal(
         let offer_proposition_id = offer.offer_proposition_id.to_string();
         let short_name = offer.short_name.to_string();
 
+        let current_deal_stack = api_client
+            .get_offers_dealstack(
+                mc_donalds::default::OFFSET,
+                &store.unwrap_or(mc_donalds::default::STORE_ID),
+            )
+            .await?
+            .body
+            .response
+            .context("no deal stack response")?
+            .deal_stack;
+
+        if let Some(current_deal_stack) = current_deal_stack {
+            if current_deal_stack.len() != 1
+                || !current_deal_stack
+                    .into_iter()
+                    .any(|deal| deal.offer_id == offer_id && deal.offer_proposition_id == offer_proposition_id)
+            {
+                return Err(ApiError::AccountNotAvailable);
+            }
+        }
+
         // lock the deal from appearing in GET /deals
         ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
 

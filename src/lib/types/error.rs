@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub enum ApiError {
     InvalidConfig,
     McDonaldsError,
+    AccountNotAvailable,
     Unauthorized,
     NotFound,
     InternalServerError,
@@ -18,6 +19,7 @@ impl ApiError {
         match self {
             ApiError::InvalidConfig => Status::BadRequest,
             ApiError::McDonaldsError => Status::BadRequest,
+            ApiError::AccountNotAvailable => Status::Conflict,
             ApiError::Unauthorized => Status::Unauthorized,
             ApiError::NotFound => Status::NotFound,
             ApiError::InternalServerError => Status::InternalServerError,
