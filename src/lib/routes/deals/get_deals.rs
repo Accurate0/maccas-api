@@ -2,6 +2,9 @@ use crate::routes::Context;
 use crate::types::api::Offer;
 use crate::types::error::ApiError;
 use itertools::Itertools;
+use rand::prelude::StdRng;
+use rand::seq::SliceRandom;
+use rand::SeedableRng;
 use rocket::serde::json::Json;
 use rocket::State;
 use std::collections::HashMap;
@@ -21,10 +24,13 @@ pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<Offer>>, Api
     let offer_list = ctx.database.get_all_offers_as_vec().await?;
 
     // filter locked deals
-    let offer_list: Vec<Offer> = offer_list
+    let mut offer_list: Vec<Offer> = offer_list
         .into_iter()
         .filter(|offer| !locked_deals.contains(&offer.deal_uuid.to_string()))
         .collect();
+
+    let mut rng = StdRng::from_entropy();
+    offer_list.shuffle(&mut rng);
 
     let mut count_map = HashMap::<i64, u32>::new();
     for offer in &offer_list {
