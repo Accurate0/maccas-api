@@ -68,6 +68,7 @@ pub async fn add_deal(
                     .into_iter()
                     .any(|deal| deal.offer_id == offer_id && deal.offer_proposition_id == offer_proposition_id)
             {
+                ctx.database.lock_deal(deal_id, Duration::minutes(5)).await?;
                 return Err(ApiError::AccountNotAvailable);
             }
         }
