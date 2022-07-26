@@ -49,6 +49,7 @@ pub async fn log_deal_use(
     deal_id: &str,
     image_base_url: &String,
     config: &ApiConfig,
+    store_name: &String,
 ) {
     // log usage
     if config
@@ -100,6 +101,7 @@ pub async fn log_deal_use(
         .description("**Deal Used**")
         .field(EmbedFieldBuilder::new("Name", user_name.to_string()))
         .field(EmbedFieldBuilder::new("Deal", short_name))
+        .field(EmbedFieldBuilder::new("Store", store_name))
         .timestamp(
             Timestamp::from_secs(dt.timestamp())
                 .context("must have valid time")
