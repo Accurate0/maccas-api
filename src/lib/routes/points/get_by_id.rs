@@ -19,7 +19,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     params(
-        ("accountId" = String, path, description = "The account id"),
         ("store" = Option<i64>, query, description = "The selected store"),
     ),
     tag = "points",

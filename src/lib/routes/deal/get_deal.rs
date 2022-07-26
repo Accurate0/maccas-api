@@ -9,11 +9,8 @@ use rocket::{serde::json::Json, State};
         path = "/deal/{dealId}",
         responses(
             (status = 200, description = "Information for specified deal", body = Offer),
-            (status = 404, description = "Deal not found", body = ApiError),
-            (status = 500, description = "Internal Server Error", body = ApiError),
-        ),
-        params(
-            ("dealId" = String, path, description = "The deal id to add"),
+            (status = 404, description = "Deal not found"),
+            (status = 500, description = "Internal Server Error"),
         ),
         tag = "deals",
     )]

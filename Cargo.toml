@@ -49,7 +49,7 @@ rust-crypto = "0.2.36"
 mime = "0.3.16"
 anyhow = "1.0.58"
 fern = "0.6.1"
-utoipa = "1.1.0"
+utoipa = { version = "1.1.0", features = [ "rocket_extras" ] }
 
 [build-dependencies]
 vergen = "7.2.1"
