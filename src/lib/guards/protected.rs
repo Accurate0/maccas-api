@@ -27,7 +27,7 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         };
 
         if auth_header.is_failure() {
-            return Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized));
+            return auth_header.map(|_| ProtectedRoute);
         };
 
         let ctx = ctx.unwrap();
