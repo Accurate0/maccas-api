@@ -15,7 +15,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     params(
-        ("dealId" = String, path, description = "The deal id to add"),
         ("store" = Option<i64>, query, description = "The selected store"),
     ),
     tag = "deals",

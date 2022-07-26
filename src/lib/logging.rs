@@ -3,14 +3,13 @@ use crate::constants::{mc_donalds, DEFAULT_TIMEZONE};
 use crate::webhook::DiscordWebhookMessage;
 use crate::{
     constants::{self, api_base},
-    types::{jwt::JwtClaim, log::UsageLog},
+    types::log::UsageLog,
 };
 use anyhow::Context;
 use chrono::TimeZone;
 use chrono::Utc;
 use chrono_tz::Tz;
 use http::Method;
-use jwt::{Header, Token};
 use reqwest_middleware::ClientWithMiddleware;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
@@ -29,9 +28,11 @@ pub fn setup_logging() {
         .unwrap();
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn log_deal_use(
     http_client: &ClientWithMiddleware,
-    auth_header: &str,
+    user_id: &str,
+    user_name: &str,
     correlation_id: &str,
     short_name: &String,
     deal_id: &str,
@@ -39,16 +40,8 @@ pub async fn log_deal_use(
     config: &ApiConfig,
 ) {
     // log usage
-    let value = auth_header.replace("Bearer ", "");
-    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
-
-    if config
-        .log
-        .ignored_user_ids
-        .iter()
-        .any(|user_id| *user_id == jwt.claims().oid)
-    {
-        log::info!("refusing to log for {}/{}", jwt.claims().oid, jwt.claims().name);
+    if config.log.ignored_user_ids.iter().any(|uid| *uid == *user_id) {
+        log::info!("refusing to log for {}/{}", user_id, user_name);
         return;
     }
 
@@ -56,10 +49,10 @@ pub async fn log_deal_use(
     let dt = tz.from_utc_datetime(&Utc::now().naive_utc());
 
     let usage_log = UsageLog {
-        user_id: jwt.claims().oid.to_string(),
+        user_id: user_id.to_string(),
         deal_readable: short_name.to_string(),
         deal_uuid: deal_id.to_string(),
-        user_readable: jwt.claims().name.to_string(),
+        user_readable: user_name.to_string(),
         message: "Deal Used",
         local_time: dt.format("%r %v %Z").to_string(),
     };
@@ -82,7 +75,7 @@ pub async fn log_deal_use(
     let embed = EmbedBuilder::new()
         .color(mc_donalds::RED)
         .description("**Deal Used**")
-        .field(EmbedFieldBuilder::new("Name", jwt.claims().name.to_string()))
+        .field(EmbedFieldBuilder::new("Name", user_name.to_string()))
         .field(EmbedFieldBuilder::new("Deal", short_name))
         .timestamp(
             Timestamp::from_secs(dt.timestamp())

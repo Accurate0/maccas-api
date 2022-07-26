@@ -1,36 +1,41 @@
 use crate::constants::mc_donalds;
 use crate::guards::authorization::AuthorizationHeader;
 use crate::guards::correlation_id::CorrelationId;
+use crate::guards::log::LogHeader;
 use crate::logging::log_deal_use;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
+use crate::types::jwt::JwtClaim;
 use crate::{client, routes};
 use anyhow::Context;
 use chrono::Duration;
+use jwt::{Header, Token};
 use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-        post,
-        path = "/deals/{dealId}",
-        responses(
-            (status = 200, description = "Added a deal", body = OfferResponse),
-            (status = 400, description = "Error on McDonald's side", body = ApiError),
-            (status = 404, description = "Deal not found", body = ApiError),
-            (status = 500, description = "Internal Server Error", body = ApiError),
-        ),
-        params(
-            ("dealId" = String, path, description = "The deal id to add"),
-            ("store" = Option<i64>, query, description = "The selected store"),
-        ),
-        tag = "deals",
-    )]
+    post,
+    path = "/deals/{dealId}",
+    responses(
+        (status = 200, description = "Added a deal", body = OfferResponse),
+        (status = 400, description = "Error on McDonald's side"),
+        (status = 404, description = "Deal not found"),
+        (status = 500, description = "Internal Server Error"),
+    ),
+    params(
+        ("store" = Option<i64>, query, description = "The selected store"),
+        ("x-log-user-id" = Option<String>, header, description = "The user id to log for"),
+        ("x-log-user-name" = Option<String>, header, description = "The user name to log for"),
+    ),
+    tag = "deals",
+)]
 #[post("/deals/<deal_id>?<store>")]
 pub async fn add_deal(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
     store: Option<i64>,
     auth: AuthorizationHeader,
+    log: LogHeader,
     correlation_id: CorrelationId,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
@@ -143,10 +148,22 @@ pub async fn add_deal(
                 )
                 .await?
         } else {
-            if auth.0.is_some() {
+            // jwt has priority as it's more reliable
+            let (user_id, user_name) = if let Some(auth_header) = auth.0 {
+                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
+                let claims = jwt.claims();
+                (Some(claims.oid.clone()), Some(claims.name.clone()))
+            } else if log.is_available {
+                (Some(log.user_id.unwrap()), Some(log.user_name.unwrap()))
+            } else {
+                (None, None)
+            };
+
+            if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
                 log_deal_use(
                     &http_client,
-                    auth.0.unwrap().as_str(),
+                    &user_id,
+                    &user_name,
                     &correlation_id.0,
                     &short_name,
                     deal_id,

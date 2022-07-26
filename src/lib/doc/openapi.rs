@@ -44,7 +44,7 @@ use utoipa::OpenApi;
         UserOptions,
         RestaurantAddress,
         AccountPointResponse,
-        AccountPointMap
+        AccountPointMap,
     )
 )]
 pub struct ApiDoc;
