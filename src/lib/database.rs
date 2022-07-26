@@ -417,6 +417,11 @@ impl Database for DynamoDatabase {
                 let now: DateTime<Utc> = now.into();
                 let now = now.to_rfc3339();
 
+                // keep older deals around for 12hrs
+                // hotlinking etc
+                let ttl: DateTime<Utc> =
+                    Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
+
                 let resp: Vec<Offer> = resp
                     .iter_mut()
                     .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
@@ -435,13 +440,10 @@ impl Database for DynamoDatabase {
                         OFFER_LIST,
                         AttributeValue::S(serde_json::to_string(&resp).unwrap()),
                     )
+                    .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
                     .send()
                     .await?;
 
-                // keep older deals around for 12hrs
-                // hotlinking etc
-                let ttl: DateTime<Utc> =
-                    Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
                 // v2 cache structure
                 for item in &resp {
                     self.client
