@@ -21,6 +21,7 @@ pub mod mc_donalds {
         pub const DISTANCE: &str = "10000";
         pub const LATITUDE: &str = "37.4219";
         pub const LONGITUDE: &str = "-122.084";
+        pub const STORE_UNIQUE_ID_TYPE: &str = "NSN";
     }
     pub const RED: u32 = 0xDA291C;
     pub const IMAGE_BUCKET: &str =

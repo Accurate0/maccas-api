@@ -1,4 +1,5 @@
 use crate::constants::mc_donalds;
+use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::guards::authorization::AuthorizationHeader;
 use crate::guards::correlation_id::CorrelationId;
 use crate::guards::log::LogHeader;
@@ -151,8 +152,10 @@ pub async fn add_deal(
         } else {
             // jwt has priority as it's more reliable
             let (user_id, user_name) = if let Some(auth_header) = auth.0 {
+                let auth_header = auth_header.replace("Bearer ", "");
                 let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
                 let claims = jwt.claims();
+
                 (Some(claims.oid.clone()), Some(claims.name.clone()))
             } else if log.is_available {
                 (Some(log.user_id.unwrap()), Some(log.user_name.unwrap()))
@@ -161,6 +164,16 @@ pub async fn add_deal(
             };
 
             if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
+                let restaurant_info = api_client
+                    .get_restaurant(
+                        &store.unwrap_or(mc_donalds::default::STORE_ID),
+                        FILTER,
+                        STORE_UNIQUE_ID_TYPE,
+                    )
+                    .await;
+
+                let store_name = restaurant_info.unwrap().body.response.restaurant.name;
+
                 log_deal_use(
                     &http_client,
                     &user_id,
@@ -170,6 +183,7 @@ pub async fn add_deal(
                     deal_id,
                     &offer.image_base_name,
                     &ctx.config,
+                    &store_name,
                 )
                 .await;
             }

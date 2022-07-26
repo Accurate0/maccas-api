@@ -18,6 +18,7 @@ pub async fn last_refresh(
     ctx: &State<Context<'_>>,
 ) -> Result<Json<LastRefreshInformation>, ApiError> {
     let response = ctx.database.get_refresh_time_for_offer_cache().await?;
+
     Ok(Json(LastRefreshInformation {
         last_refresh: response,
     }))
