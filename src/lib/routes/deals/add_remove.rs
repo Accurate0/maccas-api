@@ -23,7 +23,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     params(
-        ("store" = Option<i64>, query, description = "The selected store"),
         ("x-log-user-id" = Option<String>, header, description = "The user id to log for"),
         ("x-log-user-name" = Option<String>, header, description = "The user name to log for"),
     ),
@@ -192,9 +191,6 @@ pub async fn add_deal(
             (status = 400, description = "Error on McDonald's side"),
             (status = 404, description = "Deal not found"),
             (status = 500, description = "Internal Server Error"),
-        ),
-        params(
-            ("dealId" = String, path, description = "The deal id to remove"),
         ),
         tag = "deals",
     )]

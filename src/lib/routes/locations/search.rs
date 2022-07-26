@@ -16,9 +16,6 @@ use rocket::{serde::json::Json, State};
         (status = 404, description = "No locations found"),
         (status = 500, description = "Internal Server Error"),
     ),
-    params(
-        ("text" = String, query, description = "Text to search by"),
-    ),
     tag = "location",
 )]
 #[get("/locations/search?<text>")]
