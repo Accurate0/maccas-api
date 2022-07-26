@@ -14,11 +14,6 @@ use rocket::{serde::json::Json, State};
         (status = 400, description = "Invalid/missing parameters"),
         (status = 500, description = "Internal Server Error"),
     ),
-    params(
-        ("distance" = f64, query, description = "search distance"),
-        ("latitude" = f64, query, description = "latitude"),
-        ("longitude" = f64, query, description = "longitude"),
-    ),
     tag = "location",
 )]
 #[get("/locations?<distance>&<latitude>&<longitude>")]

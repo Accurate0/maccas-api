@@ -14,9 +14,6 @@ use rocket::{serde::json::Json, State};
         (status = 404, description = "Deal not found"),
         (status = 500, description = "Internal Server Error"),
     ),
-    params(
-        ("store" = Option<i64>, query, description = "The selected store"),
-    ),
     tag = "deals",
 )]
 #[get("/code/<deal_id>?<store>")]
