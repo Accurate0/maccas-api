@@ -14,7 +14,9 @@ use rocket::{serde::json::Json, State};
     tag = "statistics",
 )]
 #[get("/statistics/total-accounts")]
-pub async fn get_total_accounts(ctx: &State<routes::Context<'_>>) -> Result<Json<TotalAccountsResponse>, ApiError> {
+pub async fn get_total_accounts(
+    ctx: &State<routes::Context<'_>>,
+) -> Result<Json<TotalAccountsResponse>, ApiError> {
     let offers = ctx.database.get_all_offers_as_map().await?;
     Ok(Json(TotalAccountsResponse(offers.len() as i64)))
 }

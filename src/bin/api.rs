@@ -78,7 +78,8 @@ async fn main() -> Result<(), LambdaError> {
     if is_aws {
         rocket.lambda().launch().await
     } else {
-        let allowed_origins = AllowedOrigins::some_exact(&["https://maccas.anurag.sh", "http://localhost:3000"]);
+        let allowed_origins =
+            AllowedOrigins::some_exact(&["https://maccas.anurag.sh", "http://localhost:3000"]);
         let cors = rocket_cors::CorsOptions {
             allowed_origins,
             allowed_methods: vec![Method::Get, Method::Post, Method::Delete]

@@ -1,7 +1,7 @@
 use crate::config::{Tables, UserAccount};
 use crate::constants::db::{
-    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID,
-    OFFER_LIST, POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
+    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, DEVICE_ID, LAST_REFRESH,
+    OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds;
 use crate::types::api::{Offer, PointsResponse};
@@ -25,8 +25,13 @@ use tokio_stream::StreamExt;
 pub trait Database {
     async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error>;
     async fn get_all_offers_as_vec(&self) -> Result<Vec<Offer>, anyhow::Error>;
-    async fn get_offers_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error>;
-    async fn set_offers_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error>;
+    async fn get_offers_for(&self, account_name: &str)
+        -> Result<Option<Vec<Offer>>, anyhow::Error>;
+    async fn set_offers_for(
+        &self,
+        account_name: &str,
+        offer_list: &[Offer],
+    ) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
@@ -80,7 +85,11 @@ pub trait Database {
     async fn get_all_locked_deals(&self) -> Result<Vec<String>, anyhow::Error>;
     async fn delete_all_locked_deals(&self) -> Result<(), anyhow::Error>;
     async fn get_device_id_for(&self, account_name: &str) -> Result<Option<String>, anyhow::Error>;
-    async fn set_device_id_for(&self, account_name: &str, device_id: &str) -> Result<(), anyhow::Error>;
+    async fn set_device_id_for(
+        &self,
+        account_name: &str,
+        device_id: &str,
+    ) -> Result<(), anyhow::Error>;
 }
 
 pub struct DynamoDatabase {
@@ -161,7 +170,10 @@ impl Database for DynamoDatabase {
         Ok(offer_list)
     }
 
-    async fn get_offers_for(&self, account_name: &str) -> Result<Option<Vec<Offer>>, anyhow::Error> {
+    async fn get_offers_for(
+        &self,
+        account_name: &str,
+    ) -> Result<Option<Vec<Offer>>, anyhow::Error> {
         let table_resp = self
             .client
             .get_item()
@@ -183,7 +195,11 @@ impl Database for DynamoDatabase {
         })
     }
 
-    async fn set_offers_for(&self, account_name: &str, offer_list: &[Offer]) -> Result<(), anyhow::Error> {
+    async fn set_offers_for(
+        &self,
+        account_name: &str,
+        offer_list: &[Offer],
+    ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
         let now = now.to_rfc3339();
@@ -216,7 +232,8 @@ impl Database for DynamoDatabase {
                 .await
             {
                 Ok(_) => {
-                    utils::remove_all_from_deal_stack_for(api_client, &account.account_name).await?;
+                    utils::remove_all_from_deal_stack_for(api_client, &account.account_name)
+                        .await?;
                     self.refresh_point_cache_for(account, api_client).await?;
                 }
                 Err(e) => {
@@ -226,7 +243,10 @@ impl Database for DynamoDatabase {
             };
         }
 
-        log::info!("refreshed {} account offer caches..", client_map.keys().len());
+        log::info!(
+            "refreshed {} account offer caches..",
+            client_map.keys().len()
+        );
         Ok(failed_accounts)
     }
 
@@ -249,8 +269,14 @@ impl Database for DynamoDatabase {
                         ACCOUNT_HASH,
                         AttributeValue::S(get_short_sha1(&account.account_name.to_string())),
                     )
-                    .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
-                    .item(ACCOUNT_INFO, AttributeValue::M(serde_dynamo::to_item(account)?))
+                    .item(
+                        ACCOUNT_NAME,
+                        AttributeValue::S(account.account_name.to_string()),
+                    )
+                    .item(
+                        ACCOUNT_INFO,
+                        AttributeValue::M(serde_dynamo::to_item(account)?),
+                    )
                     .item(LAST_REFRESH, AttributeValue::S(now.clone()))
                     .item(
                         POINT_INFO,
@@ -300,16 +326,25 @@ impl Database for DynamoDatabase {
             .table_name(&self.point_table_name)
             .key_condition_expression("#hash = :account_hash")
             .expression_attribute_names("#hash", ACCOUNT_HASH)
-            .expression_attribute_values(":account_hash", AttributeValue::S(account_hash.to_string()))
+            .expression_attribute_values(
+                ":account_hash",
+                AttributeValue::S(account_hash.to_string()),
+            )
             .send()
             .await?;
 
         if resp.items().context("no account found")?.len() == 1 {
             let item = resp.items().unwrap().first().unwrap();
-            let account: UserAccount =
-                serde_dynamo::from_item(item[ACCOUNT_INFO].as_m().ok().context("no account")?.clone())?;
-            let points: PointsResponse =
-                serde_dynamo::from_item(item[POINT_INFO].as_m().ok().context("no points")?.clone())?;
+            let account: UserAccount = serde_dynamo::from_item(
+                item[ACCOUNT_INFO]
+                    .as_m()
+                    .ok()
+                    .context("no account")?
+                    .clone(),
+            )?;
+            let points: PointsResponse = serde_dynamo::from_item(
+                item[POINT_INFO].as_m().ok().context("no points")?.clone(),
+            )?;
 
             Ok((account, points))
         } else {
@@ -337,7 +372,11 @@ impl Database for DynamoDatabase {
         }
     }
 
-    async fn set_device_id_for(&self, account_name: &str, device_id: &str) -> Result<(), anyhow::Error> {
+    async fn set_device_id_for(
+        &self,
+        account_name: &str,
+        device_id: &str,
+    ) -> Result<(), anyhow::Error> {
         self.client
             .update_item()
             .table_name(&self.table_name)
@@ -387,22 +426,32 @@ impl Database for DynamoDatabase {
                 self.client
                     .put_item()
                     .table_name(&self.cache_table_name)
-                    .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+                    .item(
+                        ACCOUNT_NAME,
+                        AttributeValue::S(account.account_name.to_string()),
+                    )
                     .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-                    .item(OFFER_LIST, AttributeValue::S(serde_json::to_string(&resp).unwrap()))
+                    .item(
+                        OFFER_LIST,
+                        AttributeValue::S(serde_json::to_string(&resp).unwrap()),
+                    )
                     .send()
                     .await?;
 
                 // keep older deals around for 12hrs
                 // hotlinking etc
-                let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
+                let ttl: DateTime<Utc> =
+                    Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
                 // v2 cache structure
                 for item in &resp {
                     self.client
                         .put_item()
                         .table_name(&self.cache_table_name_v2)
                         .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
-                        .item(ACCOUNT_INFO, AttributeValue::M(serde_dynamo::to_item(account)?))
+                        .item(
+                            ACCOUNT_INFO,
+                            AttributeValue::M(serde_dynamo::to_item(account)?),
+                        )
                         .item(LAST_REFRESH, AttributeValue::S(now.clone()))
                         .item(OFFER, AttributeValue::M(serde_dynamo::to_item(item)?))
                         .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
@@ -451,8 +500,15 @@ impl Database for DynamoDatabase {
 
         let resp = resp.items.context("missing value")?;
         let resp = resp.first().context("missing value")?;
-        let account = serde_dynamo::from_item(resp[ACCOUNT_INFO].as_m().ok().context("missing value")?.clone())?;
-        let offer: Offer = serde_dynamo::from_item(resp[OFFER].as_m().ok().context("missing value")?.clone())?;
+        let account = serde_dynamo::from_item(
+            resp[ACCOUNT_INFO]
+                .as_m()
+                .ok()
+                .context("missing value")?
+                .clone(),
+        )?;
+        let offer: Offer =
+            serde_dynamo::from_item(resp[OFFER].as_m().ok().context("missing value")?.clone())?;
 
         Ok((account, offer))
     }
@@ -470,8 +526,9 @@ impl Database for DynamoDatabase {
 
         if resp.items().context("no user config found")?.len() == 1 {
             let item = resp.items().unwrap().first().unwrap();
-            let config: UserOptions =
-                serde_dynamo::from_item(item[USER_CONFIG].as_m().ok().context("no config")?.clone())?;
+            let config: UserOptions = serde_dynamo::from_item(
+                item[USER_CONFIG].as_m().ok().context("no config")?.clone(),
+            )?;
 
             Ok(config)
         } else {
@@ -519,7 +576,10 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.table_name)
-            .key(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+            .key(
+                ACCOUNT_NAME,
+                AttributeValue::S(account.account_name.to_string()),
+            )
             .send()
             .await?;
 
@@ -569,7 +629,10 @@ impl Database for DynamoDatabase {
             self.client
                 .put_item()
                 .table_name(&self.table_name)
-                .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+                .item(
+                    ACCOUNT_NAME,
+                    AttributeValue::S(account.account_name.to_string()),
+                )
                 .item(ACCESS_TOKEN, AttributeValue::S(resp.access_token))
                 .item(REFRESH_TOKEN, AttributeValue::S(resp.refresh_token))
                 .item(LAST_REFRESH, AttributeValue::S(now))
@@ -603,7 +666,14 @@ impl Database for DynamoDatabase {
                         },
                         None => {
                             return self
-                                .get_specific_client(http_client, client_id, client_secret, sensor_data, account, true)
+                                .get_specific_client(
+                                    http_client,
+                                    client_id,
+                                    client_secret,
+                                    sensor_data,
+                                    account,
+                                    true,
+                                )
                                 .await;
                         }
                     };
@@ -616,7 +686,14 @@ impl Database for DynamoDatabase {
                         },
                         None => {
                             return self
-                                .get_specific_client(http_client, client_id, client_secret, sensor_data, account, true)
+                                .get_specific_client(
+                                    http_client,
+                                    client_id,
+                                    client_secret,
+                                    sensor_data,
+                                    account,
+                                    true,
+                                )
                                 .await;
                         }
                     };
@@ -629,47 +706,56 @@ impl Database for DynamoDatabase {
                             let now: DateTime<Utc> = now.into();
                             let now: DateTime<FixedOffset> = DateTime::from(now);
 
-                            let last_refresh = DateTime::parse_from_rfc3339(s).context("Invalid date string")?;
+                            let last_refresh =
+                                DateTime::parse_from_rfc3339(s).context("Invalid date string")?;
 
                             let diff = now - last_refresh;
 
                             if diff.num_minutes() >= 14 {
-                                log::info!("{}: >= 14 mins since last attempt.. refreshing..", account.account_name);
+                                log::info!(
+                                    "{}: >= 14 mins since last attempt.. refreshing..",
+                                    account.account_name
+                                );
 
                                 let res = api_client.customer_login_refresh(&refresh_token).await?;
-                                let (new_access_token, new_ref_token) = if res.status == StatusCode::OK {
-                                    let unwrapped_res = res.body.response.unwrap();
-                                    log::info!("refresh success..");
+                                let (new_access_token, new_ref_token) =
+                                    if res.status == StatusCode::OK {
+                                        let unwrapped_res = res.body.response.unwrap();
+                                        log::info!("refresh success..");
 
-                                    let new_access_token = unwrapped_res.access_token;
-                                    let new_ref_token = unwrapped_res.refresh_token;
+                                        let new_access_token = unwrapped_res.access_token;
+                                        let new_ref_token = unwrapped_res.refresh_token;
 
-                                    (new_access_token, new_ref_token)
-                                } else {
-                                    let response = api_client.security_auth_token(client_secret).await?;
-                                    api_client.set_login_token(&response.body.response.token);
+                                        (new_access_token, new_ref_token)
+                                    } else {
+                                        let response =
+                                            api_client.security_auth_token(client_secret).await?;
+                                        api_client.set_login_token(&response.body.response.token);
 
-                                    let response = api_client
-                                        .customer_login(
-                                            &account.login_username,
-                                            &account.login_password,
-                                            &sensor_data,
-                                            &device_id,
-                                        )
-                                        .await?;
+                                        let response = api_client
+                                            .customer_login(
+                                                &account.login_username,
+                                                &account.login_password,
+                                                &sensor_data,
+                                                &device_id,
+                                            )
+                                            .await?;
 
-                                    log::info!("refresh failed, logged in again..");
-                                    let new_access_token = response.body.response.access_token;
-                                    let new_ref_token = response.body.response.refresh_token;
+                                        log::info!("refresh failed, logged in again..");
+                                        let new_access_token = response.body.response.access_token;
+                                        let new_ref_token = response.body.response.refresh_token;
 
-                                    (new_access_token, new_ref_token)
-                                };
+                                        (new_access_token, new_ref_token)
+                                    };
 
                                 api_client.set_auth_token(&new_access_token);
                                 self.client
                                     .put_item()
                                     .table_name(&self.table_name)
-                                    .item(ACCOUNT_NAME, AttributeValue::S(account.account_name.to_string()))
+                                    .item(
+                                        ACCOUNT_NAME,
+                                        AttributeValue::S(account.account_name.to_string()),
+                                    )
                                     .item(ACCESS_TOKEN, AttributeValue::S(new_access_token))
                                     .item(REFRESH_TOKEN, AttributeValue::S(new_ref_token))
                                     .item(LAST_REFRESH, AttributeValue::S(now.to_rfc3339()))
@@ -700,7 +786,14 @@ impl Database for DynamoDatabase {
         let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
         for user in account_list {
             match self
-                .get_specific_client(http_client, client_id, client_secret, sensor_data, user, force_login)
+                .get_specific_client(
+                    http_client,
+                    client_id,
+                    client_secret,
+                    sensor_data,
+                    user,
+                    force_login,
+                )
                 .await
             {
                 Ok(c) => {

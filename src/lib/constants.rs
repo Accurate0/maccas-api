@@ -23,7 +23,8 @@ pub mod mc_donalds {
         pub const LONGITUDE: &str = "-122.084";
     }
     pub const RED: u32 = 0xDA291C;
-    pub const IMAGE_BUCKET: &str = "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
+    pub const IMAGE_BUCKET: &str =
+        "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
 }
 
 pub mod api_base {

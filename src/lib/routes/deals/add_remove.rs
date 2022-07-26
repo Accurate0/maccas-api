@@ -69,9 +69,9 @@ pub async fn add_deal(
 
         if let Some(current_deal_stack) = current_deal_stack {
             if current_deal_stack.len() != 1
-                || !current_deal_stack
-                    .into_iter()
-                    .any(|deal| deal.offer_id == offer_id && deal.offer_proposition_id == offer_proposition_id)
+                || !current_deal_stack.into_iter().any(|deal| {
+                    deal.offer_id == offer_id && deal.offer_proposition_id == offer_proposition_id
+                })
             {
                 return Err(ApiError::AccountNotAvailable);
             }
@@ -114,7 +114,9 @@ pub async fn add_deal(
                     // no need to lock it anymore
                     new_matching_offer.deal_uuid = offer.deal_uuid.clone();
 
-                    ctx.database.set_offers_for(&account.account_name, &new_offers).await?;
+                    ctx.database
+                        .set_offers_for(&account.account_name, &new_offers)
+                        .await?;
                     log::info!("updated uuid, and saved: {}", offer.deal_uuid);
                 }
                 Err(e) => {
