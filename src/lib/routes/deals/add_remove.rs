@@ -172,7 +172,10 @@ pub async fn add_deal(
                     )
                     .await;
 
-                let store_name = restaurant_info.unwrap().body.response.restaurant.name;
+                let store_name = match restaurant_info {
+                    Ok(restaurant_info) => restaurant_info.body.response.restaurant.name,
+                    _ => "Error getting store name".to_string(),
+                };
 
                 log_deal_use(
                     &http_client,
