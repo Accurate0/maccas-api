@@ -31,6 +31,9 @@ pub mod api_base {
     pub const KVP: &str = "https://api.anurag.sh/kvp/v1";
     pub const PLACES: &str = "https://api.anurag.sh/places/v1";
     pub const LOG: &str = "https://api.anurag.sh/log/v1";
+    #[cfg(debug_assertions)]
+    pub const THIS: &str = "http://localhost:8000";
+    #[cfg(not(debug_assertions))]
     pub const THIS: &str = "https://api.anurag.sh/maccas/v1";
 }
 
