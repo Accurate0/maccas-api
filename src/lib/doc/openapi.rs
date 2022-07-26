@@ -11,8 +11,8 @@ use crate::routes::statistics::account::*;
 use crate::routes::statistics::total_accounts::*;
 use crate::routes::user::config::*;
 use crate::types::api::{
-    AccountPointMap, AccountPointResponse, AccountResponse, LastRefreshInformation, Offer, OfferResponse,
-    RestaurantAddress, RestaurantInformation,
+    AccountPointMap, AccountPointResponse, AccountResponse, LastRefreshInformation, Offer,
+    OfferResponse, RestaurantAddress, RestaurantInformation,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;

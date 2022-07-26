@@ -56,6 +56,8 @@ pub async fn update_user_config(
     let user_id = &jwt.claims().oid;
     let user_name = &jwt.claims().name;
 
-    ctx.database.set_config_by_user_id(user_id, &config, user_name).await?;
+    ctx.database
+        .set_config_by_user_id(user_id, &config, user_name)
+        .await?;
     Ok(Status::NoContent)
 }

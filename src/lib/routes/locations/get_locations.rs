@@ -41,7 +41,12 @@ pub async fn get_locations(
         )
         .await?;
     let resp = api_client
-        .restaurant_location(&distance, &latitude, &longitude, mc_donalds::default::FILTER)
+        .restaurant_location(
+            &distance,
+            &latitude,
+            &longitude,
+            mc_donalds::default::FILTER,
+        )
         .await?;
 
     let mut location_list = Vec::new();

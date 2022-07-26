@@ -135,7 +135,10 @@ pub struct OfferResponse {
 impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse {
     fn from(res: libmaccas::types::response::OfferDealStackResponse) -> Self {
         Self {
-            random_code: res.response.expect("must have deal stack response").random_code,
+            random_code: res
+                .response
+                .expect("must have deal stack response")
+                .random_code,
             message: res.status.message,
         }
     }

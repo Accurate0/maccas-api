@@ -59,7 +59,12 @@ pub async fn search_locations(
             let lat = response.geometry.location.lat;
             let lng = response.geometry.location.lng;
             let resp = api_client
-                .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, mc_donalds::default::FILTER)
+                .restaurant_location(
+                    &LOCATION_SEARCH_DISTANCE,
+                    &lat,
+                    &lng,
+                    mc_donalds::default::FILTER,
+                )
                 .await?;
 
             match resp.body.response {

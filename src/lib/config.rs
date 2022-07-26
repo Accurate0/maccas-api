@@ -68,7 +68,9 @@ pub struct ApiConfig {
 }
 
 impl ApiConfig {
-    async fn load_base_config_from_s3(client: &aws_sdk_s3::Client) -> Result<AggregatedBytes, anyhow::Error> {
+    async fn load_base_config_from_s3(
+        client: &aws_sdk_s3::Client,
+    ) -> Result<AggregatedBytes, anyhow::Error> {
         let resp = client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
