@@ -719,10 +719,11 @@ impl Database for DynamoDatabase {
                                     account.account_name
                                 );
 
-                                let res = api_client.customer_login_refresh(&refresh_token).await?;
-                                let (new_access_token, new_ref_token) =
+                                let res = api_client.customer_login_refresh(&refresh_token).await;
+                                let (new_access_token, new_ref_token) = if let Ok(res) = res {
                                     if res.status == StatusCode::OK {
-                                        let unwrapped_res = res.body.response.unwrap();
+                                        let unwrapped_res =
+                                            res.body.response.context("no response")?;
                                         log::info!("refresh success..");
 
                                         let new_access_token = unwrapped_res.access_token;
@@ -748,7 +749,27 @@ impl Database for DynamoDatabase {
                                         let new_ref_token = response.body.response.refresh_token;
 
                                         (new_access_token, new_ref_token)
-                                    };
+                                    }
+                                } else {
+                                    let response =
+                                        api_client.security_auth_token(client_secret).await?;
+                                    api_client.set_login_token(&response.body.response.token);
+
+                                    let response = api_client
+                                        .customer_login(
+                                            &account.login_username,
+                                            &account.login_password,
+                                            &sensor_data,
+                                            &device_id,
+                                        )
+                                        .await?;
+
+                                    log::info!("refresh failed, logged in again..");
+                                    let new_access_token = response.body.response.access_token;
+                                    let new_ref_token = response.body.response.refresh_token;
+
+                                    (new_access_token, new_ref_token)
+                                };
 
                                 api_client.set_auth_token(&new_access_token);
                                 self.client

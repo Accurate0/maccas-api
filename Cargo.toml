@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-libmaccas = "0.20.0"
+libmaccas = "0.21.0"
 
 lambda_runtime = "0.6.0"
 lambda_http = "0.6.0"
@@ -53,6 +53,9 @@ utoipa = { version = "1.1.0", features = [ "rocket_extras" ] }
 
 [build-dependencies]
 vergen = "7.2.1"
+
+# [patch.crates-io]
+# libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
 
 [lib]
 name = "libapi"
