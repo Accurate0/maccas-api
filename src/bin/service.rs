@@ -25,9 +25,16 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
     let env = std::env::var(constants::AWS_REGION)
         .context("AWS_REGION not set")
         .unwrap();
-    let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env).await?;
+
+    let config = ApiConfig::load_from_s3(&shared_config).await?;
     let client = Client::new(&shared_config);
     let database: Box<dyn Database> = Box::new(DynamoDatabase::new(client, &config.tables));
+
+    let count = database
+        .increment_refresh_tracking(&env, config.refresh_counts[&env])
+        .await?;
+
+    let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env, count).await?;
     let http_client = client::get_http_client();
     let account_list = config.users.as_ref().context("must have account list")?;
     let (client_map, login_failed_accounts) = database
@@ -47,9 +54,12 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .await?;
 
     if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
-        log::error!("failed: {:#?}", failed_accounts);
+        log::error!("refresh failed: {:#?}", failed_accounts);
         log::error!("login failed: {:#?}", login_failed_accounts);
-        bail!("accounts failed to update")
+        bail!(
+            "{} accounts failed to update",
+            failed_accounts.len() + login_failed_accounts.len()
+        )
     }
 
     Ok(json!(
