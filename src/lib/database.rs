@@ -1,7 +1,8 @@
 use crate::config::{Tables, UserAccount};
 use crate::constants::db::{
-    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, DEAL_UUID, DEVICE_ID, LAST_REFRESH,
-    OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, TTL, USER_CONFIG, USER_ID, USER_NAME,
+    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
+    LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
+    USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds;
 use crate::types::api::{Offer, PointsResponse};
@@ -90,6 +91,11 @@ pub trait Database {
         account_name: &str,
         device_id: &str,
     ) -> Result<(), anyhow::Error>;
+    async fn increment_refresh_tracking(
+        &self,
+        region: &str,
+        max_count: i8,
+    ) -> Result<i8, anyhow::Error>;
 }
 
 pub struct DynamoDatabase {
@@ -100,6 +106,7 @@ pub struct DynamoDatabase {
     cache_table_name_v2: String,
     offer_id_table_name: String,
     point_table_name: String,
+    refresh_tracking: String,
 }
 
 impl DynamoDatabase {
@@ -112,12 +119,59 @@ impl DynamoDatabase {
             cache_table_name_v2: tables.offer_cache_v2.to_owned(),
             offer_id_table_name: tables.offer_id.to_owned(),
             point_table_name: tables.points.to_owned(),
+            refresh_tracking: tables.refresh_tracking.to_owned(),
         }
     }
 }
 
 #[async_trait]
 impl Database for DynamoDatabase {
+    async fn increment_refresh_tracking(
+        &self,
+        region: &str,
+        max_count: i8,
+    ) -> Result<i8, anyhow::Error> {
+        let table_resp = self
+            .client
+            .get_item()
+            .table_name(&self.refresh_tracking)
+            .key(REGION, AttributeValue::S(region.to_string()))
+            .send()
+            .await?;
+
+        let item = table_resp.item();
+
+        match item {
+            Some(item) => {
+                let count = item[CURRENT_LIST].as_n().unwrap();
+                let mut new_count = count.parse::<i8>().unwrap() + 1;
+                if new_count >= max_count {
+                    new_count = 0;
+                }
+
+                self.client
+                    .put_item()
+                    .table_name(&self.refresh_tracking)
+                    .item(REGION, AttributeValue::S(region.to_string()))
+                    .item(CURRENT_LIST, AttributeValue::N(new_count.to_string()))
+                    .send()
+                    .await?;
+
+                Ok(new_count)
+            }
+            None => {
+                self.client
+                    .put_item()
+                    .table_name(&self.refresh_tracking)
+                    .item(REGION, AttributeValue::S(region.to_string()))
+                    .item(CURRENT_LIST, AttributeValue::N("0".to_string()))
+                    .send()
+                    .await?;
+                Ok(0)
+            }
+        }
+    }
+
     async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error> {
         let mut offer_map = HashMap::<String, Vec<Offer>>::new();
 

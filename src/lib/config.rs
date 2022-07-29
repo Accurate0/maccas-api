@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::constants;
 use aws_sdk_s3::types::AggregatedBytes;
@@ -28,6 +28,7 @@ pub struct Tables {
     pub offer_cache_v2: String,
     pub offer_id: String,
     pub points: String,
+    pub refresh_tracking: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -65,6 +66,7 @@ pub struct ApiConfig {
     pub discord: DiscordConfig,
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
+    pub refresh_counts: HashMap<String, i8>,
 }
 
 impl ApiConfig {
@@ -111,6 +113,7 @@ impl ApiConfig {
     pub async fn load_from_s3_with_region_accounts(
         shared_config: &aws_types::SdkConfig,
         region: &str,
+        option: i8,
     ) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
@@ -118,7 +121,11 @@ impl ApiConfig {
         let resp = s3_client
             .get_object()
             .bucket(constants::CONFIG_BUCKET_NAME)
-            .key(constants::config::REGION_ACCOUNTS_FILE.replace("{region}", region))
+            .key(
+                constants::config::REGION_ACCOUNTS_FILE
+                    .replace("{region}", region)
+                    .replace("{option}", &option.to_string()),
+            )
             .send()
             .await?;
         let accounts_bytes = resp.body.collect().await?;

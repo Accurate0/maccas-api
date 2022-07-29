@@ -41,7 +41,7 @@ pub mod api_base {
 pub mod config {
     pub const BASE_FILE: &str = "base-config.json";
     pub const ALL_ACCOUNTS_FILE: &str = "accounts.json";
-    pub const REGION_ACCOUNTS_FILE: &str = "accounts-{region}.json";
+    pub const REGION_ACCOUNTS_FILE: &str = "{region}/accounts-{region}-{option}.json";
 }
 
 pub mod db {
@@ -64,4 +64,6 @@ pub mod db {
     pub const USER_CONFIG: &str = "user_config";
     pub const USER_NAME: &str = "user_name";
     pub const DEVICE_ID: &str = "device_id";
+    pub const REGION: &str = "region";
+    pub const CURRENT_LIST: &str = "current_list";
 }
