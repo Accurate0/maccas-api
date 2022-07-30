@@ -52,7 +52,7 @@ fern = "0.6.1"
 utoipa = { version = "1.1.0", features = [ "rocket_extras" ] }
 
 [build-dependencies]
-vergen = "7.2.1"
+vergen = "7.3.2"
 
 # [patch.crates-io]
 # libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
