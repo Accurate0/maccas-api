@@ -139,7 +139,10 @@ impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse 
                 .response
                 .expect("must have deal stack response")
                 .random_code,
-            message: res.status.message,
+            message: res
+                .status
+                .message
+                .unwrap_or_else(|| "No message".to_string()),
         }
     }
 }

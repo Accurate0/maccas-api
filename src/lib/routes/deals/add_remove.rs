@@ -173,7 +173,13 @@ pub async fn add_deal(
                     .await;
 
                 let store_name = match restaurant_info {
-                    Ok(restaurant_info) => restaurant_info.body.response.restaurant.name,
+                    Ok(restaurant_info) => {
+                        let response = restaurant_info.body.response;
+                        match response {
+                            Some(response) => response.restaurant.name,
+                            None => "Unknown/Invalid Name".to_owned(),
+                        }
+                    }
                     _ => "Error getting store name".to_string(),
                 };
 
