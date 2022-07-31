@@ -1,4 +1,6 @@
 use crate::{
+    client,
+    constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
     guards::authorization::RequiredAuthorizationHeader,
     routes,
     types::{error::ApiError, jwt::JwtClaim, user::UserOptions},
@@ -56,8 +58,42 @@ pub async fn update_user_config(
     let user_id = &jwt.claims().oid;
     let user_name = &jwt.claims().name;
 
-    ctx.database
-        .set_config_by_user_id(user_id, &config, user_name)
+    let http_client = client::get_http_client();
+    let api_client = ctx
+        .database
+        .get_specific_client(
+            &http_client,
+            &ctx.config.client_id,
+            &ctx.config.client_secret,
+            &ctx.config.sensor_data,
+            &ctx.config.service_account,
+            false,
+        )
         .await?;
-    Ok(Status::NoContent)
+
+    let resp = api_client
+        .get_restaurant(&config.store_id, FILTER, STORE_UNIQUE_ID_TYPE)
+        .await?;
+
+    if resp.status.is_success() {
+        // ensure the store id exists
+        // override the name
+        let response = resp.body.response;
+        let store_name = match response {
+            Some(response) => response.restaurant.name,
+            None => "Unknown/Invalid Name".to_owned(),
+        };
+
+        let config = UserOptions {
+            store_name: Some(store_name),
+            ..config.0
+        };
+
+        ctx.database
+            .set_config_by_user_id(user_id, &config, user_name)
+            .await?;
+        Ok(Status::NoContent)
+    } else {
+        Ok(Status::BadRequest)
+    }
 }
