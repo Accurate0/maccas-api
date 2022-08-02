@@ -86,41 +86,6 @@
     },
     {
       "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2021-01-01-preview",
-      "name": "general-apim/Maccas-API-v1/Lock-Deal",
-      "dependsOn": [],
-      "properties": {
-        "displayName": "Lock Deal",
-        "method": "POST",
-        "urlTemplate": "/deals/lock",
-        "templateParameters": [],
-        "request": {
-          "queryParameters": [
-            {
-              "name": "duration",
-              "type": "number",
-              "required": true
-            }
-          ]
-        },
-        "responses": []
-      }
-    },
-    {
-      "type": "Microsoft.ApiManagement/service/apis/operations",
-      "apiVersion": "2021-01-01-preview",
-      "name": "general-apim/Maccas-API-v1/Unlock-Deal",
-      "dependsOn": [],
-      "properties": {
-        "displayName": "Unlock Deal",
-        "method": "DELETE",
-        "urlTemplate": "/deals/lock",
-        "templateParameters": [],
-        "responses": []
-      }
-    },
-    {
-      "type": "Microsoft.ApiManagement/service/apis/operations",
       "apiVersion": "2021-08-01",
       "name": "general-apim/Maccas-API-v1/Deals",
       "dependsOn": [],
