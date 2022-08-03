@@ -27,7 +27,7 @@ rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
 
 openssl = { version = "0.10", features = ["vendored"] }
-config = { version = "0.13.1", features = ["yaml"] }
+config = { version = "0.13.2", features = ["yaml"] }
 uuid = { version = "1.1.2", features = ["v4"] }
 http = "0.2.6"
 chrono = "0.4.19"
