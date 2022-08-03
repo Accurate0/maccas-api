@@ -12,13 +12,14 @@ use crate::routes::statistics::total_accounts::*;
 use crate::routes::user::config::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, LastRefreshInformation, Offer,
-    OfferResponse, RestaurantAddress, RestaurantInformation,
+    OfferPointsResponse, OfferResponse, PointsResponse, RestaurantAddress, RestaurantInformation,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
 #[openapi(
+    security(("JWT" = []),("API Key" = [])),
     handlers(
         get_code,
         get_deals,
@@ -41,6 +42,8 @@ use utoipa::OpenApi;
         LastRefreshInformation,
         RestaurantInformation,
         AccountResponse,
+        OfferPointsResponse,
+        PointsResponse,
         UserOptions,
         RestaurantAddress,
         AccountPointResponse,
