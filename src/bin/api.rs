@@ -86,7 +86,12 @@ async fn main() -> Result<(), LambdaError> {
                 .into_iter()
                 .map(From::from)
                 .collect(),
-            allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
+            allowed_headers: AllowedHeaders::some(&[
+                "Authorization",
+                "Accept",
+                "Content-Type",
+                "X-Api-Key",
+            ]),
             allow_credentials: true,
             ..Default::default()
         }
