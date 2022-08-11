@@ -16,6 +16,7 @@ use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use http::StatusCode;
 use libmaccas::ApiClient;
+use mime::IMAGE_JPEG;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::StdRng;
 use rand::SeedableRng;
@@ -511,6 +512,7 @@ impl Database for DynamoDatabase {
                                     .put_object()
                                     .bucket(&config.image_bucket)
                                     .key(offer.image_base_name)
+                                    .content_type(IMAGE_JPEG.to_string())
                                     .body(image.into())
                                     .send()
                                     .await?;
