@@ -67,6 +67,7 @@ pub struct ApiConfig {
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub refresh_counts: HashMap<String, i8>,
+    pub image_bucket: String,
 }
 
 impl ApiConfig {
