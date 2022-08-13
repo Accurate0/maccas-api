@@ -375,6 +375,15 @@
         ],
         "description": "",
         "operationId": "get_points",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Valid JWT with user id in allowed list",
+            "required": true,
+            "deprecated": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of all account points",
@@ -401,6 +410,13 @@
         "description": "",
         "operationId": "get_points_by_id",
         "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Valid JWT with user id in allowed list",
+            "required": true,
+            "deprecated": false
+          },
           {
             "name": "account_id",
             "in": "path",
@@ -591,31 +607,6 @@
           }
         }
       },
-      "RestaurantAddress": {
-        "type": "object",
-        "required": [
-          "addressLine"
-        ],
-        "properties": {
-          "addressLine": {
-            "type": "string"
-          }
-        }
-      },
-      "UserOptions": {
-        "type": "object",
-        "required": [
-          "storeId"
-        ],
-        "properties": {
-          "storeName": {
-            "type": "string"
-          },
-          "storeId": {
-            "type": "string"
-          }
-        }
-      },
       "OfferResponse": {
         "type": "object",
         "required": [
@@ -642,86 +633,19 @@
           }
         }
       },
-      "Offer": {
+      "UserOptions": {
         "type": "object",
         "required": [
-          "dealUuid",
-          "count",
-          "offerId",
-          "offerPropositionId",
-          "localValidFrom",
-          "localValidTo",
-          "validFromUTC",
-          "validToUTC",
-          "name",
-          "shortName",
-          "description",
-          "CreationDateUtc",
-          "imageBaseName"
+          "storeId"
         ],
         "properties": {
-          "CreationDateUtc": {
+          "storeId": {
             "type": "string"
           },
-          "shortName": {
-            "type": "string"
-          },
-          "localValidFrom": {
-            "type": "string"
-          },
-          "validFromUTC": {
-            "type": "string"
-          },
-          "dealUuid": {
-            "type": "string"
-          },
-          "localValidTo": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "offerId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "imageBaseName": {
-            "type": "string"
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "validToUTC": {
-            "type": "string"
-          },
-          "offerPropositionId": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "AccountPointMap": {
-        "type": "object",
-        "required": [
-          "name",
-          "totalPoints"
-        ],
-        "properties": {
-          "totalPoints": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
+          "storeName": {
             "type": "string"
           }
         }
-      },
-      "AccountResponse": {
-        "type": "object"
       },
       "PointsResponse": {
         "type": "object",
@@ -740,10 +664,66 @@
           }
         }
       },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
+      "Offer": {
+        "type": "object",
+        "required": [
+          "dealUuid",
+          "count",
+          "offerId",
+          "offerPropositionId",
+          "localValidFrom",
+          "localValidTo",
+          "validFromUTC",
+          "validToUTC",
+          "name",
+          "shortName",
+          "description",
+          "CreationDateUtc",
+          "imageBaseName"
+        ],
+        "properties": {
+          "offerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "validFromUTC": {
+            "type": "string"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "localValidFrom": {
+            "type": "string"
+          },
+          "dealUuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "localValidTo": {
+            "type": "string"
+          },
+          "offerPropositionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "imageBaseName": {
+            "type": "string"
+          },
+          "CreationDateUtc": {
+            "type": "string"
+          },
+          "validToUTC": {
+            "type": "string"
+          }
         }
       },
       "OfferPointsResponse": {
@@ -758,6 +738,42 @@
           },
           "pointsResponse": {
             "$ref": "#/components/schemas/PointsResponse"
+          }
+        }
+      },
+      "RestaurantAddress": {
+        "type": "object",
+        "required": [
+          "addressLine"
+        ],
+        "properties": {
+          "addressLine": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountResponse": {
+        "type": "object"
+      },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "AccountPointMap": {
+        "type": "object",
+        "required": [
+          "name",
+          "totalPoints"
+        ],
+        "properties": {
+          "totalPoints": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
           }
         }
       }
