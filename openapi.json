@@ -500,6 +500,15 @@
         ],
         "description": "",
         "operationId": "get_user_config",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Valid JWT with user id",
+            "required": true,
+            "deprecated": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "Config for current user",
@@ -526,6 +535,15 @@
         ],
         "description": "",
         "operationId": "update_user_config",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Valid JWT with user id",
+            "required": true,
+            "deprecated": false
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -573,32 +591,6 @@
           }
         }
       },
-      "LastRefreshInformation": {
-        "type": "object",
-        "required": [
-          "lastRefresh"
-        ],
-        "properties": {
-          "lastRefresh": {
-            "type": "string"
-          }
-        }
-      },
-      "OfferPointsResponse": {
-        "type": "object",
-        "required": [
-          "offerResponse",
-          "pointsResponse"
-        ],
-        "properties": {
-          "pointsResponse": {
-            "$ref": "#/components/schemas/PointsResponse"
-          },
-          "offerResponse": {
-            "$ref": "#/components/schemas/OfferResponse"
-          }
-        }
-      },
       "RestaurantAddress": {
         "type": "object",
         "required": [
@@ -606,6 +598,46 @@
         ],
         "properties": {
           "addressLine": {
+            "type": "string"
+          }
+        }
+      },
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeName": {
+            "type": "string"
+          },
+          "storeId": {
+            "type": "string"
+          }
+        }
+      },
+      "OfferResponse": {
+        "type": "object",
+        "required": [
+          "randomCode",
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "randomCode": {
+            "type": "string"
+          }
+        }
+      },
+      "LastRefreshInformation": {
+        "type": "object",
+        "required": [
+          "lastRefresh"
+        ],
+        "properties": {
+          "lastRefresh": {
             "type": "string"
           }
         }
@@ -628,20 +660,16 @@
           "imageBaseName"
         ],
         "properties": {
-          "localValidFrom": {
+          "CreationDateUtc": {
             "type": "string"
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
           },
           "shortName": {
             "type": "string"
           },
-          "CreationDateUtc": {
+          "localValidFrom": {
             "type": "string"
           },
-          "imageBaseName": {
+          "validFromUTC": {
             "type": "string"
           },
           "dealUuid": {
@@ -650,35 +678,30 @@
           "localValidTo": {
             "type": "string"
           },
-          "validFromUTC": {
-            "type": "string"
-          },
-          "offerPropositionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "validToUTC": {
-            "type": "string"
-          },
           "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           },
           "offerId": {
             "type": "integer",
             "format": "int64"
           },
-          "description": {
+          "imageBaseName": {
             "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validToUTC": {
+            "type": "string"
+          },
+          "offerPropositionId": {
+            "type": "integer",
+            "format": "int64"
           }
-        }
-      },
-      "AccountResponse": {
-        "type": "object"
-      },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
         }
       },
       "AccountPointMap": {
@@ -688,29 +711,17 @@
           "totalPoints"
         ],
         "properties": {
-          "name": {
-            "type": "string"
-          },
           "totalPoints": {
             "type": "integer",
             "format": "int64"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
-      "OfferResponse": {
-        "type": "object",
-        "required": [
-          "randomCode",
-          "message"
-        ],
-        "properties": {
-          "randomCode": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
+      "AccountResponse": {
+        "type": "object"
       },
       "PointsResponse": {
         "type": "object",
@@ -719,41 +730,48 @@
           "lifeTimePoints"
         ],
         "properties": {
-          "totalPoints": {
+          "lifeTimePoints": {
             "type": "integer",
             "format": "int64"
           },
-          "lifeTimePoints": {
+          "totalPoints": {
             "type": "integer",
             "format": "int64"
           }
         }
       },
-      "UserOptions": {
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "OfferPointsResponse": {
         "type": "object",
         "required": [
-          "storeId"
+          "offerResponse",
+          "pointsResponse"
         ],
         "properties": {
-          "storeName": {
-            "type": "string"
+          "offerResponse": {
+            "$ref": "#/components/schemas/OfferResponse"
           },
-          "storeId": {
-            "type": "string"
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
           }
         }
       }
     },
     "securitySchemes": {
-      "API Key": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-Api-Key"
-      },
       "JWT": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      },
+      "API Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
       }
     }
   },
