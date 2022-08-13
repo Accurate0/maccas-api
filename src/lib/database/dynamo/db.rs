@@ -378,6 +378,7 @@ impl Database for DynamoDatabase {
     ) -> Result<(), anyhow::Error> {
         let http_client = client::get_http_client();
         let mut new_image_count = 0;
+        let mut cached_image_count = 0;
 
         let offer_list = self.get_offers_for(&account.account_name).await?;
         match offer_list {
@@ -406,13 +407,14 @@ impl Database for DynamoDatabase {
                                     .body(image.into())
                                     .send()
                                     .await?;
+                                new_image_count += 1;
                             }
                             Err(e) => {
                                 log::error!("failed getting image for {:#?} because {}", &offer, e)
                             }
                         }
                     } else {
-                        new_image_count += 1;
+                        cached_image_count += 1;
                         log::debug!("{:#?} already exists in s3", offer.image_base_name)
                     }
                 }
@@ -426,6 +428,7 @@ impl Database for DynamoDatabase {
         }
 
         log::info!("{} new images added for {}", new_image_count, account);
+        log::info!("{} cached images  for {}", cached_image_count, account);
         Ok(())
     }
 
