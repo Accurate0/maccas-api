@@ -1,0 +1,768 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Maccas API",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://api.anurag.sh/maccas/v1"
+    }
+  ],
+  "paths": {
+    "/code/{dealId}": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "get_code",
+        "parameters": [
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store",
+            "in": "query",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random code for specified deal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/deal/{dealId}": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "get_deal",
+        "parameters": [
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Information for specified deal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Offer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/deals": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "get_deals",
+        "responses": {
+          "200": {
+            "description": "List of available deals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Offer"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/deals/last-refresh": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "last_refresh",
+        "responses": {
+          "200": {
+            "description": "Last Refresh of Cache",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastRefreshInformation"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/deals/{dealId}": {
+      "post": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "add_deal",
+        "parameters": [
+          {
+            "name": "x-log-user-id",
+            "in": "header",
+            "description": "The user id to log for",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-log-user-name",
+            "in": "header",
+            "description": "The user name to log for",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store",
+            "in": "query",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Added a deal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error on McDonald's side"
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      },
+      "delete": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "remove_deal",
+        "parameters": [
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store",
+            "in": "query",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed a deal"
+          },
+          "400": {
+            "description": "Error on McDonald's side"
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/locations": {
+      "get": {
+        "tags": [
+          "location"
+        ],
+        "description": "",
+        "operationId": "get_locations",
+        "parameters": [
+          {
+            "name": "distance",
+            "in": "query",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of locations near specified coordinates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RestaurantInformation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing parameters"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/locations/search": {
+      "get": {
+        "tags": [
+          "location"
+        ],
+        "description": "",
+        "operationId": "search_locations",
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Closest location near specified text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantInformation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No locations found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/points": {
+      "get": {
+        "tags": [
+          "points"
+        ],
+        "description": "",
+        "operationId": "get_points",
+        "responses": {
+          "200": {
+            "description": "List of all account points",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPointResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/points/{accountId}": {
+      "get": {
+        "tags": [
+          "points"
+        ],
+        "description": "",
+        "operationId": "get_points_by_id",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store",
+            "in": "query",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random code for account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferPointsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/statistics/account": {
+      "get": {
+        "tags": [
+          "statistics"
+        ],
+        "description": "",
+        "operationId": "get_accounts",
+        "responses": {
+          "200": {
+            "description": "Account statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/statistics/total-accounts": {
+      "get": {
+        "tags": [
+          "statistics"
+        ],
+        "description": "",
+        "operationId": "get_total_accounts",
+        "responses": {
+          "200": {
+            "description": "Total account count",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/user/config": {
+      "get": {
+        "tags": [
+          "config"
+        ],
+        "description": "",
+        "operationId": "get_user_config",
+        "responses": {
+          "200": {
+            "description": "Config for current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOptions"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No config for this user"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "config"
+        ],
+        "description": "",
+        "operationId": "update_user_config",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserOptions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Updated/created config"
+          },
+          "400": {
+            "description": "Invalid configuration format"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountPointMap": {
+        "type": "object",
+        "required": [
+          "name",
+          "totalPoints"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "totalPoints": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Offer": {
+        "type": "object",
+        "required": [
+          "dealUuid",
+          "count",
+          "offerId",
+          "offerPropositionId",
+          "localValidFrom",
+          "localValidTo",
+          "validFromUTC",
+          "validToUTC",
+          "name",
+          "shortName",
+          "description",
+          "CreationDateUtc",
+          "imageBaseName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dealUuid": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "localValidTo": {
+            "type": "string"
+          },
+          "offerPropositionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "offerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "imageBaseName": {
+            "type": "string"
+          },
+          "localValidFrom": {
+            "type": "string"
+          },
+          "validToUTC": {
+            "type": "string"
+          },
+          "validFromUTC": {
+            "type": "string"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "CreationDateUtc": {
+            "type": "string"
+          }
+        }
+      },
+      "OfferPointsResponse": {
+        "type": "object",
+        "required": [
+          "offerResponse",
+          "pointsResponse"
+        ],
+        "properties": {
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
+          },
+          "offerResponse": {
+            "$ref": "#/components/schemas/OfferResponse"
+          }
+        }
+      },
+      "RestaurantAddress": {
+        "type": "object",
+        "required": [
+          "addressLine"
+        ],
+        "properties": {
+          "addressLine": {
+            "type": "string"
+          }
+        }
+      },
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeId": {
+            "type": "string"
+          },
+          "storeName": {
+            "type": "string"
+          }
+        }
+      },
+      "PointsResponse": {
+        "type": "object",
+        "required": [
+          "totalPoints",
+          "lifeTimePoints"
+        ],
+        "properties": {
+          "lifeTimePoints": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPoints": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "OfferResponse": {
+        "type": "object",
+        "required": [
+          "randomCode",
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "randomCode": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "LastRefreshInformation": {
+        "type": "object",
+        "required": [
+          "lastRefresh"
+        ],
+        "properties": {
+          "lastRefresh": {
+            "type": "string"
+          }
+        }
+      },
+      "RestaurantInformation": {
+        "type": "object",
+        "required": [
+          "name",
+          "storeNumber",
+          "address"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "storeNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "address": {
+            "$ref": "#/components/schemas/RestaurantAddress"
+          }
+        }
+      },
+      "AccountResponse": {
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "API Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      },
+      "JWT": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "JWT": []
+    },
+    {
+      "API Key": []
+    }
+  ]
+}
