@@ -377,6 +377,7 @@ impl Database for DynamoDatabase {
         account: &UserAccount,
     ) -> Result<(), anyhow::Error> {
         let http_client = client::get_http_client();
+        let mut new_image_count = 0;
 
         let offer_list = self.get_offers_for(&account.account_name).await?;
         match offer_list {
@@ -411,7 +412,8 @@ impl Database for DynamoDatabase {
                             }
                         }
                     } else {
-                        log::info!("{:#?} already exists in s3", offer.image_base_name)
+                        new_image_count += 1;
+                        log::debug!("{:#?} already exists in s3", offer.image_base_name)
                     }
                 }
             }
@@ -423,6 +425,7 @@ impl Database for DynamoDatabase {
             }
         }
 
+        log::info!("{} new images added for {}", new_image_count, account);
         Ok(())
     }
 
