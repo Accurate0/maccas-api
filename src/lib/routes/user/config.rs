@@ -17,6 +17,9 @@ use rocket::{http::Status, serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "config",
+    params(
+        ("Authorization", header, description = "Valid JWT with user id"),
+    ),
 )]
 #[get("/user/config")]
 pub async fn get_user_config(
@@ -46,6 +49,9 @@ pub async fn get_user_config(
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "config",
+    params(
+        ("Authorization", header, description = "Valid JWT with user id"),
+    ),
 )]
 #[post("/user/config", data = "<config>")]
 pub async fn update_user_config(
