@@ -428,7 +428,7 @@ impl Database for DynamoDatabase {
         }
 
         log::info!("{} new images added for {}", new_image_count, account);
-        log::info!("{} cached images  for {}", cached_image_count, account);
+        log::info!("{} cached images for {}", cached_image_count, account);
         Ok(())
     }
 
