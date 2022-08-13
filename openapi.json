@@ -553,80 +553,33 @@
   },
   "components": {
     "schemas": {
-      "AccountPointMap": {
+      "RestaurantInformation": {
         "type": "object",
         "required": [
           "name",
-          "totalPoints"
+          "storeNumber",
+          "address"
         ],
         "properties": {
+          "address": {
+            "$ref": "#/components/schemas/RestaurantAddress"
+          },
           "name": {
             "type": "string"
           },
-          "totalPoints": {
+          "storeNumber": {
             "type": "integer",
             "format": "int64"
           }
         }
       },
-      "Offer": {
+      "LastRefreshInformation": {
         "type": "object",
         "required": [
-          "dealUuid",
-          "count",
-          "offerId",
-          "offerPropositionId",
-          "localValidFrom",
-          "localValidTo",
-          "validFromUTC",
-          "validToUTC",
-          "name",
-          "shortName",
-          "description",
-          "CreationDateUtc",
-          "imageBaseName"
+          "lastRefresh"
         ],
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "dealUuid": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "localValidTo": {
-            "type": "string"
-          },
-          "offerPropositionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "offerId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "imageBaseName": {
-            "type": "string"
-          },
-          "localValidFrom": {
-            "type": "string"
-          },
-          "validToUTC": {
-            "type": "string"
-          },
-          "validFromUTC": {
-            "type": "string"
-          },
-          "shortName": {
-            "type": "string"
-          },
-          "CreationDateUtc": {
+          "lastRefresh": {
             "type": "string"
           }
         }
@@ -657,30 +610,86 @@
           }
         }
       },
-      "UserOptions": {
+      "Offer": {
         "type": "object",
         "required": [
-          "storeId"
+          "dealUuid",
+          "count",
+          "offerId",
+          "offerPropositionId",
+          "localValidFrom",
+          "localValidTo",
+          "validFromUTC",
+          "validToUTC",
+          "name",
+          "shortName",
+          "description",
+          "CreationDateUtc",
+          "imageBaseName"
         ],
         "properties": {
-          "storeId": {
+          "localValidFrom": {
             "type": "string"
           },
-          "storeName": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "CreationDateUtc": {
+            "type": "string"
+          },
+          "imageBaseName": {
+            "type": "string"
+          },
+          "dealUuid": {
+            "type": "string"
+          },
+          "localValidTo": {
+            "type": "string"
+          },
+          "validFromUTC": {
+            "type": "string"
+          },
+          "offerPropositionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "validToUTC": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "offerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "description": {
             "type": "string"
           }
         }
       },
-      "PointsResponse": {
+      "AccountResponse": {
+        "type": "object"
+      },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "AccountPointMap": {
         "type": "object",
         "required": [
-          "totalPoints",
-          "lifeTimePoints"
+          "name",
+          "totalPoints"
         ],
         "properties": {
-          "lifeTimePoints": {
-            "type": "integer",
-            "format": "int64"
+          "name": {
+            "type": "string"
           },
           "totalPoints": {
             "type": "integer",
@@ -695,53 +704,44 @@
           "message"
         ],
         "properties": {
-          "message": {
-            "type": "string"
-          },
           "randomCode": {
             "type": "string"
-          }
-        }
-      },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
-        }
-      },
-      "LastRefreshInformation": {
-        "type": "object",
-        "required": [
-          "lastRefresh"
-        ],
-        "properties": {
-          "lastRefresh": {
-            "type": "string"
-          }
-        }
-      },
-      "RestaurantInformation": {
-        "type": "object",
-        "required": [
-          "name",
-          "storeNumber",
-          "address"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
           },
-          "storeNumber": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PointsResponse": {
+        "type": "object",
+        "required": [
+          "totalPoints",
+          "lifeTimePoints"
+        ],
+        "properties": {
+          "totalPoints": {
             "type": "integer",
             "format": "int64"
           },
-          "address": {
-            "$ref": "#/components/schemas/RestaurantAddress"
+          "lifeTimePoints": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
-      "AccountResponse": {
-        "type": "object"
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeName": {
+            "type": "string"
+          },
+          "storeId": {
+            "type": "string"
+          }
+        }
       }
     },
     "securitySchemes": {
