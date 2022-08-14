@@ -18,7 +18,7 @@ use rocket::{http::Status, serde::json::Json, State};
     ),
     tag = "config",
     params(
-        ("Authorization", header, description = "Valid JWT with user id"),
+        ("Authorization" = String, header, description = "Valid JWT with user id"),
     ),
 )]
 #[get("/user/config")]
@@ -50,7 +50,7 @@ pub async fn get_user_config(
     ),
     tag = "config",
     params(
-        ("Authorization", header, description = "Valid JWT with user id"),
+        ("Authorization" = String, header, description = "Valid JWT with user id"),
     ),
 )]
 #[post("/user/config", data = "<config>")]

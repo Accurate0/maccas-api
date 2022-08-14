@@ -381,7 +381,10 @@
             "in": "header",
             "description": "Valid JWT with user id in allowed list",
             "required": true,
-            "deprecated": false
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -415,7 +418,10 @@
             "in": "header",
             "description": "Valid JWT with user id in allowed list",
             "required": true,
-            "deprecated": false
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "account_id",
@@ -522,7 +528,10 @@
             "in": "header",
             "description": "Valid JWT with user id",
             "required": true,
-            "deprecated": false
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -557,7 +566,10 @@
             "in": "header",
             "description": "Valid JWT with user id",
             "required": true,
-            "deprecated": false
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -587,6 +599,27 @@
   },
   "components": {
     "schemas": {
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "OfferResponse": {
+        "type": "object",
+        "required": [
+          "randomCode",
+          "message"
+        ],
+        "properties": {
+          "randomCode": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
       "RestaurantInformation": {
         "type": "object",
         "required": [
@@ -607,18 +640,33 @@
           }
         }
       },
-      "OfferResponse": {
+      "UserOptions": {
         "type": "object",
         "required": [
-          "randomCode",
-          "message"
+          "storeId"
         ],
         "properties": {
-          "message": {
+          "storeId": {
             "type": "string"
           },
-          "randomCode": {
+          "storeName": {
             "type": "string"
+          }
+        }
+      },
+      "AccountPointMap": {
+        "type": "object",
+        "required": [
+          "name",
+          "totalPoints"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "totalPoints": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -633,17 +681,32 @@
           }
         }
       },
-      "UserOptions": {
+      "RestaurantAddress": {
         "type": "object",
         "required": [
-          "storeId"
+          "addressLine"
         ],
         "properties": {
-          "storeId": {
+          "addressLine": {
             "type": "string"
+          }
+        }
+      },
+      "AccountResponse": {
+        "type": "object"
+      },
+      "OfferPointsResponse": {
+        "type": "object",
+        "required": [
+          "offerResponse",
+          "pointsResponse"
+        ],
+        "properties": {
+          "offerResponse": {
+            "$ref": "#/components/schemas/OfferResponse"
           },
-          "storeName": {
-            "type": "string"
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
           }
         }
       },
@@ -682,22 +745,34 @@
           "imageBaseName"
         ],
         "properties": {
-          "offerId": {
+          "shortName": {
+            "type": "string"
+          },
+          "CreationDateUtc": {
+            "type": "string"
+          },
+          "validToUTC": {
+            "type": "string"
+          },
+          "localValidTo": {
+            "type": "string"
+          },
+          "imageBaseName": {
+            "type": "string"
+          },
+          "localValidFrom": {
+            "type": "string"
+          },
+          "offerPropositionId": {
             "type": "integer",
             "format": "int64"
           },
           "validFromUTC": {
             "type": "string"
           },
-          "shortName": {
-            "type": "string"
-          },
-          "count": {
+          "offerId": {
             "type": "integer",
-            "format": "int32"
-          },
-          "localValidFrom": {
-            "type": "string"
+            "format": "int64"
           },
           "dealUuid": {
             "type": "string"
@@ -708,72 +783,9 @@
           "description": {
             "type": "string"
           },
-          "localValidTo": {
-            "type": "string"
-          },
-          "offerPropositionId": {
+          "count": {
             "type": "integer",
-            "format": "int64"
-          },
-          "imageBaseName": {
-            "type": "string"
-          },
-          "CreationDateUtc": {
-            "type": "string"
-          },
-          "validToUTC": {
-            "type": "string"
-          }
-        }
-      },
-      "OfferPointsResponse": {
-        "type": "object",
-        "required": [
-          "offerResponse",
-          "pointsResponse"
-        ],
-        "properties": {
-          "offerResponse": {
-            "$ref": "#/components/schemas/OfferResponse"
-          },
-          "pointsResponse": {
-            "$ref": "#/components/schemas/PointsResponse"
-          }
-        }
-      },
-      "RestaurantAddress": {
-        "type": "object",
-        "required": [
-          "addressLine"
-        ],
-        "properties": {
-          "addressLine": {
-            "type": "string"
-          }
-        }
-      },
-      "AccountResponse": {
-        "type": "object"
-      },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
-        }
-      },
-      "AccountPointMap": {
-        "type": "object",
-        "required": [
-          "name",
-          "totalPoints"
-        ],
-        "properties": {
-          "totalPoints": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
+            "format": "int32"
           }
         }
       }
