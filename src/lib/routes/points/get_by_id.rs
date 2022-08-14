@@ -20,7 +20,7 @@ use rocket::{serde::json::Json, State};
     ),
     tag = "points",
     params(
-        ("Authorization", header, description = "Valid JWT with user id in allowed list"),
+        ("Authorization" = String, header, description = "Valid JWT with user id in allowed list"),
     ),
 )]
 #[get("/points/<account_id>?<store>")]
