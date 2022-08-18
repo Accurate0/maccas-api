@@ -1,8 +1,9 @@
 use crate::routes::code::get_code::*;
-use crate::routes::deals::add_remove::*;
+use crate::routes::deals::add_deal::*;
 use crate::routes::deals::get_deal::*;
 use crate::routes::deals::get_deals::*;
 use crate::routes::deals::last_refresh::*;
+use crate::routes::deals::remove_deal::*;
 use crate::routes::locations::get_locations::*;
 use crate::routes::locations::search::*;
 use crate::routes::points::get_by_id::*;
