@@ -599,12 +599,6 @@
   },
   "components": {
     "schemas": {
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
-        }
-      },
       "OfferResponse": {
         "type": "object",
         "required": [
@@ -620,67 +614,6 @@
           }
         }
       },
-      "RestaurantInformation": {
-        "type": "object",
-        "required": [
-          "name",
-          "storeNumber",
-          "address"
-        ],
-        "properties": {
-          "address": {
-            "$ref": "#/components/schemas/RestaurantAddress"
-          },
-          "name": {
-            "type": "string"
-          },
-          "storeNumber": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "UserOptions": {
-        "type": "object",
-        "required": [
-          "storeId"
-        ],
-        "properties": {
-          "storeId": {
-            "type": "string"
-          },
-          "storeName": {
-            "type": "string"
-          }
-        }
-      },
-      "AccountPointMap": {
-        "type": "object",
-        "required": [
-          "name",
-          "totalPoints"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "totalPoints": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "LastRefreshInformation": {
-        "type": "object",
-        "required": [
-          "lastRefresh"
-        ],
-        "properties": {
-          "lastRefresh": {
-            "type": "string"
-          }
-        }
-      },
       "RestaurantAddress": {
         "type": "object",
         "required": [
@@ -689,24 +622,6 @@
         "properties": {
           "addressLine": {
             "type": "string"
-          }
-        }
-      },
-      "AccountResponse": {
-        "type": "object"
-      },
-      "OfferPointsResponse": {
-        "type": "object",
-        "required": [
-          "offerResponse",
-          "pointsResponse"
-        ],
-        "properties": {
-          "offerResponse": {
-            "$ref": "#/components/schemas/OfferResponse"
-          },
-          "pointsResponse": {
-            "$ref": "#/components/schemas/PointsResponse"
           }
         }
       },
@@ -724,6 +639,88 @@
           "totalPoints": {
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "OfferPointsResponse": {
+        "type": "object",
+        "required": [
+          "offerResponse",
+          "pointsResponse"
+        ],
+        "properties": {
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
+          },
+          "offerResponse": {
+            "$ref": "#/components/schemas/OfferResponse"
+          }
+        }
+      },
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeName": {
+            "type": "string"
+          },
+          "storeId": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
+      "RestaurantInformation": {
+        "type": "object",
+        "required": [
+          "name",
+          "storeNumber",
+          "address"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/RestaurantAddress"
+          },
+          "storeNumber": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AccountPointMap": {
+        "type": "object",
+        "required": [
+          "name",
+          "totalPoints"
+        ],
+        "properties": {
+          "totalPoints": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "LastRefreshInformation": {
+        "type": "object",
+        "required": [
+          "lastRefresh"
+        ],
+        "properties": {
+          "lastRefresh": {
+            "type": "string"
           }
         }
       },
@@ -745,23 +742,24 @@
           "imageBaseName"
         ],
         "properties": {
-          "shortName": {
+          "localValidTo": {
             "type": "string"
           },
-          "CreationDateUtc": {
+          "localValidFrom": {
+            "type": "string"
+          },
+          "shortName": {
             "type": "string"
           },
           "validToUTC": {
             "type": "string"
           },
-          "localValidTo": {
-            "type": "string"
-          },
           "imageBaseName": {
             "type": "string"
           },
-          "localValidFrom": {
-            "type": "string"
+          "offerId": {
+            "type": "integer",
+            "format": "int64"
           },
           "offerPropositionId": {
             "type": "integer",
@@ -770,14 +768,13 @@
           "validFromUTC": {
             "type": "string"
           },
-          "offerId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "dealUuid": {
+          "CreationDateUtc": {
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "dealUuid": {
             "type": "string"
           },
           "description": {
@@ -788,6 +785,9 @@
             "format": "int32"
           }
         }
+      },
+      "AccountResponse": {
+        "type": "object"
       }
     },
     "securitySchemes": {
