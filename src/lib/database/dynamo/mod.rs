@@ -1,4 +1,4 @@
-use crate::config::Tables;
+use crate::types::config::Tables;
 
 pub struct DynamoDatabase {
     client: aws_sdk_dynamodb::Client,

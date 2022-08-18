@@ -3,10 +3,10 @@ use aws_sdk_dynamodb::Client;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use libapi::client;
-use libapi::config::ApiConfig;
 use libapi::constants;
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
+use libapi::types::config::ApiConfig;
 use serde_json::{json, Value};
 
 #[tokio::main]

@@ -1,5 +1,4 @@
 use lambda_http::Error as LambdaError;
-use libapi::config::ApiConfig;
 use libapi::constants;
 use libapi::database::DynamoDatabase;
 use libapi::logging;
@@ -19,6 +18,7 @@ use libapi::routes::statistics::account::get_accounts;
 use libapi::routes::statistics::total_accounts::get_total_accounts;
 use libapi::routes::user::config::get_user_config;
 use libapi::routes::user::config::update_user_config;
+use libapi::types::config::ApiConfig;
 use rocket::http::Method;
 use rocket::Config;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};

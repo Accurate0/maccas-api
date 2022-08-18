@@ -1,6 +1,6 @@
-use crate::config::ApiConfig;
 use crate::constants::DEFAULT_TIMEZONE;
 use crate::types::api::Offer;
+use crate::types::config::ApiConfig;
 use crate::{
     constants::{self, api_base},
     types::log::UsageLog,
