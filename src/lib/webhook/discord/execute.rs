@@ -1,7 +1,6 @@
 use crate::{
-    config::ApiConfig,
     constants::mc_donalds::{self, IMAGE_CDN},
-    types::{api::Offer, webhook::DiscordWebhookMessage},
+    types::{api::Offer, config::ApiConfig, webhook::DiscordWebhookMessage},
 };
 use anyhow::Context;
 use chrono::Utc;

@@ -1,6 +1,5 @@
 use super::DynamoDatabase;
 use crate::client;
-use crate::config::{ApiConfig, UserAccount};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
     LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
@@ -9,6 +8,7 @@ use crate::constants::db::{
 use crate::constants::mc_donalds::{self, MCDONALDS_IMAGE_CDN};
 use crate::database::r#trait::Database;
 use crate::types::api::{Offer, PointsResponse};
+use crate::types::config::{ApiConfig, UserAccount};
 use crate::types::user::UserOptions;
 use crate::utils::{self, get_short_sha1};
 use anyhow::{bail, Context};

@@ -1,5 +1,5 @@
-use crate::config::{ApiConfig, UserAccount};
 use crate::types::api::{Offer, PointsResponse};
+use crate::types::config::{ApiConfig, UserAccount};
 use crate::types::user::UserOptions;
 use async_trait::async_trait;
 use chrono::Duration;
