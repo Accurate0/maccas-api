@@ -9,8 +9,6 @@ use http::Method;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/locations/search",
     responses(
         (status = 200, description = "Closest location near specified text", body = RestaurantInformation),
         (status = 404, description = "No locations found"),

@@ -7,8 +7,6 @@ use crate::{
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/locations",
     responses(
         (status = 200, description = "List of locations near specified coordinates", body = [RestaurantInformation]),
         (status = 400, description = "Invalid/missing parameters"),

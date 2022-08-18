@@ -7,8 +7,6 @@ use crate::{
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/code/{dealId}",
     responses(
         (status = 200, description = "Random code for specified deal", body = OfferResponse),
         (status = 404, description = "Deal not found"),

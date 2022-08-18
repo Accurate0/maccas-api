@@ -10,8 +10,6 @@ use rocket::State;
 use std::collections::HashMap;
 
 #[utoipa::path(
-    get,
-    path = "/deals",
     responses(
         (status = 200, description = "List of available deals", body = [Offer]),
         (status = 500, description = "Internal Server Error"),
