@@ -59,45 +59,6 @@
         "deprecated": false
       }
     },
-    "/deal/{dealId}": {
-      "get": {
-        "tags": [
-          "deals"
-        ],
-        "description": "",
-        "operationId": "get_deal",
-        "parameters": [
-          {
-            "name": "deal_id",
-            "in": "path",
-            "required": true,
-            "deprecated": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Information for specified deal",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Offer"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Deal not found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "deprecated": false
-      }
-    },
     "/deals": {
       "get": {
         "tags": [
@@ -152,6 +113,43 @@
       }
     },
     "/deals/{dealId}": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "get_deal",
+        "parameters": [
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Information for specified deal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Offer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      },
       "post": {
         "tags": [
           "deals"
@@ -599,6 +597,20 @@
   },
   "components": {
     "schemas": {
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeId": {
+            "type": "string"
+          },
+          "storeName": {
+            "type": "string"
+          }
+        }
+      },
       "OfferResponse": {
         "type": "object",
         "required": [
@@ -606,13 +618,16 @@
           "message"
         ],
         "properties": {
-          "randomCode": {
+          "message": {
             "type": "string"
           },
-          "message": {
+          "randomCode": {
             "type": "string"
           }
         }
+      },
+      "AccountResponse": {
+        "type": "object"
       },
       "RestaurantAddress": {
         "type": "object",
@@ -621,6 +636,17 @@
         ],
         "properties": {
           "addressLine": {
+            "type": "string"
+          }
+        }
+      },
+      "LastRefreshInformation": {
+        "type": "object",
+        "required": [
+          "lastRefresh"
+        ],
+        "properties": {
+          "lastRefresh": {
             "type": "string"
           }
         }
@@ -642,6 +668,12 @@
           }
         }
       },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
       "OfferPointsResponse": {
         "type": "object",
         "required": [
@@ -649,51 +681,11 @@
           "pointsResponse"
         ],
         "properties": {
-          "pointsResponse": {
-            "$ref": "#/components/schemas/PointsResponse"
-          },
           "offerResponse": {
             "$ref": "#/components/schemas/OfferResponse"
-          }
-        }
-      },
-      "UserOptions": {
-        "type": "object",
-        "required": [
-          "storeId"
-        ],
-        "properties": {
-          "storeName": {
-            "type": "string"
           },
-          "storeId": {
-            "type": "string"
-          }
-        }
-      },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
-        }
-      },
-      "RestaurantInformation": {
-        "type": "object",
-        "required": [
-          "name",
-          "storeNumber",
-          "address"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "address": {
-            "$ref": "#/components/schemas/RestaurantAddress"
-          },
-          "storeNumber": {
-            "type": "integer",
-            "format": "int64"
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
           }
         }
       },
@@ -704,23 +696,32 @@
           "totalPoints"
         ],
         "properties": {
+          "name": {
+            "type": "string"
+          },
           "totalPoints": {
             "type": "integer",
             "format": "int64"
-          },
-          "name": {
-            "type": "string"
           }
         }
       },
-      "LastRefreshInformation": {
+      "RestaurantInformation": {
         "type": "object",
         "required": [
-          "lastRefresh"
+          "name",
+          "storeNumber",
+          "address"
         ],
         "properties": {
-          "lastRefresh": {
+          "address": {
+            "$ref": "#/components/schemas/RestaurantAddress"
+          },
+          "name": {
             "type": "string"
+          },
+          "storeNumber": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -742,39 +743,36 @@
           "imageBaseName"
         ],
         "properties": {
-          "localValidTo": {
+          "offerPropositionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "CreationDateUtc": {
             "type": "string"
           },
-          "localValidFrom": {
+          "dealUuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "validFromUTC": {
             "type": "string"
           },
           "shortName": {
             "type": "string"
           },
-          "validToUTC": {
-            "type": "string"
-          },
-          "imageBaseName": {
+          "localValidFrom": {
             "type": "string"
           },
           "offerId": {
             "type": "integer",
             "format": "int64"
           },
-          "offerPropositionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "validFromUTC": {
+          "localValidTo": {
             "type": "string"
           },
-          "CreationDateUtc": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "dealUuid": {
+          "imageBaseName": {
             "type": "string"
           },
           "description": {
@@ -783,11 +781,11 @@
           "count": {
             "type": "integer",
             "format": "int32"
+          },
+          "validToUTC": {
+            "type": "string"
           }
         }
-      },
-      "AccountResponse": {
-        "type": "object"
       }
     },
     "securitySchemes": {

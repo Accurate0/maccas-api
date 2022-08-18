@@ -6,7 +6,7 @@ use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
         get,
-        path = "/deal/{dealId}",
+        path = "/deals/{dealId}",
         responses(
             (status = 200, description = "Information for specified deal", body = Offer),
             (status = 404, description = "Deal not found"),
