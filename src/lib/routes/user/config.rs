@@ -9,8 +9,6 @@ use jwt::{Header, Token};
 use rocket::{http::Status, serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/user/config",
     responses(
         (status = 200, description = "Config for current user", body = UserOptions),
         (status = 404, description = "No config for this user"),
@@ -37,8 +35,6 @@ pub async fn get_user_config(
 }
 
 #[utoipa::path(
-    post,
-    path = "/user/config",
     request_body(
         content = UserOptions,
         content_type = "application/json",

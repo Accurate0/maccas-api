@@ -5,8 +5,6 @@ use crate::{
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/statistics/account",
     responses(
         (status = 200, description = "Account statistics", body = AccountResponse),
         (status = 500, description = "Internal Server Error"),

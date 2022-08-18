@@ -5,14 +5,12 @@ use rocket::serde::json::Json;
 use rocket::State;
 
 #[utoipa::path(
-        get,
-        path = "/deals/last-refresh",
-        responses(
-            (status = 200, description = "Last Refresh of Cache", body = LastRefreshInformation),
-            (status = 500, description = "Internal Server Error"),
-        ),
-        tag = "deals",
-    )]
+    responses(
+        (status = 200, description = "Last Refresh of Cache", body = LastRefreshInformation),
+        (status = 500, description = "Internal Server Error"),
+    ),
+    tag = "deals",
+)]
 #[get("/deals/last-refresh")]
 pub async fn last_refresh(
     ctx: &State<Context<'_>>,

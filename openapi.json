@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/code/{dealId}": {
+    "/code/{deal_id}": {
       "get": {
         "tags": [
           "deals"
@@ -113,6 +113,51 @@
       }
     },
     "/deals/{dealId}": {
+      "delete": {
+        "tags": [
+          "deals"
+        ],
+        "description": "",
+        "operationId": "remove_deal",
+        "parameters": [
+          {
+            "name": "deal_id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "store",
+            "in": "query",
+            "required": false,
+            "deprecated": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed a deal"
+          },
+          "400": {
+            "description": "Error on McDonald's side"
+          },
+          "404": {
+            "description": "Deal not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/deals/{deal_id}": {
       "get": {
         "tags": [
           "deals"
@@ -207,49 +252,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Error on McDonald's side"
-          },
-          "404": {
-            "description": "Deal not found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        },
-        "deprecated": false
-      },
-      "delete": {
-        "tags": [
-          "deals"
-        ],
-        "description": "",
-        "operationId": "remove_deal",
-        "parameters": [
-          {
-            "name": "deal_id",
-            "in": "path",
-            "required": true,
-            "deprecated": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "store",
-            "in": "query",
-            "required": false,
-            "deprecated": false,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Removed a deal"
           },
           "400": {
             "description": "Error on McDonald's side"
@@ -403,7 +405,7 @@
         "deprecated": false
       }
     },
-    "/points/{accountId}": {
+    "/points/{account_id}": {
       "get": {
         "tags": [
           "points"
@@ -597,98 +599,6 @@
   },
   "components": {
     "schemas": {
-      "UserOptions": {
-        "type": "object",
-        "required": [
-          "storeId"
-        ],
-        "properties": {
-          "storeId": {
-            "type": "string"
-          },
-          "storeName": {
-            "type": "string"
-          }
-        }
-      },
-      "OfferResponse": {
-        "type": "object",
-        "required": [
-          "randomCode",
-          "message"
-        ],
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "randomCode": {
-            "type": "string"
-          }
-        }
-      },
-      "AccountResponse": {
-        "type": "object"
-      },
-      "RestaurantAddress": {
-        "type": "object",
-        "required": [
-          "addressLine"
-        ],
-        "properties": {
-          "addressLine": {
-            "type": "string"
-          }
-        }
-      },
-      "LastRefreshInformation": {
-        "type": "object",
-        "required": [
-          "lastRefresh"
-        ],
-        "properties": {
-          "lastRefresh": {
-            "type": "string"
-          }
-        }
-      },
-      "PointsResponse": {
-        "type": "object",
-        "required": [
-          "totalPoints",
-          "lifeTimePoints"
-        ],
-        "properties": {
-          "lifeTimePoints": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "totalPoints": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "AccountPointResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AccountPointMap"
-        }
-      },
-      "OfferPointsResponse": {
-        "type": "object",
-        "required": [
-          "offerResponse",
-          "pointsResponse"
-        ],
-        "properties": {
-          "offerResponse": {
-            "$ref": "#/components/schemas/OfferResponse"
-          },
-          "pointsResponse": {
-            "$ref": "#/components/schemas/PointsResponse"
-          }
-        }
-      },
       "AccountPointMap": {
         "type": "object",
         "required": [
@@ -705,6 +615,53 @@
           }
         }
       },
+      "OfferResponse": {
+        "type": "object",
+        "required": [
+          "randomCode",
+          "message"
+        ],
+        "properties": {
+          "randomCode": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "RestaurantAddress": {
+        "type": "object",
+        "required": [
+          "addressLine"
+        ],
+        "properties": {
+          "addressLine": {
+            "type": "string"
+          }
+        }
+      },
+      "OfferPointsResponse": {
+        "type": "object",
+        "required": [
+          "offerResponse",
+          "pointsResponse"
+        ],
+        "properties": {
+          "pointsResponse": {
+            "$ref": "#/components/schemas/PointsResponse"
+          },
+          "offerResponse": {
+            "$ref": "#/components/schemas/OfferResponse"
+          }
+        }
+      },
+      "AccountPointResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountPointMap"
+        }
+      },
       "RestaurantInformation": {
         "type": "object",
         "required": [
@@ -713,13 +670,30 @@
           "address"
         ],
         "properties": {
+          "storeNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
           "address": {
             "$ref": "#/components/schemas/RestaurantAddress"
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "PointsResponse": {
+        "type": "object",
+        "required": [
+          "totalPoints",
+          "lifeTimePoints"
+        ],
+        "properties": {
+          "lifeTimePoints": {
+            "type": "integer",
+            "format": "int64"
           },
-          "storeNumber": {
+          "totalPoints": {
             "type": "integer",
             "format": "int64"
           }
@@ -743,11 +717,25 @@
           "imageBaseName"
         ],
         "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "offerId": {
+            "type": "integer",
+            "format": "int64"
+          },
           "offerPropositionId": {
             "type": "integer",
             "format": "int64"
           },
-          "CreationDateUtc": {
+          "localValidFrom": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "validFromUTC": {
             "type": "string"
           },
           "dealUuid": {
@@ -756,33 +744,47 @@
           "name": {
             "type": "string"
           },
-          "validFromUTC": {
-            "type": "string"
-          },
-          "shortName": {
-            "type": "string"
-          },
-          "localValidFrom": {
-            "type": "string"
-          },
-          "offerId": {
-            "type": "integer",
-            "format": "int64"
-          },
           "localValidTo": {
+            "type": "string"
+          },
+          "validToUTC": {
+            "type": "string"
+          },
+          "CreationDateUtc": {
             "type": "string"
           },
           "imageBaseName": {
             "type": "string"
           },
-          "description": {
+          "shortName": {
+            "type": "string"
+          }
+        }
+      },
+      "LastRefreshInformation": {
+        "type": "object",
+        "required": [
+          "lastRefresh"
+        ],
+        "properties": {
+          "lastRefresh": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountResponse": {
+        "type": "object"
+      },
+      "UserOptions": {
+        "type": "object",
+        "required": [
+          "storeId"
+        ],
+        "properties": {
+          "storeId": {
             "type": "string"
           },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "validToUTC": {
+          "storeName": {
             "type": "string"
           }
         }

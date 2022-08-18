@@ -11,8 +11,6 @@ use crate::{
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    get,
-    path = "/points/{accountId}",
     responses(
         (status = 200, description = "Random code for account", body = OfferPointsResponse),
         (status = 404, description = "Account not found"),

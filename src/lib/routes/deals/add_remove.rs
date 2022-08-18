@@ -15,8 +15,6 @@ use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
-    post,
-    path = "/deals/{dealId}",
     responses(
         (status = 200, description = "Added a deal", body = OfferResponse),
         (status = 400, description = "Error on McDonald's side"),
