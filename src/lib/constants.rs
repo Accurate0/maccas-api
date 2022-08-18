@@ -24,9 +24,9 @@ pub mod mc_donalds {
         pub const STORE_UNIQUE_ID_TYPE: &str = "NSN";
     }
     pub const RED: u32 = 0xDA291C;
-    pub const MCDONALDS_IMAGE_BUCKET: &str =
+    pub const MCDONALDS_IMAGE_CDN: &str =
         "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
-    pub const IMAGE_BUCKET_BASE: &str = "https://i.maccas.anurag.sh";
+    pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
 }
 
 pub mod api_base {

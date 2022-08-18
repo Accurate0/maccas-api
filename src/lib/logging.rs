@@ -1,5 +1,5 @@
 use crate::config::ApiConfig;
-use crate::constants::mc_donalds::IMAGE_BUCKET_BASE;
+use crate::constants::mc_donalds::IMAGE_CDN;
 use crate::constants::{mc_donalds, DEFAULT_TIMEZONE};
 use crate::webhook::DiscordWebhookMessage;
 use crate::{
@@ -109,7 +109,7 @@ pub async fn log_deal_use(
                 .unwrap(),
         );
 
-    let image = ImageSource::url(format!("{}/{}", IMAGE_BUCKET_BASE, image_base_url));
+    let image = ImageSource::url(format!("{}/{}", IMAGE_CDN, image_base_url));
     let embed = match image {
         Ok(image) => embed.thumbnail(image),
         Err(_) => embed,
