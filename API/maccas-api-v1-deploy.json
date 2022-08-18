@@ -105,7 +105,7 @@
       "properties": {
         "displayName": "Get Specific Deal",
         "method": "GET",
-        "urlTemplate": "/deal/{dealId}",
+        "urlTemplate": "/deals/{dealId}",
         "templateParameters": [
           {
             "name": "dealId",
