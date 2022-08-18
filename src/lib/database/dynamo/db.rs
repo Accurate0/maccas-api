@@ -6,7 +6,7 @@ use crate::constants::db::{
     LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
     USER_ID, USER_NAME,
 };
-use crate::constants::mc_donalds::{self, MCDONALDS_IMAGE_BUCKET};
+use crate::constants::mc_donalds::{self, MCDONALDS_IMAGE_CDN};
 use crate::database::r#trait::Database;
 use crate::types::api::{Offer, PointsResponse};
 use crate::types::user::UserOptions;
@@ -394,7 +394,7 @@ impl Database for DynamoDatabase {
                     // check if exists
                     if existing.is_err() {
                         let image_url =
-                            format!("{}/{}", MCDONALDS_IMAGE_BUCKET, offer.image_base_name);
+                            format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
                         let image_response = http_client.get(image_url).send().await;
                         match image_response {
                             Ok(image_response) => {
