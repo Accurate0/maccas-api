@@ -29,6 +29,7 @@
     },
     "sensorData": null,
     "discord": {
+        "enabled": true,
         "webhooks": [
             null
         ],

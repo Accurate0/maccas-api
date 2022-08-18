@@ -3,10 +3,11 @@ use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::guards::authorization::AuthorizationHeader;
 use crate::guards::correlation_id::CorrelationId;
 use crate::guards::log::LogHeader;
-use crate::logging::log_deal_use;
+use crate::logging::log_external;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::jwt::JwtClaim;
+use crate::webhook::execute::execute_discord_webhooks;
 use crate::{client, routes};
 use anyhow::Context;
 use chrono::Duration;
@@ -51,7 +52,6 @@ pub async fn add_deal(
 
         let offer_id = offer.offer_id;
         let offer_proposition_id = offer.offer_proposition_id.to_string();
-        let short_name = offer.short_name.to_string();
 
         let current_deal_stack = api_client
             .get_offers_dealstack(
@@ -161,37 +161,51 @@ pub async fn add_deal(
             };
 
             if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
-                let restaurant_info = api_client
-                    .get_restaurant(
-                        &store.unwrap_or(mc_donalds::default::STORE_ID),
-                        FILTER,
-                        STORE_UNIQUE_ID_TYPE,
-                    )
-                    .await;
+                if !ctx
+                    .config
+                    .log
+                    .ignored_user_ids
+                    .iter()
+                    .any(|ignored| *ignored == user_id)
+                {
+                    let restaurant_info = api_client
+                        .get_restaurant(
+                            &store.unwrap_or(mc_donalds::default::STORE_ID),
+                            FILTER,
+                            STORE_UNIQUE_ID_TYPE,
+                        )
+                        .await;
 
-                let store_name = match restaurant_info {
-                    Ok(restaurant_info) => {
-                        let response = restaurant_info.body.response;
-                        match response {
-                            Some(response) => response.restaurant.name,
-                            None => "Unknown/Invalid Name".to_owned(),
+                    let store_name = match restaurant_info {
+                        Ok(restaurant_info) => {
+                            let response = restaurant_info.body.response;
+                            match response {
+                                Some(response) => response.restaurant.name,
+                                None => "Unknown/Invalid Name".to_owned(),
+                            }
                         }
-                    }
-                    _ => "Error getting store name".to_string(),
-                };
+                        _ => "Error getting store name".to_string(),
+                    };
 
-                log_deal_use(
-                    &http_client,
-                    &user_id,
-                    &user_name,
-                    &correlation_id.0,
-                    &short_name,
-                    deal_id,
-                    &offer.image_base_name,
-                    &ctx.config,
-                    &store_name,
-                )
-                .await;
+                    let log_fut = log_external(
+                        &http_client,
+                        &ctx.config,
+                        &user_id,
+                        &user_name,
+                        &offer,
+                        &correlation_id.0,
+                    );
+
+                    let discord_webhook_fut = execute_discord_webhooks(
+                        &http_client,
+                        &ctx.config,
+                        &user_name,
+                        &offer,
+                        &store_name,
+                    );
+
+                    tokio::join!(log_fut, discord_webhook_fut);
+                }
             }
             resp
         };

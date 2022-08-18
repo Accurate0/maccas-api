@@ -1,6 +1,3 @@
-use http::header::CONTENT_TYPE;
-use reqwest::Response;
-use reqwest_middleware::ClientWithMiddleware;
 use serde::Serialize;
 use twilight_model::channel::embed::Embed;
 
@@ -27,18 +24,5 @@ impl DiscordWebhookMessage {
     pub fn add_embed(&mut self, embed: Embed) -> &Self {
         self.embeds.push(embed);
         self
-    }
-
-    pub async fn send(
-        &self,
-        http_client: &ClientWithMiddleware,
-        webhook_url: &String,
-    ) -> Result<Response, anyhow::Error> {
-        Ok(http_client
-            .post(webhook_url)
-            .header(CONTENT_TYPE, mime::APPLICATION_JSON.to_string())
-            .body(serde_json::to_string(&self)?)
-            .send()
-            .await?)
     }
 }
