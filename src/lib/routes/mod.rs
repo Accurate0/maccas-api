@@ -1,7 +1,6 @@
 use crate::database::Database;
 
 pub mod code;
-pub mod deal;
 pub mod deals;
 pub mod docs;
 pub mod locations;

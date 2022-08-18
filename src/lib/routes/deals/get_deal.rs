@@ -14,7 +14,7 @@ use rocket::{serde::json::Json, State};
         ),
         tag = "deals",
     )]
-#[get("/deal/<deal_id>")]
+#[get("/deals/<deal_id>")]
 pub async fn get_deal(ctx: &State<Context<'_>>, deal_id: &str) -> Result<Json<Offer>, ApiError> {
     if let Ok((_, offer)) = ctx.database.get_offer_by_id(deal_id).await {
         Ok(Json(offer))
