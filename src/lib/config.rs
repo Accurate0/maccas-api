@@ -34,6 +34,7 @@ pub struct Tables {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DiscordConfig {
+    pub enabled: bool,
     pub webhooks: Vec<String>,
     pub avatar_url: String,
     pub username: String,

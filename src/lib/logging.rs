@@ -1,7 +1,6 @@
 use crate::config::ApiConfig;
-use crate::constants::mc_donalds::IMAGE_CDN;
-use crate::constants::{mc_donalds, DEFAULT_TIMEZONE};
-use crate::webhook::DiscordWebhookMessage;
+use crate::constants::DEFAULT_TIMEZONE;
+use crate::types::api::Offer;
 use crate::{
     constants::{self, api_base},
     types::log::UsageLog,
@@ -12,8 +11,6 @@ use chrono::Utc;
 use chrono_tz::Tz;
 use http::Method;
 use reqwest_middleware::ClientWithMiddleware;
-use twilight_model::util::Timestamp;
-use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
 
 pub fn setup_logging() {
     fern::Dispatch::new()
@@ -40,29 +37,14 @@ pub fn setup_logging() {
         .unwrap();
 }
 
-#[allow(clippy::too_many_arguments)]
-pub async fn log_deal_use(
+pub async fn log_external(
     http_client: &ClientWithMiddleware,
+    config: &ApiConfig,
     user_id: &str,
     user_name: &str,
+    offer: &Offer,
     correlation_id: &str,
-    short_name: &String,
-    deal_id: &str,
-    image_base_url: &String,
-    config: &ApiConfig,
-    store_name: &String,
 ) {
-    // log usage
-    if config
-        .log
-        .ignored_user_ids
-        .iter()
-        .any(|uid| *uid == *user_id)
-    {
-        log::info!("refusing to log for {}/{}", user_id, user_name);
-        return;
-    }
-
     let tz: Tz = config
         .log
         .local_time_zone
@@ -72,8 +54,8 @@ pub async fn log_deal_use(
 
     let usage_log = UsageLog {
         user_id: user_id.to_string(),
-        deal_readable: short_name.to_string(),
-        deal_uuid: deal_id.to_string(),
+        deal_readable: offer.short_name.to_string(),
+        deal_uuid: offer.deal_uuid.to_string(),
         user_readable: user_name.to_string(),
         message: "Deal Used",
         local_time: dt.format("%r %v %Z").to_string(),
@@ -89,44 +71,6 @@ pub async fn log_deal_use(
         .await;
     match resp {
         Ok(_) => {}
-        Err(e) => log::error!("{:?}", e),
-    }
-
-    let mut message = DiscordWebhookMessage::new(
-        config.discord.username.clone(),
-        config.discord.avatar_url.clone(),
-    );
-
-    let embed = EmbedBuilder::new()
-        .color(mc_donalds::RED)
-        .description("**Deal Used**")
-        .field(EmbedFieldBuilder::new("Name", user_name.to_string()))
-        .field(EmbedFieldBuilder::new("Deal", short_name))
-        .field(EmbedFieldBuilder::new("Store", store_name))
-        .timestamp(
-            Timestamp::from_secs(dt.timestamp())
-                .context("must have valid time")
-                .unwrap(),
-        );
-
-    let image = ImageSource::url(format!("{}/{}", IMAGE_CDN, image_base_url));
-    let embed = match image {
-        Ok(image) => embed.thumbnail(image),
-        Err(_) => embed,
-    };
-
-    match embed.validate() {
-        Ok(embed) => {
-            message.add_embed(embed.build());
-
-            for webhook_url in &config.discord.webhooks {
-                let resp = message.send(http_client, webhook_url).await;
-                match resp {
-                    Ok(_) => {}
-                    Err(e) => log::error!("{:?}", e),
-                }
-            }
-        }
         Err(e) => log::error!("{:?}", e),
     }
 }
