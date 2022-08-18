@@ -7,10 +7,11 @@ use crate::constants::db::{
 };
 use crate::constants::mc_donalds::{self, MCDONALDS_IMAGE_CDN};
 use crate::database::r#trait::Database;
+use crate::extensions::ApiClientExtensions;
 use crate::types::api::{Offer, PointsResponse};
 use crate::types::config::{ApiConfig, UserAccount};
 use crate::types::user::UserOptions;
-use crate::utils::{self, get_short_sha1};
+use crate::utils::get_short_sha1;
 use anyhow::{bail, Context};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
@@ -188,7 +189,8 @@ impl Database for DynamoDatabase {
                 .await
             {
                 Ok(_) => {
-                    utils::remove_all_from_deal_stack_for(api_client, &account.account_name)
+                    api_client
+                        .remove_all_from_deal_stack_for(&account.account_name)
                         .await?;
                     self.refresh_point_cache_for(account, api_client).await?;
                 }
