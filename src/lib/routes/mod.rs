@@ -1,5 +1,6 @@
 use crate::{database::Database, types::config::ApiConfig};
 
+pub mod admin;
 pub mod code;
 pub mod deals;
 pub mod docs;

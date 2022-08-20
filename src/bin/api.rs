@@ -3,6 +3,9 @@ use libapi::constants;
 use libapi::database::DynamoDatabase;
 use libapi::logging;
 use libapi::routes;
+use libapi::routes::admin::get_locked_deals::get_locked_deals;
+use libapi::routes::admin::lock_deal::lock_deal;
+use libapi::routes::admin::unlock_deal::unlock_deal;
 use libapi::routes::code::get_code::get_code;
 use libapi::routes::deals::add_deal::add_deal;
 use libapi::routes::deals::get_deal::get_deal;
@@ -70,7 +73,10 @@ async fn main() -> Result<(), LambdaError> {
                 get_accounts,
                 get_total_accounts,
                 get_user_config,
-                update_user_config
+                update_user_config,
+                get_locked_deals,
+                lock_deal,
+                unlock_deal,
             ],
         )
         .configure(config);

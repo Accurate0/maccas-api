@@ -48,5 +48,9 @@
             "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
         ]
     },
-    "imageBucket": "maccas-image-bucket"
+    "imageBucket": "maccas-image-bucket",
+    "adminUserIds": [
+        "7473629d-84a6-4e94-bf4b-a6bf7517827c",
+        "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
+    ]
 }

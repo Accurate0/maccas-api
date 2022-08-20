@@ -272,6 +272,65 @@
         "request": {},
         "responses": []
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Admin-Lock-Deal-POST",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Lock the account without using it",
+        "method": "POST",
+        "urlTemplate": "/admin/locked-deals/{dealId}",
+        "templateParameters": [
+          {
+            "name": "dealId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "request": {
+          "queryParameters": [
+            {
+              "name": "duration",
+              "type": "number",
+              "required": false
+            }
+          ]
+        },
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Admin-Unlock-Deal-DELETE",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Unlock the account without using it",
+        "method": "DELETE",
+        "urlTemplate": "/admin/locked-deals/{dealId}",
+        "templateParameters": [
+          {
+            "name": "dealId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": []
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis/operations",
+      "apiVersion": "2021-08-01",
+      "name": "general-apim/Maccas-API-v1/Admin-Get-Locked-Deals-GET",
+      "dependsOn": [],
+      "properties": {
+        "displayName": "Get all currently locked deals",
+        "method": "GET",
+        "urlTemplate": "/admin/locked-deals",
+        "responses": []
+      }
     }
   ]
 }
