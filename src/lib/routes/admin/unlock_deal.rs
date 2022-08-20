@@ -7,6 +7,9 @@ use rocket::{http::Status, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
+    params(
+        ("Authorization" = String, header, description = "Valid JWT with user id in allowed list"),
+    ),
 )]
 #[delete("/admin/locked-deals/<deal_id>")]
 pub async fn unlock_deal(
