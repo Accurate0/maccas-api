@@ -204,3 +204,6 @@ impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
         )
     }
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+pub struct AdminLockedDealsResponse(pub Vec<String>);
