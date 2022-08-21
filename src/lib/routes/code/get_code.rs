@@ -18,7 +18,7 @@ use rocket::{serde::json::Json, State};
 pub async fn get_code(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
-    store: Option<i64>,
+    store: i64,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let http_client = client::get_http_client();
@@ -35,10 +35,7 @@ pub async fn get_code(
             .await?;
 
         let resp = api_client
-            .get_offers_dealstack(
-                mc_donalds::default::OFFSET,
-                &store.unwrap_or(mc_donalds::default::STORE_ID),
-            )
+            .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
             .await?;
 
         Ok(Json(OfferResponse::from(resp.body)))

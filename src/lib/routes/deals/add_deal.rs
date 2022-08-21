@@ -31,7 +31,7 @@ use rocket::{serde::json::Json, State};
 pub async fn add_deal(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
-    store: Option<i64>,
+    store: i64,
     auth: AuthorizationHeader,
     log: LogHeader,
     correlation_id: CorrelationId,
@@ -54,10 +54,7 @@ pub async fn add_deal(
         let offer_proposition_id = offer.offer_proposition_id.to_string();
 
         let current_deal_stack = api_client
-            .get_offers_dealstack(
-                mc_donalds::default::OFFSET,
-                &store.unwrap_or(mc_donalds::default::STORE_ID),
-            )
+            .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
             .await?
             .body
             .response
@@ -78,11 +75,7 @@ pub async fn add_deal(
         ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
 
         let resp = api_client
-            .add_to_offers_dealstack(
-                &offer_proposition_id,
-                mc_donalds::default::OFFSET,
-                &store.unwrap_or(mc_donalds::default::STORE_ID),
-            )
+            .add_to_offers_dealstack(&offer_proposition_id, mc_donalds::default::OFFSET, &store)
             .await?;
 
         // this can cause the offer id to change.. for offers with id == 0
@@ -141,10 +134,7 @@ pub async fn add_deal(
         // if we get 409 Conflict. offer already exists
         let resp = if resp.status.as_u16() == 409 {
             api_client
-                .get_offers_dealstack(
-                    mc_donalds::default::OFFSET,
-                    &store.unwrap_or(mc_donalds::default::STORE_ID),
-                )
+                .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
                 .await?
         } else {
             // jwt has priority as it's more reliable
@@ -169,11 +159,7 @@ pub async fn add_deal(
                     .any(|ignored| *ignored == user_id)
                 {
                     let restaurant_info = api_client
-                        .get_restaurant(
-                            &store.unwrap_or(mc_donalds::default::STORE_ID),
-                            FILTER,
-                            STORE_UNIQUE_ID_TYPE,
-                        )
+                        .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
                         .await;
 
                     let store_name = match restaurant_info {
