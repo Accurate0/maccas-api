@@ -12,6 +12,7 @@ pub enum ApiError {
     NotFound,
     InternalServerError,
     UnhandledError,
+    InvalidJwt,
 }
 
 impl ApiError {
@@ -21,6 +22,7 @@ impl ApiError {
             ApiError::McDonaldsError => Status::BadRequest,
             ApiError::AccountNotAvailable => Status::Conflict,
             ApiError::Unauthorized => Status::Unauthorized,
+            ApiError::InvalidJwt => Status::Unauthorized,
             ApiError::NotFound => Status::NotFound,
             ApiError::InternalServerError => Status::InternalServerError,
             ApiError::UnhandledError => Status::InternalServerError,

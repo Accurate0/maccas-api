@@ -3,6 +3,7 @@
     "donalds",
     "ETAG",
     "itertools",
+    "jwks",
     "libcore",
     "MSAL",
     "openapi",

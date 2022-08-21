@@ -133,6 +133,6 @@ jobs:
           service_account__account_name: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT_NAME }}
           service_account__login_username: ${{ secrets.API_CONFIG_SERVICE_USERNAME }}
           service_account__login_password: ${{ secrets.API_CONFIG_SERVICE_PASSWORD }}
-          jwt_bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
+          jwt__bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
       - name: upload to s3
         run: aws s3 cp base-config.json s3://maccas-application-config/base-config.json

@@ -26,6 +26,9 @@ rocket_lamb = { git = "https://github.com/Accurate0/rocket-lamb.git", rev = "044
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
 
+jwt = "0.16.0"
+jsonwebtoken = "8.1.1"
+
 openssl = { version = "0.10", features = ["vendored"] }
 config = { version = "0.13.2", features = ["yaml"] }
 uuid = { version = "1.1.2", features = ["v4"] }
@@ -39,7 +42,6 @@ log = "0.4.0"
 async-trait = "0.1.57"
 task-local-extensions = "0.1.1"
 reqwest-tracing = "0.3.0"
-jwt = "0.16.0"
 rand = "0.8.5"
 itertools = "0.10.3"
 tokio = "1.20.1"
