@@ -10,6 +10,7 @@ pub const X_LOG_USER_ID: &str = "x-log-user-id";
 pub const X_LOG_USER_NAME: &str = "x-log-user-name";
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
+pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
 pub const DEFAULT_TIMEZONE: chrono_tz::Tz = chrono_tz::Australia::Perth;
 
 pub mod mc_donalds {

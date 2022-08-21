@@ -1,4 +1,5 @@
 use crate::{
+    constants::X_JWT_BYPASS_HEADER,
     routes,
     types::{error::ApiError, jwt::JwtClaim},
 };
@@ -19,18 +20,23 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
     type Error = ApiError;
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
-        let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
         let ctx = request.guard::<&State<routes::Context>>().await;
-
         if ctx.is_failure() {
             return Outcome::Failure((Status::InternalServerError, ApiError::InternalServerError));
         };
 
+        let ctx = ctx.unwrap();
+
+        let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
+        if jwt_bypass_key.is_some() && jwt_bypass_key.unwrap() == ctx.config.jwt_bypass_key {
+            return Outcome::Success(AdminOnlyRoute);
+        }
+
+        let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
         if auth_header.is_failure() {
             return auth_header.map(|_| AdminOnlyRoute);
         };
 
-        let ctx = ctx.unwrap();
         let auth_header = auth_header.unwrap();
 
         let allowed_user_ids = &ctx.config.admin_user_ids;

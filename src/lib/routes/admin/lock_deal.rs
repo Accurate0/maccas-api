@@ -8,9 +8,6 @@ use rocket::{http::Status, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
-    params(
-        ("Authorization" = String, header, description = "Valid JWT with user id in allowed list"),
-    ),
 )]
 #[post("/admin/locked-deals/<deal_id>?<duration>")]
 pub async fn lock_deal(
