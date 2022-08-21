@@ -11,9 +11,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "points",
-    params(
-        ("Authorization" = String, header, description = "Valid JWT with user id in allowed list"),
-    ),
 )]
 #[get("/points")]
 pub async fn get_points(
