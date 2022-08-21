@@ -8,6 +8,9 @@ use rocket::{http::Status, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
+    params(
+        ("X-Maccas-JWT-Bypass" = Option<String>, header, description = "Key to bypass JWT checks"),
+    ),
 )]
 #[post("/admin/locked-deals/<deal_id>?<duration>")]
 pub async fn lock_deal(
