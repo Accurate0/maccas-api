@@ -28,7 +28,7 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
         let ctx = ctx.unwrap();
 
         let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
-        if jwt_bypass_key.is_some() && jwt_bypass_key.unwrap() == ctx.config.jwt_bypass_key {
+        if jwt_bypass_key.is_some() && jwt_bypass_key.unwrap() == ctx.config.jwt.bypass_key {
             return Outcome::Success(AdminOnlyRoute);
         }
 

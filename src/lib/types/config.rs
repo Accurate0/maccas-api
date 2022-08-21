@@ -49,6 +49,13 @@ pub struct ProtectedRouteConfig {
     pub allowed_user_ids: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct JwtConfig {
+    pub validate: bool,
+    pub bypass_key: String,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
@@ -66,5 +73,5 @@ pub struct ApiConfig {
     pub refresh_counts: HashMap<String, i8>,
     pub image_bucket: String,
     pub admin_user_ids: Vec<String>,
-    pub jwt_bypass_key: String,
+    pub jwt: JwtConfig,
 }
