@@ -1,15 +1,14 @@
 use super::DynamoDatabase;
-use crate::client;
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
     LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
     USER_ID, USER_NAME,
 };
-use crate::constants::mc_donalds::{self, MCDONALDS_IMAGE_CDN};
+use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
 use crate::extensions::ApiClientExtensions;
 use crate::types::api::{Offer, PointsResponse};
-use crate::types::config::{ApiConfig, UserAccount};
+use crate::types::config::UserAccount;
 use crate::types::user::UserOptions;
 use crate::utils::get_short_sha1;
 use anyhow::{bail, Context};
@@ -19,7 +18,6 @@ use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use http::StatusCode;
 use libmaccas::ApiClient;
-use mime::IMAGE_JPEG;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::StdRng;
 use rand::SeedableRng;
@@ -348,89 +346,6 @@ impl Database for DynamoDatabase {
             .send()
             .await?;
 
-        Ok(())
-    }
-
-    async fn refresh_images(
-        &self,
-        client_map: &HashMap<UserAccount, ApiClient<'_>>,
-        s3_client: &aws_sdk_s3::Client,
-        config: &ApiConfig,
-    ) -> Result<Vec<String>, anyhow::Error> {
-        let mut failed_accounts = Vec::new();
-        for account in client_map.keys() {
-            if let Err(e) = self.refresh_images_for(s3_client, config, account).await {
-                failed_accounts.push(account.account_name.clone());
-                log::error!(
-                    "failed to refresh images for {} because {}",
-                    account.account_name,
-                    e
-                )
-            }
-        }
-
-        Ok(failed_accounts)
-    }
-
-    async fn refresh_images_for(
-        &self,
-        s3_client: &aws_sdk_s3::Client,
-        config: &ApiConfig,
-        account: &UserAccount,
-    ) -> Result<(), anyhow::Error> {
-        let http_client = client::get_http_client();
-        let mut new_image_count = 0;
-        let mut cached_image_count = 0;
-
-        let offer_list = self.get_offers_for(&account.account_name).await?;
-        match offer_list {
-            Some(offer_list) => {
-                for offer in offer_list {
-                    let existing = s3_client
-                        .head_object()
-                        .bucket(&config.image_bucket)
-                        .key(&offer.image_base_name)
-                        .send()
-                        .await;
-
-                    // check if exists
-                    if existing.is_err() {
-                        let image_url =
-                            format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
-                        let image_response = http_client.get(image_url).send().await;
-                        match image_response {
-                            Ok(image_response) => {
-                                let image = image_response.bytes().await?;
-                                s3_client
-                                    .put_object()
-                                    .bucket(&config.image_bucket)
-                                    .key(offer.image_base_name)
-                                    .content_type(IMAGE_JPEG.to_string())
-                                    .body(image.into())
-                                    .send()
-                                    .await?;
-                                new_image_count += 1;
-                            }
-                            Err(e) => {
-                                log::error!("failed getting image for {:#?} because {}", &offer, e)
-                            }
-                        }
-                    } else {
-                        cached_image_count += 1;
-                        log::debug!("{:#?} already exists in s3", offer.image_base_name)
-                    }
-                }
-            }
-            None => {
-                log::info!(
-                    "no offers for {}, no images to refresh",
-                    account.account_name
-                )
-            }
-        }
-
-        log::info!("{} new images added for {}", new_image_count, account);
-        log::info!("{} cached images for {}", cached_image_count, account);
         Ok(())
     }
 

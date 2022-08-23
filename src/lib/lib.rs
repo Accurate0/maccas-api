@@ -5,6 +5,7 @@ pub mod database;
 pub mod doc;
 pub mod extensions;
 pub mod guards;
+pub mod images;
 pub mod logging;
 pub mod routes;
 pub mod types;

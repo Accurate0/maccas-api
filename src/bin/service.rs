@@ -2,11 +2,11 @@ use anyhow::{bail, Context};
 use aws_sdk_dynamodb::Client;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use libapi::client;
 use libapi::constants;
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
 use libapi::types::config::ApiConfig;
+use libapi::{client, images};
 use serde_json::{json, Value};
 
 #[tokio::main]
@@ -54,20 +54,14 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .await?;
 
     let s3_client = aws_sdk_s3::Client::new(&shared_config);
-    let images_failed_accounts = database
-        .refresh_images(&client_map, &s3_client, &config)
-        .await?;
+    images::refresh_images(database.as_ref(), &s3_client, &config).await?;
 
-    if !failed_accounts.is_empty()
-        || !login_failed_accounts.is_empty()
-        || !images_failed_accounts.is_empty()
-    {
+    if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("refresh failed: {:#?}", failed_accounts);
         log::error!("login failed: {:#?}", login_failed_accounts);
-        log::error!("image failed: {:#?}", images_failed_accounts);
         bail!(
             "{} accounts failed to update",
-            failed_accounts.len() + login_failed_accounts.len() + images_failed_accounts.len()
+            failed_accounts.len() + login_failed_accounts.len()
         )
     }
 
