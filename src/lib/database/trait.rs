@@ -1,5 +1,5 @@
 use crate::types::api::{Offer, PointsResponse};
-use crate::types::config::{ApiConfig, UserAccount};
+use crate::types::config::UserAccount;
 use crate::types::user::UserOptions;
 use async_trait::async_trait;
 use chrono::Duration;
@@ -80,16 +80,4 @@ pub trait Database {
         region: &str,
         max_count: i8,
     ) -> Result<i8, anyhow::Error>;
-    async fn refresh_images_for(
-        &self,
-        s3_client: &aws_sdk_s3::Client,
-        config: &ApiConfig,
-        account: &UserAccount,
-    ) -> Result<(), anyhow::Error>;
-    async fn refresh_images(
-        &self,
-        client_map: &HashMap<UserAccount, ApiClient<'_>>,
-        s3_client: &aws_sdk_s3::Client,
-        config: &ApiConfig,
-    ) -> Result<Vec<String>, anyhow::Error>;
 }
