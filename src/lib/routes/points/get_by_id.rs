@@ -26,7 +26,7 @@ pub async fn get_points_by_id(
     ctx: &State<routes::Context<'_>>,
     _protected: ProtectedRoute,
     account_id: &str,
-    store: Option<i64>,
+    store: i64,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
     if let Ok((account, points)) = ctx.database.get_points_by_account_hash(account_id).await {
         let http_client = client::get_http_client();
@@ -43,10 +43,7 @@ pub async fn get_points_by_id(
             .await?;
 
         let response = api_client
-            .get_offers_dealstack(
-                mc_donalds::default::OFFSET,
-                &store.unwrap_or(mc_donalds::default::STORE_ID),
-            )
+            .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
             .await?;
 
         Ok(Json(OfferPointsResponse {
