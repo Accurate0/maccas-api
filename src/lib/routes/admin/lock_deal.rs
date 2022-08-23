@@ -1,4 +1,4 @@
-use crate::{guards::admin::AdminOnlyRoute, routes, types::error::ApiError};
+use crate::{routes, types::error::ApiError};
 use chrono::Duration;
 use rocket::{http::Status, State};
 
@@ -15,7 +15,6 @@ use rocket::{http::Status, State};
 #[post("/admin/locked-deals/<deal_id>?<duration>")]
 pub async fn lock_deal(
     ctx: &State<routes::Context<'_>>,
-    _admin: AdminOnlyRoute,
     deal_id: &str,
     duration: Option<i64>,
 ) -> Result<Status, ApiError> {
