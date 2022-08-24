@@ -608,7 +608,7 @@ impl Database for DynamoDatabase {
                     let device_id = match device_id {
                         Some(device_id) => match device_id.as_s() {
                             Ok(s) => s.clone(),
-                            _ => bail!("missing refresh token for {}", account.account_name),
+                            _ => bail!("missing device id for {}", account.account_name),
                         },
                         None => {
                             let mut rng = StdRng::from_entropy();
