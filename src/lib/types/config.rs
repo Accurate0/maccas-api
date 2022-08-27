@@ -60,6 +60,7 @@ pub struct JwtConfig {
 #[serde(rename_all = "camelCase")]
 pub struct ImageConfig {
     pub force: bool,
+    pub bucket_name: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -77,7 +78,6 @@ pub struct ApiConfig {
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub refresh_counts: HashMap<String, i8>,
-    pub image_bucket: String,
     pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
     pub images: ImageConfig,
