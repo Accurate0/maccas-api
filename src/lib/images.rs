@@ -3,12 +3,13 @@ use crate::{
     constants::mc_donalds::MCDONALDS_IMAGE_CDN,
     database::Database,
     types::{api::Offer, config::ApiConfig},
+    utils,
 };
 use aws_sdk_s3::types::ByteStream;
 use image::io::Reader as ImageReader;
 use itertools::Itertools;
 use mime::IMAGE_JPEG;
-use std::{io::Cursor, path::Path};
+use std::io::Cursor;
 
 pub async fn refresh_images(
     database: &'_ dyn Database,
@@ -69,11 +70,7 @@ async fn refresh_images_for(
                         .bucket(&config.image_bucket)
                         .key(format!(
                             "{}.webp",
-                            Path::new(&offer.image_base_name)
-                                .file_stem()
-                                .unwrap()
-                                .to_str()
-                                .unwrap()
+                            utils::remove_ext(&offer.image_base_name)
                         ))
                         .content_type("image/webp")
                         .body(ByteStream::from(webp_image))
