@@ -56,5 +56,8 @@
     "jwt": {
         "validate": false,
         "bypassKey": null
+    },
+    "image": {
+        "force": true
     }
 }

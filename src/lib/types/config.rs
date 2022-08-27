@@ -56,6 +56,12 @@ pub struct JwtConfig {
     pub bypass_key: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageConfig {
+    pub force: bool,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
@@ -74,4 +80,5 @@ pub struct ApiConfig {
     pub image_bucket: String,
     pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
+    pub images: ImageConfig,
 }
