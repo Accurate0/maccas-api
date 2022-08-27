@@ -4,8 +4,11 @@ use crate::{
     database::Database,
     types::{api::Offer, config::ApiConfig},
 };
+use aws_sdk_s3::types::ByteStream;
+use image::io::Reader as ImageReader;
 use itertools::Itertools;
 use mime::IMAGE_JPEG;
+use std::{io::Cursor, path::Path};
 
 pub async fn refresh_images(
     database: &'_ dyn Database,
@@ -40,20 +43,43 @@ async fn refresh_images_for(
             .await;
 
         // check if exists
-        if existing.is_err() {
+        if config.images.force || existing.is_err() {
             let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
             let image_response = http_client.get(image_url).send().await;
             match image_response {
                 Ok(image_response) => {
-                    let image = image_response.bytes().await?;
+                    let image_bytes = image_response.bytes().await?;
+                    let image = ImageReader::new(Cursor::new(image_bytes.clone()))
+                        .with_guessed_format()?
+                        .decode()?;
+                    let webp_image_memory = webp::Encoder::from_image(&image).unwrap().encode(75.0);
+                    let webp_image: Vec<u8> = webp_image_memory.iter().cloned().collect();
+
                     s3_client
                         .put_object()
                         .bucket(&config.image_bucket)
-                        .key(offer.image_base_name)
+                        .key(&offer.image_base_name)
                         .content_type(IMAGE_JPEG.to_string())
-                        .body(image.into())
+                        .body(image_bytes.into())
                         .send()
                         .await?;
+
+                    s3_client
+                        .put_object()
+                        .bucket(&config.image_bucket)
+                        .key(format!(
+                            "{}.webp",
+                            Path::new(&offer.image_base_name)
+                                .file_stem()
+                                .unwrap()
+                                .to_str()
+                                .unwrap()
+                        ))
+                        .content_type("image/webp")
+                        .body(ByteStream::from(webp_image))
+                        .send()
+                        .await?;
+
                     new_image_count += 1;
                 }
                 Err(e) => {
