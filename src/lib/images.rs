@@ -38,7 +38,7 @@ async fn refresh_images_for(
     for offer in offer_list {
         let existing = s3_client
             .head_object()
-            .bucket(&config.image_bucket)
+            .bucket(&config.images.bucket_name)
             .key(&offer.image_base_name)
             .send()
             .await;
@@ -58,7 +58,7 @@ async fn refresh_images_for(
 
                     s3_client
                         .put_object()
-                        .bucket(&config.image_bucket)
+                        .bucket(&config.images.bucket_name)
                         .key(&offer.image_base_name)
                         .content_type(IMAGE_JPEG.to_string())
                         .body(image_bytes.into())
@@ -67,7 +67,7 @@ async fn refresh_images_for(
 
                     s3_client
                         .put_object()
-                        .bucket(&config.image_bucket)
+                        .bucket(&config.images.bucket_name)
                         .key(format!(
                             "{}.webp",
                             utils::remove_ext(&offer.image_base_name)
