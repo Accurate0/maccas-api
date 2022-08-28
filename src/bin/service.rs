@@ -43,7 +43,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             &config.mcdonalds.client_id,
             &config.mcdonalds.client_secret,
             &config.mcdonalds.sensor_data,
-            &account_list.0,
+            &account_list.users,
             false,
         )
         .await?;

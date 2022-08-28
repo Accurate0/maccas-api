@@ -104,4 +104,6 @@ pub struct ApiConfig {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UserList(pub Vec<UserAccount>);
+pub struct UserList {
+    pub users: Vec<UserAccount>,
+}
