@@ -39,13 +39,13 @@ async fn refresh_images_for(
 
         let existing = s3_client
             .head_object()
-            .bucket(&config.images.bucket_name)
+            .bucket(&config.service.images.bucket_name)
             .key(&base_name_with_webp)
             .send()
             .await;
 
         // check if exists
-        if config.images.force_refresh || existing.is_err() {
+        if config.service.images.force_refresh || existing.is_err() {
             let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
             let image_response = http_client.get(image_url).send().await;
             match image_response {
@@ -56,13 +56,13 @@ async fn refresh_images_for(
                         .decode()?;
                     let webp_image_memory = webp::Encoder::from_image(&image)
                         .unwrap()
-                        .encode(config.images.webp_quality);
+                        .encode(config.service.images.webp_quality);
                     let webp_image: Vec<u8> = webp_image_memory.iter().cloned().collect();
 
-                    if config.images.copy_originals {
+                    if config.service.images.copy_originals {
                         s3_client
                             .put_object()
-                            .bucket(&config.images.bucket_name)
+                            .bucket(&config.service.images.bucket_name)
                             .key(&offer.image_base_name)
                             .body(image_bytes.into())
                             .send()
@@ -71,7 +71,7 @@ async fn refresh_images_for(
 
                     s3_client
                         .put_object()
-                        .bucket(&config.images.bucket_name)
+                        .bucket(&config.service.images.bucket_name)
                         .key(base_name_with_webp)
                         .content_type("image/webp")
                         .body(ByteStream::from(webp_image))

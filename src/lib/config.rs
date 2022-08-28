@@ -1,4 +1,7 @@
-use crate::{constants, types::config::ApiConfig};
+use crate::{
+    constants,
+    types::config::{ApiConfig, UserList},
+};
 use aws_sdk_s3::types::AggregatedBytes;
 use config::Config;
 
@@ -42,14 +45,15 @@ impl ApiConfig {
 
         Self::build_config_from_bytes(&base_config_bytes, None).await
     }
+}
 
-    pub async fn load_from_s3_with_region_accounts(
+impl UserList {
+    pub async fn load_from_s3(
         shared_config: &aws_types::SdkConfig,
         region: &str,
         option: i8,
     ) -> Result<Self, anyhow::Error> {
         let s3_client = aws_sdk_s3::Client::new(shared_config);
-        let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
 
         let resp = s3_client
             .get_object()
@@ -63,6 +67,11 @@ impl ApiConfig {
             .await?;
         let accounts_bytes = resp.body.collect().await?;
 
-        Self::build_config_from_bytes(&base_config_bytes, Some(&accounts_bytes)).await
+        let config = Config::builder().add_source(config::File::from_str(
+            std::str::from_utf8(&accounts_bytes.into_bytes())?,
+            config::FileFormat::Json,
+        ));
+
+        Ok(config.build()?.try_deserialize::<Self>()?)
     }
 }

@@ -42,7 +42,7 @@ async fn main() -> Result<(), LambdaError> {
 
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let database = DynamoDatabase::new(dynamodb_client, &config.tables);
+    let database = DynamoDatabase::new(dynamodb_client, &config.database.tables);
 
     let context = routes::Context {
         config,

@@ -26,9 +26,9 @@ pub async fn get_code(
             .database
             .get_specific_client(
                 &http_client,
-                &ctx.config.client_id,
-                &ctx.config.client_secret,
-                &ctx.config.sensor_data,
+                &ctx.config.mcdonalds.client_id,
+                &ctx.config.mcdonalds.client_secret,
+                &ctx.config.mcdonalds.sensor_data,
                 &account,
                 false,
             )

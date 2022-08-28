@@ -42,9 +42,9 @@ pub async fn add_deal(
             .database
             .get_specific_client(
                 &http_client,
-                &ctx.config.client_id,
-                &ctx.config.client_secret,
-                &ctx.config.sensor_data,
+                &ctx.config.mcdonalds.client_id,
+                &ctx.config.mcdonalds.client_secret,
+                &ctx.config.mcdonalds.sensor_data,
                 &account,
                 false,
             )
@@ -87,7 +87,11 @@ pub async fn add_deal(
             log::info!("offer_id = 0, refreshing account: {}", account);
             let mut new_offers = ctx
                 .database
-                .refresh_offer_cache_for(&account, &api_client, &ctx.config.ignored_offer_ids)
+                .refresh_offer_cache_for(
+                    &account,
+                    &api_client,
+                    &ctx.config.mcdonalds.ignored_offer_ids,
+                )
                 .await?;
 
             match new_offers
