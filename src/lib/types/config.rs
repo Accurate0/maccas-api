@@ -59,7 +59,7 @@ pub struct JwtConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageConfig {
-    pub force: bool,
+    pub force_refresh: bool,
     pub bucket_name: String,
     pub copy_originals: bool,
     pub webp_quality: f32,
