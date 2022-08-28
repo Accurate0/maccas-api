@@ -1,3 +1,4 @@
+use crate::utils;
 use crate::utils::get_short_sha1;
 use itertools::Itertools;
 use libmaccas::types::response::PointInformationResponse;
@@ -40,6 +41,8 @@ impl From<libmaccas::types::response::Offer> for Offer {
             .unwrap_or(&offer.name.as_str())
             .to_string();
 
+        let base_name_with_webp = format!("{}.webp", utils::remove_ext(&offer.image_base_name));
+
         Self {
             deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
             count: 1,
@@ -53,7 +56,7 @@ impl From<libmaccas::types::response::Offer> for Offer {
             short_name,
             description: offer.long_description,
             creation_date_utc: offer.creation_date_utc,
-            image_base_name: offer.image_base_name,
+            image_base_name: base_name_with_webp,
         }
     }
 }

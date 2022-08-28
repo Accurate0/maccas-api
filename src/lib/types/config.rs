@@ -61,6 +61,8 @@ pub struct JwtConfig {
 pub struct ImageConfig {
     pub force: bool,
     pub bucket_name: String,
+    pub copy_originals: bool,
+    pub webp_quality: f32,
 }
 
 #[derive(Deserialize, Debug)]

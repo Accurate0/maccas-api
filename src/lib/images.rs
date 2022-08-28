@@ -8,7 +8,6 @@ use crate::{
 use aws_sdk_s3::types::ByteStream;
 use image::io::Reader as ImageReader;
 use itertools::Itertools;
-use mime::IMAGE_JPEG;
 use std::io::Cursor;
 
 pub async fn refresh_images(
@@ -36,10 +35,12 @@ async fn refresh_images_for(
     let mut cached_image_count = 0;
 
     for offer in offer_list {
+        let base_name_with_webp = format!("{}.webp", utils::remove_ext(&offer.image_base_name));
+
         let existing = s3_client
             .head_object()
             .bucket(&config.images.bucket_name)
-            .key(&offer.image_base_name)
+            .key(&base_name_with_webp)
             .send()
             .await;
 
@@ -53,25 +54,25 @@ async fn refresh_images_for(
                     let image = ImageReader::new(Cursor::new(image_bytes.clone()))
                         .with_guessed_format()?
                         .decode()?;
-                    let webp_image_memory = webp::Encoder::from_image(&image).unwrap().encode(75.0);
+                    let webp_image_memory = webp::Encoder::from_image(&image)
+                        .unwrap()
+                        .encode(config.images.webp_quality);
                     let webp_image: Vec<u8> = webp_image_memory.iter().cloned().collect();
 
-                    s3_client
-                        .put_object()
-                        .bucket(&config.images.bucket_name)
-                        .key(&offer.image_base_name)
-                        .content_type(IMAGE_JPEG.to_string())
-                        .body(image_bytes.into())
-                        .send()
-                        .await?;
+                    if config.images.copy_originals {
+                        s3_client
+                            .put_object()
+                            .bucket(&config.images.bucket_name)
+                            .key(&offer.image_base_name)
+                            .body(image_bytes.into())
+                            .send()
+                            .await?;
+                    }
 
                     s3_client
                         .put_object()
                         .bucket(&config.images.bucket_name)
-                        .key(format!(
-                            "{}.webp",
-                            utils::remove_ext(&offer.image_base_name)
-                        ))
+                        .key(base_name_with_webp)
                         .content_type("image/webp")
                         .body(ByteStream::from(webp_image))
                         .send()
