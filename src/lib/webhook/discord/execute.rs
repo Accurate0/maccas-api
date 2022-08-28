@@ -1,6 +1,6 @@
 use crate::{
     constants::mc_donalds::{self, IMAGE_CDN},
-    types::{api::Offer, config::ApiConfig, webhook::DiscordWebhookMessage},
+    types::{api::OfferDatabase, config::ApiConfig, webhook::DiscordWebhookMessage},
 };
 use anyhow::Context;
 use chrono::Utc;
@@ -29,7 +29,7 @@ pub async fn execute_discord_webhooks(
     http_client: &ClientWithMiddleware,
     config: &ApiConfig,
     user_name: &str,
-    offer: &Offer,
+    offer: &OfferDatabase,
     store_name: &str,
 ) {
     if !config.discord.enabled {

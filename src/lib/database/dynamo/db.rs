@@ -7,7 +7,7 @@ use crate::constants::db::{
 use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
 use crate::extensions::ApiClientExtensions;
-use crate::types::api::{Offer, PointsResponse};
+use crate::types::api::{OfferDatabase, PointsResponse};
 use crate::types::config::UserAccount;
 use crate::types::user::UserOptions;
 use crate::utils::get_short_sha1;
@@ -73,8 +73,10 @@ impl Database for DynamoDatabase {
         }
     }
 
-    async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error> {
-        let mut offer_map = HashMap::<String, Vec<Offer>>::new();
+    async fn get_all_offers_as_map(
+        &self,
+    ) -> Result<HashMap<String, Vec<OfferDatabase>>, anyhow::Error> {
+        let mut offer_map = HashMap::<String, Vec<OfferDatabase>>::new();
 
         let table_resp: Result<Vec<_>, _> = self
             .client
@@ -90,7 +92,7 @@ impl Database for DynamoDatabase {
             if item[ACCOUNT_NAME].as_s().is_ok() && item[OFFER_LIST].as_s().is_ok() {
                 let account_name = item[ACCOUNT_NAME].as_s().unwrap();
                 let offer_list = item[OFFER_LIST].as_s().unwrap();
-                let offer_list = serde_json::from_str::<Vec<Offer>>(offer_list).unwrap();
+                let offer_list = serde_json::from_str::<Vec<OfferDatabase>>(offer_list).unwrap();
 
                 offer_map.insert(account_name.to_string(), offer_list);
             }
@@ -99,8 +101,8 @@ impl Database for DynamoDatabase {
         Ok(offer_map)
     }
 
-    async fn get_all_offers_as_vec(&self) -> Result<Vec<Offer>, anyhow::Error> {
-        let mut offer_list = Vec::<Offer>::new();
+    async fn get_all_offers_as_vec(&self) -> Result<Vec<OfferDatabase>, anyhow::Error> {
+        let mut offer_list = Vec::<OfferDatabase>::new();
 
         let table_resp: Result<Vec<_>, _> = self
             .client
@@ -115,7 +117,7 @@ impl Database for DynamoDatabase {
         for item in table_resp? {
             match item[OFFER_LIST].as_s() {
                 Ok(s) => {
-                    let mut json = serde_json::from_str::<Vec<Offer>>(s).unwrap();
+                    let mut json = serde_json::from_str::<Vec<OfferDatabase>>(s).unwrap();
                     offer_list.append(&mut json);
                 }
                 _ => panic!(),
@@ -128,7 +130,7 @@ impl Database for DynamoDatabase {
     async fn get_offers_for(
         &self,
         account_name: &str,
-    ) -> Result<Option<Vec<Offer>>, anyhow::Error> {
+    ) -> Result<Option<Vec<OfferDatabase>>, anyhow::Error> {
         let table_resp = self
             .client
             .get_item()
@@ -140,7 +142,7 @@ impl Database for DynamoDatabase {
         Ok(match table_resp.item {
             Some(ref item) => match item[OFFER_LIST].as_s() {
                 Ok(s) => {
-                    let json = serde_json::from_str::<Vec<Offer>>(s).unwrap();
+                    let json = serde_json::from_str::<Vec<OfferDatabase>>(s).unwrap();
                     Some(json)
                 }
                 _ => panic!(),
@@ -153,7 +155,7 @@ impl Database for DynamoDatabase {
     async fn set_offers_for(
         &self,
         account_name: &str,
-        offer_list: &[Offer],
+        offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -354,7 +356,7 @@ impl Database for DynamoDatabase {
         account: &UserAccount,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
-    ) -> Result<Vec<Offer>, anyhow::Error> {
+    ) -> Result<Vec<OfferDatabase>, anyhow::Error> {
         match api_client
             .get_offers(
                 mc_donalds::default::DISTANCE,
@@ -379,10 +381,10 @@ impl Database for DynamoDatabase {
                 let ttl: DateTime<Utc> =
                     Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
 
-                let resp: Vec<Offer> = resp
+                let resp: Vec<OfferDatabase> = resp
                     .iter_mut()
                     .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
-                    .map(|offer| Offer::from(offer.clone()))
+                    .map(|offer| OfferDatabase::from(offer.clone()))
                     .collect();
 
                 self.client
@@ -446,7 +448,10 @@ impl Database for DynamoDatabase {
         }
     }
 
-    async fn get_offer_by_id(&self, offer_id: &str) -> Result<(UserAccount, Offer), anyhow::Error> {
+    async fn get_offer_by_id(
+        &self,
+        offer_id: &str,
+    ) -> Result<(UserAccount, OfferDatabase), anyhow::Error> {
         let resp = self
             .client
             .query()
@@ -466,7 +471,7 @@ impl Database for DynamoDatabase {
                 .context("missing value")?
                 .clone(),
         )?;
-        let offer: Offer =
+        let offer: OfferDatabase =
             serde_dynamo::from_item(resp[OFFER].as_m().ok().context("missing value")?.clone())?;
 
         Ok((account, offer))

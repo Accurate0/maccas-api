@@ -1,4 +1,4 @@
-use crate::types::api::{Offer, PointsResponse};
+use crate::types::api::{OfferDatabase, PointsResponse};
 use crate::types::config::UserAccount;
 use crate::types::user::UserOptions;
 use async_trait::async_trait;
@@ -8,14 +8,18 @@ use std::collections::HashMap;
 
 #[async_trait]
 pub trait Database {
-    async fn get_all_offers_as_map(&self) -> Result<HashMap<String, Vec<Offer>>, anyhow::Error>;
-    async fn get_all_offers_as_vec(&self) -> Result<Vec<Offer>, anyhow::Error>;
-    async fn get_offers_for(&self, account_name: &str)
-        -> Result<Option<Vec<Offer>>, anyhow::Error>;
+    async fn get_all_offers_as_map(
+        &self,
+    ) -> Result<HashMap<String, Vec<OfferDatabase>>, anyhow::Error>;
+    async fn get_all_offers_as_vec(&self) -> Result<Vec<OfferDatabase>, anyhow::Error>;
+    async fn get_offers_for(
+        &self,
+        account_name: &str,
+    ) -> Result<Option<Vec<OfferDatabase>>, anyhow::Error>;
     async fn set_offers_for(
         &self,
         account_name: &str,
-        offer_list: &[Offer],
+        offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
@@ -37,9 +41,12 @@ pub trait Database {
         account: &UserAccount,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
-    ) -> Result<Vec<Offer>, anyhow::Error>;
+    ) -> Result<Vec<OfferDatabase>, anyhow::Error>;
     async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error>;
-    async fn get_offer_by_id(&self, offer_id: &str) -> Result<(UserAccount, Offer), anyhow::Error>;
+    async fn get_offer_by_id(
+        &self,
+        offer_id: &str,
+    ) -> Result<(UserAccount, OfferDatabase), anyhow::Error>;
     async fn get_config_by_user_id(&self, user_id: &str) -> Result<UserOptions, anyhow::Error>;
     async fn set_config_by_user_id(
         &self,

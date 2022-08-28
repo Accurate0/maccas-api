@@ -11,7 +11,7 @@ use uuid::Uuid;
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(Component)]
-pub struct Offer {
+pub struct OfferDatabase {
     pub deal_uuid: String,
     pub count: u32,
 
@@ -31,7 +31,7 @@ pub struct Offer {
     pub image_base_name: String,
 }
 
-impl From<libmaccas::types::response::Offer> for Offer {
+impl From<libmaccas::types::response::Offer> for OfferDatabase {
     fn from(offer: libmaccas::types::response::Offer) -> Self {
         let short_name = offer
             .name
@@ -61,7 +61,7 @@ impl From<libmaccas::types::response::Offer> for Offer {
     }
 }
 
-impl PartialEq for Offer {
+impl PartialEq for OfferDatabase {
     fn eq(&self, other: &Self) -> bool {
         // Everything except for count, offer_id, or uuid, creation_date for equality checks
         self.offer_proposition_id == other.offer_proposition_id
@@ -73,6 +73,45 @@ impl PartialEq for Offer {
             && self.short_name == other.short_name
             && self.description == other.description
             && self.image_base_name == other.image_base_name
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[derive(Component)]
+pub struct GetDealsOffer {
+    pub deal_uuid: String,
+    pub count: u32,
+
+    pub local_valid_from: String,
+    pub local_valid_to: String,
+    #[serde(rename = "validFromUTC")]
+    pub valid_from_utc: String,
+    #[serde(rename = "validToUTC")]
+    pub valid_to_utc: String,
+    pub name: String,
+    pub short_name: String,
+    pub description: String,
+    #[serde(rename = "CreationDateUtc")]
+    pub creation_date_utc: String,
+    pub image_base_name: String,
+}
+
+impl From<OfferDatabase> for GetDealsOffer {
+    fn from(offer: OfferDatabase) -> Self {
+        Self {
+            deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
+            count: 1,
+            local_valid_from: offer.local_valid_from,
+            local_valid_to: offer.local_valid_to,
+            valid_from_utc: offer.valid_from_utc,
+            valid_to_utc: offer.valid_to_utc,
+            name: offer.name,
+            short_name: offer.short_name,
+            description: offer.description,
+            creation_date_utc: offer.creation_date_utc,
+            image_base_name: offer.image_base_name,
+        }
     }
 }
 
@@ -151,8 +190,8 @@ pub struct OfferPointsResponse {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
 pub struct AccountResponse(HashMap<String, i64>);
 
-impl From<HashMap<String, Vec<Offer>>> for AccountResponse {
-    fn from(res: HashMap<String, Vec<Offer>>) -> Self {
+impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
+    fn from(res: HashMap<String, Vec<OfferDatabase>>) -> Self {
         let res = res
             .iter()
             .map(|(key, value)| {

@@ -1,5 +1,5 @@
 use crate::constants::DEFAULT_TIMEZONE;
-use crate::types::api::Offer;
+use crate::types::api::OfferDatabase;
 use crate::types::config::ApiConfig;
 use crate::{
     constants::{self, api_base},
@@ -42,7 +42,7 @@ pub async fn log_external(
     config: &ApiConfig,
     user_id: &str,
     user_name: &str,
-    offer: &Offer,
+    offer: &OfferDatabase,
     correlation_id: &str,
 ) {
     let tz: Tz = config
