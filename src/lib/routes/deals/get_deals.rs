@@ -44,9 +44,11 @@ pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffe
     let mut offer_list: Vec<GetDealsOffer> = offer_list
         .into_iter()
         .unique_by(|offer| offer.offer_proposition_id)
-        .map(|mut offer| {
-            offer.count = *count_map.get(&offer.offer_proposition_id).unwrap();
-            GetDealsOffer::from(offer)
+        .map(|original_offer| {
+            let mut offer = GetDealsOffer::from(original_offer.clone());
+            offer.count = *count_map.get(&original_offer.offer_proposition_id).unwrap();
+
+            offer
         })
         .collect();
 

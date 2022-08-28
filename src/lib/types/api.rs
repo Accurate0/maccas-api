@@ -13,7 +13,6 @@ use uuid::Uuid;
 #[derive(Component)]
 pub struct OfferDatabase {
     pub deal_uuid: String,
-    pub count: u32,
 
     pub offer_id: i64,
     pub offer_proposition_id: i64,
@@ -45,7 +44,6 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
 
         Self {
             deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
-            count: 1,
             offer_id: offer.offer_id,
             offer_proposition_id: offer.offer_proposition_id,
             local_valid_from: offer.local_valid_from,
