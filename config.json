@@ -57,7 +57,9 @@
         "bypassKey": null
     },
     "images": {
-        "force": true,
+        "force": false,
+        "copyOriginals": false,
+        "webpQuality": 75.0,
         "bucketName": "maccas-image-bucket"
     }
 }
