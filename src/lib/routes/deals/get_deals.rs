@@ -1,5 +1,5 @@
 use crate::routes::Context;
-use crate::types::api::Offer;
+use crate::types::api::{GetDealsOffer, OfferDatabase};
 use crate::types::error::ApiError;
 use itertools::Itertools;
 use rand::prelude::StdRng;
@@ -11,18 +11,18 @@ use std::collections::HashMap;
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "List of available deals", body = [Offer]),
+        (status = 200, description = "List of available deals", body = [GetDealsOffer]),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "deals",
 )]
 #[get("/deals")]
-pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<Offer>>, ApiError> {
+pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffer>>, ApiError> {
     let locked_deals = ctx.database.get_all_locked_deals().await?;
     let offer_list = ctx.database.get_all_offers_as_vec().await?;
 
     // filter locked deals
-    let mut offer_list: Vec<Offer> = offer_list
+    let mut offer_list: Vec<OfferDatabase> = offer_list
         .into_iter()
         .filter(|offer| !locked_deals.contains(&offer.deal_uuid.to_string()))
         .collect();
@@ -41,12 +41,12 @@ pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<Offer>>, Api
         };
     }
 
-    let mut offer_list: Vec<Offer> = offer_list
+    let mut offer_list: Vec<GetDealsOffer> = offer_list
         .into_iter()
         .unique_by(|offer| offer.offer_proposition_id)
         .map(|mut offer| {
             offer.count = *count_map.get(&offer.offer_proposition_id).unwrap();
-            offer
+            GetDealsOffer::from(offer)
         })
         .collect();
 

@@ -2,7 +2,7 @@ use crate::{
     client,
     constants::mc_donalds::MCDONALDS_IMAGE_CDN,
     database::Database,
-    types::{api::Offer, config::ApiConfig},
+    types::{api::OfferDatabase, config::ApiConfig},
     utils,
 };
 use aws_sdk_s3::types::ByteStream;
@@ -28,7 +28,7 @@ pub async fn refresh_images(
 async fn refresh_images_for(
     s3_client: &aws_sdk_s3::Client,
     config: &ApiConfig,
-    offer_list: Vec<Offer>,
+    offer_list: Vec<OfferDatabase>,
 ) -> Result<(), anyhow::Error> {
     let http_client = client::get_http_client();
     let mut new_image_count = 0;
