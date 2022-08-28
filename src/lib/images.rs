@@ -45,7 +45,7 @@ async fn refresh_images_for(
             .await;
 
         // check if exists
-        if config.images.force || existing.is_err() {
+        if config.images.force_refresh || existing.is_err() {
             let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
             let image_response = http_client.get(image_url).send().await;
             match image_response {
