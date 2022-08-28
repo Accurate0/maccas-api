@@ -11,7 +11,7 @@ pub struct UserAccount {
 
 impl Display for UserAccount {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("email: {}", self.login_username))
+        f.write_fmt(format_args!("{}", self.login_username))
     }
 }
 
@@ -65,22 +65,43 @@ pub struct ImageConfig {
     pub webp_quality: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiConfig {
+pub struct McDonaldsConfig {
     pub client_id: String,
     pub client_secret: String,
     pub ignored_offer_ids: Vec<i64>,
-    pub tables: Tables,
     pub sensor_data: String,
-    pub api_key: String,
-    pub users: Option<Vec<UserAccount>>,
     pub service_account: UserAccount,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DatabaseConfig {
+    pub tables: Tables,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceConfig {
+    pub images: ImageConfig,
+    pub refresh_counts: HashMap<String, i8>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiConfig {
+    pub mcdonalds: McDonaldsConfig,
+    pub database: DatabaseConfig,
+    pub service: ServiceConfig,
+    pub api_key: String,
     pub discord: DiscordConfig,
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
-    pub refresh_counts: HashMap<String, i8>,
     pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
-    pub images: ImageConfig,
 }
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UserList(pub Vec<UserAccount>);

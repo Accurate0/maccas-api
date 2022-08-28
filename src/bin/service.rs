@@ -5,7 +5,7 @@ use lambda_runtime::{Error, LambdaEvent};
 use libapi::constants;
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
-use libapi::types::config::ApiConfig;
+use libapi::types::config::{ApiConfig, UserList};
 use libapi::{client, images};
 use serde_json::{json, Value};
 
@@ -28,29 +28,29 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
 
     let config = ApiConfig::load_from_s3(&shared_config).await?;
     let client = Client::new(&shared_config);
-    let database: Box<dyn Database> = Box::new(DynamoDatabase::new(client, &config.tables));
+    let database: Box<dyn Database> =
+        Box::new(DynamoDatabase::new(client, &config.database.tables));
 
     let count = database
-        .increment_refresh_tracking(&env, config.refresh_counts[&env])
+        .increment_refresh_tracking(&env, config.service.refresh_counts[&env])
         .await?;
 
-    let config = ApiConfig::load_from_s3_with_region_accounts(&shared_config, &env, count).await?;
+    let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
     let http_client = client::get_http_client();
-    let account_list = config.users.as_ref().context("must have account list")?;
     let (client_map, login_failed_accounts) = database
         .get_client_map(
             &http_client,
-            &config.client_id,
-            &config.client_secret,
-            &config.sensor_data,
-            account_list,
+            &config.mcdonalds.client_id,
+            &config.mcdonalds.client_secret,
+            &config.mcdonalds.sensor_data,
+            &account_list.0,
             false,
         )
         .await?;
 
     log::info!("refresh started..");
     let failed_accounts = database
-        .refresh_offer_cache(&client_map, &config.ignored_offer_ids)
+        .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
         .await?;
 
     let s3_client = aws_sdk_s3::Client::new(&shared_config);

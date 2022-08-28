@@ -1,33 +1,45 @@
 {
-    "clientId": null,
-    "clientSecret": null,
-    "ignoredOfferIds": [
-        30762,
-        162091,
-        165964,
-        2946152,
-        3067279
-    ],
-    "tables": {
-        "tokenCache": "MaccasApiDb",
-        "userConfig": "MaccasApiUserConfig-v2",
-        "offerCache": "MaccasApiCache",
-        "offerCacheV2": "MaccasApiCache-v2",
-        "offerId": "MaccasApiOfferId",
-        "points": "MaccasApiPointDb",
-        "refreshTracking": "MaccasRefreshTrackingDb"
+    "mcdonalds": {
+        "clientId": null,
+        "clientSecret": null,
+        "ignoredOfferIds": [
+            30762,
+            162091,
+            165964,
+            2946152,
+            3067279
+        ],
+        "sensorData": null,
+        "serviceAccount": {
+            "accountName": null,
+            "loginUsername": null,
+            "loginPassword": null
+        }
     },
-    "refreshCounts": {
-        "ap-southeast-1": 2,
-        "ap-southeast-2": 2
+    "database": {
+        "tables": {
+            "tokenCache": "MaccasApiDb",
+            "userConfig": "MaccasApiUserConfig-v2",
+            "offerCache": "MaccasApiCache",
+            "offerCacheV2": "MaccasApiCache-v2",
+            "offerId": "MaccasApiOfferId",
+            "points": "MaccasApiPointDb",
+            "refreshTracking": "MaccasRefreshTrackingDb"
+        }
+    },
+    "service": {
+        "images": {
+            "forceRefresh": false,
+            "copyOriginals": false,
+            "webpQuality": 75.0,
+            "bucketName": "maccas-image-bucket"
+        },
+        "refreshCounts": {
+            "ap-southeast-1": 2,
+            "ap-southeast-2": 2
+        }
     },
     "apiKey": null,
-    "serviceAccount": {
-        "accountName": null,
-        "loginUsername": null,
-        "loginPassword": null
-    },
-    "sensorData": null,
     "discord": {
         "enabled": true,
         "webhooks": [
@@ -55,11 +67,5 @@
     "jwt": {
         "validate": false,
         "bypassKey": null
-    },
-    "images": {
-        "forceRefresh": false,
-        "copyOriginals": false,
-        "webpQuality": 75.0,
-        "bucketName": "maccas-image-bucket"
     }
 }
