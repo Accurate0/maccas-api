@@ -98,7 +98,7 @@ pub struct GetDealsOffer {
 impl From<OfferDatabase> for GetDealsOffer {
     fn from(offer: OfferDatabase) -> Self {
         Self {
-            deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
+            deal_uuid: offer.deal_uuid,
             count: 1,
             local_valid_from: offer.local_valid_from,
             local_valid_to: offer.local_valid_to,
