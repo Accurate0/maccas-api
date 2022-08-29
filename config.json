@@ -43,6 +43,7 @@
             "webhooks": [
                 null
             ],
+            "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
             "username": "Maccas Service"
         }
     },
