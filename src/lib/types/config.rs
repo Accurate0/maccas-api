@@ -86,7 +86,7 @@ pub struct DatabaseConfig {
 pub struct ServiceConfig {
     pub images: ImageConfig,
     pub refresh_counts: HashMap<String, i8>,
-    pub discord: DiscordConfig,
+    pub discord_refresh_error: DiscordConfig,
     pub refresh_images: bool,
     pub refresh_offer_cache: bool,
 }
@@ -95,7 +95,7 @@ pub struct ServiceConfig {
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub api_key: String,
-    pub discord: DiscordConfig,
+    pub discord_deal_use: DiscordConfig,
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub admin_user_ids: Vec<String>,

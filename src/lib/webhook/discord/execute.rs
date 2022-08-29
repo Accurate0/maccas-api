@@ -32,13 +32,13 @@ pub async fn execute_discord_webhooks(
     offer: &OfferDatabase,
     store_name: &str,
 ) {
-    if !config.api.discord.enabled {
+    if !config.api.discord_deal_use.enabled {
         return;
     }
 
     let mut message = DiscordWebhookMessage::new(
-        config.api.discord.username.clone(),
-        config.api.discord.avatar_url.clone(),
+        config.api.discord_deal_use.username.clone(),
+        config.api.discord_deal_use.avatar_url.clone(),
     );
 
     let embed = EmbedBuilder::new()
@@ -63,7 +63,7 @@ pub async fn execute_discord_webhooks(
         Ok(embed) => {
             message.add_embed(embed.build());
 
-            for webhook_url in &config.api.discord.webhooks {
+            for webhook_url in &config.api.discord_deal_use.webhooks {
                 let resp = message.send(http_client, webhook_url).await;
                 match resp {
                     Ok(_) => {}

@@ -133,8 +133,8 @@ jobs:
           mcdonalds__service_account__login_username: ${{ secrets.API_CONFIG_SERVICE_USERNAME }}
           mcdonalds__service_account__login_password: ${{ secrets.API_CONFIG_SERVICE_PASSWORD }}
           api__jwt__bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
-          api__discord__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
-          api__discord__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
-          service__discord__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
+          api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
+          api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
+          service__discord_refresh_error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
       - name: upload to s3
         run: aws s3 cp base-config.json s3://maccas-application-config/base-config.json
