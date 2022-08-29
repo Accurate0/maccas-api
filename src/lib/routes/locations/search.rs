@@ -30,7 +30,7 @@ pub async fn search_locations(
             format!("{}/place?text={}", api_base::PLACES, text,).as_str(),
         )
         .header(constants::CORRELATION_ID_HEADER, correlation_id.0)
-        .header(constants::X_API_KEY_HEADER, &ctx.config.api_key)
+        .header(constants::X_API_KEY_HEADER, &ctx.config.api.api_key)
         .send()
         .await?
         .json::<PlaceResponse>()

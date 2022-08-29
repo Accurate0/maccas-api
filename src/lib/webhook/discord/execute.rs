@@ -1,6 +1,6 @@
 use crate::{
     constants::mc_donalds::{self, IMAGE_CDN},
-    types::{api::OfferDatabase, config::ApiConfig, webhook::DiscordWebhookMessage},
+    types::{api::OfferDatabase, config::GeneralConfig, webhook::DiscordWebhookMessage},
 };
 use anyhow::Context;
 use chrono::Utc;
@@ -27,18 +27,18 @@ impl DiscordWebhookMessage {
 
 pub async fn execute_discord_webhooks(
     http_client: &ClientWithMiddleware,
-    config: &ApiConfig,
+    config: &GeneralConfig,
     user_name: &str,
     offer: &OfferDatabase,
     store_name: &str,
 ) {
-    if !config.discord.enabled {
+    if !config.api.discord.enabled {
         return;
     }
 
     let mut message = DiscordWebhookMessage::new(
-        config.discord.username.clone(),
-        config.discord.avatar_url.clone(),
+        config.api.discord.username.clone(),
+        config.api.discord.avatar_url.clone(),
     );
 
     let embed = EmbedBuilder::new()
@@ -63,7 +63,7 @@ pub async fn execute_discord_webhooks(
         Ok(embed) => {
             message.add_embed(embed.build());
 
-            for webhook_url in &config.discord.webhooks {
+            for webhook_url in &config.api.discord.webhooks {
                 let resp = message.send(http_client, webhook_url).await;
                 match resp {
                     Ok(_) => {}

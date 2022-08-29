@@ -21,7 +21,7 @@ use libapi::routes::statistics::account::get_accounts;
 use libapi::routes::statistics::total_accounts::get_total_accounts;
 use libapi::routes::user::config::get_user_config;
 use libapi::routes::user::config::update_user_config;
-use libapi::types::config::ApiConfig;
+use libapi::types::config::GeneralConfig;
 use rocket::http::Method;
 use rocket::Config;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
@@ -40,7 +40,7 @@ async fn main() -> Result<(), LambdaError> {
         .load()
         .await;
 
-    let config = ApiConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let database = DynamoDatabase::new(dynamodb_client, &config.database.tables);
 

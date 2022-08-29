@@ -157,6 +157,7 @@ pub async fn add_deal(
             if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
                 if !ctx
                     .config
+                    .api
                     .log
                     .ignored_user_ids
                     .iter()

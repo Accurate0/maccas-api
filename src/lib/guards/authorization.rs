@@ -39,7 +39,7 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
             None => Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized)),
         };
 
-        if ctx.config.jwt.validate && auth_outcome.is_success() {
+        if ctx.config.api.jwt.validate && auth_outcome.is_success() {
             let _auth_header = &auth_outcome.as_ref().unwrap().0.replace("Bearer ", "");
             // TODO: jwks validation
         }

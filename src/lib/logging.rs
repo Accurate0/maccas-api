@@ -1,6 +1,6 @@
 use crate::constants::DEFAULT_TIMEZONE;
 use crate::types::api::OfferDatabase;
-use crate::types::config::ApiConfig;
+use crate::types::config::GeneralConfig;
 use crate::{
     constants::{self, api_base},
     types::log::UsageLog,
@@ -39,13 +39,14 @@ pub fn setup_logging() {
 
 pub async fn log_external(
     http_client: &ClientWithMiddleware,
-    config: &ApiConfig,
+    config: &GeneralConfig,
     user_id: &str,
     user_name: &str,
     offer: &OfferDatabase,
     correlation_id: &str,
 ) {
     let tz: Tz = config
+        .api
         .log
         .local_time_zone
         .parse()
@@ -65,7 +66,7 @@ pub async fn log_external(
         .request(Method::POST, format!("{}/log", api_base::LOG).as_str())
         .header(constants::LOG_SOURCE_HEADER, constants::SOURCE_NAME)
         .header(constants::CORRELATION_ID_HEADER, correlation_id)
-        .header(constants::X_API_KEY_HEADER, &config.api_key)
+        .header(constants::X_API_KEY_HEADER, &config.api.api_key)
         .body(serde_json::to_string(&usage_log).unwrap())
         .send()
         .await;

@@ -6,7 +6,7 @@ use lambda_runtime::{Error, LambdaEvent};
 use libapi::constants::{self, mc_donalds};
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
-use libapi::types::config::{ApiConfig, UserList};
+use libapi::types::config::{GeneralConfig, UserList};
 use libapi::types::webhook::DiscordWebhookMessage;
 use libapi::{client, images};
 use serde_json::{json, Value};
@@ -30,13 +30,13 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .context("AWS_REGION not set")
         .unwrap();
 
-    let config = ApiConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let client = Client::new(&shared_config);
     let database: Box<dyn Database> =
         Box::new(DynamoDatabase::new(client, &config.database.tables));
     let http_client = client::get_http_client();
 
-    let mut send_embed = false;
+    let mut has_error = false;
     let embed = EmbedBuilder::new()
         .color(mc_donalds::RED)
         .description("**Error**")
@@ -70,7 +70,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             .await?;
 
         if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
-            send_embed = true;
+            has_error = true;
         }
 
         embed
@@ -94,7 +94,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         let image_result_message = match image_refresh_result {
             Ok(_) => "Success".to_string(),
             Err(e) => {
-                send_embed = true;
+                has_error = true;
                 e.to_string()
             }
         };
@@ -104,7 +104,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         embed
     };
 
-    if send_embed {
+    if has_error && config.service.discord.enabled {
         let mut message = DiscordWebhookMessage::new(
             config.service.discord.username.clone(),
             config.service.discord.avatar_url.clone(),
