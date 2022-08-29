@@ -58,9 +58,12 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .await?;
 
     let s3_client = aws_sdk_s3::Client::new(&shared_config);
-    images::refresh_images(database.as_ref(), &s3_client, &config).await?;
+    let image_refresh_result = images::refresh_images(database.as_ref(), &s3_client, &config).await;
 
-    if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
+    if !failed_accounts.is_empty()
+        || !login_failed_accounts.is_empty()
+        || image_refresh_result.is_err()
+    {
         log::error!("refresh failed: {:#?}", failed_accounts);
         log::error!("login failed: {:#?}", login_failed_accounts);
 
@@ -80,6 +83,10 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             .field(EmbedFieldBuilder::new(
                 "Refresh Failed",
                 failed_accounts.len().to_string(),
+            ))
+            .field(EmbedFieldBuilder::new(
+                "Image Status",
+                image_refresh_result.unwrap_err().to_string(),
             ))
             .timestamp(
                 Timestamp::from_secs(Utc::now().timestamp())
