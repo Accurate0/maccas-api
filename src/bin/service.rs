@@ -1,13 +1,17 @@
 use anyhow::{bail, Context};
 use aws_sdk_dynamodb::Client;
+use chrono::Utc;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use libapi::constants;
+use libapi::constants::{self, mc_donalds};
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
 use libapi::types::config::{ApiConfig, UserList};
+use libapi::types::webhook::DiscordWebhookMessage;
 use libapi::{client, images};
 use serde_json::{json, Value};
+use twilight_model::util::Timestamp;
+use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -59,6 +63,45 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
     if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("refresh failed: {:#?}", failed_accounts);
         log::error!("login failed: {:#?}", login_failed_accounts);
+
+        let mut message = DiscordWebhookMessage::new(
+            config.service.discord.username.clone(),
+            config.service.discord.avatar_url.clone(),
+        );
+
+        let embed = EmbedBuilder::new()
+            .color(mc_donalds::RED)
+            .description("**Error**")
+            .field(EmbedFieldBuilder::new("Region", env))
+            .field(EmbedFieldBuilder::new(
+                "Login Failed",
+                login_failed_accounts.len().to_string(),
+            ))
+            .field(EmbedFieldBuilder::new(
+                "Refresh Failed",
+                failed_accounts.len().to_string(),
+            ))
+            .timestamp(
+                Timestamp::from_secs(Utc::now().timestamp())
+                    .context("must have valid time")
+                    .unwrap(),
+            );
+
+        match embed.validate() {
+            Ok(embed) => {
+                message.add_embed(embed.build());
+
+                for webhook_url in &config.service.discord.webhooks {
+                    let resp = message.send(&http_client, webhook_url).await;
+                    match resp {
+                        Ok(_) => {}
+                        Err(e) => log::error!("{:?}", e),
+                    }
+                }
+            }
+            Err(e) => log::error!("{:?}", e),
+        }
+
         bail!(
             "{} accounts failed to update",
             failed_accounts.len() + login_failed_accounts.len()
