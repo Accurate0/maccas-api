@@ -28,6 +28,7 @@ pub struct OfferDatabase {
     #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
     pub image_base_name: String,
+    pub original_image_base_name: String,
 }
 
 impl From<libmaccas::types::response::Offer> for OfferDatabase {
@@ -55,6 +56,7 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
             description: offer.long_description,
             creation_date_utc: offer.creation_date_utc,
             image_base_name: base_name_with_webp,
+            original_image_base_name: offer.image_base_name,
         }
     }
 }
