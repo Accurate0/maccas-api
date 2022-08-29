@@ -91,18 +91,24 @@ pub struct ServiceConfig {
     pub refresh_offer_cache: bool,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
-    pub mcdonalds: McDonaldsConfig,
-    pub database: DatabaseConfig,
-    pub service: ServiceConfig,
     pub api_key: String,
     pub discord: DiscordConfig,
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GeneralConfig {
+    pub mcdonalds: McDonaldsConfig,
+    pub database: DatabaseConfig,
+    pub service: ServiceConfig,
+    pub api: ApiConfig,
 }
 
 #[derive(Deserialize, Debug)]

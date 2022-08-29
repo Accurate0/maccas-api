@@ -1,11 +1,11 @@
 use crate::{
     constants,
-    types::config::{ApiConfig, UserList},
+    types::config::{GeneralConfig, UserList},
 };
 use aws_sdk_s3::types::AggregatedBytes;
 use config::Config;
 
-impl ApiConfig {
+impl GeneralConfig {
     async fn load_base_config_from_s3(
         client: &aws_sdk_s3::Client,
     ) -> Result<AggregatedBytes, anyhow::Error> {

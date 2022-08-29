@@ -2,7 +2,7 @@ use crate::{
     client,
     constants::mc_donalds::MCDONALDS_IMAGE_CDN,
     database::Database,
-    types::{api::OfferDatabase, config::ApiConfig},
+    types::{api::OfferDatabase, config::GeneralConfig},
     utils,
 };
 use aws_sdk_s3::types::ByteStream;
@@ -13,7 +13,7 @@ use std::io::Cursor;
 pub async fn refresh_images(
     database: &'_ dyn Database,
     s3_client: &aws_sdk_s3::Client,
-    config: &ApiConfig,
+    config: &GeneralConfig,
 ) -> Result<(), anyhow::Error> {
     let unique_offer_list = database
         .get_all_offers_as_vec()
@@ -27,7 +27,7 @@ pub async fn refresh_images(
 
 async fn refresh_images_for(
     s3_client: &aws_sdk_s3::Client,
-    config: &ApiConfig,
+    config: &GeneralConfig,
     offer_list: Vec<OfferDatabase>,
 ) -> Result<(), anyhow::Error> {
     let http_client = client::get_http_client();

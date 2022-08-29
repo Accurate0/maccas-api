@@ -1,4 +1,4 @@
-use crate::{database::Database, types::config::ApiConfig};
+use crate::{database::Database, types::config::GeneralConfig};
 
 pub mod admin;
 pub mod code;
@@ -10,6 +10,6 @@ pub mod statistics;
 pub mod user;
 
 pub struct Context<'a> {
-    pub config: ApiConfig,
+    pub config: GeneralConfig,
     pub database: Box<dyn Database + Send + Sync + 'a>,
 }

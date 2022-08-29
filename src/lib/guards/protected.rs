@@ -28,7 +28,7 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         let ctx = ctx.unwrap();
 
         let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
-        if jwt_bypass_key.is_some() && jwt_bypass_key.unwrap() == ctx.config.jwt.bypass_key {
+        if jwt_bypass_key.is_some() && jwt_bypass_key.unwrap() == ctx.config.api.jwt.bypass_key {
             return Outcome::Success(ProtectedRoute);
         }
 
@@ -40,7 +40,7 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
 
         let auth_header = auth_header.unwrap();
 
-        let allowed_user_ids = &ctx.config.protected_routes.allowed_user_ids;
+        let allowed_user_ids = &ctx.config.api.protected_routes.allowed_user_ids;
         let value = auth_header.0.as_str().replace("Bearer ", "");
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
         let user_id = &jwt.claims().oid;
