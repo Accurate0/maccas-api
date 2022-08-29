@@ -37,6 +37,13 @@
         "refreshCounts": {
             "ap-southeast-1": 2,
             "ap-southeast-2": 2
+        },
+        "discord": {
+            "enabled": true,
+            "webhooks": [
+                null
+            ],
+            "username": "Maccas Service"
         }
     },
     "apiKey": null,

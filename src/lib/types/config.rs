@@ -86,6 +86,7 @@ pub struct DatabaseConfig {
 pub struct ServiceConfig {
     pub images: ImageConfig,
     pub refresh_counts: HashMap<String, i8>,
+    pub discord: DiscordConfig,
 }
 
 #[derive(Deserialize, Debug)]
