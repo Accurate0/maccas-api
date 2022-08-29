@@ -72,6 +72,11 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             config.service.discord.avatar_url.clone(),
         );
 
+        let image_result_message = match image_refresh_result {
+            Ok(_) => "Success".to_string(),
+            Err(e) => e.to_string(),
+        };
+
         let embed = EmbedBuilder::new()
             .color(mc_donalds::RED)
             .description("**Error**")
@@ -84,10 +89,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
                 "Refresh Failed",
                 failed_accounts.len().to_string(),
             ))
-            .field(EmbedFieldBuilder::new(
-                "Image Status",
-                image_refresh_result.unwrap_err().to_string(),
-            ))
+            .field(EmbedFieldBuilder::new("Image Status", image_result_message))
             .timestamp(
                 Timestamp::from_secs(Utc::now().timestamp())
                     .context("must have valid time")
