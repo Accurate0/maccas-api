@@ -104,17 +104,17 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         embed
     };
 
-    if has_error && config.service.discord.enabled {
+    if has_error && config.service.discord_refresh_error.enabled {
         let mut message = DiscordWebhookMessage::new(
-            config.service.discord.username.clone(),
-            config.service.discord.avatar_url.clone(),
+            config.service.discord_refresh_error.username.clone(),
+            config.service.discord_refresh_error.avatar_url.clone(),
         );
 
         match embed.validate() {
             Ok(embed) => {
                 message.add_embed(embed.build());
 
-                for webhook_url in &config.service.discord.webhooks {
+                for webhook_url in &config.service.discord_refresh_error.webhooks {
                     let resp = message.send(&http_client, webhook_url).await;
                     match resp {
                         Ok(_) => {}

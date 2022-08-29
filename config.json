@@ -40,7 +40,7 @@
             "ap-southeast-1": 2,
             "ap-southeast-2": 2
         },
-        "discord": {
+        "discordRefreshError": {
             "enabled": true,
             "webhooks": [
                 null
@@ -51,7 +51,7 @@
     },
     "api": {
         "apiKey": null,
-        "discord": {
+        "discordDealUse": {
             "enabled": true,
             "webhooks": [
                 null
