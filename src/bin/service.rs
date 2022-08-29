@@ -34,53 +34,46 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
     let client = Client::new(&shared_config);
     let database: Box<dyn Database> =
         Box::new(DynamoDatabase::new(client, &config.database.tables));
-
-    let count = database
-        .increment_refresh_tracking(&env, config.service.refresh_counts[&env])
-        .await?;
-
-    let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
     let http_client = client::get_http_client();
-    let (client_map, login_failed_accounts) = database
-        .get_client_map(
-            &http_client,
-            &config.mcdonalds.client_id,
-            &config.mcdonalds.client_secret,
-            &config.mcdonalds.sensor_data,
-            &account_list.users,
-            false,
-        )
-        .await?;
 
-    log::info!("refresh started..");
-    let failed_accounts = database
-        .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
-        .await?;
-
-    let s3_client = aws_sdk_s3::Client::new(&shared_config);
-    let image_refresh_result = images::refresh_images(database.as_ref(), &s3_client, &config).await;
-
-    if !failed_accounts.is_empty()
-        || !login_failed_accounts.is_empty()
-        || image_refresh_result.is_err()
-    {
-        log::error!("refresh failed: {:#?}", failed_accounts);
-        log::error!("login failed: {:#?}", login_failed_accounts);
-
-        let mut message = DiscordWebhookMessage::new(
-            config.service.discord.username.clone(),
-            config.service.discord.avatar_url.clone(),
+    let mut send_embed = false;
+    let embed = EmbedBuilder::new()
+        .color(mc_donalds::RED)
+        .description("**Error**")
+        .field(EmbedFieldBuilder::new("Region", &env))
+        .timestamp(
+            Timestamp::from_secs(Utc::now().timestamp())
+                .context("must have valid time")
+                .unwrap(),
         );
 
-        let image_result_message = match image_refresh_result {
-            Ok(_) => "Success".to_string(),
-            Err(e) => e.to_string(),
-        };
+    let embed = if config.service.refresh_offer_cache {
+        let count = database
+            .increment_refresh_tracking(&env, config.service.refresh_counts[&env])
+            .await?;
 
-        let embed = EmbedBuilder::new()
-            .color(mc_donalds::RED)
-            .description("**Error**")
-            .field(EmbedFieldBuilder::new("Region", env))
+        let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
+        let (client_map, login_failed_accounts) = database
+            .get_client_map(
+                &http_client,
+                &config.mcdonalds.client_id,
+                &config.mcdonalds.client_secret,
+                &config.mcdonalds.sensor_data,
+                &account_list.users,
+                false,
+            )
+            .await?;
+
+        log::info!("refresh started..");
+        let failed_accounts = database
+            .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
+            .await?;
+
+        if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
+            send_embed = true;
+        }
+
+        embed
             .field(EmbedFieldBuilder::new(
                 "Login Failed",
                 login_failed_accounts.len().to_string(),
@@ -89,12 +82,33 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
                 "Refresh Failed",
                 failed_accounts.len().to_string(),
             ))
-            .field(EmbedFieldBuilder::new("Image Status", image_result_message))
-            .timestamp(
-                Timestamp::from_secs(Utc::now().timestamp())
-                    .context("must have valid time")
-                    .unwrap(),
-            );
+    } else {
+        embed
+    };
+
+    let embed = if config.service.refresh_images {
+        let s3_client = aws_sdk_s3::Client::new(&shared_config);
+        let image_refresh_result =
+            images::refresh_images(database.as_ref(), &s3_client, &config).await;
+
+        let image_result_message = match image_refresh_result {
+            Ok(_) => "Success".to_string(),
+            Err(e) => {
+                send_embed = true;
+                e.to_string()
+            }
+        };
+
+        embed.field(EmbedFieldBuilder::new("Image Status", image_result_message))
+    } else {
+        embed
+    };
+
+    if send_embed {
+        let mut message = DiscordWebhookMessage::new(
+            config.service.discord.username.clone(),
+            config.service.discord.avatar_url.clone(),
+        );
 
         match embed.validate() {
             Ok(embed) => {
@@ -111,10 +125,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             Err(e) => log::error!("{:?}", e),
         }
 
-        bail!(
-            "{} accounts failed to update",
-            failed_accounts.len() + login_failed_accounts.len()
-        )
+        bail!("error occurred")
     }
 
     Ok(json!(
