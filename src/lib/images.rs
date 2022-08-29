@@ -46,7 +46,9 @@ async fn refresh_images_for(
 
         // check if exists
         if config.service.images.force_refresh || existing.is_err() {
-            let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.image_base_name);
+            // need the original base name to lookup against mcdonald's
+            // can't just set to png, format can be jpeg
+            let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.original_image_base_name);
             let image_response = http_client.get(image_url).send().await;
             match image_response {
                 Ok(image_response) => {
