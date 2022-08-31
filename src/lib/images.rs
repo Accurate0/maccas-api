@@ -3,7 +3,6 @@ use crate::{
     constants::mc_donalds::MCDONALDS_IMAGE_CDN,
     database::Database,
     types::{api::OfferDatabase, config::GeneralConfig},
-    utils,
 };
 use aws_sdk_s3::types::ByteStream;
 use image::io::Reader as ImageReader;
@@ -35,12 +34,10 @@ async fn refresh_images_for(
     let mut cached_image_count = 0;
 
     for offer in offer_list {
-        let base_name_with_webp = format!("{}.webp", utils::remove_ext(&offer.image_base_name));
-
         let existing = s3_client
             .head_object()
             .bucket(&config.service.images.bucket_name)
-            .key(&base_name_with_webp)
+            .key(&offer.image_base_name)
             .send()
             .await;
 
@@ -65,7 +62,7 @@ async fn refresh_images_for(
                         s3_client
                             .put_object()
                             .bucket(&config.service.images.bucket_name)
-                            .key(&offer.image_base_name)
+                            .key(&offer.original_image_base_name)
                             .body(image_bytes.into())
                             .send()
                             .await?;
@@ -74,7 +71,7 @@ async fn refresh_images_for(
                     s3_client
                         .put_object()
                         .bucket(&config.service.images.bucket_name)
-                        .key(base_name_with_webp)
+                        .key(&offer.image_base_name)
                         .content_type("image/webp")
                         .body(ByteStream::from(webp_image))
                         .send()
