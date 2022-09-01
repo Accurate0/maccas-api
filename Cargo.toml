@@ -19,7 +19,7 @@ serde_json = "1.0.83"
 serde_derive = "1.0.136"
 serde_dynamo = { version = "4.0.4", features = ["aws-sdk-dynamodb+0_16"] }
 
-twilight-model = "0.12.3"
+twilight-model = "0.13.2"
 twilight-util = { version = "0.12.1", features = ["builder"] }
 
 rocket_lamb = { git = "https://github.com/Accurate0/rocket-lamb.git", rev = "044ac92" }
