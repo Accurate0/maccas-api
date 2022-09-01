@@ -1,4 +1,4 @@
-use anyhow::{bail, Context};
+use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
 use lambda_runtime::service_fn;
@@ -124,8 +124,6 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             }
             Err(e) => log::error!("{:?}", e),
         }
-
-        bail!("error occurred")
     }
 
     Ok(json!(
