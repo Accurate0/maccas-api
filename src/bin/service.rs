@@ -47,7 +47,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
                 .unwrap(),
         );
 
-    let embed = if config.service.refresh_offer_cache {
+    let embed = if config.service.refresh_offers {
         let count = database
             .increment_refresh_tracking(&env, config.service.refresh_counts[&env])
             .await?;

@@ -88,7 +88,7 @@ pub struct ServiceConfig {
     pub refresh_counts: HashMap<String, i8>,
     pub discord_refresh_error: DiscordConfig,
     pub refresh_images: bool,
-    pub refresh_offer_cache: bool,
+    pub refresh_offers: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
