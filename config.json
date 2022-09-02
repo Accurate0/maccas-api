@@ -29,7 +29,7 @@
     },
     "service": {
         "refreshImages": true,
-        "refreshOfferCache": true,
+        "refreshOffers": true,
         "images": {
             "forceRefresh": false,
             "copyOriginals": false,
