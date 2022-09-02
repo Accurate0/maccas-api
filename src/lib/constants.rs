@@ -3,7 +3,6 @@ pub const DEFAULT_AWS_REGION: &str = "ap-southeast-2";
 pub const AWS_REGION: &str = "AWS_REGION";
 pub const AWS_LAMBDA_FUNCTION_NAME: &str = "AWS_LAMBDA_FUNCTION_NAME";
 pub const X_API_KEY_HEADER: &str = "X-Api-Key";
-pub const MACCAS_WEB_API_PREFIX: &str = "MACCAS_WEB_";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 pub const CORRELATION_ID_HEADER: &str = "traceparent";
 pub const X_LOG_USER_ID: &str = "x-log-user-id";
@@ -33,7 +32,6 @@ pub mod mc_donalds {
 }
 
 pub mod api_base {
-    pub const KVP: &str = "https://api.anurag.sh/kvp/v1";
     pub const PLACES: &str = "https://api.anurag.sh/places/v1";
     pub const LOG: &str = "https://api.anurag.sh/log/v1";
     pub const THIS: &str = "https://api.anurag.sh/maccas/v1";
@@ -41,7 +39,6 @@ pub mod api_base {
 
 pub mod config {
     pub const BASE_FILE: &str = "base-config.json";
-    pub const ALL_ACCOUNTS_FILE: &str = "accounts.json";
     pub const REGION_ACCOUNTS_FILE: &str = "{region}/accounts-{region}-{option}.json";
 }
 
