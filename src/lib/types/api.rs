@@ -82,17 +82,13 @@ impl PartialEq for OfferDatabase {
 pub struct GetDealsOffer {
     pub deal_uuid: String,
     pub count: u32,
-
-    pub local_valid_from: String,
-    pub local_valid_to: String,
-    #[serde(rename = "validFromUTC")]
+    pub valid_from_local: String,
+    pub valid_to_local: String,
     pub valid_from_utc: String,
-    #[serde(rename = "validToUTC")]
     pub valid_to_utc: String,
     pub name: String,
     pub short_name: String,
     pub description: String,
-    #[serde(rename = "CreationDateUtc")]
     pub creation_date_utc: String,
     pub image_base_name: String,
 }
@@ -102,8 +98,8 @@ impl From<OfferDatabase> for GetDealsOffer {
         Self {
             deal_uuid: offer.deal_uuid,
             count: 1,
-            local_valid_from: offer.local_valid_from,
-            local_valid_to: offer.local_valid_to,
+            valid_from_local: offer.local_valid_from,
+            valid_to_local: offer.local_valid_to,
             valid_from_utc: offer.valid_from_utc,
             valid_to_utc: offer.valid_to_utc,
             name: offer.name,
