@@ -683,7 +683,9 @@ impl Database for DynamoDatabase {
 
                                 let res = api_client.customer_login_refresh(&refresh_token).await;
                                 let (new_access_token, new_ref_token) = if let Ok(res) = res {
-                                    if res.status == StatusCode::OK {
+                                    // maccas api return 200OK with an error message
+                                    if res.status == StatusCode::OK && res.body.status.code == 20000
+                                    {
                                         let unwrapped_res =
                                             res.body.response.context("no response")?;
                                         log::info!("refresh success..");
