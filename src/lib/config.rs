@@ -18,23 +18,11 @@ impl GeneralConfig {
         Ok(resp.body.collect().await?)
     }
 
-    async fn build_config_from_bytes(
-        base_config: &AggregatedBytes,
-        accounts: Option<&AggregatedBytes>,
-    ) -> Result<Self, anyhow::Error> {
+    async fn build_config_from_bytes(base_config: &AggregatedBytes) -> Result<Self, anyhow::Error> {
         let config = Config::builder().add_source(config::File::from_str(
             std::str::from_utf8(&base_config.clone().into_bytes())?,
             config::FileFormat::Json,
         ));
-
-        let config = if let Some(accounts) = accounts {
-            config.add_source(config::File::from_str(
-                std::str::from_utf8(&accounts.clone().into_bytes())?,
-                config::FileFormat::Json,
-            ))
-        } else {
-            config
-        };
 
         Ok(config.build()?.try_deserialize::<Self>()?)
     }
@@ -43,7 +31,7 @@ impl GeneralConfig {
         let s3_client = aws_sdk_s3::Client::new(shared_config);
         let base_config_bytes = Self::load_base_config_from_s3(&s3_client).await?;
 
-        Self::build_config_from_bytes(&base_config_bytes, None).await
+        Self::build_config_from_bytes(&base_config_bytes).await
     }
 }
 
