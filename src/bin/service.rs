@@ -71,6 +71,8 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
 
         if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
             has_error = true;
+            log::error!("login failed: {:#?}", login_failed_accounts);
+            log::error!("refresh failed: {:#?}", failed_accounts);
         }
 
         embed
