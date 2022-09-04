@@ -1,3 +1,4 @@
+use aws_sdk_dynamodb::types::SdkError;
 use rocket::response::Responder;
 use rocket::{http::Status, response, Request, Response};
 use serde::{Deserialize, Serialize};
@@ -64,6 +65,12 @@ impl From<reqwest_middleware::Error> for ApiError {
 
 impl From<jwt::Error> for ApiError {
     fn from(_: jwt::Error) -> Self {
+        Self::UnhandledError
+    }
+}
+
+impl<T> From<SdkError<T>> for ApiError {
+    fn from(_: SdkError<T>) -> Self {
         Self::UnhandledError
     }
 }

@@ -78,6 +78,10 @@
         "jwt": {
             "validate": false,
             "bypassKey": null
+        },
+        "queue": {
+            "enabled": true,
+            "name": "maccas-cleanup-queue"
         }
     }
 }

@@ -7,6 +7,7 @@ use crate::logging::log_external;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::jwt::JwtClaim;
+use crate::types::sqs::ApiMessage;
 use crate::webhook::execute::execute_discord_webhooks;
 use crate::{client, routes};
 use anyhow::Context;
@@ -141,6 +142,38 @@ pub async fn add_deal(
                 .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
                 .await?
         } else {
+            // queue this to be removed in 15 minutes
+            if ctx.config.api.queue.enabled {
+                let queue_url_output = ctx
+                    .sqs_client
+                    .get_queue_url()
+                    .queue_name(&ctx.config.api.queue.name)
+                    .send()
+                    .await?;
+
+                if let Some(queue_url) = queue_url_output.queue_url() {
+                    let queue_message = ApiMessage {
+                        deal_uuid: deal_id.to_string(),
+                        store_id: store,
+                    };
+
+                    let rsp = ctx
+                        .sqs_client
+                        .send_message()
+                        .queue_url(queue_url)
+                        .message_body(
+                            serde_json::to_string(&queue_message)
+                                .context("must serialize")
+                                .unwrap(),
+                        )
+                        .send()
+                        .await?;
+                    log::info!("added to cleanup queue: {:?}", rsp);
+                } else {
+                    log::error!("missing queue url for {}", &ctx.config.api.queue.name);
+                }
+            }
+
             // jwt has priority as it's more reliable
             let (user_id, user_name) = if let Some(auth_header) = auth.0 {
                 let auth_header = auth_header.replace("Bearer ", "");

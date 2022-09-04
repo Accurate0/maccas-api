@@ -41,10 +41,12 @@ async fn main() -> Result<(), LambdaError> {
         .await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let database = DynamoDatabase::new(dynamodb_client, &config.database.tables);
 
     let context = routes::Context {
+        sqs_client,
         config,
         database: Box::new(database),
     };
