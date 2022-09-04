@@ -94,7 +94,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     )
                     .await?;
 
-                log::info!("removed from dealstack - {:#?}", response);
+                log::info!("removed from dealstack - {}", response.status);
 
                 database.unlock_deal(&message.deal_uuid).await?;
                 log::info!("unlocked deal - {}", &message.deal_uuid);
