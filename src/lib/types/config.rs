@@ -93,6 +93,13 @@ pub struct ServiceConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct QueueConfig {
+    pub enabled: bool,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub api_key: String,
     pub discord_deal_use: DiscordConfig,
@@ -100,6 +107,7 @@ pub struct ApiConfig {
     pub protected_routes: ProtectedRouteConfig,
     pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
+    pub queue: QueueConfig,
 }
 
 #[derive(Deserialize, Debug)]
