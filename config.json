@@ -29,7 +29,7 @@
     },
     "cleanup": {
         "enabled": true,
-        "name": "maccas-cleanup-queue"
+        "queueName": "maccas-cleanup-queue"
     },
     "service": {
         "refreshImages": true,
