@@ -1687,9 +1687,9 @@ dependencies = [
 
 [[package]]
 name = "libmaccas"
-version = "0.24.0"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfadfb6ec09eebc9af91bb83a06d6733f9a01bf81329c7574f0066593a34b426"
+checksum = "bb4faa460c967fce813aada14355c36c412aef091bdca05f6a99978c1ce986a4"
 dependencies = [
  "anyhow",
  "http 0.2.8",
