@@ -143,11 +143,11 @@ pub async fn add_deal(
                 .await?
         } else {
             // queue this to be removed in 15 minutes
-            if ctx.config.api.queue.enabled {
+            if ctx.config.cleanup.enabled {
                 let queue_url_output = ctx
                     .sqs_client
                     .get_queue_url()
-                    .queue_name(&ctx.config.api.queue.name)
+                    .queue_name(&ctx.config.cleanup.queue_name)
                     .send()
                     .await?;
 
@@ -170,7 +170,7 @@ pub async fn add_deal(
                         .await?;
                     log::info!("added to cleanup queue: {:?}", rsp);
                 } else {
-                    log::error!("missing queue url for {}", &ctx.config.api.queue.name);
+                    log::error!("missing queue url for {}", &ctx.config.cleanup.queue_name);
                 }
             }
 

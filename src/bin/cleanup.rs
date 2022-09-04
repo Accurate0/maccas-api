@@ -25,6 +25,11 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         .await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    if !config.cleanup.enabled {
+        log::warn!("cleanup task is disabled, ignoring event: {:?}", &event);
+        return Ok(());
+    }
+
     let client = Client::new(&shared_config);
     let database: Box<dyn Database> =
         Box::new(DynamoDatabase::new(client, &config.database.tables));
