@@ -40,37 +40,43 @@ impl<'r> Responder<'r, 'static> for ApiError {
 }
 
 impl From<anyhow::Error> for ApiError {
-    fn from(_: anyhow::Error) -> Self {
+    fn from(e: anyhow::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<serde_json::Error> for ApiError {
-    fn from(_: serde_json::Error) -> Self {
+    fn from(e: serde_json::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<reqwest::Error> for ApiError {
-    fn from(_: reqwest::Error) -> Self {
+    fn from(e: reqwest::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<reqwest_middleware::Error> for ApiError {
-    fn from(_: reqwest_middleware::Error) -> Self {
+    fn from(e: reqwest_middleware::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<jwt::Error> for ApiError {
-    fn from(_: jwt::Error) -> Self {
+    fn from(e: jwt::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl<T> From<SdkError<T>> for ApiError {
-    fn from(_: SdkError<T>) -> Self {
+    fn from(e: SdkError<T>) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
