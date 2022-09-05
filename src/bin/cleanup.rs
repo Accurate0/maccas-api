@@ -49,6 +49,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         .collect();
 
     for message in messages {
+        log::info!("request: {:?}", message);
         if !locked_deals.contains(&message.deal_uuid) {
             log::warn!("skipping processing of deal - {}", &message.deal_uuid);
             continue;
