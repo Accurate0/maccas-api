@@ -93,9 +93,21 @@ pub struct ServiceConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct QueueConfig {
+pub struct CleanupConfig {
     pub enabled: bool,
     pub queue_name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountsConfig {
+    pub enabled: bool,
+    pub queue_name: String,
+    pub imap_address: String,
+    pub imap_port: u16,
+    pub email: String,
+    pub password: String,
+    pub check_last_email_count: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -116,8 +128,8 @@ pub struct GeneralConfig {
     pub database: DatabaseConfig,
     pub service: ServiceConfig,
     pub api: ApiConfig,
-    pub cleanup: QueueConfig,
-    pub accounts: QueueConfig,
+    pub cleanup: CleanupConfig,
+    pub accounts: AccountsConfig,
 }
 
 #[derive(Deserialize, Debug)]
