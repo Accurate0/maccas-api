@@ -189,9 +189,10 @@ impl Database for DynamoDatabase {
                 .await
             {
                 Ok(_) => {
-                    api_client
-                        .remove_all_from_deal_stack_for(&account.account_name)
-                        .await?;
+                    // disabled in favour of cleanup task
+                    // api_client
+                    //     .remove_all_from_deal_stack_for(&account.account_name)
+                    //     .await?;
                     self.refresh_point_cache_for(account, api_client).await?;
                 }
                 Err(e) => {
