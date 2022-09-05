@@ -33,7 +33,12 @@
     },
     "accounts": {
         "enabled": true,
-        "queueName": "maccas-accounts-queue"
+        "queueName": "maccas-accounts-queue",
+        "imapAddress": "imap.gmail.com",
+        "imapPort": 993,
+        "email": null,
+        "password": null,
+        "checkLastEmailCount": 20
     },
     "service": {
         "refreshImages": true,
