@@ -6,7 +6,6 @@ use crate::constants::db::{
 };
 use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
-use crate::extensions::ApiClientExtensions;
 use crate::types::api::{OfferDatabase, PointsResponse};
 use crate::types::config::UserAccount;
 use crate::types::user::UserOptions;
