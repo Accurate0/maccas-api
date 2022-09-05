@@ -31,6 +31,10 @@
         "enabled": true,
         "queueName": "maccas-cleanup-queue"
     },
+    "accounts": {
+        "enabled": true,
+        "queueName": "maccas-accounts-queue"
+    },
     "service": {
         "refreshImages": true,
         "refreshOffers": true,

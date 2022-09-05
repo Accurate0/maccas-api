@@ -7,7 +7,7 @@ use crate::logging::log_external;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::jwt::JwtClaim;
-use crate::types::sqs::ApiMessage;
+use crate::types::sqs::CleanupMessage;
 use crate::webhook::execute::execute_discord_webhooks;
 use crate::{client, routes};
 use anyhow::Context;
@@ -152,7 +152,7 @@ pub async fn add_deal(
                     .await?;
 
                 if let Some(queue_url) = queue_url_output.queue_url() {
-                    let queue_message = ApiMessage {
+                    let queue_message = CleanupMessage {
                         deal_uuid: deal_id.to_string(),
                         store_id: store,
                     };
