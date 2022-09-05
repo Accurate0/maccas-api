@@ -48,6 +48,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         })
         .collect();
 
+    // batch size is currently 1 so this loop is redundant..
     for message in messages {
         log::info!("request: {:?}", message);
         if !locked_deals.contains(&message.deal_uuid) {
