@@ -86,6 +86,22 @@ jobs:
         run: |
           rm -f ./bootstrap.zip
 
+      - name: create zip (accounts)
+        run: |
+          mv ./target/x86_64-unknown-linux-musl/release/accounts ./bootstrap
+          strip ./bootstrap
+          zip -r bootstrap.zip ./bootstrap
+
+      - name: upload accounts artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: accounts
+          path: ./bootstrap.zip
+
+      - name: remove zip (accounts)
+        run: |
+          rm -f ./bootstrap.zip
+
   deploy-api:
     needs: build
     runs-on: ubuntu-latest
@@ -103,11 +119,17 @@ jobs:
       - name: deploy api
         run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
-  deploy-cleanup:
+  deploy-tasks:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - accounts
+          - cleanup
 
-    name: deploy cleanup
+    name: deploy ${{ matrix.task }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -115,10 +137,10 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: cleanup
+          name: ${{ matrix.task }}
 
-      - name: deploy cleanup
-        run: aws lambda update-function-code --function-name MaccasApi-cleanup --zip-file fileb://bootstrap.zip --region ap-southeast-2
+      - name: deploy ${{ matrix.task }}
+        run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
   deploy-refresh:
     needs: build
@@ -144,7 +166,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
 
   upload-config:
-    needs: [deploy-refresh, deploy-api, deploy-cleanup]
+    needs: [deploy-refresh, deploy-api, deploy-tasks]
     runs-on: ubuntu-latest
     name: upload config
     env:

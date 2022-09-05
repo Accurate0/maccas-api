@@ -8,7 +8,7 @@ use libapi::constants::mc_donalds::default;
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
 use libapi::types::config::GeneralConfig;
-use libapi::types::sqs::{ApiMessage, SqsEvent};
+use libapi::types::sqs::{CleanupMessage, SqsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -39,7 +39,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
 
-    let messages: Vec<ApiMessage> = valid_records
+    let messages: Vec<CleanupMessage> = valid_records
         .iter()
         .map(|msg| {
             serde_json::from_str(msg.body.as_ref().unwrap())

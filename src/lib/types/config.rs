@@ -93,7 +93,7 @@ pub struct ServiceConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct CleanupConfig {
+pub struct QueueConfig {
     pub enabled: bool,
     pub queue_name: String,
 }
@@ -116,7 +116,8 @@ pub struct GeneralConfig {
     pub database: DatabaseConfig,
     pub service: ServiceConfig,
     pub api: ApiConfig,
-    pub cleanup: CleanupConfig,
+    pub cleanup: QueueConfig,
+    pub accounts: QueueConfig,
 }
 
 #[derive(Deserialize, Debug)]
