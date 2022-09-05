@@ -13,7 +13,7 @@ use libmaccas::ApiClient;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -79,29 +79,37 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         "RFC822",
     )?;
 
+    let activation_code_regex = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
+    let to_regex = RegexBuilder::new(r"^To: <?([a-zA-Z0-9@.]+)>?$")
+        .multi_line(true)
+        .build()
+        .unwrap();
+
     // batch size is currently 1 so this loop is redundant..
     for message in messages {
         let account_name = message.account_name;
-        for email in emails.iter() {
+        // need to find the latest, must run this in reverse
+        for email in emails.iter().rev() {
             // extract the message's body
             let body = email.body().expect("email did not have a body!");
             let body = std::str::from_utf8(body)
                 .expect("email was not valid utf-8")
                 .to_string();
 
-            let re = Regex::new(r"To: ([a-zA-Z0-9@.]+)").unwrap();
-            let to = re
-                .captures_iter(&body)
+            let body_without_crlf = body.clone().replace("\r\n", "\n");
+
+            let to = to_regex
+                .captures_iter(&body_without_crlf)
                 .next()
                 .context("invalid email, no To")?
                 .get(1)
                 .context("invalid email, no To")?
                 .as_str();
 
-            log::info!("checking email to: {}", to);
+            log::info!("checking email to: {} vs {}", to, account_name);
             if to == account_name {
-                let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
-                let activation_code = re
+                log::info!("match found for {}", account_name);
+                let activation_code = activation_code_regex
                     .captures_iter(&body)
                     .next()
                     .context("invalid email, no activation code")?
@@ -119,7 +127,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     activation_code.to_string()[2..activation_code.len()].to_string();
 
                 let id = database.get_device_id_for(to).await?;
-                log::info!("device id: {:#?}", id);
+                log::info!("device id: {:?}", id);
 
                 let device_id = id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
                 log::info!("activation code: {:?}", activation_code);
@@ -139,6 +147,11 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
                 log::info!("response: {:#?}", response);
                 database.set_device_id_for(to, device_id.as_str()).await?;
+
+                // just the first one, it's the latest
+                log::info!("found latest email for this account: {}", account_name);
+                log::info!("finishing search");
+                break;
             }
         }
     }
