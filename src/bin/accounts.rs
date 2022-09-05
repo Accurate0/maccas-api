@@ -53,16 +53,16 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
     let mut rng = StdRng::from_entropy();
     let http_client = client::get_http_client();
-    let mut client = ApiClient::new(
+    let mut api_client = ApiClient::new(
         constants::mc_donalds::default::BASE_URL.to_string(),
         &http_client,
-        config.mcdonalds.client_id,
+        config.mcdonalds.client_id.clone(),
     );
 
-    let token_response = client
+    let token_response = api_client
         .security_auth_token(&config.mcdonalds.client_secret)
         .await?;
-    client.set_login_token(&token_response.body.response.token);
+    api_client.set_login_token(&token_response.body.response.token);
 
     let tls = native_tls::TlsConnector::builder().build().unwrap();
     let addr = config.accounts.imap_address.to_string();
@@ -87,7 +87,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
     // batch size is currently 1 so this loop is redundant..
     for message in messages {
-        let account_name = message.account_name;
+        let login_email = &message.account.login_username;
         // need to find the latest, must run this in reverse
         for email in emails.iter().rev() {
             // extract the message's body
@@ -106,9 +106,9 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 .context("invalid email, no To")?
                 .as_str();
 
-            log::info!("checking email to: {} vs {}", to, account_name);
-            if to == account_name {
-                log::info!("match found for {}", account_name);
+            log::info!("checking email to: {} vs {}", to, login_email);
+            if to == login_email {
+                log::info!("match found for {}", login_email);
                 let activation_code = activation_code_regex
                     .captures_iter(&body)
                     .next()
@@ -141,16 +141,38 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     },
                     device_id: device_id.to_string(),
                 };
-                let response = client
+                let response = api_client
                     .put_customer_activation(&request, &config.mcdonalds.sensor_data)
                     .await?;
 
                 log::info!("response: {:#?}", response);
                 database.set_device_id_for(to, device_id.as_str()).await?;
 
-                // just the first one, it's the latest
-                log::info!("found latest email for this account: {}", account_name);
+                log::info!("found latest email for this account: {}", login_email);
                 log::info!("finishing search");
+
+                log::info!("refreshing cache for {}", login_email);
+
+                let api_client = database
+                    .get_specific_client(
+                        &http_client,
+                        &config.mcdonalds.client_id,
+                        &config.mcdonalds.client_secret,
+                        &config.mcdonalds.sensor_data,
+                        &message.account,
+                        false,
+                    )
+                    .await?;
+
+                database
+                    .refresh_offer_cache_for(
+                        &message.account,
+                        &api_client,
+                        &config.mcdonalds.ignored_offer_ids,
+                    )
+                    .await?;
+
+                // just the first one, it's the latest
                 break;
             }
         }

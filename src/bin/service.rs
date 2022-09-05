@@ -7,6 +7,7 @@ use libapi::constants::{self, mc_donalds};
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
 use libapi::types::config::{GeneralConfig, UserList};
+use libapi::types::sqs::FixAccountMessage;
 use libapi::types::webhook::DiscordWebhookMessage;
 use libapi::{client, images};
 use serde_json::{json, Value};
@@ -32,6 +33,7 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let client = Client::new(&shared_config);
+    let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let database: Box<dyn Database> =
         Box::new(DynamoDatabase::new(client, &config.database.tables));
     let http_client = client::get_http_client();
@@ -73,6 +75,42 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             has_error = true;
             log::error!("login failed: {:#?}", login_failed_accounts);
             log::error!("refresh failed: {:#?}", failed_accounts);
+        }
+
+        // send errors to the accounts queue
+        if config.cleanup.enabled {
+            let queue_url_output = sqs_client
+                .get_queue_url()
+                .queue_name(&config.accounts.queue_name)
+                .send()
+                .await?;
+
+            if let Some(queue_url) = queue_url_output.queue_url() {
+                for failed_account_name in &login_failed_accounts {
+                    let account = account_list
+                        .users
+                        .iter()
+                        .find(|a| a.account_name == failed_account_name.clone())
+                        .unwrap()
+                        .clone();
+
+                    let queue_message = FixAccountMessage { account };
+
+                    let rsp = sqs_client
+                        .send_message()
+                        .queue_url(queue_url)
+                        .message_body(
+                            serde_json::to_string(&queue_message)
+                                .context("must serialize")
+                                .unwrap(),
+                        )
+                        .send()
+                        .await?;
+                    log::info!("added to cleanup queue: {:?}", rsp);
+                }
+            } else {
+                log::error!("missing queue url for {}", &config.accounts.queue_name);
+            }
         }
 
         embed
