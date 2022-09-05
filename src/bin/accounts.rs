@@ -87,6 +87,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
     // batch size is currently 1 so this loop is redundant..
     for message in messages {
+        log::info!("request: {:?}", message);
         let login_email = &message.account.login_username;
         // need to find the latest, must run this in reverse
         for email in emails.iter().rev() {
