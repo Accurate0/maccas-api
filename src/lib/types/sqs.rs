@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::config::UserAccount;
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CleanupMessage {
     pub deal_uuid: String,
@@ -8,7 +10,7 @@ pub struct CleanupMessage {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FixAccountMessage {
-    pub account_name: String,
+    pub account: UserAccount,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
