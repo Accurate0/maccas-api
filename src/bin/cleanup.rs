@@ -67,6 +67,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 false,
             )
             .await?;
+        log::info!("offer: {:?}", offer);
 
         let deal_stack = api_client
             .get_offers_dealstack(default::OFFSET, &message.store_id)
