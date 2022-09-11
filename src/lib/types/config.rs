@@ -85,10 +85,10 @@ pub struct DatabaseConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ServiceConfig {
+pub struct RefreshConfig {
     pub refresh_counts: HashMap<String, i8>,
-    pub discord_refresh_error: DiscordConfig,
-    pub refresh_offers: bool,
+    pub discord_error: DiscordConfig,
+    pub enabled: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -126,7 +126,7 @@ pub struct ApiConfig {
 pub struct GeneralConfig {
     pub mcdonalds: McDonaldsConfig,
     pub database: DatabaseConfig,
-    pub service: ServiceConfig,
+    pub refresh: RefreshConfig,
     pub api: ApiConfig,
     pub cleanup: CleanupConfig,
     pub accounts: AccountsConfig,
