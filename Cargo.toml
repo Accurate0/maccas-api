@@ -90,5 +90,6 @@ path = "src/bin/accounts.rs"
 name = "images"
 path = "src/bin/images.rs"
 
-[profile.release]
+[profile.release-strip]
+inherits = "release"
 strip = "symbols"

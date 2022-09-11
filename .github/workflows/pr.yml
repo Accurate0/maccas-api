@@ -31,4 +31,4 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: cargo build
-        run: cargo build --release --target x86_64-unknown-linux-musl
+        run: cargo build --profile release-strip --target x86_64-unknown-linux-musl

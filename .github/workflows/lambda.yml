@@ -36,9 +36,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: cargo build
-        run: cargo build --locked --release --target x86_64-unknown-linux-musl
+        run: cargo build --locked --profile release-strip --target x86_64-unknown-linux-musl
 
-      - name: create zip
+      - name: copy artifacts
         run: |
           mkdir ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release/api ./maccas-api
@@ -74,8 +74,7 @@ jobs:
       - name: create zip (${{ matrix.task }})
         run: |
           tree
-          mv ./maccas-api/${{ matrix.task }} ./bootstrap
-          strip ./bootstrap
+          mv ./${{ matrix.task }} ./bootstrap
           zip -r bootstrap.zip ./bootstrap
 
       - name: upload ${{ matrix.task }} artifact
