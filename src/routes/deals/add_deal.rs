@@ -24,8 +24,8 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     params(
-        ("x-log-user-id" = Option<String>, header, description = "The user id to log for"),
-        ("x-log-user-name" = Option<String>, header, description = "The user name to log for"),
+        ("x-log-user-id" = Option<String>, Header, description = "The user id to log for"),
+        ("x-log-user-name" = Option<String>, Header, description = "The user name to log for"),
     ),
     tag = "deals",
 )]

@@ -9,7 +9,7 @@ use rocket::{http::Status, State};
     ),
     tag = "admin",
     params(
-        ("X-Maccas-JWT-Bypass" = Option<String>, header, description = "Key to bypass JWT checks"),
+        ("X-Maccas-JWT-Bypass" = Option<String>, Header, description = "Key to bypass JWT checks"),
     ),
 )]
 #[post("/admin/locked-deals/<deal_id>?<duration>")]
