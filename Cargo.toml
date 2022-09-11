@@ -81,3 +81,7 @@ path = "src/bin/service.rs"
 [[bin]]
 name = "cleanup"
 path = "src/bin/cleanup.rs"
+
+[[bin]]
+name = "accounts"
+path = "src/bin/accounts.rs"

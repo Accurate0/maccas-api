@@ -6,6 +6,7 @@ use libapi::routes;
 use libapi::routes::admin::get_locked_deals::get_locked_deals;
 use libapi::routes::admin::lock_deal::lock_deal;
 use libapi::routes::admin::unlock_deal::unlock_deal;
+use libapi::routes::catchers::{internal_server_error, not_found};
 use libapi::routes::code::get_code::get_code;
 use libapi::routes::deals::add_deal::add_deal;
 use libapi::routes::deals::get_deal::get_deal;
@@ -58,6 +59,7 @@ async fn main() -> Result<(), LambdaError> {
 
     let rocket = rocket::build()
         .manage(context)
+        .register("/", catchers![not_found, internal_server_error])
         .mount(
             "/",
             routes![
