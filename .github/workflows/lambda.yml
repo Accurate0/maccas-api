@@ -133,7 +133,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
 
   upload-config:
-    needs: [deploy, deploy-tasks]
+    needs: [deploy, deploy-refresh]
     runs-on: ubuntu-latest
     name: upload config
     env:
