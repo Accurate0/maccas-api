@@ -46,13 +46,12 @@ jobs:
           cp ./target/x86_64-unknown-linux-musl/release/cleanup ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release/accounts ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release/images ./maccas-api
-          zip -r maccas-api.zip ./maccas-api
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: maccas-api
-          path: ./maccas-api.zip
+          path: ./maccas-api
 
   artifacts:
     needs: build
