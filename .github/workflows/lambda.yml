@@ -111,7 +111,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
       - name: deploy ${{ matrix.task }} (ap-southeast-1)
-        if: ${{ ${{ matrix.task }} == 'refresh' }}
+        if: matrix.task == 'refresh'
         run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-1
 
   upload-config:
