@@ -4,6 +4,7 @@ use crate::guards::authorization::AuthorizationHeader;
 use crate::guards::correlation_id::CorrelationId;
 use crate::guards::log::LogHeader;
 use crate::logging::log_external;
+use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::jwt::JwtClaim;
@@ -144,34 +145,15 @@ pub async fn add_deal(
         } else {
             // queue this to be removed in 15 minutes
             if ctx.config.cleanup.enabled {
-                let queue_url_output = ctx
-                    .sqs_client
-                    .get_queue_url()
-                    .queue_name(&ctx.config.cleanup.queue_name)
-                    .send()
-                    .await?;
-
-                if let Some(queue_url) = queue_url_output.queue_url() {
-                    let queue_message = CleanupMessage {
+                send_to_queue(
+                    &ctx.sqs_client,
+                    &ctx.config.cleanup.queue_name,
+                    CleanupMessage {
                         deal_uuid: deal_id.to_string(),
                         store_id: store,
-                    };
-
-                    let rsp = ctx
-                        .sqs_client
-                        .send_message()
-                        .queue_url(queue_url)
-                        .message_body(
-                            serde_json::to_string(&queue_message)
-                                .context("must serialize")
-                                .unwrap(),
-                        )
-                        .send()
-                        .await?;
-                    log::info!("added to cleanup queue: {:?}", rsp);
-                } else {
-                    log::error!("missing queue url for {}", &ctx.config.cleanup.queue_name);
-                }
+                    },
+                )
+                .await?;
             }
 
             // jwt has priority as it's more reliable

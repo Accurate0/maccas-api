@@ -8,6 +8,7 @@ use libapi::client;
 use libapi::constants::{self, mc_donalds};
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
+use libapi::queue::{send_to_queue, send_to_queue_by_url};
 use libapi::types::config::{GeneralConfig, UserList};
 use libapi::types::images::OfferImageBaseName;
 use libapi::types::sqs::{FixAccountMessage, ImagesRefreshMessage};
@@ -56,107 +57,78 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
                 .unwrap(),
         );
 
-    let embed = if config.refresh.enabled {
-        let count = database
-            .increment_refresh_tracking(&env, config.refresh.refresh_counts[&env])
+    let count = database
+        .increment_refresh_tracking(&env, config.refresh.refresh_counts[&env])
+        .await?;
+
+    let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
+    let (client_map, login_failed_accounts) = database
+        .get_client_map(
+            &http_client,
+            &config.mcdonalds.client_id,
+            &config.mcdonalds.client_secret,
+            &config.mcdonalds.sensor_data,
+            &account_list.users,
+            false,
+        )
+        .await?;
+
+    log::info!("refresh started..");
+    let refresh_cache = database
+        .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
+        .await?;
+
+    if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
+        has_error = true;
+        log::error!("login failed: {:#?}", login_failed_accounts);
+        log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
+    }
+
+    if config.images.enabled {
+        let image_base_names = refresh_cache
+            .new_offers
+            .iter()
+            .map(|offer| OfferImageBaseName {
+                original: offer.original_image_base_name.clone(),
+                new: offer.image_base_name.clone(),
+            })
+            .unique_by(|offer| offer.original.clone())
+            .collect();
+
+        send_to_queue(
+            &sqs_client,
+            &config.images.queue_name,
+            ImagesRefreshMessage { image_base_names },
+        )
+        .await?;
+    }
+
+    // send errors to the accounts queue
+    if config.accounts.enabled {
+        let queue_url_output = sqs_client
+            .get_queue_url()
+            .queue_name(&config.accounts.queue_name)
+            .send()
             .await?;
 
-        let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
-        let (client_map, login_failed_accounts) = database
-            .get_client_map(
-                &http_client,
-                &config.mcdonalds.client_id,
-                &config.mcdonalds.client_secret,
-                &config.mcdonalds.sensor_data,
-                &account_list.users,
-                false,
-            )
-            .await?;
-
-        log::info!("refresh started..");
-        let refresh_cache = database
-            .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
-            .await?;
-
-        if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
-            has_error = true;
-            log::error!("login failed: {:#?}", login_failed_accounts);
-            log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
-        }
-
-        if config.images.enabled {
-            let queue_url_output = sqs_client
-                .get_queue_url()
-                .queue_name(&config.images.queue_name)
-                .send()
-                .await?;
-
-            if let Some(queue_url) = queue_url_output.queue_url() {
-                let image_base_names = refresh_cache
-                    .new_offers
+        if let Some(queue_url) = queue_url_output.queue_url() {
+            for failed_account_name in &login_failed_accounts {
+                let account = account_list
+                    .users
                     .iter()
-                    .map(|offer| OfferImageBaseName {
-                        original: offer.original_image_base_name.clone(),
-                        new: offer.image_base_name.clone(),
-                    })
-                    .unique_by(|offer| offer.original.clone())
-                    .collect();
+                    .find(|a| a.account_name == failed_account_name.clone())
+                    .unwrap()
+                    .clone();
 
-                let queue_message = ImagesRefreshMessage { image_base_names };
-
-                let rsp = sqs_client
-                    .send_message()
-                    .queue_url(queue_url)
-                    .message_body(
-                        serde_json::to_string(&queue_message)
-                            .context("must serialize")
-                            .unwrap(),
-                    )
-                    .send()
-                    .await?;
-                log::info!("added to cleanup queue: {:?}", rsp);
-            } else {
-                log::error!("missing queue url for {}", &config.accounts.queue_name);
+                send_to_queue_by_url(&sqs_client, queue_url, FixAccountMessage { account }).await?;
             }
+        } else {
+            log::error!("missing queue url for {}", &config.accounts.queue_name);
         }
+    }
 
-        // send errors to the accounts queue
-        if config.cleanup.enabled {
-            let queue_url_output = sqs_client
-                .get_queue_url()
-                .queue_name(&config.accounts.queue_name)
-                .send()
-                .await?;
-
-            if let Some(queue_url) = queue_url_output.queue_url() {
-                for failed_account_name in &login_failed_accounts {
-                    let account = account_list
-                        .users
-                        .iter()
-                        .find(|a| a.account_name == failed_account_name.clone())
-                        .unwrap()
-                        .clone();
-
-                    let queue_message = FixAccountMessage { account };
-
-                    let rsp = sqs_client
-                        .send_message()
-                        .queue_url(queue_url)
-                        .message_body(
-                            serde_json::to_string(&queue_message)
-                                .context("must serialize")
-                                .unwrap(),
-                        )
-                        .send()
-                        .await?;
-                    log::info!("added to cleanup queue: {:?}", rsp);
-                }
-            } else {
-                log::error!("missing queue url for {}", &config.accounts.queue_name);
-            }
-        }
-
-        embed
+    if has_error {
+        let embed = embed
             .field(EmbedFieldBuilder::new(
                 "Login Failed",
                 login_failed_accounts.len().to_string(),
@@ -164,12 +136,8 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             .field(EmbedFieldBuilder::new(
                 "Refresh Failed",
                 refresh_cache.failed_accounts.len().to_string(),
-            ))
-    } else {
-        embed
-    };
+            ));
 
-    if has_error && config.refresh.discord_error.enabled {
         let mut message = DiscordWebhookMessage::new(
             config.refresh.discord_error.username.clone(),
             config.refresh.discord_error.avatar_url.clone(),
