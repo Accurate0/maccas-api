@@ -75,8 +75,8 @@ name = "api"
 path = "src/bin/api.rs"
 
 [[bin]]
-name = "service"
-path = "src/bin/service.rs"
+name = "refresh"
+path = "src/bin/refresh.rs"
 
 [[bin]]
 name = "cleanup"

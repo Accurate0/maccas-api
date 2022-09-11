@@ -38,72 +38,48 @@ jobs:
       - name: cargo build
         run: cargo build --locked --release --target x86_64-unknown-linux-musl
 
-      - name: create zip (api)
+      - name: create zip
         run: |
-          mv ./target/x86_64-unknown-linux-musl/release/api ./bootstrap
+          mv ./target/x86_64-unknown-linux-musl/ ./maccas-api
+          zip -r maccas-api.zip ./maccas-api
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: maccas-api
+          path: ./maccas-api.zip
+
+  artifacts:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - accounts
+          - cleanup
+          - images
+          - refresh
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: maccas-api
+
+      - name: create zip (${{ matrix.task }})
+        run: |
+          mv ./maccas-api/${{ matrix.task }} ./bootstrap
           strip ./bootstrap
           zip -r bootstrap.zip ./bootstrap
 
-      - name: upload api artifact
+      - name: upload ${{ matrix.task }} artifact
         uses: actions/upload-artifact@v3
         with:
-          name: api
+          name: ${{ matrix.task }}
           path: ./bootstrap.zip
-
-      - name: remove zip (api)
-        run: |
-          rm -f ./bootstrap.zip
-
-      - name: create zip (service)
-        run: |
-          mv ./target/x86_64-unknown-linux-musl/release/service ./bootstrap
-          strip ./bootstrap
-          zip -r bootstrap.zip ./bootstrap
-
-      - name: upload service artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: service
-          path: ./bootstrap.zip
-
-      - name: remove zip (service)
-        run: |
-          rm -f ./bootstrap.zip
-
-      - name: create zip (cleanup)
-        run: |
-          mv ./target/x86_64-unknown-linux-musl/release/cleanup ./bootstrap
-          strip ./bootstrap
-          zip -r bootstrap.zip ./bootstrap
-
-      - name: upload cleanup artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: cleanup
-          path: ./bootstrap.zip
-
-      - name: remove zip (cleanup)
-        run: |
-          rm -f ./bootstrap.zip
-
-      - name: create zip (accounts)
-        run: |
-          mv ./target/x86_64-unknown-linux-musl/release/accounts ./bootstrap
-          strip ./bootstrap
-          zip -r bootstrap.zip ./bootstrap
-
-      - name: upload accounts artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: accounts
-          path: ./bootstrap.zip
-
-      - name: remove zip (accounts)
-        run: |
-          rm -f ./bootstrap.zip
 
   deploy-api:
-    needs: build
+    needs: artifacts
     runs-on: ubuntu-latest
 
     name: deploy api
@@ -120,7 +96,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
   deploy-tasks:
-    needs: build
+    needs: artifacts
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -144,7 +120,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
   deploy-refresh:
-    needs: build
+    needs: artifacts
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -161,7 +137,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: service
+          name: refresh
 
       - name: deploy ${{ matrix.region }}
         run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
@@ -191,7 +167,7 @@ jobs:
           api__jwt__bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
           api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
           api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
-          service__discord_refresh_error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
+          refresh__discord__error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
           accounts__email: ${{ secrets.API_CONFIG_ACCOUNTS_EMAIL }}
           accounts__password: ${{ secrets.API_CONFIG_ACCOUNTS_PASSWORD }}
       - name: upload to s3

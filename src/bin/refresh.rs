@@ -11,7 +11,7 @@ use libapi::types::config::{GeneralConfig, UserList};
 use libapi::types::images::OfferImageBaseName;
 use libapi::types::sqs::{FixAccountMessage, ImagesRefreshMessage};
 use libapi::types::webhook::DiscordWebhookMessage;
-use serde_json::{json, Value};
+use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
@@ -23,7 +23,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
+async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let shared_config = aws_config::from_env()
         .region(constants::DEFAULT_AWS_REGION)
         .load()
@@ -33,6 +33,11 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         .unwrap();
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    if !config.refresh.enabled {
+        log::warn!("refresh task is disabled, ignoring event: {:?}", &event);
+        return Ok(());
+    }
+
     let client = Client::new(&shared_config);
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let database: Box<dyn Database> =
@@ -50,9 +55,9 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
                 .unwrap(),
         );
 
-    let embed = if config.service.refresh_offers {
+    let embed = if config.refresh.enabled {
         let count = database
-            .increment_refresh_tracking(&env, config.service.refresh_counts[&env])
+            .increment_refresh_tracking(&env, config.refresh.refresh_counts[&env])
             .await?;
 
         let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
@@ -162,17 +167,17 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         embed
     };
 
-    if has_error && config.service.discord_refresh_error.enabled {
+    if has_error && config.refresh.discord_error.enabled {
         let mut message = DiscordWebhookMessage::new(
-            config.service.discord_refresh_error.username.clone(),
-            config.service.discord_refresh_error.avatar_url.clone(),
+            config.refresh.discord_error.username.clone(),
+            config.refresh.discord_error.avatar_url.clone(),
         );
 
         match embed.validate() {
             Ok(embed) => {
                 message.add_embed(embed.build());
 
-                for webhook_url in &config.service.discord_refresh_error.webhooks {
+                for webhook_url in &config.refresh.discord_error.webhooks {
                     let resp = message.send(&http_client, webhook_url).await;
                     match resp {
                         Ok(_) => {}
@@ -184,12 +189,5 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
         }
     }
 
-    Ok(json!(
-        {
-            "isBase64Encoded": false,
-            "statusCode": 204,
-            "headers": {},
-            "body": ""
-        }
-    ))
+    Ok(())
 }

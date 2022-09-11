@@ -48,13 +48,13 @@
         "bucketName": "maccas-image-bucket",
         "queueName": "maccas-images-queue"
     },
-    "service": {
-        "refreshOffers": true,
+    "refresh": {
+        "enabled": true,
         "refreshCounts": {
             "ap-southeast-1": 2,
             "ap-southeast-2": 3
         },
-        "discordRefreshError": {
+        "discordError": {
             "enabled": true,
             "webhooks": [
                 null
