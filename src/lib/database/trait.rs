@@ -1,5 +1,6 @@
 use crate::types::api::{OfferDatabase, PointsResponse};
 use crate::types::config::UserAccount;
+use crate::types::refresh::RefreshOfferCache;
 use crate::types::user::UserOptions;
 use async_trait::async_trait;
 use chrono::Duration;
@@ -25,7 +26,7 @@ pub trait Database {
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
         ignored_offer_ids: &[i64],
-    ) -> Result<Vec<String>, anyhow::Error>;
+    ) -> Result<RefreshOfferCache, anyhow::Error>;
     async fn refresh_point_cache_for(
         &self,
         account: &UserAccount,

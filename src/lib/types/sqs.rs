@@ -1,6 +1,5 @@
+use super::{config::UserAccount, images::OfferImageBaseName};
 use serde::{Deserialize, Serialize};
-
-use super::config::UserAccount;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CleanupMessage {
@@ -11,6 +10,11 @@ pub struct CleanupMessage {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FixAccountMessage {
     pub account: UserAccount,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct ImagesRefreshMessage {
+    pub image_base_names: Vec<OfferImageBaseName>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

@@ -40,15 +40,16 @@
         "password": null,
         "checkLastEmailCount": 20
     },
+    "images": {
+        "enabled": true,
+        "forceRefresh": false,
+        "copyOriginals": false,
+        "webpQuality": 75.0,
+        "bucketName": "maccas-image-bucket",
+        "queueName": "maccas-images-queue"
+    },
     "service": {
-        "refreshImages": true,
         "refreshOffers": true,
-        "images": {
-            "forceRefresh": false,
-            "copyOriginals": false,
-            "webpQuality": 75.0,
-            "bucketName": "maccas-image-bucket"
-        },
         "refreshCounts": {
             "ap-southeast-1": 2,
             "ap-southeast-2": 3
