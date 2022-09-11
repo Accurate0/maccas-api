@@ -73,6 +73,7 @@ jobs:
 
       - name: create zip (${{ matrix.task }})
         run: |
+          tree
           mv ./maccas-api/${{ matrix.task }} ./bootstrap
           strip ./bootstrap
           zip -r bootstrap.zip ./bootstrap
@@ -83,24 +84,7 @@ jobs:
           name: ${{ matrix.task }}
           path: ./bootstrap.zip
 
-  deploy-api:
-    needs: artifacts
-    runs-on: ubuntu-latest
-
-    name: deploy api
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: api
-
-      - name: deploy api
-        run: aws lambda update-function-code --function-name MaccasApi-v2 --zip-file fileb://bootstrap.zip --region ap-southeast-2
-
-  deploy-tasks:
+  deploy:
     needs: artifacts
     runs-on: ubuntu-latest
     strategy:
@@ -110,6 +94,7 @@ jobs:
           - accounts
           - cleanup
           - images
+          - api
 
     name: deploy ${{ matrix.task }}
     env:
@@ -145,10 +130,10 @@ jobs:
           name: refresh
 
       - name: deploy ${{ matrix.region }}
-        run: aws lambda update-function-code --function-name MaccasApi-refresh-v2 --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
+        run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
 
   upload-config:
-    needs: [deploy-refresh, deploy-api, deploy-tasks]
+    needs: [deploy, deploy-tasks]
     runs-on: ubuntu-latest
     name: upload config
     env:
