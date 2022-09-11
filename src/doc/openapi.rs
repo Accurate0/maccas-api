@@ -5,14 +5,14 @@ use crate::routes::code::get_code::*;
 use crate::routes::deals::add_deal::*;
 use crate::routes::deals::get_deal::*;
 use crate::routes::deals::get_deals::*;
-use crate::routes::deals::last_refresh::*;
+use crate::routes::deals::get_last_refresh::*;
 use crate::routes::deals::remove_deal::*;
 use crate::routes::locations::get_locations::*;
-use crate::routes::locations::search::*;
+use crate::routes::locations::search_locations::*;
 use crate::routes::points::get_by_id::*;
 use crate::routes::points::get_points::*;
-use crate::routes::statistics::account::*;
-use crate::routes::statistics::total_accounts::*;
+use crate::routes::statistics::get_account::*;
+use crate::routes::statistics::get_total_accounts::*;
 use crate::routes::user::config::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
