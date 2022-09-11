@@ -12,7 +12,7 @@ use rocket::{serde::json::Json, State};
     ),
     tag = "admin",
     params(
-        ("X-Maccas-JWT-Bypass" = Option<String>, header, description = "Key to bypass JWT checks"),
+        ("X-Maccas-JWT-Bypass" = Option<String>, Header, description = "Key to bypass JWT checks"),
     ),
 )]
 #[get("/admin/locked-deals")]

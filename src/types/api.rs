@@ -5,12 +5,12 @@ use libmaccas::types::response::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
-use utoipa::Component;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct OfferDatabase {
     pub deal_uuid: String,
 
@@ -78,7 +78,7 @@ impl PartialEq for OfferDatabase {
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct GetDealsOffer {
     pub deal_uuid: String,
     pub count: u32,
@@ -113,7 +113,7 @@ impl From<OfferDatabase> for GetDealsOffer {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct RestaurantAddress {
     pub address_line: String,
 }
@@ -128,7 +128,7 @@ impl From<libmaccas::types::response::Address> for RestaurantAddress {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct RestaurantInformation {
     pub name: String,
     pub store_number: i64,
@@ -147,14 +147,14 @@ impl From<libmaccas::types::response::Restaurant> for RestaurantInformation {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct OfferResponse {
     pub random_code: String,
     pub message: String,
@@ -177,13 +177,13 @@ impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse 
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(Component)]
+#[derive(ToSchema)]
 pub struct OfferPointsResponse {
     pub offer_response: OfferResponse,
     pub points_response: PointsResponse,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct AccountResponse(HashMap<String, i64>);
 
 impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
@@ -200,10 +200,10 @@ impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct TotalAccountsResponse(pub i64);
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct PointsResponse {
     pub total_points: i64,
@@ -219,14 +219,14 @@ impl From<PointInformationResponse> for PointsResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountPointMap {
     pub name: String,
     pub total_points: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct AccountPointResponse(Vec<AccountPointMap>);
 
 impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
@@ -243,5 +243,5 @@ impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct AdminLockedDealsResponse(pub Vec<String>);

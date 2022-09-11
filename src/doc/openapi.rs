@@ -16,8 +16,8 @@ use crate::routes::statistics::get_total_accounts::*;
 use crate::routes::user::config::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
-    GetDealsOffer, LastRefreshInformation, OfferDatabase, OfferPointsResponse, OfferResponse,
-    PointsResponse, RestaurantAddress, RestaurantInformation,
+    GetDealsOffer, LastRefreshInformation, OfferPointsResponse, OfferResponse, PointsResponse,
+    RestaurantAddress, RestaurantInformation,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
@@ -25,7 +25,7 @@ use utoipa::OpenApi;
 #[derive(OpenApi)]
 #[openapi(
     security(("JWT" = []),("API Key" = [])),
-    handlers(
+    paths(
         get_code,
         get_deals,
         add_deal,
@@ -45,19 +45,21 @@ use utoipa::OpenApi;
         lock_deal,
     ),
     components(
-        OfferDatabase,
-        OfferResponse,
-        LastRefreshInformation,
-        RestaurantInformation,
-        AccountResponse,
-        OfferPointsResponse,
-        PointsResponse,
-        UserOptions,
-        RestaurantAddress,
-        AccountPointResponse,
-        AccountPointMap,
-        AdminLockedDealsResponse,
-        GetDealsOffer
+        responses(),
+        schemas(
+            OfferResponse,
+            LastRefreshInformation,
+            RestaurantInformation,
+            AccountResponse,
+            OfferPointsResponse,
+            PointsResponse,
+            UserOptions,
+            RestaurantAddress,
+            AccountPointResponse,
+            AccountPointMap,
+            AdminLockedDealsResponse,
+            GetDealsOffer
+        ),
     )
 )]
 pub struct ApiDoc;

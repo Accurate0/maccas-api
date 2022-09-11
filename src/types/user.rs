@@ -1,8 +1,8 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use utoipa::Component;
+use utoipa::ToSchema;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, Component)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOptions {
     pub store_id: String,
