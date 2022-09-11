@@ -8,6 +8,7 @@ use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
 use crate::types::api::{OfferDatabase, PointsResponse};
 use crate::types::config::UserAccount;
+use crate::types::refresh::RefreshOfferCache;
 use crate::types::user::UserOptions;
 use crate::utils::get_short_sha1;
 use anyhow::{bail, Context};
@@ -179,19 +180,17 @@ impl Database for DynamoDatabase {
         &self,
         client_map: &HashMap<UserAccount, ApiClient<'_>>,
         ignored_offer_ids: &[i64],
-    ) -> Result<Vec<String>, anyhow::Error> {
+    ) -> Result<RefreshOfferCache, anyhow::Error> {
         let mut failed_accounts = Vec::new();
+        let mut new_offers = Vec::new();
 
         for (account, api_client) in client_map {
             match self
                 .refresh_offer_cache_for(account, api_client, ignored_offer_ids)
                 .await
             {
-                Ok(_) => {
-                    // disabled in favour of cleanup task
-                    // api_client
-                    //     .remove_all_from_deal_stack_for(&account.account_name)
-                    //     .await?;
+                Ok(mut o) => {
+                    new_offers.append(&mut o);
                     self.refresh_point_cache_for(account, api_client).await?;
                 }
                 Err(e) => {
@@ -205,7 +204,11 @@ impl Database for DynamoDatabase {
             "refreshed {} account offer caches..",
             client_map.keys().len()
         );
-        Ok(failed_accounts)
+
+        Ok(RefreshOfferCache {
+            failed_accounts,
+            new_offers,
+        })
     }
 
     async fn refresh_point_cache_for(

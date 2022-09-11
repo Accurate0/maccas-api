@@ -59,10 +59,12 @@ pub struct JwtConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageConfig {
+    pub enabled: bool,
     pub force_refresh: bool,
     pub bucket_name: String,
     pub copy_originals: bool,
     pub webp_quality: f32,
+    pub queue_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -84,10 +86,8 @@ pub struct DatabaseConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceConfig {
-    pub images: ImageConfig,
     pub refresh_counts: HashMap<String, i8>,
     pub discord_refresh_error: DiscordConfig,
-    pub refresh_images: bool,
     pub refresh_offers: bool,
 }
 
@@ -130,6 +130,7 @@ pub struct GeneralConfig {
     pub api: ApiConfig,
     pub cleanup: CleanupConfig,
     pub accounts: AccountsConfig,
+    pub images: ImageConfig,
 }
 
 #[derive(Deserialize, Debug)]

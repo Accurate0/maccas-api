@@ -3,13 +3,14 @@ use aws_sdk_dynamodb::Client;
 use chrono::Utc;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
+use libapi::client;
 use libapi::constants::{self, mc_donalds};
 use libapi::database::{Database, DynamoDatabase};
 use libapi::logging;
 use libapi::types::config::{GeneralConfig, UserList};
-use libapi::types::sqs::FixAccountMessage;
+use libapi::types::images::OfferImageBaseName;
+use libapi::types::sqs::{FixAccountMessage, ImagesRefreshMessage};
 use libapi::types::webhook::DiscordWebhookMessage;
-use libapi::{client, images};
 use serde_json::{json, Value};
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -67,14 +68,49 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             .await?;
 
         log::info!("refresh started..");
-        let failed_accounts = database
+        let refresh_cache = database
             .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
             .await?;
 
-        if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
+        if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
             has_error = true;
             log::error!("login failed: {:#?}", login_failed_accounts);
-            log::error!("refresh failed: {:#?}", failed_accounts);
+            log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
+        }
+
+        if config.images.enabled {
+            let queue_url_output = sqs_client
+                .get_queue_url()
+                .queue_name(&config.images.queue_name)
+                .send()
+                .await?;
+
+            if let Some(queue_url) = queue_url_output.queue_url() {
+                let image_base_names = refresh_cache
+                    .new_offers
+                    .iter()
+                    .map(|offer| OfferImageBaseName {
+                        original: offer.original_image_base_name.clone(),
+                        new: offer.image_base_name.clone(),
+                    })
+                    .collect();
+
+                let queue_message = ImagesRefreshMessage { image_base_names };
+
+                let rsp = sqs_client
+                    .send_message()
+                    .queue_url(queue_url)
+                    .message_body(
+                        serde_json::to_string(&queue_message)
+                            .context("must serialize")
+                            .unwrap(),
+                    )
+                    .send()
+                    .await?;
+                log::info!("added to cleanup queue: {:?}", rsp);
+            } else {
+                log::error!("missing queue url for {}", &config.accounts.queue_name);
+            }
         }
 
         // send errors to the accounts queue
@@ -120,26 +156,8 @@ async fn run(_: LambdaEvent<Value>) -> Result<Value, anyhow::Error> {
             ))
             .field(EmbedFieldBuilder::new(
                 "Refresh Failed",
-                failed_accounts.len().to_string(),
+                refresh_cache.failed_accounts.len().to_string(),
             ))
-    } else {
-        embed
-    };
-
-    let embed = if config.service.refresh_images {
-        let s3_client = aws_sdk_s3::Client::new(&shared_config);
-        let image_refresh_result =
-            images::refresh_images(database.as_ref(), &s3_client, &config).await;
-
-        let image_result_message = match image_refresh_result {
-            Ok(_) => "Success".to_string(),
-            Err(e) => {
-                has_error = true;
-                e.to_string()
-            }
-        };
-
-        embed.field(EmbedFieldBuilder::new("Image Status", image_result_message))
     } else {
         embed
     };
