@@ -95,6 +95,7 @@ jobs:
           - cleanup
           - images
           - api
+          - refresh
 
     name: deploy ${{ matrix.task }}
     env:
@@ -109,31 +110,12 @@ jobs:
       - name: deploy ${{ matrix.task }}
         run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
-  deploy-refresh:
-    needs: artifacts
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        region:
-          - ap-southeast-2
-          - ap-southeast-1
-
-    name: deploy ${{ matrix.region }}
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: refresh
-
-      - name: deploy ${{ matrix.region }}
-        run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ${{ matrix.region }}
+      - name: deploy ${{ matrix.task }} (ap-southeast-1)
+        if: ${{ ${{ matrix.task }} == 'refresh' }}
+        run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-1
 
   upload-config:
-    needs: [deploy, deploy-refresh]
+    needs: [deploy]
     runs-on: ubuntu-latest
     name: upload config
     env:
