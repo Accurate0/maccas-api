@@ -40,7 +40,7 @@ jobs:
 
       - name: create zip
         run: |
-          mv ./target/x86_64-unknown-linux-musl/ ./maccas-api
+          mv ./target/x86_64-unknown-linux-musl/release ./maccas-api
           zip -r maccas-api.zip ./maccas-api
 
       - name: upload artifact
