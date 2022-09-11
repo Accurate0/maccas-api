@@ -67,8 +67,8 @@ vergen = "7.3.2"
 # libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
 
 [lib]
-name = "libapi"
-path = "src/lib/lib.rs"
+name = "maccas"
+path = "src/lib.rs"
 
 [[bin]]
 name = "api"

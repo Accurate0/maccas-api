@@ -1,11 +1,11 @@
 use anyhow::Context;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use libapi::constants;
-use libapi::images;
-use libapi::logging;
-use libapi::types::config::GeneralConfig;
-use libapi::types::sqs::{ImagesRefreshMessage, SqsEvent};
+use maccas::constants;
+use maccas::images;
+use maccas::logging;
+use maccas::types::config::GeneralConfig;
+use maccas::types::sqs::{ImagesRefreshMessage, SqsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {

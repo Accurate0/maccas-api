@@ -2,13 +2,13 @@ use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use libapi::client;
-use libapi::constants;
-use libapi::constants::mc_donalds::default;
-use libapi::database::{Database, DynamoDatabase};
-use libapi::logging;
-use libapi::types::config::GeneralConfig;
-use libapi::types::sqs::{CleanupMessage, SqsEvent};
+use maccas::client;
+use maccas::constants;
+use maccas::constants::mc_donalds::default;
+use maccas::database::{Database, DynamoDatabase};
+use maccas::logging;
+use maccas::types::config::GeneralConfig;
+use maccas::types::sqs::{CleanupMessage, SqsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
