@@ -1,6 +1,7 @@
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
+use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use libapi::client;
@@ -98,6 +99,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
                         original: offer.original_image_base_name.clone(),
                         new: offer.image_base_name.clone(),
                     })
+                    .unique_by(|offer| offer.original.clone())
                     .collect();
 
                 let queue_message = ImagesRefreshMessage { image_base_names };
