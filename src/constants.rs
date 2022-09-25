@@ -38,6 +38,9 @@ pub mod api_base {
 }
 
 pub mod config {
+    #[cfg(debug_assertions)]
+    pub const BASE_FILE: &str = "base-config-dev.json";
+    #[cfg(not(debug_assertions))]
     pub const BASE_FILE: &str = "base-config.json";
     pub const REGION_ACCOUNTS_FILE: &str = "{region}/accounts-{region}-{option}.json";
 }
