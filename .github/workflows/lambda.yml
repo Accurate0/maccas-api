@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - "API/**"
       - ".github/dependabot.yml"
       - ".vscode/**"
 
@@ -84,6 +83,7 @@ jobs:
           path: ./bootstrap.zip
 
   deploy:
+    environment: production
     needs: artifacts
     runs-on: ubuntu-latest
     strategy:
@@ -114,6 +114,7 @@ jobs:
         run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-1
 
   upload-config:
+    environment: production
     needs: [deploy]
     runs-on: ubuntu-latest
     name: upload config
