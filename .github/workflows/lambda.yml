@@ -115,7 +115,7 @@ jobs:
 
   upload-config:
     environment: production
-    needs: [deploy]
+    needs: [artifacts]
     runs-on: ubuntu-latest
     name: upload config
     env:
