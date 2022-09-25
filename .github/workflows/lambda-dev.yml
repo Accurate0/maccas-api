@@ -35,11 +35,12 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-dev
 
       - name: cargo build
-        run: cargo build --locked --target x86_64-unknown-linux-musl
+        run: cargo build --locked --target x86_64-unknown-linux-musl --bin api
 
       - name: create zip
         run: |
           mv ./target/x86_64-unknown-linux-musl/debug/api ./bootstrap
+          strip ./bootstrap
           zip -r bootstrap.zip ./bootstrap
 
       - name: deploy dev
