@@ -30,7 +30,7 @@ rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07
 jwt = "0.16.0"
 jsonwebtoken = "8.1.1"
 
-image = "0.24.3"
+image = "0.24.4"
 webp = "0.2.2"
 
 regex = "1.6.0"
