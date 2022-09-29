@@ -38,7 +38,7 @@
         "imapPort": 993,
         "email": null,
         "password": null,
-        "checkLastEmailCount": 20
+        "checkLastEmailCount": 100
     },
     "images": {
         "enabled": true,
