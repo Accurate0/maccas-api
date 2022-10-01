@@ -102,10 +102,19 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             let to = to_regex
                 .captures_iter(&body_without_crlf)
                 .next()
-                .context("invalid email, no To")?
-                .get(1)
-                .context("invalid email, no To")?
-                .as_str();
+                .context("invalid email, no To");
+
+            if to.is_err() {
+                continue;
+            }
+
+            let to = to.unwrap().get(1);
+
+            if to.is_none() {
+                continue;
+            }
+
+            let to = to.unwrap().as_str();
 
             log::info!("checking email to: {} vs {}", to, login_email);
             if to == login_email {
