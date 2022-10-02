@@ -6,7 +6,7 @@ use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
 use maccas::routes::admin::lock_deal::lock_deal;
 use maccas::routes::admin::unlock_deal::unlock_deal;
-use maccas::routes::catchers::{internal_server_error, not_found};
+use maccas::routes::catchers::{internal_server_error, not_authenticated, not_found};
 use maccas::routes::code::get_code::get_code;
 use maccas::routes::deals::add_deal::add_deal;
 use maccas::routes::deals::get_deal::get_deal;
@@ -59,7 +59,10 @@ async fn main() -> Result<(), LambdaError> {
 
     let rocket = rocket::build()
         .manage(context)
-        .register("/", catchers![not_found, internal_server_error])
+        .register(
+            "/",
+            catchers![not_found, internal_server_error, not_authenticated],
+        )
         .mount(
             "/",
             routes![

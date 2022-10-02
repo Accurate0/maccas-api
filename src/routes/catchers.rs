@@ -9,3 +9,8 @@ pub fn not_found(_req: &Request) -> &'static str {
 pub fn internal_server_error(_req: &Request) -> &'static str {
     ""
 }
+
+#[catch(401)]
+pub fn not_authenticated(_req: &Request) -> &'static str {
+    ""
+}
