@@ -7,10 +7,6 @@ on:
       - ".github/dependabot.yml"
       - ".vscode/**"
 
-concurrency:
-  group: environment-${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
