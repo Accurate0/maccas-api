@@ -111,7 +111,7 @@ impl From<OfferDatabase> for GetDealsOffer {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct RestaurantAddress {
@@ -126,7 +126,7 @@ impl From<libmaccas::types::response::Address> for RestaurantAddress {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct RestaurantInformation {
@@ -145,14 +145,14 @@ impl From<libmaccas::types::response::Restaurant> for RestaurantInformation {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct OfferResponse {
@@ -175,7 +175,7 @@ impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse 
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct OfferPointsResponse {
@@ -183,7 +183,7 @@ pub struct OfferPointsResponse {
     pub points_response: PointsResponse,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct AccountResponse(HashMap<String, i64>);
 
 impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
@@ -200,10 +200,10 @@ impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct TotalAccountsResponse(pub i64);
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct PointsResponse {
     pub total_points: i64,
@@ -219,14 +219,14 @@ impl From<PointInformationResponse> for PointsResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountPointMap {
     pub name: String,
     pub total_points: i64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct AccountPointResponse(Vec<AccountPointMap>);
 
 impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
@@ -243,5 +243,5 @@ impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct AdminLockedDealsResponse(pub Vec<String>);

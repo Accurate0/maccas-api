@@ -3,7 +3,7 @@ use rocket::response::Responder;
 use rocket::{http::Status, response, Request, Response};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ApiError {
     InvalidConfig,
