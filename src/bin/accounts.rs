@@ -129,7 +129,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
                 // ensure this is device verification
                 body.contains("CLICK HERE TO VERIFY YOUR DEVICE")
-                    .then(|| 0)
+                    .then_some(0)
                     .context("must be device verification")?;
 
                 // encoded '=' at the start as 3D
