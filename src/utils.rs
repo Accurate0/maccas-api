@@ -1,5 +1,5 @@
 use crypto::{digest::Digest, sha1::Sha1};
-use std::path::Path;
+use std::{ffi::OsStr, path::Path};
 use uuid::Uuid;
 
 pub fn get_uuid() -> String {
@@ -13,5 +13,9 @@ pub fn get_short_sha1(key: &str) -> String {
 }
 
 pub fn remove_ext(s: &str) -> &str {
-    Path::new(s).file_stem().unwrap().to_str().unwrap()
+    Path::new(s)
+        .file_stem()
+        .unwrap_or_else(|| OsStr::new(s))
+        .to_str()
+        .unwrap_or(s)
 }
