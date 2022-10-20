@@ -32,10 +32,6 @@ pub async fn execute_discord_webhooks(
     offer: &OfferDatabase,
     store_name: &str,
 ) {
-    if !config.api.discord_deal_use.enabled {
-        return;
-    }
-
     let mut message = DiscordWebhookMessage::new(
         config.api.discord_deal_use.username.clone(),
         config.api.discord_deal_use.avatar_url.clone(),

@@ -33,7 +33,6 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         }
 
         let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
-
         if auth_header.is_failure() {
             return auth_header.map(|_| ProtectedRoute);
         };
