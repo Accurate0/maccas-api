@@ -38,7 +38,7 @@
         "imapPort": 993,
         "email": null,
         "password": null,
-        "checkLastEmailCount": 100
+        "checkLastEmailCount": 50
     },
     "images": {
         "enabled": true,
@@ -73,10 +73,8 @@
             "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
             "username": "Maccas"
         },
-        "log": {
-            "ignoredUserIds": [
-                "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
-            ],
+        "logExternal": {
+            "enabled": true,
             "localTimeZone": "Australia/Perth"
         },
         "protectedRoutes": {
@@ -85,13 +83,13 @@
                 "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
             ]
         },
-        "adminUserIds": [
-            "7473629d-84a6-4e94-bf4b-a6bf7517827c",
-            "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
-        ],
         "jwt": {
             "validate": false,
-            "bypassKey": null
+            "bypassKey": null,
+            "adminUserIds": [
+                "7473629d-84a6-4e94-bf4b-a6bf7517827c",
+                "5136a059-a5cc-4c8a-9e67-99fbb39ffa1e"
+            ]
         }
     }
 }

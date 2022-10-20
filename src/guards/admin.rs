@@ -39,7 +39,7 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
         let auth_header = auth_header.unwrap();
 
-        let allowed_user_ids = &ctx.config.api.admin_user_ids;
+        let allowed_user_ids = &ctx.config.api.jwt.admin_user_ids;
         let value = auth_header.0.as_str().replace("Bearer ", "");
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
         let user_id = &jwt.claims().oid;

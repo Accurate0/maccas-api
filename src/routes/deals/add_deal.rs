@@ -170,11 +170,12 @@ pub async fn add_deal(
             };
 
             if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
+                // ignore don't log admin user ids at all
                 if !ctx
                     .config
                     .api
-                    .log
-                    .ignored_user_ids
+                    .jwt
+                    .admin_user_ids
                     .iter()
                     .any(|ignored| *ignored == user_id)
                 {
@@ -193,24 +194,28 @@ pub async fn add_deal(
                         _ => "Error getting store name".to_string(),
                     };
 
-                    let log_fut = log_external(
-                        &http_client,
-                        &ctx.config,
-                        &user_id,
-                        &user_name,
-                        &offer,
-                        &correlation_id.0,
-                    );
+                    if ctx.config.api.log.enabled {
+                        log_external(
+                            &http_client,
+                            &ctx.config,
+                            &user_id,
+                            &user_name,
+                            &offer,
+                            &correlation_id.0,
+                        )
+                        .await;
+                    }
 
-                    let discord_webhook_fut = execute_discord_webhooks(
-                        &http_client,
-                        &ctx.config,
-                        &user_name,
-                        &offer,
-                        &store_name,
-                    );
-
-                    tokio::join!(log_fut, discord_webhook_fut);
+                    if ctx.config.api.discord_deal_use.enabled {
+                        execute_discord_webhooks(
+                            &http_client,
+                            &ctx.config,
+                            &user_name,
+                            &offer,
+                            &store_name,
+                        )
+                        .await;
+                    }
                 }
             }
             resp

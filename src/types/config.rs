@@ -39,7 +39,7 @@ pub struct DiscordConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LogConfig {
-    pub ignored_user_ids: Vec<String>,
+    pub enabled: bool,
     pub local_time_zone: String,
 }
 
@@ -54,6 +54,7 @@ pub struct ProtectedRouteConfig {
 pub struct JwtConfig {
     pub validate: bool,
     pub bypass_key: String,
+    pub admin_user_ids: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -117,7 +118,6 @@ pub struct ApiConfig {
     pub discord_deal_use: DiscordConfig,
     pub log: LogConfig,
     pub protected_routes: ProtectedRouteConfig,
-    pub admin_user_ids: Vec<String>,
     pub jwt: JwtConfig,
 }
 
