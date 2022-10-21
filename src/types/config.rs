@@ -38,7 +38,7 @@ pub struct DiscordConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct LogConfig {
+pub struct LogExternalConfig {
     pub enabled: bool,
     pub local_time_zone: String,
 }
@@ -116,7 +116,7 @@ pub struct AccountsConfig {
 pub struct ApiConfig {
     pub api_key: String,
     pub discord_deal_use: DiscordConfig,
-    pub log: LogConfig,
+    pub log_external: LogExternalConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub jwt: JwtConfig,
 }
