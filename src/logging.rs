@@ -47,7 +47,7 @@ pub async fn log_external(
 ) {
     let tz: Tz = config
         .api
-        .log
+        .log_external
         .local_time_zone
         .parse()
         .unwrap_or(DEFAULT_TIMEZONE);

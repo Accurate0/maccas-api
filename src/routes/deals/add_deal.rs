@@ -194,7 +194,7 @@ pub async fn add_deal(
                         _ => "Error getting store name".to_string(),
                     };
 
-                    if ctx.config.api.log.enabled {
+                    if ctx.config.api.log_external.enabled {
                         log_external(
                             &http_client,
                             &ctx.config,
