@@ -19,7 +19,7 @@ pub trait Database {
     ) -> Result<Option<Vec<OfferDatabase>>, anyhow::Error>;
     async fn set_offers_for(
         &self,
-        account_name: &str,
+        account_name: &UserAccount,
         offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
