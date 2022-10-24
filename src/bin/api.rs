@@ -1,4 +1,5 @@
 use lambda_http::Error as LambdaError;
+use maccas::aws;
 use maccas::constants;
 use maccas::database::DynamoDatabase;
 use maccas::logging;
@@ -36,10 +37,7 @@ async fn main() -> Result<(), LambdaError> {
     logging::setup_logging();
     logging::dump_build_details();
     let is_aws = std::env::var(constants::AWS_LAMBDA_FUNCTION_NAME).is_ok();
-    let shared_config = aws_config::from_env()
-        .region(constants::DEFAULT_AWS_REGION)
-        .load()
-        .await;
+    let shared_config = aws::get_shared_config().await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);

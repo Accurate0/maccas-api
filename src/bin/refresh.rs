@@ -4,7 +4,6 @@ use chrono::Utc;
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::client;
 use maccas::constants::{self, mc_donalds};
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
@@ -13,6 +12,7 @@ use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::{FixAccountMessage, ImagesRefreshMessage};
 use maccas::types::webhook::DiscordWebhookMessage;
+use maccas::{aws, client};
 use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -26,10 +26,8 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
-    let shared_config = aws_config::from_env()
-        .region(constants::DEFAULT_AWS_REGION)
-        .load()
-        .await;
+    let shared_config = aws::get_shared_config().await;
+
     let env = std::env::var(constants::AWS_REGION)
         .context("AWS_REGION not set")
         .unwrap();
