@@ -154,7 +154,7 @@ impl Database for DynamoDatabase {
 
     async fn set_offers_for(
         &self,
-        account_name: &str,
+        account: &UserAccount,
         offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
@@ -164,7 +164,10 @@ impl Database for DynamoDatabase {
         self.client
             .put_item()
             .table_name(&self.cache_table_name)
-            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .item(
+                ACCOUNT_NAME,
+                AttributeValue::S(account.account_name.to_string()),
+            )
             .item(LAST_REFRESH, AttributeValue::S(now))
             .item(
                 OFFER_LIST,
@@ -172,6 +175,27 @@ impl Database for DynamoDatabase {
             )
             .send()
             .await?;
+
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+        // update the lookup structure too
+        let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
+        for offer in offer_list {
+            self.client
+                .put_item()
+                .table_name(&self.cache_table_name_v2)
+                .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.clone()))
+                .item(
+                    ACCOUNT_INFO,
+                    AttributeValue::M(serde_dynamo::to_item(account)?),
+                )
+                .item(LAST_REFRESH, AttributeValue::S(now.clone()))
+                .item(OFFER, AttributeValue::M(serde_dynamo::to_item(offer)?))
+                .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
+                .send()
+                .await?;
+        }
 
         Ok(())
     }
