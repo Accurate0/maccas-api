@@ -4,12 +4,12 @@ use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use libmaccas::types::request::{ActivationRequest, Credentials};
 use libmaccas::ApiClient;
-use maccas::client;
 use maccas::constants;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{FixAccountMessage, SqsEvent};
+use maccas::{aws, client};
 use rand::distributions::{Alphanumeric, DistString};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
@@ -24,10 +24,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
-    let shared_config = aws_config::from_env()
-        .region(constants::DEFAULT_AWS_REGION)
-        .load()
-        .await;
+    let shared_config = aws::get_shared_config().await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     if !config.accounts.enabled {
