@@ -29,6 +29,8 @@ pub struct OfferDatabase {
     pub creation_date_utc: String,
     pub image_base_name: String,
     pub original_image_base_name: String,
+
+    pub price: Option<f64>,
 }
 
 impl From<libmaccas::types::response::Offer> for OfferDatabase {
@@ -57,6 +59,7 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
             creation_date_utc: offer.creation_date_utc,
             image_base_name: base_name_with_webp,
             original_image_base_name: offer.image_base_name,
+            price: None,
         }
     }
 }
@@ -91,6 +94,7 @@ pub struct GetDealsOffer {
     pub description: String,
     pub creation_date_utc: String,
     pub image_base_name: String,
+    pub price: Option<f64>,
 }
 
 impl From<OfferDatabase> for GetDealsOffer {
@@ -107,6 +111,7 @@ impl From<OfferDatabase> for GetDealsOffer {
             description: offer.description,
             creation_date_utc: offer.creation_date_utc,
             image_base_name: offer.image_base_name,
+            price: offer.price,
         }
     }
 }
