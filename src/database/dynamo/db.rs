@@ -16,7 +16,9 @@ use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
+use futures::future::join_all;
 use http::StatusCode;
+use itertools::Itertools;
 use libmaccas::ApiClient;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::StdRng;
@@ -408,10 +410,36 @@ impl Database for DynamoDatabase {
                 let ttl: DateTime<Utc> =
                     Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
 
+                let price_list = resp
+                    .iter()
+                    .unique_by(|offer| offer.offer_proposition_id)
+                    .map(|offer| api_client.offer_details(&offer.offer_proposition_id));
+
+                let price_list = join_all(price_list).await;
+
+                let mut price_map = HashMap::new();
+                for res in price_list.into_iter().flatten() {
+                    if let Some(offer) = res.body.response {
+                        let total_price = offer
+                            .product_sets
+                            .iter()
+                            .fold(0f64, |accumulator, item| item.action.value + accumulator);
+
+                        price_map.insert(offer.offer_proposition_id, total_price);
+                    }
+                }
+
                 let resp: Vec<OfferDatabase> = resp
                     .iter_mut()
                     .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
                     .map(|offer| OfferDatabase::from(offer.clone()))
+                    .map(|mut offer| {
+                        let price = price_map.get(&offer.offer_proposition_id).copied();
+                        if price != Some(0f64) {
+                            offer.price = price;
+                        }
+                        offer
+                    })
                     .collect();
 
                 self.client
