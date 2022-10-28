@@ -1,4 +1,5 @@
 use super::DynamoDatabase;
+use crate::cache;
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
     LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
@@ -16,7 +17,6 @@ use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
-use futures::future::join_all;
 use http::StatusCode;
 use itertools::Itertools;
 use libmaccas::ApiClient;
@@ -410,16 +410,14 @@ impl Database for DynamoDatabase {
                 let ttl: DateTime<Utc> =
                     Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
 
-                let price_list = resp
+                let mut price_map = HashMap::new();
+                for offer_proposition_id in resp
                     .iter()
                     .unique_by(|offer| offer.offer_proposition_id)
-                    .map(|offer| api_client.offer_details(&offer.offer_proposition_id));
-
-                let price_list = join_all(price_list).await;
-
-                let mut price_map = HashMap::new();
-                for res in price_list.into_iter().flatten() {
-                    if let Some(offer) = res.body.response {
+                    .map(|offer| offer.offer_proposition_id)
+                {
+                    let res = cache::get_offer_details(api_client, offer_proposition_id).await?;
+                    if let Some(offer) = res.response {
                         let total_price = offer
                             .product_sets
                             .iter()

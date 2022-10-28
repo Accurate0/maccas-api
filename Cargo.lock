@@ -1903,9 +1903,9 @@ dependencies = [
 
 [[package]]
 name = "libmaccas"
-version = "0.26.0"
+version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb4faa460c967fce813aada14355c36c412aef091bdca05f6a99978c1ce986a4"
+checksum = "4d0eb953e3a6106959cfb25f9cb66375f7d18cafdc07f591781f1a507e497654"
 dependencies = [
  "anyhow",
  "http 0.2.8",
@@ -2003,7 +2003,6 @@ dependencies = [
  "chrono-tz",
  "config",
  "fern",
- "futures",
  "http 0.2.8",
  "image",
  "imap",
@@ -2012,6 +2011,7 @@ dependencies = [
  "jwt",
  "lambda_http 0.7.0",
  "lambda_runtime 0.7.0",
+ "lazy_static",
  "libmaccas",
  "log",
  "mime",
