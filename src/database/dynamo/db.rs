@@ -386,6 +386,7 @@ impl Database for DynamoDatabase {
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error> {
+        log::info!("{}: fetching offers", account.account_name);
         match api_client
             .get_offers(
                 mc_donalds::default::DISTANCE,
