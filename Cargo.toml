@@ -56,7 +56,7 @@ tokio = "1.21.2"
 chrono-tz = "0.7.0"
 rust-crypto = "0.2.36"
 mime = "0.3.16"
-anyhow = "1.0.65"
+anyhow = "1.0.66"
 fern = "0.6.1"
 utoipa = { version = "2.2.0", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
