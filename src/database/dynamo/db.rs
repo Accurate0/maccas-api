@@ -419,10 +419,14 @@ impl Database for DynamoDatabase {
                 {
                     let res = cache::get_offer_details(api_client, offer_proposition_id).await?;
                     if let Some(offer) = res.response {
-                        let total_price = offer
-                            .product_sets
-                            .iter()
-                            .fold(0f64, |accumulator, item| item.action.value + accumulator);
+                        let total_price =
+                            offer.product_sets.iter().fold(0f64, |accumulator, item| {
+                                if let Some(action) = &item.action {
+                                    action.value + accumulator
+                                } else {
+                                    accumulator
+                                }
+                            });
 
                         price_map.insert(offer.offer_proposition_id, total_price);
                     }
