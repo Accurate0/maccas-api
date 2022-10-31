@@ -32,7 +32,7 @@
         "queueName": "maccas-cleanup-queue"
     },
     "accounts": {
-        "enabled": true,
+        "enabled": false,
         "queueName": "maccas-accounts-queue",
         "imapAddress": "imap.gmail.com",
         "imapPort": 993,
