@@ -415,6 +415,7 @@ impl Database for DynamoDatabase {
                 for offer_proposition_id in resp
                     .iter()
                     .unique_by(|offer| offer.offer_proposition_id)
+                    .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
                     .map(|offer| offer.offer_proposition_id)
                 {
                     let res = cache::get_offer_details(api_client, offer_proposition_id).await?;
