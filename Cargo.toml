@@ -33,7 +33,7 @@ jsonwebtoken = "8.1.1"
 image = "0.24.4"
 webp = "0.2.2"
 
-regex = "1.6.0"
+regex = "1.7.0"
 imap = "2.4.1"
 native-tls = "0.2.10"
 
