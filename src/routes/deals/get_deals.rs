@@ -1,5 +1,6 @@
+use crate::database::types::OfferDatabase;
 use crate::routes::Context;
-use crate::types::api::{GetDealsOffer, OfferDatabase};
+use crate::types::api::GetDealsOffer;
 use crate::types::error::ApiError;
 use itertools::Itertools;
 use rand::prelude::StdRng;

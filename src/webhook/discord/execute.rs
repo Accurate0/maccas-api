@@ -1,6 +1,7 @@
 use crate::{
     constants::mc_donalds::{self, IMAGE_CDN},
-    types::{api::OfferDatabase, config::GeneralConfig, webhook::DiscordWebhookMessage},
+    database::types::OfferDatabase,
+    types::{config::GeneralConfig, webhook::DiscordWebhookMessage},
 };
 use anyhow::Context;
 use chrono::Utc;

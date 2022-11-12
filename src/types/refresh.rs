@@ -1,4 +1,4 @@
-use super::api::OfferDatabase;
+use crate::database::types::OfferDatabase;
 
 pub struct RefreshOfferCache {
     pub failed_accounts: Vec<String>,
