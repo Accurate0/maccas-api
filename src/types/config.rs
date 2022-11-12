@@ -38,13 +38,6 @@ pub struct DiscordConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct LogExternalConfig {
-    pub enabled: bool,
-    pub local_time_zone: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct ProtectedRouteConfig {
     pub allowed_user_ids: Vec<String>,
 }
@@ -101,22 +94,9 @@ pub struct CleanupConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct AccountsConfig {
-    pub enabled: bool,
-    pub queue_name: String,
-    pub imap_address: String,
-    pub imap_port: u16,
-    pub email: String,
-    pub password: String,
-    pub check_last_email_count: u32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub api_key: String,
     pub discord_deal_use: DiscordConfig,
-    pub log_external: LogExternalConfig,
     pub protected_routes: ProtectedRouteConfig,
     pub jwt: JwtConfig,
 }
@@ -129,7 +109,6 @@ pub struct GeneralConfig {
     pub refresh: RefreshConfig,
     pub api: ApiConfig,
     pub cleanup: CleanupConfig,
-    pub accounts: AccountsConfig,
     pub images: ImageConfig,
 }
 

@@ -1,15 +1,10 @@
-use super::{config::UserAccount, images::OfferImageBaseName};
+use super::images::OfferImageBaseName;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CleanupMessage {
     pub deal_uuid: String,
     pub store_id: i64,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct FixAccountMessage {
-    pub account: UserAccount,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

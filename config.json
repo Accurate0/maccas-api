@@ -31,15 +31,6 @@
         "enabled": true,
         "queueName": "maccas-cleanup-queue"
     },
-    "accounts": {
-        "enabled": false,
-        "queueName": "maccas-accounts-queue",
-        "imapAddress": "imap.gmail.com",
-        "imapPort": 993,
-        "email": null,
-        "password": null,
-        "checkLastEmailCount": 50
-    },
     "images": {
         "enabled": true,
         "forceRefresh": false,
@@ -72,10 +63,6 @@
             ],
             "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
             "username": "Maccas"
-        },
-        "logExternal": {
-            "enabled": false,
-            "localTimeZone": "Australia/Perth"
         },
         "protectedRoutes": {
             "allowedUserIds": [

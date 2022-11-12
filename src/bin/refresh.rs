@@ -7,10 +7,10 @@ use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::{self, mc_donalds};
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
-use maccas::queue::{send_to_queue, send_to_queue_by_url};
+use maccas::queue::send_to_queue;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
-use maccas::types::sqs::{FixAccountMessage, ImagesRefreshMessage};
+use maccas::types::sqs::ImagesRefreshMessage;
 use maccas::types::webhook::DiscordWebhookMessage;
 use maccas::{aws, client};
 use serde_json::Value;
@@ -99,30 +99,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             ImagesRefreshMessage { image_base_names },
         )
         .await?;
-    }
-
-    // send errors to the accounts queue
-    if config.accounts.enabled {
-        let queue_url_output = sqs_client
-            .get_queue_url()
-            .queue_name(&config.accounts.queue_name)
-            .send()
-            .await?;
-
-        if let Some(queue_url) = queue_url_output.queue_url() {
-            for failed_account_name in &login_failed_accounts {
-                let account = account_list
-                    .users
-                    .iter()
-                    .find(|a| a.account_name == failed_account_name.clone())
-                    .unwrap()
-                    .clone();
-
-                send_to_queue_by_url(&sqs_client, queue_url, FixAccountMessage { account }).await?;
-            }
-        } else {
-            log::error!("missing queue url for {}", &config.accounts.queue_name);
-        }
     }
 
     if has_error {

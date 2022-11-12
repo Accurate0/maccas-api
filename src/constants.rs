@@ -10,7 +10,6 @@ pub const X_LOG_USER_NAME: &str = "x-log-user-name";
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
 pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
-pub const DEFAULT_TIMEZONE: chrono_tz::Tz = chrono_tz::Australia::Perth;
 pub const JWKS_URL: &str =
     "https://apib2clogin.b2clogin.com/login.anurag.sh/b2c_1_signin/discovery/v2.0/keys";
 
@@ -33,7 +32,6 @@ pub mod mc_donalds {
 
 pub mod api_base {
     pub const PLACES: &str = "https://api.anurag.sh/places/v1";
-    pub const LOG: &str = "https://api.anurag.sh/log/v1";
     pub const THIS: &str = "https://api.anurag.sh/maccas/v1";
 }
 
