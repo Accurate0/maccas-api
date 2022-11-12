@@ -1,4 +1,5 @@
-use crate::types::api::{OfferDatabase, PointsResponse};
+use super::types::OfferDatabase;
+use crate::types::api::PointsResponse;
 use crate::types::config::UserAccount;
 use crate::types::refresh::RefreshOfferCache;
 use crate::types::user::UserOptions;

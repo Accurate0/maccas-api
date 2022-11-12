@@ -7,7 +7,8 @@ use crate::constants::db::{
 };
 use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
-use crate::types::api::{OfferDatabase, PointsResponse};
+use crate::database::types::OfferDatabase;
+use crate::types::api::PointsResponse;
 use crate::types::config::UserAccount;
 use crate::types::refresh::RefreshOfferCache;
 use crate::types::user::UserOptions;
