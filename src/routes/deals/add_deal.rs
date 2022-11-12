@@ -1,9 +1,7 @@
 use crate::constants::mc_donalds;
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::guards::authorization::AuthorizationHeader;
-use crate::guards::correlation_id::CorrelationId;
 use crate::guards::log::LogHeader;
-use crate::logging::log_external;
 use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
@@ -36,7 +34,6 @@ pub async fn add_deal(
     store: i64,
     auth: AuthorizationHeader,
     log: LogHeader,
-    correlation_id: CorrelationId,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let http_client = client::get_http_client();
@@ -191,18 +188,6 @@ pub async fn add_deal(
                         }
                         _ => "Error getting store name".to_string(),
                     };
-
-                    if ctx.config.api.log_external.enabled {
-                        log_external(
-                            &http_client,
-                            &ctx.config,
-                            &user_id,
-                            &user_name,
-                            &offer,
-                            &correlation_id.0,
-                        )
-                        .await;
-                    }
 
                     if ctx.config.api.discord_deal_use.enabled {
                         execute_discord_webhooks(

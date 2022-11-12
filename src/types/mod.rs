@@ -3,7 +3,6 @@ pub mod config;
 pub mod error;
 pub mod images;
 pub mod jwt;
-pub mod log;
 pub mod places;
 pub mod refresh;
 pub mod sqs;

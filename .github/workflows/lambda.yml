@@ -39,7 +39,6 @@ jobs:
           cp ./target/x86_64-unknown-linux-musl/release-strip/api ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/refresh ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/cleanup ./maccas-api
-          cp ./target/x86_64-unknown-linux-musl/release-strip/accounts ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/images ./maccas-api
 
       - name: upload artifact
@@ -56,7 +55,6 @@ jobs:
       matrix:
         task:
           - api
-          - accounts
           - cleanup
           - images
           - refresh
@@ -86,7 +84,6 @@ jobs:
       fail-fast: false
       matrix:
         task:
-          - accounts
           - cleanup
           - images
           - api
