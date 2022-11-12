@@ -24,6 +24,7 @@ use maccas::routes::statistics::get_total_accounts::get_total_accounts;
 use maccas::routes::user::config::get_user_config;
 use maccas::routes::user::config::update_user_config;
 use maccas::types::config::GeneralConfig;
+use rocket::config::Ident;
 use rocket::http::Method;
 use rocket::Config;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
@@ -52,6 +53,7 @@ async fn main() -> Result<(), LambdaError> {
 
     let config = Config {
         cli_colors: !is_aws,
+        ident: Ident::none(),
         ..Default::default()
     };
 
