@@ -5,12 +5,14 @@ use crate::guards::log::LogHeader;
 use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
+use crate::types::images::OfferImageBaseName;
 use crate::types::jwt::JwtClaim;
-use crate::types::sqs::CleanupMessage;
+use crate::types::sqs::{CleanupMessage, ImagesRefreshMessage};
 use crate::webhook::execute::execute_discord_webhooks;
 use crate::{client, routes};
 use anyhow::Context;
 use chrono::Duration;
+use itertools::Itertools;
 use jwt::{Header, Token};
 use rocket::{serde::json::Json, State};
 
@@ -92,6 +94,25 @@ pub async fn add_deal(
                     &ctx.config.mcdonalds.ignored_offer_ids,
                 )
                 .await?;
+
+            // this can uncover new deals, lets fetch the images for these
+            if ctx.config.images.enabled {
+                let image_base_names = new_offers
+                    .iter()
+                    .map(|offer| OfferImageBaseName {
+                        original: offer.original_image_base_name.clone(),
+                        new: offer.image_base_name.clone(),
+                    })
+                    .unique_by(|offer| offer.original.clone())
+                    .collect();
+
+                send_to_queue(
+                    &ctx.sqs_client,
+                    &ctx.config.images.queue_name,
+                    ImagesRefreshMessage { image_base_names },
+                )
+                .await?;
+            }
 
             match new_offers
                 .iter_mut()
