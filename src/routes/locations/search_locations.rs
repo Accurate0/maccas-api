@@ -36,6 +36,8 @@ pub async fn search_locations(
         .json::<PlaceResponse>()
         .await?;
 
+    let account = &ctx.config.mcdonalds.service_account;
+    let account = &account.into();
     let api_client = ctx
         .database
         .get_specific_client(
@@ -43,7 +45,7 @@ pub async fn search_locations(
             &ctx.config.mcdonalds.client_id,
             &ctx.config.mcdonalds.client_secret,
             &ctx.config.mcdonalds.sensor_data,
-            &ctx.config.mcdonalds.service_account,
+            account,
             false,
         )
         .await?;

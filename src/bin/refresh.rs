@@ -5,6 +5,7 @@ use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::{self, mc_donalds};
+use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
 use maccas::queue::send_to_queue;
@@ -60,13 +61,18 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         .await?;
 
     let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
+    let user_list = account_list
+        .users
+        .iter()
+        .map(UserAccountDatabase::from)
+        .collect_vec();
     let (client_map, login_failed_accounts) = database
         .get_client_map(
             &http_client,
             &config.mcdonalds.client_id,
             &config.mcdonalds.client_secret,
             &config.mcdonalds.sensor_data,
-            &account_list.users,
+            &user_list,
             false,
         )
         .await?;

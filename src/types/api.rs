@@ -1,7 +1,7 @@
 use crate::database::types::OfferDatabase;
+use crate::database::types::PointsDatabase;
 use crate::utils::get_short_sha1;
 use itertools::Itertools;
-use libmaccas::types::response::PointInformationResponse;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
@@ -143,8 +143,8 @@ pub struct PointsResponse {
     pub life_time_points: i64,
 }
 
-impl From<PointInformationResponse> for PointsResponse {
-    fn from(res: PointInformationResponse) -> Self {
+impl From<PointsDatabase> for PointsResponse {
+    fn from(res: PointsDatabase) -> Self {
         Self {
             total_points: res.total_points,
             life_time_points: res.life_time_points,
@@ -162,8 +162,8 @@ pub struct AccountPointMap {
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct AccountPointResponse(Vec<AccountPointMap>);
 
-impl From<HashMap<String, PointsResponse>> for AccountPointResponse {
-    fn from(res: HashMap<String, PointsResponse>) -> Self {
+impl From<HashMap<String, PointsDatabase>> for AccountPointResponse {
+    fn from(res: HashMap<String, PointsDatabase>) -> Self {
         Self(
             res.iter()
                 .map(|(key, value)| AccountPointMap {

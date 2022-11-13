@@ -22,6 +22,8 @@ pub async fn get_locations(
     longitude: f64,
 ) -> Result<Json<Vec<RestaurantInformation>>, ApiError> {
     let http_client = client::get_http_client();
+    let account = &ctx.config.mcdonalds.service_account;
+    let account = &account.into();
     let api_client = ctx
         .database
         .get_specific_client(
@@ -29,7 +31,7 @@ pub async fn get_locations(
             &ctx.config.mcdonalds.client_id,
             &ctx.config.mcdonalds.client_secret,
             &ctx.config.mcdonalds.sensor_data,
-            &ctx.config.mcdonalds.service_account,
+            account,
             false,
         )
         .await?;

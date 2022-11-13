@@ -1,8 +1,5 @@
-use super::types::OfferDatabase;
-use crate::types::api::PointsResponse;
-use crate::types::config::UserAccount;
+use super::types::{OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase};
 use crate::types::refresh::RefreshOfferCache;
-use crate::types::user::UserOptions;
 use async_trait::async_trait;
 use chrono::Duration;
 use libmaccas::ApiClient;
@@ -20,27 +17,27 @@ pub trait Database {
     ) -> Result<Option<Vec<OfferDatabase>>, anyhow::Error>;
     async fn set_offers_for(
         &self,
-        account_name: &UserAccount,
+        account_name: &UserAccountDatabase,
         offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
-        client_map: &HashMap<UserAccount, ApiClient<'_>>,
+        client_map: &HashMap<UserAccountDatabase, ApiClient<'_>>,
         ignored_offer_ids: &[i64],
     ) -> Result<RefreshOfferCache, anyhow::Error>;
     async fn refresh_point_cache_for(
         &self,
-        account: &UserAccount,
+        account: &UserAccountDatabase,
         api_client: &ApiClient<'_>,
     ) -> Result<(), anyhow::Error>;
-    async fn get_point_map(&self) -> Result<HashMap<String, PointsResponse>, anyhow::Error>;
+    async fn get_point_map(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error>;
     async fn get_points_by_account_hash(
         &self,
         account_hash: &str,
-    ) -> Result<(UserAccount, PointsResponse), anyhow::Error>;
+    ) -> Result<(UserAccountDatabase, PointsDatabase), anyhow::Error>;
     async fn refresh_offer_cache_for(
         &self,
-        account: &UserAccount,
+        account: &UserAccountDatabase,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error>;
@@ -48,12 +45,15 @@ pub trait Database {
     async fn get_offer_by_id(
         &self,
         offer_id: &str,
-    ) -> Result<(UserAccount, OfferDatabase), anyhow::Error>;
-    async fn get_config_by_user_id(&self, user_id: &str) -> Result<UserOptions, anyhow::Error>;
+    ) -> Result<(UserAccountDatabase, OfferDatabase), anyhow::Error>;
+    async fn get_config_by_user_id(
+        &self,
+        user_id: &str,
+    ) -> Result<UserOptionsDatabase, anyhow::Error>;
     async fn set_config_by_user_id(
         &self,
         user_id: &str,
-        user_config: &UserOptions,
+        user_config: &UserOptionsDatabase,
         user_name: &str,
     ) -> Result<(), anyhow::Error>;
     async fn get_specific_client<'a>(
@@ -62,7 +62,7 @@ pub trait Database {
         client_id: &'a str,
         client_secret: &'a str,
         sensor_data: &'a str,
-        account: &'a UserAccount,
+        account: &'a UserAccountDatabase,
         force_login: bool,
     ) -> Result<ApiClient<'a>, anyhow::Error>;
     async fn get_client_map<'a>(
@@ -71,9 +71,9 @@ pub trait Database {
         client_id: &'a str,
         client_secret: &'a str,
         sensor_data: &'a str,
-        account_list: &'a [UserAccount],
+        account_list: &'a [UserAccountDatabase],
         force_login: bool,
-    ) -> Result<(HashMap<UserAccount, ApiClient<'a>>, Vec<String>), anyhow::Error>;
+    ) -> Result<(HashMap<UserAccountDatabase, ApiClient<'a>>, Vec<String>), anyhow::Error>;
     async fn lock_deal(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error>;
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error>;
     async fn get_all_locked_deals(&self) -> Result<Vec<String>, anyhow::Error>;

@@ -26,7 +26,7 @@ pub async fn get_user_config(
     let user_id = &jwt.claims().oid;
 
     match ctx.database.get_config_by_user_id(user_id).await {
-        Ok(config) => Ok(Json(config)),
+        Ok(config) => Ok(Json(config.into())),
         Err(_) => Err(ApiError::NotFound),
     }
 }
@@ -55,6 +55,8 @@ pub async fn update_user_config(
     let user_name = &jwt.claims().name;
 
     let http_client = client::get_http_client();
+    let account = &ctx.config.mcdonalds.service_account;
+    let account = &account.into();
     let api_client = ctx
         .database
         .get_specific_client(
@@ -62,7 +64,7 @@ pub async fn update_user_config(
             &ctx.config.mcdonalds.client_id,
             &ctx.config.mcdonalds.client_secret,
             &ctx.config.mcdonalds.sensor_data,
-            &ctx.config.mcdonalds.service_account,
+            account,
             false,
         )
         .await?;
@@ -86,7 +88,7 @@ pub async fn update_user_config(
         };
 
         ctx.database
-            .set_config_by_user_id(user_id, &config, user_name)
+            .set_config_by_user_id(user_id, &config.into(), user_name)
             .await?;
         Ok(Status::NoContent)
     } else {
