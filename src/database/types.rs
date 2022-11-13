@@ -1,4 +1,10 @@
-use crate::utils;
+use std::fmt::Display;
+
+use crate::{
+    types::{config::UserAccount, user::UserOptions},
+    utils,
+};
+use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -71,5 +77,69 @@ impl PartialEq for OfferDatabase {
             && self.short_name == other.short_name
             && self.description == other.description
             && self.image_base_name == other.image_base_name
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct PointsDatabase {
+    pub total_points: i64,
+    pub life_time_points: i64,
+}
+
+impl From<PointInformationResponse> for PointsDatabase {
+    fn from(res: PointInformationResponse) -> Self {
+        Self {
+            total_points: res.total_points,
+            life_time_points: res.life_time_points,
+        }
+    }
+}
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct UserAccountDatabase {
+    pub account_name: String,
+    pub login_username: String,
+    pub login_password: String,
+}
+
+impl Display for UserAccountDatabase {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}", self.login_username))
+    }
+}
+
+impl From<&UserAccount> for UserAccountDatabase {
+    fn from(res: &UserAccount) -> Self {
+        Self {
+            account_name: res.account_name.clone(),
+            login_username: res.login_username.clone(),
+            login_password: res.login_password.clone(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UserOptionsDatabase {
+    pub store_id: String,
+    pub store_name: Option<String>,
+}
+
+impl From<UserOptions> for UserOptionsDatabase {
+    fn from(u: UserOptions) -> Self {
+        Self {
+            store_id: u.store_id,
+            store_name: u.store_name,
+        }
+    }
+}
+
+impl From<UserOptionsDatabase> for UserOptions {
+    fn from(val: UserOptionsDatabase) -> Self {
+        UserOptions {
+            store_id: val.store_id,
+            store_name: val.store_name,
+        }
     }
 }

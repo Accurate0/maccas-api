@@ -7,11 +7,10 @@ use crate::constants::db::{
 };
 use crate::constants::mc_donalds::{self};
 use crate::database::r#trait::Database;
-use crate::database::types::OfferDatabase;
-use crate::types::api::PointsResponse;
-use crate::types::config::UserAccount;
+use crate::database::types::{
+    OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
+};
 use crate::types::refresh::RefreshOfferCache;
-use crate::types::user::UserOptions;
 use crate::utils::get_short_sha1;
 use anyhow::{bail, Context};
 use async_trait::async_trait;
@@ -157,7 +156,7 @@ impl Database for DynamoDatabase {
 
     async fn set_offers_for(
         &self,
-        account: &UserAccount,
+        account: &UserAccountDatabase,
         offer_list: &[OfferDatabase],
     ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
@@ -205,7 +204,7 @@ impl Database for DynamoDatabase {
 
     async fn refresh_offer_cache(
         &self,
-        client_map: &HashMap<UserAccount, ApiClient<'_>>,
+        client_map: &HashMap<UserAccountDatabase, ApiClient<'_>>,
         ignored_offer_ids: &[i64],
     ) -> Result<RefreshOfferCache, anyhow::Error> {
         let mut failed_accounts = Vec::new();
@@ -240,7 +239,7 @@ impl Database for DynamoDatabase {
 
     async fn refresh_point_cache_for(
         &self,
-        account: &UserAccount,
+        account: &UserAccountDatabase,
         api_client: &ApiClient<'_>,
     ) -> Result<(), anyhow::Error> {
         match api_client.get_customer_points().await {
@@ -268,7 +267,7 @@ impl Database for DynamoDatabase {
                     .item(LAST_REFRESH, AttributeValue::S(now.clone()))
                     .item(
                         POINT_INFO,
-                        AttributeValue::M(serde_dynamo::to_item(PointsResponse::from(points))?),
+                        AttributeValue::M(serde_dynamo::to_item(PointsDatabase::from(points))?),
                     )
                     .send()
                     .await?;
@@ -278,8 +277,8 @@ impl Database for DynamoDatabase {
         }
     }
 
-    async fn get_point_map(&self) -> Result<HashMap<String, PointsResponse>, anyhow::Error> {
-        let mut point_map = HashMap::<String, PointsResponse>::new();
+    async fn get_point_map(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error> {
+        let mut point_map = HashMap::<String, PointsDatabase>::new();
 
         let table_resp: Result<Vec<_>, _> = self
             .client
@@ -307,7 +306,7 @@ impl Database for DynamoDatabase {
     async fn get_points_by_account_hash(
         &self,
         account_hash: &str,
-    ) -> Result<(UserAccount, PointsResponse), anyhow::Error> {
+    ) -> Result<(UserAccountDatabase, PointsDatabase), anyhow::Error> {
         let resp = self
             .client
             .query()
@@ -323,14 +322,14 @@ impl Database for DynamoDatabase {
 
         if resp.items().context("no account found")?.len() == 1 {
             let item = resp.items().unwrap().first().unwrap();
-            let account: UserAccount = serde_dynamo::from_item(
+            let account: UserAccountDatabase = serde_dynamo::from_item(
                 item[ACCOUNT_INFO]
                     .as_m()
                     .ok()
                     .context("no account")?
                     .clone(),
             )?;
-            let points: PointsResponse = serde_dynamo::from_item(
+            let points: PointsDatabase = serde_dynamo::from_item(
                 item[POINT_INFO].as_m().ok().context("no points")?.clone(),
             )?;
 
@@ -383,7 +382,7 @@ impl Database for DynamoDatabase {
 
     async fn refresh_offer_cache_for(
         &self,
-        account: &UserAccount,
+        account: &UserAccountDatabase,
         api_client: &ApiClient<'_>,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error> {
@@ -511,7 +510,7 @@ impl Database for DynamoDatabase {
     async fn get_offer_by_id(
         &self,
         offer_id: &str,
-    ) -> Result<(UserAccount, OfferDatabase), anyhow::Error> {
+    ) -> Result<(UserAccountDatabase, OfferDatabase), anyhow::Error> {
         let resp = self
             .client
             .query()
@@ -537,7 +536,10 @@ impl Database for DynamoDatabase {
         Ok((account, offer))
     }
 
-    async fn get_config_by_user_id(&self, user_id: &str) -> Result<UserOptions, anyhow::Error> {
+    async fn get_config_by_user_id(
+        &self,
+        user_id: &str,
+    ) -> Result<UserOptionsDatabase, anyhow::Error> {
         let resp = self
             .client
             .query()
@@ -550,7 +552,7 @@ impl Database for DynamoDatabase {
 
         if resp.items().context("no user config found")?.len() == 1 {
             let item = resp.items().unwrap().first().unwrap();
-            let config: UserOptions = serde_dynamo::from_item(
+            let config: UserOptionsDatabase = serde_dynamo::from_item(
                 item[USER_CONFIG].as_m().ok().context("no config")?.clone(),
             )?;
 
@@ -563,7 +565,7 @@ impl Database for DynamoDatabase {
     async fn set_config_by_user_id(
         &self,
         user_id: &str,
-        user_config: &UserOptions,
+        user_config: &UserOptionsDatabase,
         user_name: &str,
     ) -> Result<(), anyhow::Error> {
         self.client
@@ -587,7 +589,7 @@ impl Database for DynamoDatabase {
         client_id: &'b str,
         client_secret: &'b str,
         sensor_data: &'b str,
-        account: &'b UserAccount,
+        account: &'b UserAccountDatabase,
         force_login: bool,
     ) -> Result<ApiClient<'b>, anyhow::Error> {
         let mut api_client = ApiClient::new(
@@ -826,11 +828,11 @@ impl Database for DynamoDatabase {
         client_id: &'b str,
         client_secret: &'b str,
         sensor_data: &'b str,
-        account_list: &'b [UserAccount],
+        account_list: &'b [UserAccountDatabase],
         force_login: bool,
-    ) -> Result<(HashMap<UserAccount, ApiClient<'b>>, Vec<String>), anyhow::Error> {
+    ) -> Result<(HashMap<UserAccountDatabase, ApiClient<'b>>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
-        let mut client_map = HashMap::<UserAccount, ApiClient<'_>>::new();
+        let mut client_map = HashMap::<UserAccountDatabase, ApiClient<'_>>::new();
         for user in account_list {
             match self
                 .get_specific_client(

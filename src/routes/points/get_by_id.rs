@@ -3,10 +3,7 @@ use crate::{
     constants::mc_donalds,
     guards::protected::ProtectedRoute,
     routes,
-    types::{
-        api::{OfferPointsResponse, OfferResponse},
-        error::ApiError,
-    },
+    types::{api::OfferPointsResponse, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
 
@@ -47,8 +44,8 @@ pub async fn get_points_by_id(
             .await?;
 
         Ok(Json(OfferPointsResponse {
-            offer_response: OfferResponse::from(response.body),
-            points_response: points,
+            offer_response: response.body.into(),
+            points_response: points.into(),
         }))
     } else {
         Err(ApiError::NotFound)

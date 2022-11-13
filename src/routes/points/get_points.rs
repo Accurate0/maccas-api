@@ -21,5 +21,5 @@ pub async fn get_points(
     _protected: ProtectedRoute,
 ) -> Result<Json<AccountPointResponse>, ApiError> {
     let point_map = ctx.database.get_point_map().await?;
-    Ok(Json(AccountPointResponse::from(point_map)))
+    Ok(Json(point_map.into()))
 }
