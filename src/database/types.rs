@@ -1,11 +1,10 @@
-use std::fmt::Display;
-
 use crate::{
     types::{config::UserAccount, user::UserOptions},
     utils,
 };
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
