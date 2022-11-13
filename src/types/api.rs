@@ -1,3 +1,4 @@
+use crate::constants::mc_donalds::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
 use crate::utils::get_short_sha1;
@@ -13,33 +14,31 @@ use utoipa::ToSchema;
 pub struct GetDealsOffer {
     pub deal_uuid: String,
     pub count: u32,
-    pub valid_from_local: String,
-    pub valid_to_local: String,
     pub valid_from_utc: String,
     pub valid_to_utc: String,
     pub name: String,
     pub short_name: String,
     pub description: String,
     pub creation_date_utc: String,
-    pub image_base_name: String,
     pub price: Option<f64>,
+    pub image_url: String,
 }
 
 impl From<OfferDatabase> for GetDealsOffer {
     fn from(offer: OfferDatabase) -> Self {
+        let image_url = format!("{}/{}", IMAGE_CDN, offer.image_base_name);
+
         Self {
             deal_uuid: offer.deal_uuid,
             count: 1,
-            valid_from_local: offer.local_valid_from,
-            valid_to_local: offer.local_valid_to,
             valid_from_utc: offer.valid_from_utc,
             valid_to_utc: offer.valid_to_utc,
             name: offer.name,
             short_name: offer.short_name,
             description: offer.description,
             creation_date_utc: offer.creation_date_utc,
-            image_base_name: offer.image_base_name,
             price: offer.price,
+            image_url,
         }
     }
 }
