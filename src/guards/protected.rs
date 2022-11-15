@@ -28,11 +28,10 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         let ctx = ctx.unwrap();
 
         let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
-        if jwt_bypass_key.is_some()
-            && !jwt_bypass_key.unwrap().is_empty()
-            && jwt_bypass_key.unwrap() == ctx.config.api.jwt.bypass_key
-        {
-            return Outcome::Success(ProtectedRoute);
+        if let Some(jwt_bypass_key) = jwt_bypass_key {
+            if !jwt_bypass_key.is_empty() && jwt_bypass_key == ctx.config.api.jwt.bypass_key {
+                return Outcome::Success(ProtectedRoute);
+            }
         }
 
         let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
