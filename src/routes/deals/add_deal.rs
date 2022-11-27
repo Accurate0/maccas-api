@@ -1,7 +1,7 @@
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
+use crate::extensions::BoolExtensions;
 use crate::guards::authorization::AuthorizationHeader;
-use crate::guards::log::LogHeader;
 use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
@@ -23,10 +23,6 @@ use rocket::{serde::json::Json, State};
         (status = 404, description = "Deal not found"),
         (status = 500, description = "Internal Server Error"),
     ),
-    params(
-        ("x-log-user-id" = Option<String>, Header, description = "The user id to log for"),
-        ("x-log-user-name" = Option<String>, Header, description = "The user name to log for"),
-    ),
     tag = "deals",
 )]
 #[post("/deals/<deal_id>?<store>")]
@@ -35,7 +31,6 @@ pub async fn add_deal(
     deal_id: &str,
     store: i64,
     auth: AuthorizationHeader,
-    log: LogHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let http_client = client::get_http_client();
@@ -175,27 +170,14 @@ pub async fn add_deal(
             }
 
             // jwt has priority as it's more reliable
-            let (user_id, user_name) = if let Some(auth_header) = auth.0 {
+            if let Some(auth_header) = auth.0 {
                 let auth_header = auth_header.replace("Bearer ", "");
                 let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
                 let claims = jwt.claims();
+                let user_name = &jwt.claims().name;
 
-                (Some(claims.oid.clone()), Some(claims.name.clone()))
-            } else if log.is_available {
-                (Some(log.user_id.unwrap()), Some(log.user_name.unwrap()))
-            } else {
-                (None, None)
-            };
-
-            if let (Some(user_id), Some(user_name)) = (user_id, user_name) {
-                // ignore don't log admin user ids at all
-                if !ctx
-                    .config
-                    .api
-                    .jwt
-                    .admin_user_ids
-                    .iter()
-                    .any(|ignored| *ignored == user_id)
+                if !claims.extension_admin_user.unwrap_or_false()
+                    && ctx.config.api.discord_deal_use.enabled
                 {
                     let restaurant_info = api_client
                         .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
@@ -212,18 +194,17 @@ pub async fn add_deal(
                         _ => "Error getting store name".to_string(),
                     };
 
-                    if ctx.config.api.discord_deal_use.enabled {
-                        execute_discord_webhooks(
-                            &http_client,
-                            &ctx.config,
-                            &user_name,
-                            &offer,
-                            &store_name,
-                        )
-                        .await;
-                    }
+                    execute_discord_webhooks(
+                        &http_client,
+                        &ctx.config,
+                        user_name,
+                        &offer,
+                        &store_name,
+                    )
+                    .await;
                 }
-            }
+            };
+
             resp
         };
 

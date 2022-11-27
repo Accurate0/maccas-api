@@ -1,5 +1,6 @@
 use crate::{
     constants::X_JWT_BYPASS_HEADER,
+    extensions::BoolExtensions,
     routes,
     types::{error::ApiError, jwt::JwtClaim},
 };
@@ -45,8 +46,11 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         let value = auth_header.0.as_str().replace("Bearer ", "");
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
         let user_id = &jwt.claims().oid;
+        let is_admin = jwt.claims().extension_admin_user.unwrap_or_false();
 
-        if allowed_user_ids.iter().any(|id| id == user_id) {
+        // allow admin access to protected routes
+        if is_admin || allowed_user_ids.iter().any(|id| id == user_id) {
+            log::info!("allowing protected access to {user_id}, is_admin = {is_admin}");
             Outcome::Success(ProtectedRoute)
         } else {
             Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized))
