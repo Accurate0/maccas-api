@@ -1,4 +1,4 @@
-use crate::constants::mc_donalds::IMAGE_CDN;
+use crate::constants::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
 use crate::utils::get_short_sha1;

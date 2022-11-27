@@ -14,6 +14,7 @@ pub const JWKS_URL: &str =
     "https://apib2clogin.b2clogin.com/login.anurag.sh/b2c_1_signin/discovery/v2.0/keys";
 pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
 pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
+pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
 
 pub mod mc_donalds {
     pub mod default {
@@ -27,9 +28,8 @@ pub mod mc_donalds {
         pub const STORE_UNIQUE_ID_TYPE: &str = "NSN";
     }
     pub const RED: u32 = 0xDA291C;
-    pub const MCDONALDS_IMAGE_CDN: &str =
+    pub const IMAGE_CDN: &str =
         "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
-    pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
 }
 
 pub mod api_base {
