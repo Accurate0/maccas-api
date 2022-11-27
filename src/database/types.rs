@@ -4,7 +4,7 @@ use crate::{
 };
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -140,5 +140,17 @@ impl From<UserOptionsDatabase> for UserOptions {
             store_id: val.store_id,
             store_name: val.store_name,
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum AuditActionType {
+    Add,
+    Remove,
+}
+
+impl Display for AuditActionType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

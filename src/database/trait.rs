@@ -1,4 +1,6 @@
-use super::types::{OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase};
+use super::types::{
+    AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
+};
 use crate::types::refresh::RefreshOfferCache;
 use async_trait::async_trait;
 use chrono::Duration;
@@ -91,6 +93,7 @@ pub trait Database {
     ) -> Result<i8, anyhow::Error>;
     async fn add_to_audit(
         &self,
+        action: AuditActionType,
         user_id: Option<&str>,
         user_name: Option<&str>,
         offer_id: &OfferDatabase,

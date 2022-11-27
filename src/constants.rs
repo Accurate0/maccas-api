@@ -67,4 +67,6 @@ pub mod db {
     pub const CURRENT_LIST: &str = "current_list";
     pub const TIMESTAMP: &str = "timestamp";
     pub const OFFER_NAME: &str = "offer_name";
+    pub const ACTION: &str = "action";
+    pub const OPERATION_ID: &str = "operation_id";
 }

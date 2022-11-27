@@ -1,4 +1,6 @@
-use crate::{client, constants::mc_donalds, routes, types::error::ApiError};
+use crate::{
+    client, constants::mc_donalds, database::types::AuditActionType, routes, types::error::ApiError,
+};
 use rocket::{http::Status, State};
 
 #[utoipa::path(
@@ -42,6 +44,9 @@ pub async fn remove_deal(
             .await?;
 
         if resp.status.is_success() {
+            ctx.database
+                .add_to_audit(AuditActionType::Remove, None, None, &offer)
+                .await;
             ctx.database.unlock_deal(deal_id).await?;
             Ok(Status::NoContent)
         } else {
