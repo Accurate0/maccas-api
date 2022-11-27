@@ -38,12 +38,6 @@ pub struct DiscordConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ProtectedRouteConfig {
-    pub allowed_user_ids: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct JwtConfig {
     pub validate: bool,
     pub bypass_key: String,
@@ -96,7 +90,6 @@ pub struct CleanupConfig {
 pub struct ApiConfig {
     pub api_key: String,
     pub discord_deal_use: DiscordConfig,
-    pub protected_routes: ProtectedRouteConfig,
     pub jwt: JwtConfig,
 }
 
