@@ -1,5 +1,6 @@
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
+use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
 use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
@@ -202,10 +203,12 @@ pub async fn add_deal(
                 }
 
                 ctx.database
-                    .add_to_audit(Some(user_id), Some(user_name), &offer)
+                    .add_to_audit(AuditActionType::Add, Some(user_id), Some(user_name), &offer)
                     .await;
             } else {
-                ctx.database.add_to_audit(None, None, &offer).await;
+                ctx.database
+                    .add_to_audit(AuditActionType::Add, None, None, &offer)
+                    .await;
             };
 
             resp

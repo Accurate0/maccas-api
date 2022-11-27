@@ -1,18 +1,18 @@
 use super::DynamoDatabase;
 use crate::cache;
 use crate::constants::db::{
-    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
-    LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, POINT_INFO, REFRESH_TOKEN, REGION,
-    TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME,
+    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
+    DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO,
+    REFRESH_TOKEN, REGION, TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds::{self};
 use crate::constants::DEFAULT_REFRESH_TTL_HOURS;
 use crate::database::r#trait::Database;
 use crate::database::types::{
-    OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
+    AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::types::refresh::RefreshOfferCache;
-use crate::utils::get_short_sha1;
+use crate::utils::{calculate_hash, get_short_sha1};
 use anyhow::{bail, Context};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
@@ -32,6 +32,7 @@ use tokio_stream::StreamExt;
 impl Database for DynamoDatabase {
     async fn add_to_audit(
         &self,
+        action: AuditActionType,
         user_id: std::option::Option<&str>,
         user_name: Option<&str>,
         offer: &OfferDatabase,
@@ -55,6 +56,14 @@ impl Database for DynamoDatabase {
             .client
             .put_item()
             .table_name(&self.audit)
+            .item(
+                OPERATION_ID,
+                AttributeValue::S(
+                    calculate_hash(&format!("{}-{}-{}", action, offer.deal_uuid, now).to_string())
+                        .to_string(),
+                ),
+            )
+            .item(ACTION, AttributeValue::S(action.to_string()))
             .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.to_string()))
             .item(USER_ID, AttributeValue::S(user_id))
             .item(USER_NAME, AttributeValue::S(user_name))
