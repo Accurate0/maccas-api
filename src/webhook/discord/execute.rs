@@ -1,5 +1,5 @@
 use crate::{
-    constants::mc_donalds::{self, IMAGE_CDN},
+    constants::{mc_donalds, IMAGE_CDN},
     database::types::OfferDatabase,
     types::{config::GeneralConfig, webhook::DiscordWebhookMessage},
 };

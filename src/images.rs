@@ -1,6 +1,6 @@
 use crate::{
     client,
-    constants::mc_donalds::MCDONALDS_IMAGE_CDN,
+    constants::mc_donalds::IMAGE_CDN,
     types::{config::GeneralConfig, images::OfferImageBaseName},
 };
 use aws_sdk_s3::types::ByteStream;
@@ -28,7 +28,7 @@ pub async fn refresh_images(
         if config.images.force_refresh || existing.is_err() {
             // need the original base name to lookup against mcdonald's
             // can't just set to png, format can be jpeg
-            let image_url = format!("{}/{}", MCDONALDS_IMAGE_CDN, offer.original);
+            let image_url = format!("{}/{}", IMAGE_CDN, offer.original);
             let image_response = http_client.get(image_url).send().await;
             match image_response {
                 Ok(image_response) => {
