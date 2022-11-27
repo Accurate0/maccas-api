@@ -1,4 +1,7 @@
-use crate::{guards::admin::AdminOnlyRoute, routes, types::error::ApiError};
+use crate::{
+    constants::DEFAULT_LOCK_TTL_HOURS, guards::admin::AdminOnlyRoute, routes,
+    types::error::ApiError,
+};
 use chrono::Duration;
 use rocket::{http::Status, State};
 
@@ -20,7 +23,12 @@ pub async fn lock_deal(
     duration: Option<i64>,
 ) -> Result<Status, ApiError> {
     ctx.database
-        .lock_deal(deal_id, Duration::seconds(duration.unwrap_or(43200)))
+        .lock_deal(
+            deal_id,
+            duration.map_or(Duration::hours(DEFAULT_LOCK_TTL_HOURS), |s| {
+                Duration::seconds(s)
+            }),
+        )
         .await?;
 
     Ok(Status::NoContent)
