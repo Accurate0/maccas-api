@@ -1,6 +1,5 @@
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
-use crate::extensions::BoolExtensions;
 use crate::guards::authorization::AuthorizationHeader;
 use crate::queue::send_to_queue;
 use crate::types::api::OfferResponse;
@@ -176,9 +175,7 @@ pub async fn add_deal(
                 let claims = jwt.claims();
                 let user_name = &jwt.claims().name;
 
-                if !claims.extension_admin_user.unwrap_or_false()
-                    && ctx.config.api.discord_deal_use.enabled
-                {
+                if !claims.extension_role.is_admin() && ctx.config.api.discord_deal_use.enabled {
                     let restaurant_info = api_client
                         .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
                         .await;
