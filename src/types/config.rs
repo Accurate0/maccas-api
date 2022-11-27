@@ -25,6 +25,7 @@ pub struct Tables {
     pub offer_id: String,
     pub points: String,
     pub refresh_tracking: String,
+    pub audit: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

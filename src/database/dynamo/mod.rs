@@ -9,6 +9,7 @@ pub struct DynamoDatabase {
     offer_id_table_name: String,
     point_table_name: String,
     refresh_tracking: String,
+    audit: String,
 }
 
 impl DynamoDatabase {
@@ -22,6 +23,7 @@ impl DynamoDatabase {
             offer_id_table_name: tables.offer_id.to_owned(),
             point_table_name: tables.points.to_owned(),
             refresh_tracking: tables.refresh_tracking.to_owned(),
+            audit: tables.audit.to_owned(),
         }
     }
 }
