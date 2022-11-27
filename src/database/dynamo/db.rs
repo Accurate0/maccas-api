@@ -6,6 +6,7 @@ use crate::constants::db::{
     USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds::{self};
+use crate::constants::DEFAULT_REFRESH_TTL_HOURS;
 use crate::database::r#trait::Database;
 use crate::database::types::{
     OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
@@ -182,7 +183,9 @@ impl Database for DynamoDatabase {
         let now: DateTime<Utc> = now.into();
         let now = now.to_rfc3339();
         // update the lookup structure too
-        let ttl: DateTime<Utc> = Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
+        let ttl: DateTime<Utc> = Utc::now()
+            .checked_add_signed(Duration::hours(DEFAULT_REFRESH_TTL_HOURS))
+            .unwrap();
         for offer in offer_list {
             self.client
                 .put_item()
@@ -408,8 +411,9 @@ impl Database for DynamoDatabase {
 
                 // keep older deals around for 12hrs
                 // hotlinking etc
-                let ttl: DateTime<Utc> =
-                    Utc::now().checked_add_signed(Duration::hours(12)).unwrap();
+                let ttl: DateTime<Utc> = Utc::now()
+                    .checked_add_signed(Duration::hours(DEFAULT_REFRESH_TTL_HOURS))
+                    .unwrap();
 
                 let mut price_map = HashMap::new();
                 for offer_proposition_id in resp

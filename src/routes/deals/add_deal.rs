@@ -1,5 +1,5 @@
-use crate::constants::mc_donalds;
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
+use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::guards::authorization::AuthorizationHeader;
 use crate::guards::log::LogHeader;
 use crate::queue::send_to_queue;
@@ -71,7 +71,9 @@ pub async fn add_deal(
         }
 
         // lock the deal from appearing in GET /deals
-        ctx.database.lock_deal(deal_id, Duration::hours(12)).await?;
+        ctx.database
+            .lock_deal(deal_id, Duration::hours(DEFAULT_LOCK_TTL_HOURS))
+            .await?;
 
         let resp = api_client
             .add_to_offers_dealstack(&offer_proposition_id, mc_donalds::default::OFFSET, &store)
