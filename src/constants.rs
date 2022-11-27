@@ -65,4 +65,6 @@ pub mod db {
     pub const DEVICE_ID: &str = "device_id";
     pub const REGION: &str = "region";
     pub const CURRENT_LIST: &str = "current_list";
+    pub const TIMESTAMP: &str = "timestamp";
+    pub const OFFER_NAME: &str = "offer_name";
 }

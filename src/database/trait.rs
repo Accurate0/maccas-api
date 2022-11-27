@@ -89,4 +89,10 @@ pub trait Database {
         region: &str,
         max_count: i8,
     ) -> Result<i8, anyhow::Error>;
+    async fn add_to_audit(
+        &self,
+        user_id: Option<&str>,
+        user_name: Option<&str>,
+        offer_id: &OfferDatabase,
+    );
 }

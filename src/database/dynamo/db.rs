@@ -2,8 +2,8 @@ use super::DynamoDatabase;
 use crate::cache;
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, CURRENT_LIST, DEAL_UUID, DEVICE_ID,
-    LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, POINT_INFO, REFRESH_TOKEN, REGION, TTL, USER_CONFIG,
-    USER_ID, USER_NAME,
+    LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, POINT_INFO, REFRESH_TOKEN, REGION,
+    TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME,
 };
 use crate::constants::mc_donalds::{self};
 use crate::constants::DEFAULT_REFRESH_TTL_HOURS;
@@ -30,6 +30,44 @@ use tokio_stream::StreamExt;
 
 #[async_trait]
 impl Database for DynamoDatabase {
+    async fn add_to_audit(
+        &self,
+        user_id: std::option::Option<&str>,
+        user_name: Option<&str>,
+        offer: &OfferDatabase,
+    ) {
+        let user_name = user_name.map_or("unknown".to_owned(), |u| u.to_string());
+        let user_id = user_id.map_or("unknown".to_owned(), |u| u.to_string());
+
+        log::info!("adding to audit table: {user_id}/{user_name} {:?}", offer);
+
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+        let offer_attribute = serde_dynamo::to_item(offer);
+
+        if let Err(e) = offer_attribute {
+            log::error!("error adding to audit table: {e}");
+            return;
+        }
+
+        if let Err(e) = self
+            .client
+            .put_item()
+            .table_name(&self.audit)
+            .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.to_string()))
+            .item(USER_ID, AttributeValue::S(user_id))
+            .item(USER_NAME, AttributeValue::S(user_name))
+            .item(OFFER_NAME, AttributeValue::S(offer.short_name.to_string()))
+            .item(TIMESTAMP, AttributeValue::S(now))
+            .item(OFFER, AttributeValue::M(offer_attribute.unwrap()))
+            .send()
+            .await
+        {
+            log::error!("error adding to audit table: {e}")
+        };
+    }
+
     async fn increment_refresh_tracking(
         &self,
         region: &str,

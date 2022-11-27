@@ -168,12 +168,12 @@ pub async fn add_deal(
                 .await?;
             }
 
-            // jwt has priority as it's more reliable
             if let Some(auth_header) = auth.0 {
                 let auth_header = auth_header.replace("Bearer ", "");
                 let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
                 let claims = jwt.claims();
                 let user_name = &jwt.claims().name;
+                let user_id = &jwt.claims().oid;
 
                 if !claims.extension_role.is_admin() && ctx.config.api.discord_deal_use.enabled {
                     let restaurant_info = api_client
@@ -200,6 +200,12 @@ pub async fn add_deal(
                     )
                     .await;
                 }
+
+                ctx.database
+                    .add_to_audit(Some(user_id), Some(user_name), &offer)
+                    .await;
+            } else {
+                ctx.database.add_to_audit(None, None, &offer).await;
             };
 
             resp

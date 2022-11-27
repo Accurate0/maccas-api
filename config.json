@@ -24,7 +24,8 @@
             "offerCacheV2": "MaccasApiCache-v2",
             "offerId": "MaccasApiOfferId",
             "points": "MaccasApiPointDb",
-            "refreshTracking": "MaccasRefreshTrackingDb"
+            "refreshTracking": "MaccasRefreshTrackingDb",
+            "audit": "MaccasAudit"
         }
     },
     "cleanup": {
