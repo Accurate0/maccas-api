@@ -15,4 +15,6 @@ pub struct JwtClaim {
     pub oid: String,
     pub name: String,
     pub tfp: String,
+    #[serde(rename = "extension_AdminUser")]
+    pub extension_admin_user: Option<bool>,
 }

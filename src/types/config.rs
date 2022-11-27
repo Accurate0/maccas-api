@@ -47,7 +47,6 @@ pub struct ProtectedRouteConfig {
 pub struct JwtConfig {
     pub validate: bool,
     pub bypass_key: String,
-    pub admin_user_ids: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

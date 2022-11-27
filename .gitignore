@@ -1,5 +1,5 @@
 **/target
-base-config.json
+base-config*.json
 accounts-*.json
 accounts.json
 sensor-data.json

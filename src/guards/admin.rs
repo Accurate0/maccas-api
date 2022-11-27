@@ -1,5 +1,6 @@
 use crate::{
     constants::X_JWT_BYPASS_HEADER,
+    extensions::BoolExtensions,
     routes,
     types::{error::ApiError, jwt::JwtClaim},
 };
@@ -41,12 +42,15 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
         let auth_header = auth_header.unwrap();
 
-        let allowed_user_ids = &ctx.config.api.jwt.admin_user_ids;
         let value = auth_header.0.as_str().replace("Bearer ", "");
         let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
+
+        // if the admin extension is set and true, we allow
+        let is_admin = jwt.claims().extension_admin_user.unwrap_or_false();
         let user_id = &jwt.claims().oid;
 
-        if allowed_user_ids.iter().any(|id| id == user_id) {
+        if is_admin {
+            log::info!("allowing admin access to {user_id}");
             Outcome::Success(AdminOnlyRoute)
         } else {
             Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized))
