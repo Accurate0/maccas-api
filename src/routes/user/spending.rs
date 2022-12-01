@@ -32,7 +32,7 @@ pub async fn get_user_spending(
         .unwrap_or_default()
         .iter()
         .map(|entry| {
-            let price = entry.offer.price.unwrap_or(0.0);
+            let price = entry.offer.price.unwrap_or_default();
             match entry.action {
                 AuditActionType::Add => price,
                 AuditActionType::Remove => -price,
