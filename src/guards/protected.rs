@@ -1,3 +1,4 @@
+use super::authorization::RequiredAuthorizationHeader;
 use crate::types::jwt::JwtClaim;
 use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
 use jwt::{Header, Token};
@@ -7,8 +8,6 @@ use rocket::{
     request::{self, FromRequest},
     Request, State,
 };
-
-use super::authorization::RequiredAuthorizationHeader;
 
 pub struct ProtectedRoute;
 

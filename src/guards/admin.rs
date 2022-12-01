@@ -1,3 +1,4 @@
+use super::authorization::RequiredAuthorizationHeader;
 use crate::{
     constants::X_JWT_BYPASS_HEADER,
     routes,
@@ -10,8 +11,6 @@ use rocket::{
     request::{self, FromRequest},
     Request, State,
 };
-
-use super::authorization::RequiredAuthorizationHeader;
 
 pub struct AdminOnlyRoute;
 

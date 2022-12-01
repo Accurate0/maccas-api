@@ -10,7 +10,7 @@ use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "Total spent for this user", body = UserSpending),
+        (status = 200, description = "Spending information for this user", body = UserSpending),
         (status = 404, description = "No config for this user"),
         (status = 500, description = "Internal Server Error"),
     ),
