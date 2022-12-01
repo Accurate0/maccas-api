@@ -177,3 +177,8 @@ impl From<HashMap<String, PointsDatabase>> for AccountPointResponse {
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct AdminLockedDealsResponse(pub Vec<String>);
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct UserSpending {
+    pub total: f64,
+}

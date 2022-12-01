@@ -5,6 +5,7 @@ use crate::{
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display};
+use strum_macros::EnumString;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -143,7 +144,7 @@ impl From<UserOptionsDatabase> for UserOptions {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, EnumString)]
 pub enum AuditActionType {
     Add,
     Remove,

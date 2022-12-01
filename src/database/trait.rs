@@ -1,7 +1,7 @@
 use super::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
-use crate::types::refresh::RefreshOfferCache;
+use crate::types::{audit::AuditEntry, refresh::RefreshOfferCache};
 use async_trait::async_trait;
 use chrono::Duration;
 use libmaccas::ApiClient;
@@ -94,8 +94,9 @@ pub trait Database {
     async fn add_to_audit(
         &self,
         action: AuditActionType,
-        user_id: Option<&str>,
-        user_name: Option<&str>,
+        user_id: Option<String>,
+        user_name: Option<String>,
         offer_id: &OfferDatabase,
     );
+    async fn get_audit_entries_for(&self, user_id: &str) -> Result<Vec<AuditEntry>, anyhow::Error>;
 }

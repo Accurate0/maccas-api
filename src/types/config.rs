@@ -30,6 +30,12 @@ pub struct Tables {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct Indexes {
+    pub audit_user_id_index: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct DiscordConfig {
     pub enabled: bool,
     pub webhooks: Vec<String>,
@@ -69,6 +75,7 @@ pub struct McDonaldsConfig {
 #[serde(rename_all = "camelCase")]
 pub struct DatabaseConfig {
     pub tables: Tables,
+    pub indexes: Indexes,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

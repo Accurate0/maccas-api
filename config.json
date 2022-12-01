@@ -26,6 +26,9 @@
             "points": "MaccasApiPointDb",
             "refreshTracking": "MaccasRefreshTrackingDb",
             "audit": "MaccasAudit"
+        },
+        "indexes": {
+            "auditUserIdIndex": "UserIdIndex"
         }
     },
     "cleanup": {
