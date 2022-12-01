@@ -41,7 +41,7 @@ pub async fn get_user_config(
         (status = 400, description = "Invalid configuration format"),
         (status = 500, description = "Internal Server Error"),
     ),
-    tag = "config",
+    tag = "user",
 )]
 #[post("/user/config", data = "<config>")]
 pub async fn update_user_config(
