@@ -23,6 +23,7 @@ use maccas::routes::statistics::get_account::get_accounts;
 use maccas::routes::statistics::get_total_accounts::get_total_accounts;
 use maccas::routes::user::config::get_user_config;
 use maccas::routes::user::config::update_user_config;
+use maccas::routes::user::spending::get_user_spending;
 use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
 use rocket::http::Method;
@@ -43,7 +44,11 @@ async fn main() -> Result<(), LambdaError> {
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let database = DynamoDatabase::new(dynamodb_client, &config.database.tables);
+    let database = DynamoDatabase::new(
+        dynamodb_client,
+        &config.database.tables,
+        &config.database.indexes,
+    );
 
     let context = routes::Context {
         sqs_client,
@@ -84,6 +89,7 @@ async fn main() -> Result<(), LambdaError> {
                 get_locked_deals,
                 lock_deal,
                 unlock_deal,
+                get_user_spending,
             ],
         )
         .configure(config);

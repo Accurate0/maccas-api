@@ -203,7 +203,12 @@ pub async fn add_deal(
                 }
 
                 ctx.database
-                    .add_to_audit(AuditActionType::Add, Some(user_id), Some(user_name), &offer)
+                    .add_to_audit(
+                        AuditActionType::Add,
+                        Some(user_id.to_string()),
+                        Some(user_name.to_string()),
+                        &offer,
+                    )
                     .await;
             } else {
                 ctx.database

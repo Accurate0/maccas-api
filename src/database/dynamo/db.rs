@@ -11,6 +11,7 @@ use crate::database::r#trait::Database;
 use crate::database::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
+use crate::types::audit::AuditEntry;
 use crate::types::refresh::RefreshOfferCache;
 use crate::utils::{calculate_hash, get_short_sha1};
 use anyhow::{bail, Context};
@@ -25,6 +26,7 @@ use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::StdRng;
 use rand::SeedableRng;
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
 
@@ -33,12 +35,12 @@ impl Database for DynamoDatabase {
     async fn add_to_audit(
         &self,
         action: AuditActionType,
-        user_id: std::option::Option<&str>,
-        user_name: Option<&str>,
+        user_id: Option<String>,
+        user_name: Option<String>,
         offer: &OfferDatabase,
     ) {
-        let user_name = user_name.map_or("unknown".to_owned(), |u| u.to_string());
-        let user_id = user_id.map_or("unknown".to_owned(), |u| u.to_string());
+        let user_name = user_name.unwrap_or_else(|| "unknown".to_owned());
+        let user_id = user_id.unwrap_or_else(|| "unknown".to_owned());
 
         log::info!("adding to audit table: {user_id}/{user_name} {:?}", offer);
 
@@ -75,6 +77,34 @@ impl Database for DynamoDatabase {
         {
             log::error!("error adding to audit table: {e}")
         };
+    }
+
+    async fn get_audit_entries_for(&self, user_id: &str) -> Result<Vec<AuditEntry>, anyhow::Error> {
+        let resp = self
+            .client
+            .query()
+            .table_name(&self.audit)
+            .index_name(&self.audit_user_id_index)
+            .key_condition_expression("#user = :user_id")
+            .expression_attribute_names("#user", USER_ID)
+            .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
+            .send()
+            .await?;
+
+        Ok(resp
+            .items()
+            .context("no entries for user id provided")?
+            .iter()
+            .map(|item| {
+                let action = AuditActionType::from_str(item[ACTION].as_s().unwrap()).unwrap();
+                let offer = serde_dynamo::from_item(item[OFFER].as_m().unwrap().clone()).unwrap();
+                AuditEntry {
+                    action,
+                    offer,
+                    user_id: user_id.to_string(),
+                }
+            })
+            .collect_vec())
     }
 
     async fn increment_refresh_tracking(

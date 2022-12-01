@@ -14,10 +14,11 @@ use crate::routes::points::get_points::*;
 use crate::routes::statistics::get_account::*;
 use crate::routes::statistics::get_total_accounts::*;
 use crate::routes::user::config::*;
+use crate::routes::user::spending::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
     GetDealsOffer, LastRefreshInformation, OfferPointsResponse, OfferResponse, PointsResponse,
-    RestaurantAddress, RestaurantInformation,
+    RestaurantAddress, RestaurantInformation, UserSpending,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
@@ -43,6 +44,7 @@ use utoipa::OpenApi;
         get_locked_deals,
         unlock_deal,
         lock_deal,
+        get_user_spending
     ),
     components(
         responses(),
@@ -58,7 +60,8 @@ use utoipa::OpenApi;
             AccountPointResponse,
             AccountPointMap,
             AdminLockedDealsResponse,
-            GetDealsOffer
+            GetDealsOffer,
+            UserSpending
         ),
     )
 )]

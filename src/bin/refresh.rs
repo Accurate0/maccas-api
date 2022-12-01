@@ -41,8 +41,11 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
     let client = Client::new(&shared_config);
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
-    let database: Box<dyn Database> =
-        Box::new(DynamoDatabase::new(client, &config.database.tables));
+    let database: Box<dyn Database> = Box::new(DynamoDatabase::new(
+        client,
+        &config.database.tables,
+        &config.database.indexes,
+    ));
     let http_client = client::get_http_client();
 
     let mut has_error = false;

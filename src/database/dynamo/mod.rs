@@ -1,4 +1,4 @@
-use crate::types::config::Tables;
+use crate::types::config::{Indexes, Tables};
 
 pub struct DynamoDatabase {
     client: aws_sdk_dynamodb::Client,
@@ -10,10 +10,12 @@ pub struct DynamoDatabase {
     point_table_name: String,
     refresh_tracking: String,
     audit: String,
+
+    audit_user_id_index: String,
 }
 
 impl DynamoDatabase {
-    pub fn new(client: aws_sdk_dynamodb::Client, tables: &Tables) -> Self {
+    pub fn new(client: aws_sdk_dynamodb::Client, tables: &Tables, indexes: &Indexes) -> Self {
         Self {
             client,
             table_name: tables.token_cache.to_owned(),
@@ -24,6 +26,7 @@ impl DynamoDatabase {
             point_table_name: tables.points.to_owned(),
             refresh_tracking: tables.refresh_tracking.to_owned(),
             audit: tables.audit.to_owned(),
+            audit_user_id_index: indexes.audit_user_id_index.to_owned(),
         }
     }
 }
