@@ -14,7 +14,7 @@ use rocket::{http::Status, serde::json::Json, State};
         (status = 404, description = "No config for this user"),
         (status = 500, description = "Internal Server Error"),
     ),
-    tag = "config",
+    tag = "user",
 )]
 #[get("/user/config")]
 pub async fn get_user_config(
