@@ -3,6 +3,7 @@ use aws_sdk_dynamodb::Client;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::mc_donalds::default;
+use maccas::database::types::AuditActionType;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
@@ -100,6 +101,10 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                         &message.store_id,
                     )
                     .await?;
+
+                database
+                    .add_to_audit(AuditActionType::Remove, message.user_id, None, &offer)
+                    .await;
 
                 log::info!("removed from dealstack - {}", response.status);
 
