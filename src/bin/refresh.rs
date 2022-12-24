@@ -7,6 +7,7 @@ use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::{self, mc_donalds};
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
+use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
 use maccas::queue::send_to_queue;
 use maccas::types::config::{GeneralConfig, UserList};
@@ -84,6 +85,21 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let refresh_cache = database
         .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
         .await?;
+
+    if config.refresh.clear_deal_stacks {
+        log::info!("clearing all deal stacks..");
+        for (account, client) in client_map {
+            let account_name = account.account_name;
+            log::info!("clearing deal stack for {}", account_name);
+            if login_failed_accounts.contains(&account_name)
+                || refresh_cache.failed_accounts.contains(&account_name)
+            {
+                log::info!("skipped due to login or refresh failure");
+            } else {
+                client.remove_all_from_deal_stack().await;
+            }
+        }
+    }
 
     if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         has_error = true;
