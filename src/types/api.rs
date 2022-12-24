@@ -8,7 +8,7 @@ use serde_derive::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct GetDealsOffer {
@@ -181,4 +181,5 @@ pub struct AdminLockedDealsResponse(pub Vec<String>);
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct UserSpending {
     pub total: f64,
+    pub items: Vec<GetDealsOffer>,
 }

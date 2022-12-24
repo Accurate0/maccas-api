@@ -144,7 +144,7 @@ impl From<UserOptionsDatabase> for UserOptions {
     }
 }
 
-#[derive(Debug, EnumString)]
+#[derive(Debug, EnumString, Clone, PartialEq, Eq)]
 pub enum AuditActionType {
     Add,
     Remove,

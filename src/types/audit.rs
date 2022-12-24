@@ -1,6 +1,6 @@
 use crate::database::types::{AuditActionType, OfferDatabase};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AuditEntry {
     pub action: AuditActionType,
     pub user_id: String,
