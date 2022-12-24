@@ -84,6 +84,7 @@ pub struct RefreshConfig {
     pub refresh_counts: HashMap<String, i8>,
     pub discord_error: DiscordConfig,
     pub enabled: bool,
+    pub clear_deal_stacks: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
