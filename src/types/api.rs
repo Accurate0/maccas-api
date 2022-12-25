@@ -183,3 +183,6 @@ pub struct UserSpending {
     pub total: f64,
     pub items: Vec<GetDealsOffer>,
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct AdminUserSpending(pub HashMap<String, UserSpending>);

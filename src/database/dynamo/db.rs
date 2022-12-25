@@ -32,6 +32,24 @@ use tokio_stream::StreamExt;
 
 #[async_trait]
 impl Database for DynamoDatabase {
+    async fn get_all_user_ids_from_audit(&self) -> Result<Vec<String>, anyhow::Error> {
+        let response = self
+            .client
+            .scan()
+            .table_name(&self.audit)
+            .index_name(&self.audit_user_id_index)
+            .send()
+            .await?;
+
+        Ok(response
+            .items()
+            .context("must have items")?
+            .iter()
+            .map(|e| e[USER_ID].as_s().unwrap().clone())
+            .unique()
+            .collect_vec())
+    }
+
     async fn add_to_audit(
         &self,
         action: AuditActionType,
