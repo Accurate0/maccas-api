@@ -5,6 +5,7 @@ use maccas::database::DynamoDatabase;
 use maccas::logging;
 use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
+use maccas::routes::admin::get_spending::get_all_user_spending;
 use maccas::routes::admin::lock_deal::lock_deal;
 use maccas::routes::admin::unlock_deal::unlock_deal;
 use maccas::routes::catchers::{default, internal_server_error, not_authenticated, not_found};
@@ -90,6 +91,7 @@ async fn main() -> Result<(), LambdaError> {
                 lock_deal,
                 unlock_deal,
                 get_user_spending,
+                get_all_user_spending,
             ],
         )
         .configure(config);

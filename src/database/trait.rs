@@ -99,4 +99,5 @@ pub trait Database {
         offer_id: &OfferDatabase,
     );
     async fn get_audit_entries_for(&self, user_id: &str) -> Result<Vec<AuditEntry>, anyhow::Error>;
+    async fn get_all_user_ids_from_audit(&self) -> Result<Vec<String>, anyhow::Error>;
 }

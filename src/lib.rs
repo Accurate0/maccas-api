@@ -11,6 +11,7 @@ pub mod images;
 pub mod logging;
 pub mod queue;
 pub mod routes;
+pub mod shared;
 pub mod types;
 pub mod utils;
 pub mod webhook;
