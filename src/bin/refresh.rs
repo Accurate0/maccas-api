@@ -12,7 +12,6 @@ use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
-use maccas::queue::send_to_queue;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::ImagesRefreshMessage;
@@ -22,7 +21,7 @@ use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    logging::setup_logging();
+    foundation::log::init_logger();
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
@@ -119,7 +118,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             .unique_by(|offer| offer.original.clone())
             .collect();
 
-        send_to_queue(
+        aws::sqs::send_to_queue(
             &sqs_client,
             &config.images.queue_name,
             ImagesRefreshMessage { image_base_names },

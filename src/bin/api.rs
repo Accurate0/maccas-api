@@ -37,7 +37,7 @@ extern crate rocket;
 
 #[tokio::main]
 async fn main() -> Result<(), LambdaError> {
-    logging::setup_logging();
+    foundation::log::init_logger();
     logging::dump_build_details();
     let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
     let shared_config = aws::config::get_shared_config().await;

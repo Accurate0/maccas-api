@@ -2,7 +2,6 @@ use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
-use crate::queue::send_to_queue;
 use crate::routes;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
@@ -103,7 +102,7 @@ pub async fn add_deal(
                     .unique_by(|offer| offer.original.clone())
                     .collect();
 
-                send_to_queue(
+                foundation::aws::sqs::send_to_queue(
                     &ctx.sqs_client,
                     &ctx.config.images.queue_name,
                     ImagesRefreshMessage { image_base_names },
@@ -202,7 +201,7 @@ pub async fn add_deal(
         } else {
             // queue this to be removed in 15 minutes
             if ctx.config.cleanup.enabled {
-                send_to_queue(
+                foundation::aws::sqs::send_to_queue(
                     &ctx.sqs_client,
                     &ctx.config.cleanup.queue_name,
                     CleanupMessage {
