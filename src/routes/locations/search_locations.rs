@@ -1,8 +1,9 @@
 use crate::{
-    constants::{api_base, mc_donalds, LOCATION_SEARCH_DISTANCE},
+    constants::{mc_donalds, LOCATION_SEARCH_DISTANCE},
     routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
+use foundation::constants;
 use foundation::constants::{CORRELATION_ID_HEADER, X_API_KEY_HEADER};
 use foundation::rocket::guards::correlation_id::CorrelationId;
 use foundation::types::places::PlacesResponse;
@@ -28,7 +29,7 @@ pub async fn search_locations(
     let response = http_client
         .request(
             Method::GET,
-            format!("{}/place?text={}", api_base::PLACES, text,).as_str(),
+            format!("{}/place?text={}", constants::PLACES_API_BASE_URL, text,).as_str(),
         )
         .header(CORRELATION_ID_HEADER, correlation_id.0)
         .header(X_API_KEY_HEADER, &ctx.config.api.api_key)
