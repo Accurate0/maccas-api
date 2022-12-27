@@ -1,5 +1,4 @@
 use crate::{
-    client,
     constants::mc_donalds,
     routes,
     types::{api::OfferResponse, error::ApiError},
@@ -21,7 +20,7 @@ pub async fn get_code(
     store: i64,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = client::get_http_client();
+        let http_client = foundation::http::get_http_client();
         let api_client = ctx
             .database
             .get_specific_client(

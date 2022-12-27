@@ -1,7 +1,6 @@
 use crate::constants::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
-use crate::utils::get_short_sha1;
 use itertools::Itertools;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -123,7 +122,7 @@ impl From<HashMap<String, Vec<OfferDatabase>>> for AccountResponse {
         let res = res
             .iter()
             .map(|(key, value)| {
-                let hash = get_short_sha1(key);
+                let hash = foundation::hash::get_short_sha1(key);
                 (hash, value.len() as i64)
             })
             .collect();

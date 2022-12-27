@@ -1,10 +1,11 @@
 use crate::{
-    client,
-    constants::{self, api_base, mc_donalds, LOCATION_SEARCH_DISTANCE},
-    guards::correlation_id::CorrelationId,
+    constants::{api_base, mc_donalds, LOCATION_SEARCH_DISTANCE},
     routes,
-    types::{api::RestaurantInformation, error::ApiError, places::PlaceResponse},
+    types::{api::RestaurantInformation, error::ApiError},
 };
+use foundation::constants::{CORRELATION_ID_HEADER, X_API_KEY_HEADER};
+use foundation::rocket::guards::correlation_id::CorrelationId;
+use foundation::types::places::PlacesResponse;
 use http::Method;
 use rocket::{serde::json::Json, State};
 
@@ -22,18 +23,18 @@ pub async fn search_locations(
     text: &str,
     correlation_id: CorrelationId,
 ) -> Result<Json<RestaurantInformation>, ApiError> {
-    let http_client = client::get_http_client();
+    let http_client = foundation::http::get_http_client();
 
     let response = http_client
         .request(
             Method::GET,
             format!("{}/place?text={}", api_base::PLACES, text,).as_str(),
         )
-        .header(constants::CORRELATION_ID_HEADER, correlation_id.0)
-        .header(constants::X_API_KEY_HEADER, &ctx.config.api.api_key)
+        .header(CORRELATION_ID_HEADER, correlation_id.0)
+        .header(X_API_KEY_HEADER, &ctx.config.api.api_key)
         .send()
         .await?
-        .json::<PlaceResponse>()
+        .json::<PlacesResponse>()
         .await?;
 
     let account = &ctx.config.mcdonalds.service_account;

@@ -1,7 +1,7 @@
 use anyhow::Context;
+use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::aws;
 use maccas::images;
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
-    let shared_config = aws::get_shared_config().await;
+    let shared_config = aws::config::get_shared_config().await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     if !config.images.enabled {

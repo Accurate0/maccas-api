@@ -3,13 +3,13 @@ use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
 use crate::queue::send_to_queue;
+use crate::routes;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::images::OfferImageBaseName;
 use crate::types::jwt::JwtClaim;
 use crate::types::sqs::{CleanupMessage, ImagesRefreshMessage};
 use crate::webhook::execute::execute_discord_webhooks;
-use crate::{client, routes};
 use anyhow::Context;
 use chrono::Duration;
 use itertools::Itertools;
@@ -33,7 +33,7 @@ pub async fn add_deal(
     auth: AuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = client::get_http_client();
+        let http_client = foundation::http::get_http_client();
         let api_client = ctx
             .database
             .get_specific_client(

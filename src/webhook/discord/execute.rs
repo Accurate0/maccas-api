@@ -1,30 +1,14 @@
 use crate::{
     constants::{mc_donalds, IMAGE_CDN},
     database::types::OfferDatabase,
-    types::{config::GeneralConfig, webhook::DiscordWebhookMessage},
+    types::config::GeneralConfig,
 };
 use anyhow::Context;
 use chrono::Utc;
-use http::header::CONTENT_TYPE;
-use reqwest::Response;
+use foundation::discord::webhook::DiscordWebhookMessage;
 use reqwest_middleware::ClientWithMiddleware;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
-
-impl DiscordWebhookMessage {
-    pub async fn send(
-        &self,
-        http_client: &ClientWithMiddleware,
-        webhook_url: &String,
-    ) -> Result<Response, anyhow::Error> {
-        Ok(http_client
-            .post(webhook_url)
-            .header(CONTENT_TYPE, mime::APPLICATION_JSON.to_string())
-            .body(serde_json::to_string(&self)?)
-            .send()
-            .await?)
-    }
-}
 
 pub async fn execute_discord_webhooks(
     http_client: &ClientWithMiddleware,

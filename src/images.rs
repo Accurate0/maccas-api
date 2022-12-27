@@ -1,5 +1,4 @@
 use crate::{
-    client,
     constants::mc_donalds::IMAGE_CDN,
     types::{config::GeneralConfig, images::OfferImageBaseName},
 };
@@ -12,7 +11,7 @@ pub async fn refresh_images(
     s3_client: &aws_sdk_s3::Client,
     config: &GeneralConfig,
 ) -> Result<(), anyhow::Error> {
-    let http_client = client::get_http_client();
+    let http_client = foundation::http::get_http_client();
     let mut new_image_count = 0;
     let mut cached_image_count = 0;
 
