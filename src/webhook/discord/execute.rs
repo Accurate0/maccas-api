@@ -5,7 +5,7 @@ use crate::{
 };
 use anyhow::Context;
 use chrono::Utc;
-use foundation::discord::webhook::DiscordWebhookMessage;
+use foundation::types::discord::DiscordWebhookMessage;
 use reqwest_middleware::ClientWithMiddleware;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
