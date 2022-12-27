@@ -1,6 +1,6 @@
+use foundation::aws;
+use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
 use lambda_http::Error as LambdaError;
-use maccas::aws;
-use maccas::constants;
 use maccas::database::DynamoDatabase;
 use maccas::logging;
 use maccas::routes;
@@ -39,8 +39,8 @@ extern crate rocket;
 async fn main() -> Result<(), LambdaError> {
     logging::setup_logging();
     logging::dump_build_details();
-    let is_aws = std::env::var(constants::AWS_LAMBDA_FUNCTION_NAME).is_ok();
-    let shared_config = aws::get_shared_config().await;
+    let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
+    let shared_config = aws::config::get_shared_config().await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);

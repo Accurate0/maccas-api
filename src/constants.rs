@@ -1,10 +1,5 @@
 pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
-pub const DEFAULT_AWS_REGION: &str = "ap-southeast-2";
-pub const AWS_REGION: &str = "AWS_REGION";
-pub const AWS_LAMBDA_FUNCTION_NAME: &str = "AWS_LAMBDA_FUNCTION_NAME";
-pub const X_API_KEY_HEADER: &str = "X-Api-Key";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
-pub const CORRELATION_ID_HEADER: &str = "traceparent";
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
 pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";

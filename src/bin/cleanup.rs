@@ -1,5 +1,6 @@
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
+use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::mc_donalds::default;
@@ -8,7 +9,6 @@ use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{CleanupMessage, SqsEvent};
-use maccas::{aws, client};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -19,7 +19,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
-    let shared_config = aws::get_shared_config().await;
+    let shared_config = aws::config::get_shared_config().await;
 
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     if !config.cleanup.enabled {
@@ -33,7 +33,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = client::get_http_client();
+    let http_client = foundation::http::get_http_client();
 
     let locked_deals = database.get_all_locked_deals().await?;
     let mut valid_records = event.payload.records;

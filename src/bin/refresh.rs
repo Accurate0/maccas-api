@@ -1,10 +1,13 @@
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
+use foundation::aws;
+use foundation::constants::AWS_REGION;
+use foundation::discord::webhook::DiscordWebhookMessage;
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::constants::{self, mc_donalds};
+use maccas::constants::mc_donalds;
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
@@ -13,8 +16,6 @@ use maccas::queue::send_to_queue;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::ImagesRefreshMessage;
-use maccas::types::webhook::DiscordWebhookMessage;
-use maccas::{aws, client};
 use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -28,9 +29,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
-    let shared_config = aws::get_shared_config().await;
+    let shared_config = aws::config::get_shared_config().await;
 
-    let env = std::env::var(constants::AWS_REGION)
+    let env = std::env::var(AWS_REGION)
         .context("AWS_REGION not set")
         .unwrap();
 
@@ -47,7 +48,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = client::get_http_client();
+    let http_client = foundation::http::get_http_client();
 
     let mut has_error = false;
     let embed = EmbedBuilder::new()

@@ -1,7 +1,5 @@
-use crate::{
-    types::{config::UserAccount, user::UserOptions},
-    utils,
-};
+use crate::types::{config::UserAccount, user::UserOptions};
+use foundation::util;
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display};
@@ -44,7 +42,8 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
             .unwrap_or(&offer.name.as_str())
             .to_string();
 
-        let base_name_with_webp = format!("{}.webp", utils::remove_ext(&offer.image_base_name));
+        let base_name_with_webp =
+            format!("{}.webp", util::remove_extension(&offer.image_base_name));
 
         Self {
             deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),

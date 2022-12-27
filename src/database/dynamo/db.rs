@@ -13,12 +13,12 @@ use crate::database::types::{
 };
 use crate::types::audit::AuditEntry;
 use crate::types::refresh::RefreshOfferCache;
-use crate::utils::{calculate_hash, get_short_sha1};
 use anyhow::{bail, Context};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
+use foundation::hash::{calculate_default_hash, get_short_sha1};
 use http::StatusCode;
 use itertools::Itertools;
 use libmaccas::ApiClient;
@@ -79,8 +79,10 @@ impl Database for DynamoDatabase {
             .item(
                 OPERATION_ID,
                 AttributeValue::S(
-                    calculate_hash(&format!("{}-{}-{}", action, offer.deal_uuid, now).to_string())
-                        .to_string(),
+                    calculate_default_hash(
+                        &format!("{}-{}-{}", action, offer.deal_uuid, now).to_string(),
+                    )
+                    .to_string(),
                 ),
             )
             .item(ACTION, AttributeValue::S(action.to_string()))
