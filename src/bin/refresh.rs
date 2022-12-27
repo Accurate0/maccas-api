@@ -3,7 +3,7 @@ use aws_sdk_dynamodb::Client;
 use chrono::Utc;
 use foundation::aws;
 use foundation::constants::AWS_REGION;
-use foundation::discord::webhook::DiscordWebhookMessage;
+use foundation::types::discord::DiscordWebhookMessage;
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
