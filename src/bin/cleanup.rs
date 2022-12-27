@@ -12,7 +12,7 @@ use maccas::types::sqs::{CleanupMessage, SqsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    logging::setup_logging();
+    foundation::log::init_logger();
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
