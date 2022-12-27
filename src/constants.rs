@@ -25,11 +25,6 @@ pub mod mc_donalds {
         "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
 }
 
-pub mod api_base {
-    pub const PLACES: &str = "https://api.anurag.sh/places/v1";
-    pub const THIS: &str = "https://api.anurag.sh/maccas/v1";
-}
-
 pub mod config {
     #[cfg(debug_assertions)]
     pub const BASE_FILE: &str = "base-config-dev.json";
