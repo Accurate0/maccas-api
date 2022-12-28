@@ -58,6 +58,7 @@ impl From<serde_json::Error> for ApiError {
 
 impl From<reqwest::Error> for ApiError {
     fn from(e: reqwest::Error) -> Self {
+        log::error!("UNHANDLED ERROR: {:#?}", e);
         if let Some(status_code) = e.status() {
             match status_code {
                 // getting a lot of 403 from McDonalds recently
