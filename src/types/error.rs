@@ -1,7 +1,7 @@
 use aws_sdk_dynamodb::types::SdkError;
 use http::StatusCode;
 use rocket::response::Responder;
-use rocket::{http::Status, response, Request, Response};
+use rocket::{http::Status, response, Request};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,9 +36,7 @@ impl ApiError {
 
 impl<'r> Responder<'r, 'static> for ApiError {
     fn respond_to(self, _req: &'r Request<'_>) -> response::Result<'static> {
-        let mut response = Response::new();
-        response.set_status(self.get_status());
-        Ok(response)
+        Err(self.get_status())
     }
 }
 
