@@ -88,8 +88,8 @@ impl From<jwt::Error> for ApiError {
 }
 
 impl<T> From<SdkError<T>> for ApiError {
-    fn from(_: SdkError<T>) -> Self {
-        log::error!("UNHANDLED ERROR: SDK ERROR, NO MESSAGE");
+    fn from(e: SdkError<T>) -> Self {
+        log::error!("UNHANDLED ERROR: {}", e);
         Self::UnhandledError
     }
 }
