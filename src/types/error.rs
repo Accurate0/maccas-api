@@ -49,14 +49,14 @@ impl From<anyhow::Error> for ApiError {
 
 impl From<serde_json::Error> for ApiError {
     fn from(e: serde_json::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
+        log::error!("serde_json: UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<reqwest::Error> for ApiError {
     fn from(e: reqwest::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
+        log::error!("reqwest: UNHANDLED ERROR: {:#?}", e);
         if let Some(status_code) = e.status() {
             match status_code {
                 // getting a lot of 403 from McDonalds recently
@@ -73,21 +73,21 @@ impl From<reqwest::Error> for ApiError {
 
 impl From<reqwest_middleware::Error> for ApiError {
     fn from(e: reqwest_middleware::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
+        log::error!("reqwest_middleware: UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl From<jwt::Error> for ApiError {
     fn from(e: jwt::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
+        log::error!("jwt: UNHANDLED ERROR: {:#?}", e);
         Self::UnhandledError
     }
 }
 
 impl<T> From<SdkError<T>> for ApiError {
     fn from(e: SdkError<T>) -> Self {
-        log::error!("UNHANDLED ERROR: {}", e);
+        log::error!("AWS SDK: UNHANDLED ERROR: {}", e);
         Self::UnhandledError
     }
 }
