@@ -1,4 +1,5 @@
 use aws_sdk_dynamodb::types::SdkError;
+use http::StatusCode;
 use rocket::response::Responder;
 use rocket::{http::Status, response, Request, Response};
 use serde::{Deserialize, Serialize};
@@ -6,6 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ApiError {
+    TryAgain,
     InvalidConfig,
     McDonaldsError,
     AccountNotAvailable,
@@ -19,6 +21,7 @@ pub enum ApiError {
 impl ApiError {
     pub fn get_status(&self) -> Status {
         match self {
+            ApiError::TryAgain => Status::new(599),
             ApiError::InvalidConfig => Status::BadRequest,
             ApiError::McDonaldsError => Status::BadRequest,
             ApiError::AccountNotAvailable => Status::Conflict,
@@ -55,8 +58,17 @@ impl From<serde_json::Error> for ApiError {
 
 impl From<reqwest::Error> for ApiError {
     fn from(e: reqwest::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
-        Self::UnhandledError
+        if let Some(status_code) = e.status() {
+            match status_code {
+                // getting a lot of 403 from McDonalds recently
+                // often this resolves itself by simply trying again
+                // so we'll instruct the client (APIM) to retry this error
+                StatusCode::FORBIDDEN => Self::TryAgain,
+                _ => Self::UnhandledError,
+            }
+        } else {
+            Self::UnhandledError
+        }
     }
 }
 
