@@ -17,8 +17,9 @@ use crate::routes::user::config::*;
 use crate::routes::user::spending::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
-    GetDealsOffer, LastRefreshInformation, OfferPointsResponse, OfferResponse, PointsResponse,
-    RestaurantAddress, RestaurantInformation, UserSpending,
+    AdminUserSpending, AdminUserSpendingMap, GetDealsOffer, LastRefreshInformation,
+    OfferPointsResponse, OfferResponse, PointsResponse, RestaurantAddress, RestaurantInformation,
+    UserSpending,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
@@ -61,7 +62,9 @@ use utoipa::OpenApi;
             AccountPointMap,
             AdminLockedDealsResponse,
             GetDealsOffer,
-            UserSpending
+            UserSpending,
+            AdminUserSpending,
+            AdminUserSpendingMap
         ),
     )
 )]

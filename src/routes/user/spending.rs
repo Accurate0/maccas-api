@@ -25,7 +25,7 @@ pub async fn get_user_spending(
 
     let entries = ctx
         .database
-        .get_audit_entries_for(user_id)
+        .get_audit_entries_for(user_id.to_string())
         .await
         .unwrap_or_default();
 

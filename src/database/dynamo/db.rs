@@ -32,24 +32,6 @@ use tokio_stream::StreamExt;
 
 #[async_trait]
 impl Database for DynamoDatabase {
-    async fn get_all_user_ids_from_audit(&self) -> Result<Vec<String>, anyhow::Error> {
-        let response = self
-            .client
-            .scan()
-            .table_name(&self.audit)
-            .index_name(&self.audit_user_id_index)
-            .send()
-            .await?;
-
-        Ok(response
-            .items()
-            .context("must have items")?
-            .iter()
-            .map(|e| e[USER_ID].as_s().unwrap().clone())
-            .unique()
-            .collect_vec())
-    }
-
     async fn add_to_audit(
         &self,
         action: AuditActionType,
@@ -99,7 +81,10 @@ impl Database for DynamoDatabase {
         };
     }
 
-    async fn get_audit_entries_for(&self, user_id: &str) -> Result<Vec<AuditEntry>, anyhow::Error> {
+    async fn get_audit_entries_for(
+        &self,
+        user_id: String,
+    ) -> Result<Vec<AuditEntry>, anyhow::Error> {
         let resp = self
             .client
             .query()
@@ -113,7 +98,8 @@ impl Database for DynamoDatabase {
 
         Ok(resp
             .items()
-            .context("no entries for user id provided")?
+            .context("no entries for user id provided")
+            .unwrap_or_default()
             .iter()
             .map(|item| {
                 let action = AuditActionType::from_str(item[ACTION].as_s().unwrap()).unwrap();

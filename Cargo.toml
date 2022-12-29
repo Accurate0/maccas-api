@@ -62,7 +62,7 @@ anyhow = "1.0.66"
 fern = "0.6.1"
 utoipa = { version = "2.4.2", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
-foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.2.0", features = ["discord", "aws", "rocket", "http", "types"] }
+foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.3.0", features = ["discord", "aws", "rocket", "http", "types"] }
 
 [patch.crates-io]
 reqwest-retry = { git = "https://github.com/Accurate0/reqwest-middleware.git", branch = "custom_retryable_decision" }

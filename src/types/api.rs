@@ -184,4 +184,11 @@ pub struct UserSpending {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct AdminUserSpending(pub HashMap<String, UserSpending>);
+pub struct AdminUserSpending {
+    pub name: String,
+    pub total: f64,
+    pub items: Vec<GetDealsOffer>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct AdminUserSpendingMap(pub HashMap<String, AdminUserSpending>);
