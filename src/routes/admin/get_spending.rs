@@ -40,9 +40,8 @@ pub async fn get_all_user_spending(
         .send()
         .await?
         .json::<GetUsersResponse>()
-        .await?;
-
-    let user_list = user_list.value;
+        .await?
+        .value;
 
     let spending_futures = user_list
         .iter()
