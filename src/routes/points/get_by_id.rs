@@ -1,6 +1,7 @@
 use crate::{
     constants::mc_donalds,
     guards::protected::ProtectedRoute,
+    retry::wrap_in_middleware,
     routes,
     types::{api::OfferPointsResponse, error::ApiError},
 };
@@ -25,7 +26,7 @@ pub async fn get_points_by_id(
     store: i64,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
     if let Ok((account, points)) = ctx.database.get_points_by_account_hash(account_id).await {
-        let http_client = foundation::http::get_http_client();
+        let http_client = foundation::http::get_http_client(wrap_in_middleware);
         let api_client = ctx
             .database
             .get_specific_client(

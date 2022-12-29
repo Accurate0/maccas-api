@@ -1176,8 +1176,8 @@ dependencies = [
 
 [[package]]
 name = "foundation"
-version = "0.1.0"
-source = "git+https://github.com/Accurate0/foundation.git?tag=v0.1.0#fb7dd20f71e9a7ab67fde150ebc8387949520d8f"
+version = "0.2.0"
+source = "git+https://github.com/Accurate0/foundation.git?tag=v0.2.0#337d42df7479a594c542810b6c8407ba8553f115"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -2929,8 +2929,7 @@ dependencies = [
 [[package]]
 name = "reqwest-middleware"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a1c03e9011a8c59716ad13115550469e081e2e9892656b0ba6a47c907921894"
+source = "git+https://github.com/Accurate0/reqwest-middleware.git?branch=custom_retryable_decision#de36b66cad8ddcb8456af3ec0d0e3e9b30e5545d"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2944,8 +2943,7 @@ dependencies = [
 [[package]]
 name = "reqwest-retry"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db161043fcfae3bdf30768bb1fa833853cd55ddf2411b1acb03e0c72bf86a9ea"
+source = "git+https://github.com/Accurate0/reqwest-middleware.git?branch=custom_retryable_decision#de36b66cad8ddcb8456af3ec0d0e3e9b30e5545d"
 dependencies = [
  "anyhow",
  "async-trait",

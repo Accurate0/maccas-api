@@ -1,5 +1,6 @@
 use crate::{
     constants::mc_donalds,
+    retry::wrap_in_middleware,
     routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
@@ -20,7 +21,7 @@ pub async fn get_locations(
     latitude: f64,
     longitude: f64,
 ) -> Result<Json<Vec<RestaurantInformation>>, ApiError> {
-    let http_client = foundation::http::get_http_client();
+    let http_client = foundation::http::get_http_client(wrap_in_middleware);
     let account = &ctx.config.mcdonalds.service_account;
     let account = &account.into();
     let api_client = ctx

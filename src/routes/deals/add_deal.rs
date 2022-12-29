@@ -2,6 +2,7 @@ use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
+use crate::retry::wrap_in_middleware;
 use crate::routes;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
@@ -32,7 +33,7 @@ pub async fn add_deal(
     auth: AuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = foundation::http::get_http_client();
+        let http_client = foundation::http::get_http_client(wrap_in_middleware);
         let api_client = ctx
             .database
             .get_specific_client(
