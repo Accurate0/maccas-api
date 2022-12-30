@@ -1,7 +1,5 @@
 use super::authorization::RequiredAuthorizationHeader;
-use crate::types::jwt::JwtClaim;
 use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
-use jwt::{Header, Token};
 use rocket::{
     http::Status,
     outcome::Outcome,
@@ -37,10 +35,8 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
 
         let auth_header = auth_header.unwrap();
 
-        let value = auth_header.0.as_str().replace("Bearer ", "");
-        let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
-        let user_id = &jwt.claims().oid;
-        let role = &jwt.claims().extension_role;
+        let user_id = auth_header.claims.oid;
+        let role = auth_header.claims.extension_role;
 
         // allow admin access to protected routes
         if role.is_allowed_protected_access() {

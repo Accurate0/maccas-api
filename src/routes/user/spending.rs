@@ -1,10 +1,7 @@
 use crate::{
-    guards::authorization::RequiredAuthorizationHeader,
-    routes, shared,
-    types::api::UserSpending,
-    types::{error::ApiError, jwt::JwtClaim},
+    guards::authorization::RequiredAuthorizationHeader, routes, shared, types::api::UserSpending,
+    types::error::ApiError,
 };
-use jwt::{Header, Token};
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -19,9 +16,7 @@ pub async fn get_user_spending(
     ctx: &State<routes::Context<'_>>,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<UserSpending>, ApiError> {
-    let value = auth.0.as_str().replace("Bearer ", "");
-    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
-    let user_id = &jwt.claims().oid;
+    let user_id = auth.claims.oid;
 
     let entries = ctx
         .database

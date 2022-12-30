@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
 use lambda_http::Error as LambdaError;
@@ -51,10 +53,25 @@ async fn main() -> Result<(), LambdaError> {
         &config.database.indexes,
     );
 
+    let validator = aliri::jwt::CoreValidator::default()
+        .add_allowed_audience(aliri::jwt::Audience::from(
+            config.api.jwt.allowed_audience.clone(),
+        ))
+        .with_leeway_secs(10)
+        .check_expiration()
+        .check_not_before();
+
+    let authority =
+        aliri_oauth2::Authority::new_from_url(config.api.jwt.jwks_url.clone(), validator).await?;
+
+    // not sure if needed
+    authority.spawn_refresh(Duration::from_secs(60));
+
     let context = routes::Context {
         sqs_client,
         config,
         database: Box::new(database),
+        authority,
     };
 
     let config = Config {

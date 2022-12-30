@@ -1,10 +1,5 @@
 use super::authorization::RequiredAuthorizationHeader;
-use crate::{
-    constants::X_JWT_BYPASS_HEADER,
-    routes,
-    types::{error::ApiError, jwt::JwtClaim},
-};
-use jwt::{Header, Token};
+use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
 use rocket::{
     http::Status,
     outcome::Outcome,
@@ -40,12 +35,9 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
         let auth_header = auth_header.unwrap();
 
-        let value = auth_header.0.as_str().replace("Bearer ", "");
-        let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value).unwrap();
-
         // if the admin extension is set and true, we allow
-        let role = &jwt.claims().extension_role;
-        let user_id = &jwt.claims().oid;
+        let role = auth_header.claims.extension_role;
+        let user_id = auth_header.claims.oid;
 
         if role.is_admin() {
             log::info!("allowing admin access to {user_id}, role = {:?}", role);

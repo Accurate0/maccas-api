@@ -73,6 +73,7 @@ jobs:
           mcdonalds__service_account__login_username: ${{ secrets.API_CONFIG_SERVICE_USERNAME }}
           mcdonalds__service_account__login_password: ${{ secrets.API_CONFIG_SERVICE_PASSWORD }}
           api__jwt__bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
+          api__jwt__jwks_url: ${{ secrets.API_CONFIG_JWKS_URL }}
           api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
           api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
           refresh__discord_error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}

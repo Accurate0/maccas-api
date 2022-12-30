@@ -1,5 +1,10 @@
-use crate::{routes, types::error::ApiError};
+use crate::{
+    routes,
+    types::{error::ApiError, jwt::JwtClaim},
+};
+use aliri_oauth2::ScopePolicy;
 use http::header;
+use jwt::{Header, Token};
 use rocket::{
     http::Status,
     outcome::Outcome,
@@ -20,7 +25,9 @@ impl<'r> FromRequest<'r> for AuthorizationHeader {
     }
 }
 
-pub struct RequiredAuthorizationHeader(pub String);
+pub struct RequiredAuthorizationHeader {
+    pub claims: JwtClaim,
+}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
@@ -35,14 +42,33 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
 
         let ctx = ctx.unwrap();
         let auth_outcome = match auth {
-            Some(auth) => Outcome::Success(Self(auth.to_string())),
+            Some(auth) => {
+                let token = auth.replace("Bearer ", "");
+                if ctx.config.api.jwt.validate {
+                    let jwt = aliri::jwt::Jwt::new(token);
+                    let jwt_result = ctx
+                        .authority
+                        .verify_token::<JwtClaim>(jwt.as_ref(), &ScopePolicy::allow_any());
+                    match jwt_result {
+                        Ok(jwt) => {
+                            log::info!("verified jwt for {}", jwt.oid);
+                            Outcome::Success(Self { claims: jwt })
+                        }
+                        Err(e) => {
+                            log::error!("error validating jwt: {e}");
+                            Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized))
+                        }
+                    }
+                } else {
+                    let jwt: Token<Header, JwtClaim, _> =
+                        jwt::Token::parse_unverified(&token).unwrap();
+                    Outcome::Success(Self {
+                        claims: jwt.claims().clone(),
+                    })
+                }
+            }
             None => Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized)),
         };
-
-        if ctx.config.api.jwt.validate && auth_outcome.is_success() {
-            let _auth_header = &auth_outcome.as_ref().unwrap().0.replace("Bearer ", "");
-            // TODO: jwks validation
-        }
 
         auth_outcome
     }

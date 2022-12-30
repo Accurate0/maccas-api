@@ -3,9 +3,8 @@ use crate::{
     guards::authorization::RequiredAuthorizationHeader,
     retry::wrap_in_middleware,
     routes,
-    types::{error::ApiError, jwt::JwtClaim, user::UserOptions},
+    types::{error::ApiError, user::UserOptions},
 };
-use jwt::{Header, Token};
 use rocket::{http::Status, serde::json::Json, State};
 
 #[utoipa::path(
@@ -21,11 +20,8 @@ pub async fn get_user_config(
     ctx: &State<routes::Context<'_>>,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<UserOptions>, ApiError> {
-    let value = auth.0.as_str().replace("Bearer ", "");
-    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
-    let user_id = &jwt.claims().oid;
-
-    match ctx.database.get_config_by_user_id(user_id).await {
+    let user_id = auth.claims.oid;
+    match ctx.database.get_config_by_user_id(&user_id).await {
         Ok(config) => Ok(Json(config.into())),
         Err(_) => Err(ApiError::NotFound),
     }
@@ -49,10 +45,8 @@ pub async fn update_user_config(
     auth: RequiredAuthorizationHeader,
     config: Json<UserOptions>,
 ) -> Result<Status, ApiError> {
-    let value = auth.0.as_str().replace("Bearer ", "");
-    let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&value)?;
-    let user_id = &jwt.claims().oid;
-    let user_name = &jwt.claims().name;
+    let user_id = auth.claims.oid;
+    let user_name = auth.claims.name;
 
     let http_client = foundation::http::get_http_client(wrap_in_middleware);
     let account = &ctx.config.mcdonalds.service_account;
@@ -88,7 +82,7 @@ pub async fn update_user_config(
         };
 
         ctx.database
-            .set_config_by_user_id(user_id, &config.into(), user_name)
+            .set_config_by_user_id(&user_id, &config.into(), &user_name)
             .await?;
         Ok(Status::NoContent)
     } else {

@@ -3,8 +3,6 @@ pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 pub const LOG_SOURCE_HEADER: &str = "X-Source";
 pub const SOURCE_NAME: &str = "MaccasWeb";
 pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
-pub const JWKS_URL: &str =
-    "https://apib2clogin.b2clogin.com/login.anurag.sh/b2c_1_signin/discovery/v2.0/keys";
 pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
 pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
 pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";

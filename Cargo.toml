@@ -30,7 +30,8 @@ rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
 
 jwt = "0.16.0"
-jsonwebtoken = "8.1.1"
+aliri = "0.6.1"
+aliri_oauth2 = "0.9.0"
 
 image = "0.24.5"
 webp = "0.2.2"
@@ -63,6 +64,8 @@ fern = "0.6.1"
 utoipa = { version = "2.4.2", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.4.0", features = ["discord", "aws", "rocket", "http", "types"] }
+aliri_clock = "0.1.4"
+
 
 [patch.crates-io]
 reqwest-retry = { git = "https://github.com/Accurate0/reqwest-middleware.git", branch = "custom_retryable_decision" }
