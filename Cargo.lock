@@ -73,6 +73,87 @@ dependencies = [
 ]
 
 [[package]]
+name = "aliri"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fd46366283e3e2f1298fa4e9db5610438a470b3a079e535f4807f1b894ab5e8"
+dependencies = [
+ "aliri_base64",
+ "aliri_braid",
+ "aliri_clock",
+ "once_cell",
+ "regex",
+ "ring",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "aliri_base64"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c65d0413b11924491b6ab4f5ad2fbe1b9113659998e2752464c9845f3a7a2c7"
+dependencies = [
+ "base64 0.13.1",
+ "serde",
+]
+
+[[package]]
+name = "aliri_braid"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8229f042e9dd9f4a59fd80ff0a78a9852015f3ea4692c105f075e35defccd51a"
+dependencies = [
+ "aliri_braid_impl",
+]
+
+[[package]]
+name = "aliri_braid_impl"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bda1e7834e998e8d0439170c12e6a030dfd26d9c7a2b9a66263fff970f710b74"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "aliri_clock"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c5710b7d6bf6988872bcd82a3e44d89859fe8338f7cd8120913093147cce034"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "aliri_oauth2"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "429cfd7af8e9c7fcf9c4c99b801f17250b23baf2fbc545a90a102ddc153b8cb3"
+dependencies = [
+ "aliri",
+ "aliri_braid",
+ "aliri_clock",
+ "aliri_traits",
+ "arc-swap",
+ "compact_str",
+ "reqwest",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "aliri_traits"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cb0a83a6b46ec05abd19fd19b2dfaa22c3555c390eeb66378ad60e81ee6edc5"
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -86,6 +167,12 @@ name = "anyhow"
 version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
+
+[[package]]
+name = "arc-swap"
+version = "1.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "983cd8b9d4b02a6dc6ffa557262eb5858a27a0038ffffe21a0f133eaa819a164"
 
 [[package]]
 name = "arrayvec"
@@ -696,6 +783,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "castaway"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a17ed5635fc8536268e5d4de1e22e81ac34419e5f052d4d51f4e01dcc263fcc"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -773,6 +869,18 @@ name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
+
+[[package]]
+name = "compact_str"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5138945395949e7dfba09646dc9e766b548ff48e23deb5246890e6b64ae9e1b9"
+dependencies = [
+ "castaway",
+ "itoa 1.0.5",
+ "ryu",
+ "serde",
+]
 
 [[package]]
 name = "config"
@@ -1776,20 +1884,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jsonwebtoken"
-version = "8.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09f4f04699947111ec1733e71778d763555737579e44b85844cae8e1940a1828"
-dependencies = [
- "base64 0.13.1",
- "pem",
- "ring",
- "serde",
- "serde_json",
- "simple_asn1",
-]
-
-[[package]]
 name = "jwt"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2046,6 +2140,9 @@ dependencies = [
 name = "maccas-api"
 version = "0.1.0"
 dependencies = [
+ "aliri",
+ "aliri_clock",
+ "aliri_oauth2",
  "anyhow",
  "async-trait",
  "aws-config",
@@ -2062,7 +2159,6 @@ dependencies = [
  "image",
  "imap",
  "itertools",
- "jsonwebtoken",
  "jwt",
  "lambda_http 0.7.2",
  "lambda_runtime 0.7.2",
@@ -2260,17 +2356,6 @@ checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
 dependencies = [
  "overload",
  "winapi",
-]
-
-[[package]]
-name = "num-bigint"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
-dependencies = [
- "autocfg",
- "num-integer",
- "num-traits",
 ]
 
 [[package]]
@@ -2479,15 +2564,6 @@ dependencies = [
  "proc-macro2-diagnostics",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "pem"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03c64931a1a212348ec4f3b4362585eca7159d0d09cbdf4a7f74f02173596fd4"
-dependencies = [
- "base64 0.13.1",
 ]
 
 [[package]]
@@ -3403,18 +3479,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9cadb29c57caadc51ff8346233b5cec1d240b68ce55cf1afc764818791876987"
 dependencies = [
  "outref",
-]
-
-[[package]]
-name = "simple_asn1"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adc4e5204eb1910f40f9cfa375f6f05b68c3abac4b6fd879c8ff5e7ae8a0a085"
-dependencies = [
- "num-bigint",
- "num-traits",
- "thiserror",
- "time 0.3.17",
 ]
 
 [[package]]
