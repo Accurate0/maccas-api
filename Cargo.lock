@@ -1176,8 +1176,8 @@ dependencies = [
 
 [[package]]
 name = "foundation"
-version = "0.3.0"
-source = "git+https://github.com/Accurate0/foundation.git?tag=v0.3.0#977a46f6dae04139db681af946ce5adb6dc45876"
+version = "0.4.0"
+source = "git+https://github.com/Accurate0/foundation.git?tag=v0.4.0#085e8392eb74223c63fb0b4c066fb9591afad51a"
 dependencies = [
  "anyhow",
  "aws-config",
