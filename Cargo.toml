@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-libmaccas = "0.35.0"
+libmaccas = "0.36.0"
 
 lambda_runtime = "0.7.1"
 lambda_http = "0.7.1"
