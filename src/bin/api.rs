@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
 use lambda_http::Error as LambdaError;
@@ -33,6 +31,7 @@ use rocket::http::Method;
 use rocket::Config;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use rocket_lamb::RocketExt;
+use std::time::Duration;
 
 #[macro_use]
 extern crate rocket;
