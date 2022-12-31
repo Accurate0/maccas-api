@@ -37,10 +37,6 @@ aliri_clock = "0.1.4"
 image = "0.24.5"
 webp = "0.2.2"
 
-regex = "1.7.0"
-imap = "2.4.1"
-native-tls = "0.2.11"
-
 openssl = { version = "0.10", features = ["vendored"] }
 config = { version = "0.13.2", features = ["yaml"] }
 uuid = { version = "1.2.2", features = ["v4"] }
@@ -57,7 +53,6 @@ reqwest-tracing = "0.4.0"
 rand = "0.8.5"
 itertools = "0.10.5"
 tokio = "1.22.0"
-chrono-tz = "0.8.0"
 rust-crypto = "0.2.36"
 mime = "0.3.16"
 anyhow = "1.0.66"
@@ -65,7 +60,6 @@ fern = "0.6.1"
 utoipa = { version = "2.4.2", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.4.0", features = ["discord", "aws", "rocket", "http", "types"] }
-
 
 [patch.crates-io]
 reqwest-retry = { git = "https://github.com/Accurate0/reqwest-middleware.git", branch = "custom_retryable_decision" }
