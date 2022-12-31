@@ -44,11 +44,10 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
         let auth_outcome = match auth {
             Some(auth) => {
                 let token = auth.replace("Bearer ", "");
-                if ctx.config.api.jwt.validate {
+                if let Some(authority) = &ctx.authority {
                     let jwt = aliri::jwt::Jwt::new(token);
-                    let jwt_result = ctx
-                        .authority
-                        .verify_token::<JwtClaim>(jwt.as_ref(), &ScopePolicy::allow_any());
+                    let jwt_result =
+                        authority.verify_token::<JwtClaim>(jwt.as_ref(), &ScopePolicy::allow_any());
                     match jwt_result {
                         Ok(jwt) => {
                             log::info!("verified jwt for {}", jwt.oid);

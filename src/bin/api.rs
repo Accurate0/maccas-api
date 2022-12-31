@@ -60,11 +60,16 @@ async fn main() -> Result<(), LambdaError> {
         .check_expiration()
         .check_not_before();
 
-    let authority =
-        aliri_oauth2::Authority::new_from_url(config.api.jwt.jwks_url.clone(), validator).await?;
-
-    // not sure if needed
-    authority.spawn_refresh(Duration::from_secs(60));
+    let authority = if config.api.jwt.validate {
+        let auth =
+            aliri_oauth2::Authority::new_from_url(config.api.jwt.jwks_url.clone(), validator)
+                .await?;
+        // not sure if needed
+        auth.spawn_refresh(Duration::from_secs(60));
+        Some(auth)
+    } else {
+        None
+    };
 
     let context = routes::Context {
         sqs_client,
