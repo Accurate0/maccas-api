@@ -52,15 +52,14 @@ async fn main() -> Result<(), LambdaError> {
         &config.database.indexes,
     );
 
-    let validator = aliri::jwt::CoreValidator::default()
-        .add_allowed_audience(aliri::jwt::Audience::from(
-            config.api.jwt.allowed_audience.clone(),
-        ))
-        .with_leeway_secs(10)
-        .check_expiration()
-        .check_not_before();
-
     let authority = if config.api.jwt.validate {
+        let validator = aliri::jwt::CoreValidator::default()
+            .add_allowed_audience(aliri::jwt::Audience::from(
+                config.api.jwt.allowed_audience.clone(),
+            ))
+            .with_leeway_secs(10)
+            .check_expiration()
+            .check_not_before();
         let auth =
             aliri_oauth2::Authority::new_from_url(config.api.jwt.jwks_url.clone(), validator)
                 .await?;
