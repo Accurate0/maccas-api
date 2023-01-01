@@ -14,5 +14,4 @@ pub struct Context<'a> {
     pub sqs_client: aws_sdk_sqs::Client,
     pub config: GeneralConfig,
     pub database: Box<dyn Database + Send + Sync + 'a>,
-    pub authority: Option<aliri_oauth2::Authority>,
 }

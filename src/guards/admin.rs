@@ -1,5 +1,5 @@
-use super::authorization::RequiredAuthorizationHeader;
 use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
+use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{
     http::Status,
     outcome::Outcome,
@@ -30,7 +30,9 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
         let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
         if auth_header.is_failure() {
-            return auth_header.map(|_| AdminOnlyRoute);
+            return auth_header
+                .map(|_| AdminOnlyRoute)
+                .map_failure(|_| (Status::Unauthorized, ApiError::Unauthorized));
         };
 
         let auth_header = auth_header.unwrap();
