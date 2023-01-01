@@ -1250,9 +1250,12 @@ dependencies = [
 
 [[package]]
 name = "foundation"
-version = "0.4.0"
-source = "git+https://github.com/Accurate0/foundation.git?tag=v0.4.0#085e8392eb74223c63fb0b4c066fb9591afad51a"
+version = "0.5.3"
+source = "git+https://github.com/Accurate0/foundation.git?tag=v0.5.3#d9a47e8a5ad5e228c9cfb51ae3b830c680ad88c7"
 dependencies = [
+ "aliri",
+ "aliri_clock",
+ "aliri_oauth2",
  "anyhow",
  "aws-config",
  "aws-sdk-s3",
