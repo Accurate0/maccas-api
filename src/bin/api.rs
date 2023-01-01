@@ -53,16 +53,11 @@ async fn main() -> Result<(), LambdaError> {
     );
 
     let authority = if config.api.jwt.validate {
-        let validator = aliri::jwt::CoreValidator::default()
-            .add_allowed_audience(aliri::jwt::Audience::from(
-                config.api.jwt.allowed_audience.clone(),
-            ))
-            .with_leeway_secs(10)
-            .check_expiration()
-            .check_not_before();
-        let auth =
-            aliri_oauth2::Authority::new_from_url(config.api.jwt.jwks_url.clone(), validator)
-                .await?;
+        let auth = foundation::jwt::create_authority_with_defaults(
+            config.api.jwt.jwks_url.clone(),
+            config.api.jwt.allowed_audience.clone(),
+        )
+        .await?;
         // not sure if needed
         auth.spawn_refresh(Duration::from_secs(60));
         Some(auth)

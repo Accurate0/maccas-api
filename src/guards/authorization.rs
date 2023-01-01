@@ -1,8 +1,5 @@
-use crate::{
-    routes,
-    types::{error::ApiError, jwt::JwtClaim},
-};
-use aliri_oauth2::ScopePolicy;
+use crate::{routes, types::error::ApiError};
+use foundation::{extensions::AliriOAuth2Extensions, types::jwt::JwtClaim};
 use http::header;
 use jwt::{Header, Token};
 use rocket::{
@@ -45,9 +42,7 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
             Some(auth) => {
                 let token = auth.replace("Bearer ", "");
                 if let Some(authority) = &ctx.authority {
-                    let jwt = aliri::jwt::Jwt::new(token);
-                    let jwt_result =
-                        authority.verify_token::<JwtClaim>(jwt.as_ref(), &ScopePolicy::allow_any());
+                    let jwt_result = authority.verify_token_from_str::<JwtClaim>(&token);
                     match jwt_result {
                         Ok(jwt) => {
                             log::info!("verified jwt for {}", jwt.oid);

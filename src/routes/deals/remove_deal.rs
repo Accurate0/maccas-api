@@ -1,11 +1,9 @@
 use crate::{
-    constants::mc_donalds,
-    database::types::AuditActionType,
-    guards::authorization::AuthorizationHeader,
-    retry::wrap_in_middleware,
-    routes,
-    types::{error::ApiError, jwt::JwtClaim},
+    constants::mc_donalds, database::types::AuditActionType,
+    guards::authorization::AuthorizationHeader, retry::wrap_in_middleware, routes,
+    types::error::ApiError,
 };
+use foundation::types::jwt::JwtClaim;
 use jwt::{Header, Token};
 use rocket::{http::Status, State};
 
