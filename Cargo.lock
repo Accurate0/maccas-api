@@ -1250,8 +1250,8 @@ dependencies = [
 
 [[package]]
 name = "foundation"
-version = "0.5.3"
-source = "git+https://github.com/Accurate0/foundation.git?tag=v0.5.3#d9a47e8a5ad5e228c9cfb51ae3b830c680ad88c7"
+version = "0.6.1"
+source = "git+https://github.com/Accurate0/foundation.git?tag=v0.6.1#9edd8a766c34d165c87d39fdf8f5995b193ca086"
 dependencies = [
  "aliri",
  "aliri_clock",
@@ -1263,6 +1263,7 @@ dependencies = [
  "config",
  "fern",
  "http 0.2.8",
+ "jwt",
  "lazy_static",
  "log",
  "mime",

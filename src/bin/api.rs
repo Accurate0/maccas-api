@@ -52,24 +52,24 @@ async fn main() -> Result<(), LambdaError> {
         &config.database.indexes,
     );
 
-    let authority = if config.api.jwt.validate {
-        let auth = foundation::jwt::create_authority_with_defaults(
+    let rocket = rocket::build();
+    let rocket = if config.api.jwt.validate {
+        let authority = foundation::jwt::create_authority_with_defaults(
             config.api.jwt.jwks_url.clone(),
             config.api.jwt.allowed_audience.clone(),
         )
         .await?;
         // not sure if needed
-        auth.spawn_refresh(Duration::from_secs(60));
-        Some(auth)
+        authority.spawn_refresh(Duration::from_secs(60));
+        rocket.manage(authority)
     } else {
-        None
+        rocket
     };
 
     let context = routes::Context {
         sqs_client,
         config,
         database: Box::new(database),
-        authority,
     };
 
     let config = Config {
@@ -78,7 +78,7 @@ async fn main() -> Result<(), LambdaError> {
         ..Default::default()
     };
 
-    let rocket = rocket::build()
+    let rocket = rocket
         .manage(context)
         .register(
             "/",
