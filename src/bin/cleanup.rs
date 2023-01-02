@@ -7,7 +7,6 @@ use maccas::constants::mc_donalds::default;
 use maccas::database::types::AuditActionType;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
-use maccas::retry::wrap_in_middleware;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{CleanupMessage, SqsEvent};
 
@@ -34,7 +33,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = foundation::http::get_http_client(wrap_in_middleware);
+    let http_client = foundation::http::get_default_http_client();
 
     let locked_deals = database.get_all_locked_deals().await?;
     let mut valid_records = event.payload.records;

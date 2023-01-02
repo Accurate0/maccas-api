@@ -1,7 +1,7 @@
 use crate::{
     guards::admin::AdminOnlyRoute,
     routes,
-    shared::generate_spending_information,
+    spending::generate_spending_information,
     types::{
         api::{AdminUserSpending, AdminUserSpendingMap},
         error::ApiError,

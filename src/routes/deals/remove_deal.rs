@@ -1,7 +1,6 @@
 use crate::{
     constants::mc_donalds, database::types::AuditActionType,
-    guards::authorization::AuthorizationHeader, retry::wrap_in_middleware, routes,
-    types::error::ApiError,
+    guards::authorization::AuthorizationHeader, routes, types::error::ApiError,
 };
 use foundation::types::jwt::JwtClaim;
 use jwt::{Header, Token};
@@ -24,7 +23,7 @@ pub async fn remove_deal(
     auth: AuthorizationHeader,
 ) -> Result<Status, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = foundation::http::get_http_client(wrap_in_middleware);
+        let http_client = foundation::http::get_default_http_client();
         let api_client = ctx
             .database
             .get_specific_client(
