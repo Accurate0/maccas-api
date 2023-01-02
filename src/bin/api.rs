@@ -16,6 +16,7 @@ use maccas::routes::deals::get_deals::get_deals;
 use maccas::routes::deals::get_last_refresh::last_refresh;
 use maccas::routes::deals::remove_deal::remove_deal;
 use maccas::routes::docs::openapi::get_openapi;
+use maccas::routes::health::status::status;
 use maccas::routes::locations::get_locations::get_locations;
 use maccas::routes::locations::search_locations::search_locations;
 use maccas::routes::points::get_by_id::get_points_by_id;
@@ -27,16 +28,19 @@ use maccas::routes::user::config::update_user_config;
 use maccas::routes::user::spending::get_user_spending;
 use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
-use rocket::http::Method;
 use rocket::Config;
-use rocket_cors::{AllowedHeaders, AllowedOrigins};
-use rocket_lamb::RocketExt;
 use std::time::Duration;
+
+#[cfg(debug_assertions)]
+use {
+    rocket::http::Method,
+    rocket_cors::{AllowedHeaders, AllowedOrigins},
+};
 
 #[macro_use]
 extern crate rocket;
 
-#[tokio::main]
+#[rocket::main]
 async fn main() -> Result<(), LambdaError> {
     foundation::log::init_logger();
     logging::dump_build_details();
@@ -87,6 +91,7 @@ async fn main() -> Result<(), LambdaError> {
         .mount(
             "/",
             routes![
+                status,
                 get_code,
                 get_openapi,
                 get_deal,
@@ -111,9 +116,8 @@ async fn main() -> Result<(), LambdaError> {
         )
         .configure(config);
 
-    if is_aws {
-        rocket.lambda().launch().await
-    } else {
+    #[cfg(debug_assertions)]
+    let rocket = {
         let allowed_origins =
             AllowedOrigins::some_exact(&["https://maccas.anurag.sh", "http://localhost:3000"]);
         let cors = rocket_cors::CorsOptions {
@@ -133,13 +137,15 @@ async fn main() -> Result<(), LambdaError> {
             ..Default::default()
         }
         .to_cors()?;
-        match rocket.attach(cors).launch().await {
-            Ok(_) => {
-                log::info!("exiting...")
-            }
-            Err(e) => log::error!("error during launch: {}", e),
-        };
-    }
+        rocket.attach(cors)
+    };
+
+    match rocket.launch().await {
+        Ok(_) => {
+            log::info!("exiting...")
+        }
+        Err(e) => log::error!("error during launch: {}", e),
+    };
 
     Ok(())
 }
