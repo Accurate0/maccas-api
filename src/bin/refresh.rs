@@ -12,7 +12,6 @@ use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
-use maccas::retry::wrap_in_middleware;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::ImagesRefreshMessage;
@@ -48,7 +47,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = foundation::http::get_http_client(wrap_in_middleware);
+    let http_client = foundation::http::get_default_http_client();
 
     let mut has_error = false;
     let embed = EmbedBuilder::new()

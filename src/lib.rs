@@ -7,9 +7,8 @@ pub mod extensions;
 pub mod guards;
 pub mod images;
 pub mod logging;
-pub mod retry;
 pub mod routes;
-pub mod shared;
+pub mod spending;
 pub mod types;
 pub mod webhook;
 

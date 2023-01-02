@@ -1,6 +1,5 @@
 use crate::{
     constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
-    retry::wrap_in_middleware,
     routes,
     types::{error::ApiError, user::UserOptions},
 };
@@ -48,7 +47,7 @@ pub async fn update_user_config(
     let user_id = auth.claims.oid;
     let user_name = auth.claims.name;
 
-    let http_client = foundation::http::get_http_client(wrap_in_middleware);
+    let http_client = foundation::http::get_default_http_client();
     let account = &ctx.config.mcdonalds.service_account;
     let account = &account.into();
     let api_client = ctx

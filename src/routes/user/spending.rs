@@ -1,4 +1,4 @@
-use crate::{routes, shared, types::api::UserSpending, types::error::ApiError};
+use crate::{routes, spending, types::api::UserSpending, types::error::ApiError};
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{serde::json::Json, State};
 
@@ -22,5 +22,5 @@ pub async fn get_user_spending(
         .await
         .unwrap_or_default();
 
-    Ok(Json(shared::generate_spending_information(&entries)))
+    Ok(Json(spending::generate_spending_information(&entries)))
 }
