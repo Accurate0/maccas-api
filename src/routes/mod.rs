@@ -5,6 +5,7 @@ pub mod catchers;
 pub mod code;
 pub mod deals;
 pub mod docs;
+pub mod health;
 pub mod locations;
 pub mod points;
 pub mod statistics;

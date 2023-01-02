@@ -25,7 +25,6 @@ strum_macros = "0.24"
 twilight-model = "0.14.0"
 twilight-util = { version = "0.14.0", features = ["builder"] }
 
-rocket_lamb = { git = "https://github.com/Accurate0/rocket-lamb.git", rev = "044ac92" }
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
 
