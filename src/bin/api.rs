@@ -119,7 +119,7 @@ async fn main() -> Result<(), LambdaError> {
     #[cfg(debug_assertions)]
     let rocket = {
         let allowed_origins =
-            AllowedOrigins::some_exact(&["https://maccas.anurag.sh", "http://localhost:3000"]);
+            AllowedOrigins::some_exact(&["https://dev.maccas.anurag.sh", "http://localhost:3000"]);
         let cors = rocket_cors::CorsOptions {
             allowed_origins,
             allowed_methods: vec![Method::Get, Method::Post, Method::Delete]
