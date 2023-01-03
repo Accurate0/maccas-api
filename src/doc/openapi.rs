@@ -8,6 +8,7 @@ use crate::routes::deals::get_deal::*;
 use crate::routes::deals::get_deals::*;
 use crate::routes::deals::get_last_refresh::*;
 use crate::routes::deals::remove_deal::*;
+use crate::routes::health::status::*;
 use crate::routes::locations::get_locations::*;
 use crate::routes::locations::search_locations::*;
 use crate::routes::points::get_by_id::*;
@@ -47,7 +48,8 @@ use utoipa::OpenApi;
         unlock_deal,
         lock_deal,
         get_user_spending,
-        get_all_user_spending
+        get_all_user_spending,
+        status
     ),
     components(
         responses(),
