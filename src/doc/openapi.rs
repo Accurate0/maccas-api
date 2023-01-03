@@ -1,4 +1,5 @@
 use crate::routes::admin::get_locked_deals::*;
+use crate::routes::admin::get_spending::*;
 use crate::routes::admin::lock_deal::*;
 use crate::routes::admin::unlock_deal::*;
 use crate::routes::code::get_code::*;
@@ -45,7 +46,8 @@ use utoipa::OpenApi;
         get_locked_deals,
         unlock_deal,
         lock_deal,
-        get_user_spending
+        get_user_spending,
+        get_all_user_spending
     ),
     components(
         responses(),
