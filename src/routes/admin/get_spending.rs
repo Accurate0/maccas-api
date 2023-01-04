@@ -55,6 +55,10 @@ pub async fn get_all_user_spending(
         .map(|e| {
             let spending_information = generate_spending_information(&e);
             let user_id = e.first().unwrap().user_id.clone();
+            (spending_information, user_id)
+        })
+        .filter(|(spending_information, _)| !spending_information.items.is_empty())
+        .map(|(spending_information, user_id)| {
             let name = user_list
                 .iter()
                 .find(|u| u.id == user_id)
