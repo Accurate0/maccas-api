@@ -6,9 +6,9 @@ use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::mc_donalds::default;
 use maccas::database::types::AuditActionType;
 use maccas::database::{Database, DynamoDatabase};
-use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{CleanupMessage, SqsEvent};
+use maccas::{logging, proxy};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -33,7 +33,9 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = foundation::http::get_default_http_client();
+
+    let proxy = proxy::get_proxy(&config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
     let locked_deals = database.get_all_locked_deals().await?;
     let mut valid_records = event.payload.records;

@@ -2,12 +2,12 @@ use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
-use crate::routes;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::images::OfferImageBaseName;
 use crate::types::sqs::{CleanupMessage, ImagesRefreshMessage};
 use crate::webhook::execute::execute_discord_webhooks;
+use crate::{proxy, routes};
 use anyhow::Context;
 use chrono::Duration;
 use foundation::types::jwt::JwtClaim;
@@ -32,7 +32,8 @@ pub async fn add_deal(
     auth: AuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = foundation::http::get_default_http_client();
+        let proxy = proxy::get_proxy(&ctx.config);
+        let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = ctx
             .database
             .get_specific_client(

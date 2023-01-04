@@ -1,6 +1,6 @@
 use crate::{
     constants::mc_donalds,
-    routes,
+    proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -20,7 +20,8 @@ pub async fn get_locations(
     latitude: f64,
     longitude: f64,
 ) -> Result<Json<Vec<RestaurantInformation>>, ApiError> {
-    let http_client = foundation::http::get_default_http_client();
+    let proxy = proxy::get_proxy(&ctx.config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let account = &ctx.config.mcdonalds.service_account;
     let account = &account.into();
     let api_client = ctx

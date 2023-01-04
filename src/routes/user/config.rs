@@ -1,6 +1,6 @@
 use crate::{
     constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
-    routes,
+    proxy, routes,
     types::{error::ApiError, user::UserOptions},
 };
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
@@ -47,7 +47,8 @@ pub async fn update_user_config(
     let user_id = auth.claims.oid;
     let user_name = auth.claims.name;
 
-    let http_client = foundation::http::get_default_http_client();
+    let proxy = proxy::get_proxy(&ctx.config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let account = &ctx.config.mcdonalds.service_account;
     let account = &account.into();
     let api_client = ctx

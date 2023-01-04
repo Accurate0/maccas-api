@@ -1,6 +1,6 @@
 use crate::{
     constants::{mc_donalds, LOCATION_SEARCH_DISTANCE},
-    routes,
+    proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
 use foundation::constants;
@@ -24,7 +24,8 @@ pub async fn search_locations(
     text: &str,
     correlation_id: CorrelationId,
 ) -> Result<Json<RestaurantInformation>, ApiError> {
-    let http_client = foundation::http::get_default_http_client();
+    let proxy = proxy::get_proxy(&ctx.config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
     let response = http_client
         .request(
