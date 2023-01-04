@@ -925,15 +925,6 @@ impl Database for DynamoDatabase {
             let proxy = proxy::get_proxy(config);
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
-            let ip_response = http_client
-                .get("https://api.anurag.sh/ip/v1/ip")
-                .send()
-                .await?
-                .text()
-                .await?;
-
-            log::info!("ip information: {}", ip_response);
-
             match self
                 .get_specific_client(
                     http_client,
