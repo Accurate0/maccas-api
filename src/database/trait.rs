@@ -1,7 +1,7 @@
 use super::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
-use crate::types::{audit::AuditEntry, refresh::RefreshOfferCache};
+use crate::types::{audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache};
 use async_trait::async_trait;
 use chrono::Duration;
 use libmaccas::ApiClient;
@@ -24,13 +24,13 @@ pub trait Database {
     ) -> Result<(), anyhow::Error>;
     async fn refresh_offer_cache(
         &self,
-        client_map: &HashMap<UserAccountDatabase, ApiClient<'_>>,
+        client_map: &HashMap<UserAccountDatabase, ApiClient>,
         ignored_offer_ids: &[i64],
     ) -> Result<RefreshOfferCache, anyhow::Error>;
     async fn refresh_point_cache_for(
         &self,
         account: &UserAccountDatabase,
-        api_client: &ApiClient<'_>,
+        api_client: &ApiClient,
     ) -> Result<(), anyhow::Error>;
     async fn get_point_map(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error>;
     async fn get_points_by_account_hash(
@@ -40,7 +40,7 @@ pub trait Database {
     async fn refresh_offer_cache_for(
         &self,
         account: &UserAccountDatabase,
-        api_client: &ApiClient<'_>,
+        api_client: &ApiClient,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error>;
     async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error>;
@@ -60,22 +60,22 @@ pub trait Database {
     ) -> Result<(), anyhow::Error>;
     async fn get_specific_client<'a>(
         &self,
-        http_client: &'a reqwest_middleware::ClientWithMiddleware,
+        http_client: reqwest_middleware::ClientWithMiddleware,
         client_id: &'a str,
         client_secret: &'a str,
         sensor_data: &'a str,
         account: &'a UserAccountDatabase,
         force_login: bool,
-    ) -> Result<ApiClient<'a>, anyhow::Error>;
+    ) -> Result<ApiClient, anyhow::Error>;
     async fn get_client_map<'a>(
         &self,
-        http_client: &'a reqwest_middleware::ClientWithMiddleware,
+        config: &GeneralConfig,
         client_id: &'a str,
         client_secret: &'a str,
         sensor_data: &'a str,
         account_list: &'a [UserAccountDatabase],
         force_login: bool,
-    ) -> Result<(HashMap<UserAccountDatabase, ApiClient<'a>>, Vec<String>), anyhow::Error>;
+    ) -> Result<(HashMap<UserAccountDatabase, ApiClient>, Vec<String>), anyhow::Error>;
     async fn lock_deal(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error>;
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error>;
     async fn get_all_locked_deals(&self) -> Result<Vec<String>, anyhow::Error>;

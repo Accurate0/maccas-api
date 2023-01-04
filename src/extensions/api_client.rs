@@ -7,7 +7,7 @@ pub trait ApiClientExtensions {
 }
 
 #[async_trait]
-impl ApiClientExtensions for ApiClient<'_> {
+impl ApiClientExtensions for ApiClient {
     async fn remove_all_from_deal_stack(&self) {
         // honestly, we don't want failures here, so we'll probably just suppress them...
         let deal_stack = self

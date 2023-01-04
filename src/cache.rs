@@ -12,7 +12,7 @@ lazy_static! {
 }
 
 pub async fn get_offer_details(
-    api_client: &ApiClient<'_>,
+    api_client: &ApiClient,
     offer_proposition_id: i64,
 ) -> Result<OfferDetailsResponse, anyhow::Error> {
     if let Some(v) = OFFER_DETAILS_CACHE

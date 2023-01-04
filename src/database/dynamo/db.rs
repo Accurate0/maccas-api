@@ -1,5 +1,4 @@
 use super::DynamoDatabase;
-use crate::cache;
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO,
@@ -12,7 +11,9 @@ use crate::database::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::types::audit::AuditEntry;
+use crate::types::config::GeneralConfig;
 use crate::types::refresh::RefreshOfferCache;
+use crate::{cache, proxy};
 use anyhow::{bail, Context};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
@@ -290,7 +291,7 @@ impl Database for DynamoDatabase {
 
     async fn refresh_offer_cache(
         &self,
-        client_map: &HashMap<UserAccountDatabase, ApiClient<'_>>,
+        client_map: &HashMap<UserAccountDatabase, ApiClient>,
         ignored_offer_ids: &[i64],
     ) -> Result<RefreshOfferCache, anyhow::Error> {
         let mut failed_accounts = Vec::new();
@@ -326,7 +327,7 @@ impl Database for DynamoDatabase {
     async fn refresh_point_cache_for(
         &self,
         account: &UserAccountDatabase,
-        api_client: &ApiClient<'_>,
+        api_client: &ApiClient,
     ) -> Result<(), anyhow::Error> {
         match api_client.get_customer_points().await {
             Ok(resp) => {
@@ -469,7 +470,7 @@ impl Database for DynamoDatabase {
     async fn refresh_offer_cache_for(
         &self,
         account: &UserAccountDatabase,
-        api_client: &ApiClient<'_>,
+        api_client: &ApiClient,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error> {
         log::info!("{}: fetching offers", account.account_name);
@@ -672,16 +673,16 @@ impl Database for DynamoDatabase {
 
     async fn get_specific_client<'b>(
         &self,
-        http_client: &'b reqwest_middleware::ClientWithMiddleware,
+        http_client: reqwest_middleware::ClientWithMiddleware,
         client_id: &'b str,
         client_secret: &'b str,
         sensor_data: &'b str,
         account: &'b UserAccountDatabase,
         force_login: bool,
-    ) -> Result<ApiClient<'b>, anyhow::Error> {
+    ) -> Result<ApiClient, anyhow::Error> {
         let mut api_client = ApiClient::new(
             mc_donalds::default::BASE_URL.to_string(),
-            http_client,
+            http_client.to_owned(),
             client_id.to_string(),
         );
 
@@ -911,16 +912,28 @@ impl Database for DynamoDatabase {
 
     async fn get_client_map<'b>(
         &self,
-        http_client: &'b reqwest_middleware::ClientWithMiddleware,
+        config: &GeneralConfig,
         client_id: &'b str,
         client_secret: &'b str,
         sensor_data: &'b str,
         account_list: &'b [UserAccountDatabase],
         force_login: bool,
-    ) -> Result<(HashMap<UserAccountDatabase, ApiClient<'b>>, Vec<String>), anyhow::Error> {
+    ) -> Result<(HashMap<UserAccountDatabase, ApiClient>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
-        let mut client_map = HashMap::<UserAccountDatabase, ApiClient<'_>>::new();
+        let mut client_map = HashMap::<UserAccountDatabase, ApiClient>::new();
         for user in account_list {
+            let proxy = proxy::get_proxy(config);
+            let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
+
+            let ip_response = http_client
+                .get("https://api.anurag.sh/ip/v1/ip")
+                .send()
+                .await?
+                .text()
+                .await?;
+
+            log::info!("ip information: {}", ip_response);
+
             match self
                 .get_specific_client(
                     http_client,

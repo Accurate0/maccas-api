@@ -60,9 +60,8 @@
         "clearDealStacks": false,
         "proxy": {
             "address": null,
-            "usernamePrefix": null,
-            "password": null,
-            "count": 5
+            "username": null,
+            "password": null
         }
     },
     "api": {

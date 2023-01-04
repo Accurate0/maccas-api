@@ -37,7 +37,7 @@ pub async fn add_deal(
         let api_client = ctx
             .database
             .get_specific_client(
-                &http_client,
+                http_client,
                 &ctx.config.mcdonalds.client_id,
                 &ctx.config.mcdonalds.client_secret,
                 &ctx.config.mcdonalds.sensor_data,
@@ -173,6 +173,7 @@ pub async fn add_deal(
                     _ => "Error getting store name".to_string(),
                 };
 
+                let http_client = foundation::http::get_default_http_client();
                 execute_discord_webhooks(&http_client, &ctx.config, user_name, &offer, &store_name)
                     .await;
             }

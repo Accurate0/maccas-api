@@ -51,6 +51,15 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let proxy = proxy::get_proxy(&config);
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
+    let ip_response = http_client
+        .get("https://api.anurag.sh/ip/v1/ip")
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    log::info!("ip information: {}", ip_response);
+
     let mut has_error = false;
     let embed = EmbedBuilder::new()
         .color(mc_donalds::RED)
@@ -74,7 +83,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         .collect_vec();
     let (client_map, login_failed_accounts) = database
         .get_client_map(
-            &http_client,
+            &config,
             &config.mcdonalds.client_id,
             &config.mcdonalds.client_secret,
             &config.mcdonalds.sensor_data,

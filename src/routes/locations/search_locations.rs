@@ -44,7 +44,7 @@ pub async fn search_locations(
     let api_client = ctx
         .database
         .get_specific_client(
-            &http_client,
+            http_client,
             &ctx.config.mcdonalds.client_id,
             &ctx.config.mcdonalds.client_secret,
             &ctx.config.mcdonalds.sensor_data,

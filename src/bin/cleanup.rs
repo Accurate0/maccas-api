@@ -34,9 +34,6 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.indexes,
     ));
 
-    let proxy = proxy::get_proxy(&config);
-    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-
     let locked_deals = database.get_all_locked_deals().await?;
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
@@ -59,9 +56,12 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         }
 
         let (account, offer) = database.get_offer_by_id(&message.deal_uuid).await?;
+        let proxy = proxy::get_proxy(&config);
+        let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
+
         let api_client = database
             .get_specific_client(
-                &http_client,
+                http_client,
                 &config.mcdonalds.client_id,
                 &config.mcdonalds.client_secret,
                 &config.mcdonalds.sensor_data,
