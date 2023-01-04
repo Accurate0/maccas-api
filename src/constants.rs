@@ -1,7 +1,5 @@
 pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
-pub const LOG_SOURCE_HEADER: &str = "X-Source";
-pub const SOURCE_NAME: &str = "MaccasWeb";
 pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
 pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
 pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
