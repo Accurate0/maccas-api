@@ -84,9 +84,8 @@ pub struct DatabaseConfig {
 #[serde(rename_all = "camelCase")]
 pub struct ProxyConfig {
     pub address: String,
-    pub username_prefix: String,
+    pub username: String,
     pub password: String,
-    pub count: i8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
