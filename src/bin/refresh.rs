@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
@@ -11,10 +13,10 @@ use maccas::constants::mc_donalds;
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
+use maccas::logging;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::ImagesRefreshMessage;
-use maccas::{logging, proxy};
 use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -28,6 +30,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
+    let now = Instant::now();
     let shared_config = aws::config::get_shared_config().await;
 
     let env = std::env::var(AWS_REGION)
@@ -47,18 +50,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-
-    let proxy = proxy::get_proxy(&config);
-    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-
-    let ip_response = http_client
-        .get("https://api.anurag.sh/ip/v1/ip")
-        .send()
-        .await?
-        .text()
-        .await?;
-
-    log::info!("ip information: {}", ip_response);
 
     let mut has_error = false;
     let embed = EmbedBuilder::new()
@@ -155,6 +146,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
         match embed.validate() {
             Ok(embed) => {
+                let http_client = foundation::http::get_default_http_client();
                 message.add_embed(embed.build());
 
                 for webhook_url in &config.refresh.discord_error.webhooks {
@@ -169,5 +161,9 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         }
     }
 
+    log::info!(
+        "completed refresh task in {} seconds",
+        now.elapsed().as_secs()
+    );
     Ok(())
 }
