@@ -82,11 +82,21 @@ pub struct DatabaseConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct ProxyConfig {
+    pub address: String,
+    pub username_prefix: String,
+    pub password: String,
+    pub count: i8,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct RefreshConfig {
     pub refresh_counts: HashMap<String, i8>,
     pub discord_error: DiscordConfig,
     pub enabled: bool,
     pub clear_deal_stacks: bool,
+    pub proxy: ProxyConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

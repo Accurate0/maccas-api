@@ -1,6 +1,6 @@
 use crate::{
     constants::mc_donalds,
-    routes,
+    proxy, routes,
     types::{api::OfferResponse, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -20,7 +20,8 @@ pub async fn get_code(
     store: i64,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let http_client = foundation::http::get_default_http_client();
+        let proxy = proxy::get_proxy(&ctx.config);
+        let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = ctx
             .database
             .get_specific_client(

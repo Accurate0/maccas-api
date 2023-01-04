@@ -57,7 +57,13 @@
             "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
             "username": "Maccas Service"
         },
-        "clearDealStacks": false
+        "clearDealStacks": false,
+        "proxy": {
+            "address": null,
+            "usernamePrefix": null,
+            "password": null,
+            "count": 20
+        }
     },
     "api": {
         "apiKey": null,

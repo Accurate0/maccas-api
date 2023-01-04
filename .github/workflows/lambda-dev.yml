@@ -77,5 +77,8 @@ jobs:
           api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
           api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
           refresh__discord_error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
+          refresh__proxy__username_prefix: ${{ secrets.API_CONFIG_REFRESH_PROXY_USERNAME_PREFIX }}
+          refresh__proxy__password: ${{ secrets.API_CONFIG_REFRESH_PROXY_PASSWORD }}
+          refresh__proxy__address: ${{ secrets.API_CONFIG_REFRESH_PROXY_ADDRESS }}
       - name: upload to s3
         run: aws s3 cp base-config.json s3://maccas-application-config/base-config-dev.json

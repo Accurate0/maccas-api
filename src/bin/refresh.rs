@@ -11,10 +11,10 @@ use maccas::constants::mc_donalds;
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
-use maccas::logging;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::ImagesRefreshMessage;
+use maccas::{logging, proxy};
 use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -47,7 +47,9 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-    let http_client = foundation::http::get_default_http_client();
+
+    let proxy = proxy::get_proxy(&config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
     let mut has_error = false;
     let embed = EmbedBuilder::new()

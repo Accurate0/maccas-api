@@ -1,7 +1,7 @@
 use crate::{
     constants::mc_donalds,
     guards::protected::ProtectedRoute,
-    routes,
+    proxy, routes,
     types::{api::OfferPointsResponse, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -25,7 +25,8 @@ pub async fn get_points_by_id(
     store: i64,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
     if let Ok((account, points)) = ctx.database.get_points_by_account_hash(account_id).await {
-        let http_client = foundation::http::get_default_http_client();
+        let proxy = proxy::get_proxy(&ctx.config);
+        let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = ctx
             .database
             .get_specific_client(

@@ -7,6 +7,7 @@ pub mod extensions;
 pub mod guards;
 pub mod images;
 pub mod logging;
+pub mod proxy;
 pub mod routes;
 pub mod spending;
 pub mod types;
