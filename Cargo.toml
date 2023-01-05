@@ -61,7 +61,7 @@ lazy_static = "1.4.0"
 foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.7.0", features = ["discord", "aws", "rocket", "http", "types", "jwt"] }
 
 [build-dependencies]
-vergen = "7.4.2"
+vergen = "7.5.0"
 
 # [patch.crates-io]
 # libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
