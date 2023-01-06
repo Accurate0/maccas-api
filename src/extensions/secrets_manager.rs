@@ -4,13 +4,13 @@ use crate::constants::config::{CONFIG_APIM_API_KEY_ID, CONFIG_JWT_BYPASS_ID};
 
 #[async_trait]
 pub trait SecretsManagerExtensions {
-    async fn get_apim_api_key(&self) -> &str;
-    async fn get_jwt_bypass_key(&self) -> &str;
+    async fn get_apim_api_key(&self) -> String;
+    async fn get_jwt_bypass_key(&self) -> String;
 }
 
 #[async_trait]
 impl SecretsManagerExtensions for aws_sdk_secretsmanager::Client {
-    async fn get_apim_api_key(&self) -> &str {
+    async fn get_apim_api_key(&self) -> String {
         self.get_secret_value()
             .secret_id(CONFIG_APIM_API_KEY_ID)
             .send()
@@ -20,9 +20,10 @@ impl SecretsManagerExtensions for aws_sdk_secretsmanager::Client {
             .secret_string()
             .context("must get APIM api key")
             .unwrap()
+            .to_string()
     }
 
-    async fn get_jwt_bypass_key(&self) -> &str {
+    async fn get_jwt_bypass_key(&self) -> String {
         self.get_secret_value()
             .secret_id(CONFIG_JWT_BYPASS_ID)
             .send()
@@ -32,5 +33,6 @@ impl SecretsManagerExtensions for aws_sdk_secretsmanager::Client {
             .secret_string()
             .context("must get JWT bypass key")
             .unwrap()
+            .to_string()
     }
 }
