@@ -65,14 +65,12 @@ jobs:
         with:
           __inputFile: ./config.json
           __outputFile: ./base-config.json
-          api__api_key: ${{ secrets.API_CONFIG_API_KEY }}
           mcdonalds__client_id: ${{ secrets.API_CONFIG_CLIENT_ID }}
           mcdonalds__client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
           mcdonalds__sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
           mcdonalds__service_account__account_name: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT_NAME }}
           mcdonalds__service_account__login_username: ${{ secrets.API_CONFIG_SERVICE_USERNAME }}
           mcdonalds__service_account__login_password: ${{ secrets.API_CONFIG_SERVICE_PASSWORD }}
-          api__jwt__bypass_key: ${{ secrets.API_CONFIG_JWT_BYPASS_KEY }}
           api__jwt__jwks_url: ${{ secrets.API_CONFIG_JWKS_URL }}
           api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
           api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}

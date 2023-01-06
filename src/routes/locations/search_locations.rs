@@ -1,5 +1,6 @@
 use crate::{
     constants::{mc_donalds, LOCATION_SEARCH_DISTANCE},
+    extensions::SecretsManagerExtensions,
     proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
@@ -24,20 +25,24 @@ pub async fn search_locations(
     text: &str,
     correlation_id: CorrelationId,
 ) -> Result<Json<RestaurantInformation>, ApiError> {
-    let proxy = proxy::get_proxy(&ctx.config);
-    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-
+    let http_client = foundation::http::get_default_http_client();
     let response = http_client
         .request(
             Method::GET,
             format!("{}/place?text={}", constants::PLACES_API_BASE_URL, text,).as_str(),
         )
         .header(CORRELATION_ID_HEADER, correlation_id.0)
-        .header(X_API_KEY_HEADER, &ctx.config.api.api_key)
+        .header(
+            X_API_KEY_HEADER,
+            &ctx.secrets_client.get_apim_api_key().await,
+        )
         .send()
         .await?
         .json::<PlacesResponse>()
         .await?;
+
+    let proxy = proxy::get_proxy(&ctx.config);
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
     let account = &ctx.config.mcdonalds.service_account;
     let account = &account.into();

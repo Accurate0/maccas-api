@@ -1,4 +1,3 @@
-pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
 pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
 pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
@@ -27,6 +26,9 @@ pub mod config {
     #[cfg(not(debug_assertions))]
     pub const BASE_FILE: &str = "base-config.json";
     pub const REGION_ACCOUNTS_FILE: &str = "{region}/accounts-{region}-{option}.json";
+    pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
+    pub const CONFIG_APIM_API_KEY_ID: &str = "MaccasApi-ApimApiKey";
+    pub const CONFIG_JWT_BYPASS_ID: &str = "MaccasApi-JwtBypassKey";
 }
 
 pub mod db {

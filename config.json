@@ -65,7 +65,6 @@
         }
     },
     "api": {
-        "apiKey": null,
         "discordDealUse": {
             "enabled": true,
             "webhooks": [
@@ -76,7 +75,6 @@
         },
         "jwt": {
             "validate": false,
-            "bypassKey": null,
             "jwksUrl": null,
             "allowedAudience": "f285a3b9-c589-4fae-971e-edd635df6b96"
         }

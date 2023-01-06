@@ -1,5 +1,8 @@
 use crate::{
-    constants::{self, config::BASE_FILE, CONFIG_BUCKET_NAME},
+    constants::{
+        self,
+        config::{BASE_FILE, CONFIG_BUCKET_NAME},
+    },
     types::config::{GeneralConfig, UserList},
 };
 

@@ -47,7 +47,6 @@ pub struct DiscordConfig {
 #[serde(rename_all = "camelCase")]
 pub struct JwtConfig {
     pub validate: bool,
-    pub bypass_key: String,
     pub jwks_url: String,
     pub allowed_audience: String,
 }
@@ -108,7 +107,6 @@ pub struct CleanupConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
-    pub api_key: String,
     pub discord_deal_use: DiscordConfig,
     pub jwt: JwtConfig,
 }

@@ -8,7 +8,7 @@ use maccas::routes::admin::get_locked_deals::get_locked_deals;
 use maccas::routes::admin::get_spending::get_all_user_spending;
 use maccas::routes::admin::lock_deal::lock_deal;
 use maccas::routes::admin::unlock_deal::unlock_deal;
-use maccas::routes::catchers::{default, internal_server_error, not_authenticated, not_found};
+use maccas::routes::catchers::default;
 use maccas::routes::code::get_code::get_code;
 use maccas::routes::deals::add_deal::add_deal;
 use maccas::routes::deals::get_deal::get_deal;
@@ -50,6 +50,7 @@ async fn main() -> Result<(), LambdaError> {
     let config = GeneralConfig::load_from_s3(&shared_config).await?;
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
+    let secrets_client = aws_sdk_secretsmanager::Client::new(&shared_config);
     let database = DynamoDatabase::new(
         dynamodb_client,
         &config.database.tables,
@@ -71,6 +72,7 @@ async fn main() -> Result<(), LambdaError> {
     };
 
     let context = routes::Context {
+        secrets_client,
         sqs_client,
         config,
         database: Box::new(database),
@@ -84,10 +86,7 @@ async fn main() -> Result<(), LambdaError> {
 
     let rocket = rocket
         .manage(context)
-        .register(
-            "/",
-            catchers![default, not_found, internal_server_error, not_authenticated],
-        )
+        .register("/", catchers![default])
         .mount(
             "/",
             routes![
