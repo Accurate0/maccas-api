@@ -1,5 +1,5 @@
 use crate::{
-    constants::{mc_donalds, IMAGE_CDN},
+    constants::{config::IMAGE_CDN, mc_donalds},
     database::types::OfferDatabase,
     types::config::GeneralConfig,
 };

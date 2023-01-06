@@ -1,5 +1,5 @@
 use crate::{
-    constants::{mc_donalds, LOCATION_SEARCH_DISTANCE},
+    constants::mc_donalds::{self, default::LOCATION_SEARCH_DISTANCE},
     extensions::SecretsManagerExtensions,
     proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},

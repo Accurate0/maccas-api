@@ -1,4 +1,4 @@
-use crate::constants::IMAGE_CDN;
+use crate::constants::config::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
 use itertools::Itertools;

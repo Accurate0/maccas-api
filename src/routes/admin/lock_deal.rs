@@ -1,5 +1,5 @@
 use crate::{
-    constants::DEFAULT_LOCK_TTL_HOURS, guards::admin::AdminOnlyRoute, routes,
+    constants::config::DEFAULT_LOCK_TTL_HOURS, guards::admin::AdminOnlyRoute, routes,
     types::error::ApiError,
 };
 use chrono::Duration;

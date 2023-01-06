@@ -1,9 +1,3 @@
-pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
-pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
-pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
-pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
-pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
-
 pub mod mc_donalds {
     pub mod default {
         pub const BASE_URL: &str = "https://ap-prod.api.mcd.com";
@@ -14,6 +8,7 @@ pub mod mc_donalds {
         pub const LATITUDE: &str = "37.4219";
         pub const LONGITUDE: &str = "-122.084";
         pub const STORE_UNIQUE_ID_TYPE: &str = "NSN";
+        pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
     }
     pub const RED: u32 = 0xDA291C;
     pub const IMAGE_CDN: &str =
@@ -29,6 +24,10 @@ pub mod config {
     pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
     pub const CONFIG_APIM_API_KEY_ID: &str = "MaccasApi-ApimApiKey";
     pub const CONFIG_JWT_BYPASS_ID: &str = "MaccasApi-JwtBypassKey";
+    pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
+    pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
+    pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
+    pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
 }
 
 pub mod db {
