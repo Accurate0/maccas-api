@@ -34,7 +34,7 @@ pub async fn search_locations(
         .header(CORRELATION_ID_HEADER, correlation_id.0)
         .header(
             X_API_KEY_HEADER,
-            ctx.secrets_client.get_apim_api_key().await,
+            &ctx.secrets_client.get_apim_api_key().await,
         )
         .send()
         .await?
