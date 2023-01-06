@@ -13,6 +13,7 @@ pub mod user;
 
 pub struct Context<'a> {
     pub sqs_client: aws_sdk_sqs::Client,
+    pub secrets_client: aws_sdk_secretsmanager::Client,
     pub config: GeneralConfig,
     pub database: Box<dyn Database + Send + Sync + 'a>,
 }

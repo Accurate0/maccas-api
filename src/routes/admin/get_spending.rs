@@ -1,4 +1,5 @@
 use crate::{
+    extensions::SecretsManagerExtensions,
     guards::admin::AdminOnlyRoute,
     proxy, routes,
     spending::generate_spending_information,
@@ -36,7 +37,10 @@ pub async fn get_all_user_spending(
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let user_list = http_client
         .get(format!("{GRAPH_API_BASE_URL}/users"))
-        .header(X_API_KEY_HEADER, &ctx.config.api.api_key)
+        .header(
+            X_API_KEY_HEADER,
+            &ctx.secrets_client.get_apim_api_key().await,
+        )
         .header(CORRELATION_ID_HEADER, correlation_id.0)
         .send()
         .await?

@@ -1,9 +1,24 @@
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+
 use crate::constants::mc_donalds;
-use libmaccas::ApiClient;
+use lazy_static::lazy_static;
+use libmaccas::{types::response::OfferDetailsResponse, ApiClient};
 
 #[async_trait]
 pub trait ApiClientExtensions {
     async fn remove_all_from_deal_stack(&self);
+    async fn get_offer_details(
+        &self,
+        offer_proposition_id: i64,
+    ) -> Result<OfferDetailsResponse, anyhow::Error>;
+}
+
+lazy_static! {
+    static ref OFFER_DETAILS_CACHE: Arc<Mutex<HashMap<i64, OfferDetailsResponse>>> =
+        Arc::new(Mutex::new(HashMap::new()));
 }
 
 #[async_trait]
@@ -29,5 +44,34 @@ impl ApiClientExtensions for ApiClient {
                 }
             }
         };
+    }
+
+    async fn get_offer_details(
+        &self,
+        offer_proposition_id: i64,
+    ) -> Result<OfferDetailsResponse, anyhow::Error> {
+        if let Some(v) = OFFER_DETAILS_CACHE
+            .lock()
+            .unwrap()
+            .get(&offer_proposition_id)
+        {
+            log::info!(
+                "[get_offer_details] loading {} from cache",
+                offer_proposition_id
+            );
+            return Ok(v.clone());
+        }
+
+        log::info!(
+            "[get_offer_details] cache miss for {}",
+            offer_proposition_id
+        );
+        let result = self.offer_details(&offer_proposition_id).await?;
+        OFFER_DETAILS_CACHE
+            .lock()
+            .unwrap()
+            .insert(offer_proposition_id, result.body.clone());
+
+        Ok(result.body)
     }
 }

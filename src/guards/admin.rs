@@ -1,3 +1,4 @@
+use crate::extensions::SecretsManagerExtensions;
 use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{
@@ -23,7 +24,9 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
         let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
         if let Some(jwt_bypass_key) = jwt_bypass_key {
-            if !jwt_bypass_key.is_empty() && jwt_bypass_key == ctx.config.api.jwt.bypass_key {
+            if !jwt_bypass_key.is_empty()
+                && jwt_bypass_key == ctx.secrets_client.get_jwt_bypass_key().await
+            {
                 return Outcome::Success(AdminOnlyRoute);
             }
         }

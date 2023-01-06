@@ -10,10 +10,11 @@ use crate::database::r#trait::Database;
 use crate::database::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
 };
+use crate::extensions::ApiClientExtensions;
+use crate::proxy;
 use crate::types::audit::AuditEntry;
 use crate::types::config::GeneralConfig;
 use crate::types::refresh::RefreshOfferCache;
-use crate::{cache, proxy};
 use anyhow::{bail, Context};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
@@ -506,7 +507,7 @@ impl Database for DynamoDatabase {
                     .filter(|offer| !ignored_offer_ids.contains(&offer.offer_proposition_id))
                     .map(|offer| offer.offer_proposition_id)
                 {
-                    let res = cache::get_offer_details(api_client, offer_proposition_id).await?;
+                    let res = api_client.get_offer_details(offer_proposition_id).await?;
                     if let Some(offer) = res.response {
                         let total_price =
                             offer.product_sets.iter().fold(0f64, |accumulator, item| {
