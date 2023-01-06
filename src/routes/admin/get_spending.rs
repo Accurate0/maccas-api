@@ -1,7 +1,7 @@
 use crate::{
     extensions::SecretsManagerExtensions,
     guards::admin::AdminOnlyRoute,
-    proxy, routes,
+    routes,
     spending::generate_spending_information,
     types::{
         api::{AdminUserSpending, AdminUserSpendingMap},
@@ -33,8 +33,7 @@ pub async fn get_all_user_spending(
     correlation_id: CorrelationId,
     _admin: AdminOnlyRoute,
 ) -> Result<Json<AdminUserSpendingMap>, ApiError> {
-    let proxy = proxy::get_proxy(&ctx.config);
-    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
+    let http_client = foundation::http::get_default_http_client();
     let user_list = http_client
         .get(format!("{GRAPH_API_BASE_URL}/users"))
         .header(
