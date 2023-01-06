@@ -1,5 +1,6 @@
+use crate::constants::config::DEFAULT_LOCK_TTL_HOURS;
+use crate::constants::mc_donalds;
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
-use crate::constants::{mc_donalds, DEFAULT_LOCK_TTL_HOURS};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
 use crate::types::api::OfferResponse;

@@ -1,5 +1,5 @@
 use crate::{
-    constants::X_JWT_BYPASS_HEADER, extensions::SecretsManagerExtensions, routes,
+    constants::config::X_JWT_BYPASS_HEADER, extensions::SecretsManagerExtensions, routes,
     types::error::ApiError,
 };
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;

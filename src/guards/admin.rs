@@ -1,5 +1,6 @@
+use crate::constants::config::X_JWT_BYPASS_HEADER;
 use crate::extensions::SecretsManagerExtensions;
-use crate::{constants::X_JWT_BYPASS_HEADER, routes, types::error::ApiError};
+use crate::{routes, types::error::ApiError};
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{
     http::Status,
