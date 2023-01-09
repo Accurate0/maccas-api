@@ -24,7 +24,7 @@ strum = "0.24"
 strum_macros = "0.24"
 
 twilight-model = "0.14.0"
-twilight-util = { version = "0.14.0", features = ["builder"] }
+twilight-util = { version = "0.14.1", features = ["builder"] }
 
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
