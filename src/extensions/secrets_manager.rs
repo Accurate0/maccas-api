@@ -1,6 +1,5 @@
-use anyhow::Context;
-
 use crate::constants::config::{CONFIG_APIM_API_KEY_ID, CONFIG_JWT_BYPASS_ID};
+use anyhow::Context;
 
 #[async_trait]
 pub trait SecretsManagerExtensions {

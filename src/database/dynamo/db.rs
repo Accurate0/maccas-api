@@ -5,7 +5,7 @@ use crate::constants::db::{
     DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO,
     REFRESH_TOKEN, REGION, TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME,
 };
-use crate::constants::mc_donalds::{self};
+use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
 use crate::database::types::{
     AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
