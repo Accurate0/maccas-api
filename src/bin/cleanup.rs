@@ -57,8 +57,9 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     }
 
     let user_id = message.user_id.clone();
+    let (account, offer) = database.get_offer_by_id(&message.deal_uuid).await?;
+
     for _ in 0..MAXIMUM_CLEANUP_RETRY {
-        let (account, offer) = database.get_offer_by_id(&message.deal_uuid).await?;
         let proxy = proxy::get_proxy(&config);
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
