@@ -39,7 +39,7 @@ jobs:
           mkdir ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/api ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/refresh ./maccas-api
-          cp ./target/x86_64-unknown-linux-musl/release-strip/refresh-specific ./maccas-api
+          cp ./target/x86_64-unknown-linux-musl/release-strip/refresh-failure ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/cleanup ./maccas-api
           cp ./target/x86_64-unknown-linux-musl/release-strip/images ./maccas-api
 
@@ -60,7 +60,7 @@ jobs:
           - cleanup
           - images
           - refresh
-          - refresh_failure
+          - refresh-failure
 
     steps:
       - uses: actions/download-artifact@v3
@@ -91,7 +91,7 @@ jobs:
           - images
           - api
           - refresh
-          - refresh_failure
+          - refresh-failure
 
     name: deploy ${{ matrix.task }}
     env:

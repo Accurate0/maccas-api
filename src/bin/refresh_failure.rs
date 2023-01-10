@@ -2,9 +2,12 @@ use anyhow::Context;
 use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::logging;
+use maccas::constants::config::MAXIMUM_FAILURE_HANDLER_RETRY;
+use maccas::database::types::UserAccountDatabase;
+use maccas::database::{Database, DynamoDatabase};
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{RefreshFailureMessage, SqsEvent};
+use maccas::{logging, proxy};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -25,6 +28,13 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         return Ok(());
     }
 
+    let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
+    let database = DynamoDatabase::new(
+        dynamodb_client,
+        &config.database.tables,
+        &config.database.indexes,
+    );
+
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
 
@@ -40,7 +50,49 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     // batch size is 10
     for message in messages {
         log::info!("request: {:?}", message);
-        let _account = message.0;
+        let account = UserAccountDatabase::from(&message.0);
+
+        for _ in 0..MAXIMUM_FAILURE_HANDLER_RETRY {
+            let proxy = proxy::get_proxy(&config);
+            let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
+            match database
+                .get_specific_client(
+                    http_client,
+                    &config.mcdonalds.client_id,
+                    &config.mcdonalds.client_secret,
+                    &config.mcdonalds.sensor_data,
+                    &account,
+                    false,
+                )
+                .await
+            {
+                Ok(api_client) => {
+                    log::info!("login fixed for {}, refreshing..", account.account_name);
+                    if let Err(e) = database
+                        .refresh_offer_cache_for(
+                            &account,
+                            &api_client,
+                            &config.mcdonalds.ignored_offer_ids,
+                        )
+                        .await
+                    {
+                        log::error!("refresh failed {}", e);
+                    };
+
+                    if let Err(e) = database
+                        .refresh_point_cache_for(&account, &api_client)
+                        .await
+                    {
+                        log::error!("point refresh failed {}", e);
+                    };
+
+                    break;
+                }
+                Err(e) => {
+                    log::error!("failed login for {} because {}", &account.account_name, e);
+                }
+            };
+        }
     }
 
     Ok(())
