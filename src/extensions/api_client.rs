@@ -1,11 +1,10 @@
+use crate::constants::mc_donalds;
+use lazy_static::lazy_static;
+use libmaccas::{types::response::OfferDetailsResponse, ApiClient};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
-
-use crate::constants::mc_donalds;
-use lazy_static::lazy_static;
-use libmaccas::{types::response::OfferDetailsResponse, ApiClient};
 
 #[async_trait]
 pub trait ApiClientExtensions {
