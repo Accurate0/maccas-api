@@ -69,7 +69,6 @@ jobs:
 
       - name: create zip (${{ matrix.task }})
         run: |
-          tree
           mv ./${{ matrix.task }} ./bootstrap
           zip -r bootstrap.zip ./bootstrap
 
