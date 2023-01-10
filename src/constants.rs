@@ -29,6 +29,7 @@ pub mod config {
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
     pub const MAXIMUM_FAILURE_HANDLER_RETRY: i8 = 5;
+    pub const MAXIMUM_CLEANUP_RETRY: i8 = 5;
 }
 
 pub mod db {
