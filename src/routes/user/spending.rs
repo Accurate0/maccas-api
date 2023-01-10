@@ -1,4 +1,4 @@
-use crate::{routes, spending, types::api::UserSpending, types::error::ApiError};
+use crate::{routes, shared::spending, types::api::UserSpending, types::error::ApiError};
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{serde::json::Json, State};
 

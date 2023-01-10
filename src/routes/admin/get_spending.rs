@@ -2,7 +2,7 @@ use crate::{
     extensions::SecretsManagerExtensions,
     guards::admin::AdminOnlyRoute,
     routes,
-    spending::generate_spending_information,
+    shared::spending::generate_spending_information,
     types::{
         api::{AdminUserSpending, AdminUserSpendingMap},
         error::ApiError,
