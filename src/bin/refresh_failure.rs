@@ -51,6 +51,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     for message in messages {
         log::info!("request: {:?}", message);
         let account = UserAccountDatabase::from(&message.0);
+        log::info!("attempting login fix for {}", account.account_name);
 
         for _ in 0..MAXIMUM_FAILURE_HANDLER_RETRY {
             let proxy = proxy::get_proxy(&config);
