@@ -1,5 +1,3 @@
-use std::io::Cursor;
-
 use anyhow::Context;
 use aws_sdk_s3::types::ByteStream;
 use foundation::aws;
@@ -10,6 +8,7 @@ use maccas::constants::mc_donalds::IMAGE_CDN;
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{ImagesRefreshMessage, SqsEvent};
+use std::io::Cursor;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
