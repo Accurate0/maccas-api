@@ -95,6 +95,8 @@ pub struct RefreshConfig {
     pub enabled: bool,
     pub clear_deal_stacks: bool,
     pub proxy: ProxyConfig,
+    pub enable_failure_handler: bool,
+    pub failure_queue_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

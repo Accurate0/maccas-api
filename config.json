@@ -62,7 +62,9 @@
             "address": null,
             "username": null,
             "password": null
-        }
+        },
+        "enableFailureHandler": true,
+        "failureQueueName": "maccas-refresh-failure-queue"
     },
     "api": {
         "discordDealUse": {
