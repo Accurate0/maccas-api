@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
@@ -18,6 +16,7 @@ use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::{ImagesRefreshMessage, RefreshFailureMessage};
 use serde_json::Value;
+use std::time::Instant;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
