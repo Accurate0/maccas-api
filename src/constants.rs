@@ -28,6 +28,7 @@ pub mod config {
     pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
+    pub const MAXIMUM_FAILURE_HANDLER_RETRY: i8 = 5;
 }
 
 pub mod db {

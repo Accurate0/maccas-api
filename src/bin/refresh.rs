@@ -16,7 +16,7 @@ use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
 use maccas::types::config::{GeneralConfig, UserList};
 use maccas::types::images::OfferImageBaseName;
-use maccas::types::sqs::ImagesRefreshMessage;
+use maccas::types::sqs::{ImagesRefreshMessage, RefreshFailureMessage};
 use serde_json::Value;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
@@ -107,6 +107,31 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         has_error = true;
         log::error!("login failed: {:#?}", login_failed_accounts);
         log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
+    }
+
+    if config.refresh.enable_failure_handler {
+        let failed_accounts = [
+            login_failed_accounts.to_owned(),
+            refresh_cache.failed_accounts.to_owned(),
+        ]
+        .concat();
+
+        let failed_accounts = failed_accounts.iter().unique().map(|account_name| {
+            account_list
+                .users
+                .iter()
+                .find(|&account| account.account_name == *account_name)
+                .unwrap()
+        });
+
+        for failed_account in failed_accounts {
+            aws::sqs::send_to_queue(
+                &sqs_client,
+                &config.refresh.failure_queue_name,
+                RefreshFailureMessage(failed_account.to_owned()),
+            )
+            .await?;
+        }
     }
 
     if config.images.enabled {
