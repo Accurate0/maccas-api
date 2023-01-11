@@ -53,7 +53,8 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         let account = UserAccountDatabase::from(&message.0);
         log::info!("attempting login fix for {}", account.account_name);
 
-        for _ in 0..MAXIMUM_FAILURE_HANDLER_RETRY {
+        for attempt in 0..MAXIMUM_FAILURE_HANDLER_RETRY {
+            log::info!("retry attempt: {}", attempt);
             // this retries with *hopefully* different proxy 5 times
             // pretty likely a different proxy will deal with the 403 error
             let proxy = proxy::get_proxy(&config);
