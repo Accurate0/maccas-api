@@ -37,6 +37,11 @@ aliri_clock = "0.1.4"
 image = "0.24.5"
 webp = "0.2.2"
 
+# accounts
+regex = "1.7.1"
+imap = "2.4.1"
+native-tls = "0.2.11"
+
 openssl = { version = "0.10", features = ["vendored"] }
 config = { version = "0.13.2", features = ["yaml"] }
 uuid = { version = "1.2.2", features = ["v4"] }
@@ -60,9 +65,6 @@ fern = "0.6.1"
 utoipa = { version = "2.4.2", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.7.0", features = ["discord", "aws", "rocket", "http", "types", "jwt"] }
-regex = "1.7.1"
-imap = "2.4.1"
-native-tls = "0.2.11"
 
 [build-dependencies]
 vergen = "7.4.2"
