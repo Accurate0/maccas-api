@@ -96,6 +96,10 @@ path = "src/bin/images.rs"
 name = "refresh-failure"
 path = "src/bin/refresh_failure.rs"
 
+[[bin]]
+name = "refresh-worker"
+path = "src/bin/refresh_worker.rs"
+
 [profile.release-strip]
 inherits = "release"
 strip = "symbols"
