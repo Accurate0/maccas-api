@@ -2,6 +2,7 @@ use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
 use lambda_http::Error as LambdaError;
 use maccas::database::DynamoDatabase;
+use maccas::extensions::SecretsManagerExtensions;
 use maccas::logging;
 use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
@@ -61,7 +62,7 @@ async fn main() -> Result<(), LambdaError> {
     let rocket = if config.api.jwt.validate {
         let authority = foundation::jwt::create_authority_with_defaults(
             config.api.jwt.jwks_url.clone(),
-            config.api.jwt.allowed_audience.clone(),
+            secrets_client.get_application_id().await,
         )
         .await?;
         // not sure if needed
