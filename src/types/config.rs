@@ -48,7 +48,6 @@ pub struct DiscordConfig {
 pub struct JwtConfig {
     pub validate: bool,
     pub jwks_url: String,
-    pub allowed_audience: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
