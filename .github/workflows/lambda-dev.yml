@@ -1,4 +1,4 @@
-name: dev
+name: lambda-dev
 on:
   workflow_dispatch:
   push:
