@@ -1,5 +1,3 @@
-use anyhow::Context;
-
 use crate::{
     constants::{
         self,
@@ -39,44 +37,5 @@ impl UserList {
             config::FileFormat::Json,
         )
         .await
-    }
-
-    pub async fn load_all_from_s3(
-        shared_config: &aws_types::SdkConfig,
-    ) -> Result<Self, anyhow::Error> {
-        let s3_client = aws_sdk_s3::Client::new(shared_config);
-        let object_list = s3_client
-            .list_objects()
-            .bucket(CONFIG_BUCKET_NAME)
-            .send()
-            .await?;
-        let object_list = object_list
-            .contents()
-            .context("bucket should have contents")
-            .unwrap();
-
-        let mut total_user_list = Vec::new();
-
-        for object in object_list {
-            match object.key() {
-                Some(key) if key.contains("accounts") => {
-                    let mut user_list: UserList = foundation::config::load_config_from_s3(
-                        &s3_client,
-                        CONFIG_BUCKET_NAME,
-                        key,
-                        config::FileFormat::Json,
-                    )
-                    .await?;
-
-                    total_user_list.append(&mut user_list.users);
-                }
-                Some(_) => continue,
-                None => continue,
-            }
-        }
-
-        Ok(UserList {
-            users: total_user_list,
-        })
     }
 }
