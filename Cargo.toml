@@ -23,7 +23,7 @@ serde_dynamo = { version = "4.0.10", features = ["aws-sdk-dynamodb+0_22"] }
 strum = "0.24"
 strum_macros = "0.24"
 
-twilight-model = "0.14.0"
+twilight-model = "0.14.4"
 twilight-util = { version = "0.14.0", features = ["builder"] }
 
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
