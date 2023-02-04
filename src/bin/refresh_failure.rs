@@ -2,12 +2,14 @@ use anyhow::Context;
 use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::constants::config::MAXIMUM_FAILURE_HANDLER_RETRY;
+use maccas::constants::config::{MAXIMUM_FAILURE_HANDLER_RETRY, MAX_PROXY_COUNT};
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{RefreshFailureMessage, SqsEvent};
 use maccas::{logging, proxy};
+use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -52,12 +54,12 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         log::info!("request: {:?}", message);
         let account = UserAccountDatabase::from(&message.0);
         log::info!("attempting login fix for {}", account.account_name);
+        let mut rng = StdRng::from_entropy();
+        let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
         for attempt in 0..MAXIMUM_FAILURE_HANDLER_RETRY {
             log::info!("retry attempt: {}", attempt);
-            // this retries with *hopefully* different proxy 5 times
-            // pretty likely a different proxy will deal with the 403 error
-            let proxy = proxy::get_proxy(&config);
+            let proxy = proxy::get_proxy(&config, random_number);
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
             match database
                 .get_specific_client(
