@@ -1,5 +1,5 @@
 use super::DynamoDatabase;
-use crate::constants::config::DEFAULT_REFRESH_TTL_HOURS;
+use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO,
@@ -26,7 +26,7 @@ use itertools::Itertools;
 use libmaccas::ApiClient;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::StdRng;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::time::SystemTime;
@@ -922,8 +922,11 @@ impl Database for DynamoDatabase {
     ) -> Result<(HashMap<UserAccountDatabase, ApiClient>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
         let mut client_map = HashMap::<UserAccountDatabase, ApiClient>::new();
+        let mut rng = StdRng::from_entropy();
+        let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
+        log::info!("[get_client_map] using proxy number: {}", random_number);
         for user in account_list {
-            let proxy = proxy::get_proxy(config);
+            let proxy = proxy::get_proxy(config, random_number);
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
             match self
