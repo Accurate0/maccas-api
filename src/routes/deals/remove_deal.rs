@@ -23,7 +23,7 @@ use rocket::{http::Status, State};
 pub async fn remove_deal(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
-    store: i64,
+    store: String,
     auth: AuthorizationHeader,
 ) -> Result<Status, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {

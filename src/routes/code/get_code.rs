@@ -18,7 +18,7 @@ use rocket::{serde::json::Json, State};
 pub async fn get_code(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
-    store: i64,
+    store: String,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let mut rng = StdRng::from_entropy();

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CleanupMessage {
     pub deal_uuid: String,
-    pub store_id: i64,
+    pub store_id: String,
     pub user_id: Option<String>,
 }
 

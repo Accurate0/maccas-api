@@ -14,10 +14,10 @@ use maccas::routes::code::get_code::get_code;
 use maccas::routes::deals::add_deal::add_deal;
 use maccas::routes::deals::get_deal::get_deal;
 use maccas::routes::deals::get_deals::get_deals;
-use maccas::routes::deals::get_last_refresh::last_refresh;
+use maccas::routes::deals::get_last_refresh::get_last_refresh;
 use maccas::routes::deals::remove_deal::remove_deal;
 use maccas::routes::docs::openapi::get_openapi;
-use maccas::routes::health::status::status;
+use maccas::routes::health::status::get_status;
 use maccas::routes::locations::get_locations::get_locations;
 use maccas::routes::locations::search_locations::search_locations;
 use maccas::routes::points::get_by_id::get_points_by_id;
@@ -91,14 +91,14 @@ async fn main() -> Result<(), LambdaError> {
         .mount(
             "/",
             routes![
-                status,
+                get_status,
                 get_code,
                 get_openapi,
                 get_deal,
                 get_deals,
                 add_deal,
                 remove_deal,
-                last_refresh,
+                get_last_refresh,
                 get_locations,
                 search_locations,
                 get_points_by_id,
