@@ -2,7 +2,7 @@ use anyhow::Context;
 use aws_sdk_dynamodb::Client;
 use chrono::Utc;
 use foundation::aws;
-use foundation::constants::AWS_REGION;
+use foundation::constants::{AWS_REGION, DEFAULT_AWS_REGION};
 use foundation::types::discord::DiscordWebhookMessage;
 use itertools::Itertools;
 use lambda_runtime::service_fn;
@@ -150,6 +150,12 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             ImagesRefreshMessage { image_base_names },
         )
         .await?;
+    }
+
+    // only send on 1 AWS region
+    if config.accounts.enabled && env == DEFAULT_AWS_REGION {
+        aws::sqs::send_to_queue::<Option<String>>(&sqs_client, &config.accounts.queue_name, None)
+            .await?;
     }
 
     if has_error {
