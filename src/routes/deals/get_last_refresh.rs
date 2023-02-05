@@ -12,7 +12,7 @@ use rocket::State;
     tag = "deals",
 )]
 #[get("/deals/last-refresh")]
-pub async fn last_refresh(
+pub async fn get_last_refresh(
     ctx: &State<Context<'_>>,
 ) -> Result<Json<LastRefreshInformation>, ApiError> {
     let response = ctx.database.get_refresh_time_for_offer_cache().await?;

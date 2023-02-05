@@ -23,7 +23,7 @@ pub async fn get_points_by_id(
     ctx: &State<routes::Context<'_>>,
     _protected: ProtectedRoute,
     account_id: &str,
-    store: i64,
+    store: String,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
     if let Ok((account, points)) = ctx.database.get_points_by_account_hash(account_id).await {
         let mut rng = StdRng::from_entropy();

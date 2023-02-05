@@ -10,6 +10,13 @@ use utoipa::{
     OpenApi,
 };
 
+#[utoipa::path(
+    responses(
+        (status = 200, description = "JSON OpenApi spec", body = String),
+        (status = 500, description = "Internal Server Error"),
+    ),
+    tag = "health",
+)]
 #[get("/docs/openapi")]
 pub fn get_openapi() -> Result<Json<openapi::OpenApi>, ApiError> {
     let mut spec = ApiDoc::openapi();
