@@ -66,6 +66,16 @@
         "enableFailureHandler": true,
         "failureQueueName": "maccas-refresh-failure-queue"
     },
+    "accounts": {
+        "email": {
+            "address": null,
+            "password": null,
+            "serverAddress": "imap.gmail.com"
+        },
+        "domainName": null,
+        "enabled": true,
+        "queueName": "maccas-accounts-queue"
+    },
     "api": {
         "discordDealUse": {
             "enabled": true,

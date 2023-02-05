@@ -112,6 +112,23 @@ pub struct ApiConfig {
     pub jwt: JwtConfig,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EmailConfig {
+    pub address: String,
+    pub password: String,
+    pub server_address: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountsConfig {
+    pub email: EmailConfig,
+    pub domain_name: String,
+    pub enabled: bool,
+    pub queue_name: String,
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GeneralConfig {
@@ -121,6 +138,7 @@ pub struct GeneralConfig {
     pub api: ApiConfig,
     pub cleanup: CleanupConfig,
     pub images: ImageConfig,
+    pub accounts: AccountsConfig,
 }
 
 #[derive(Deserialize, Debug)]

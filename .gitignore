@@ -4,7 +4,6 @@ accounts-*.json
 accounts.json
 sensor-data.json
 
-src/bin/accounts.rs
 src/bin/sensor_data
 src/bin/subscriptions.json
 src/bin/preferences.json

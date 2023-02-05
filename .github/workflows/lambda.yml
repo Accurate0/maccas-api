@@ -61,6 +61,7 @@ jobs:
           - images
           - refresh
           - refresh-failure
+          - accounts
 
     steps:
       - uses: actions/download-artifact@v3
@@ -91,6 +92,7 @@ jobs:
           - api
           - refresh
           - refresh-failure
+          - accounts
 
     name: deploy ${{ matrix.task }}
     env:
@@ -138,5 +140,8 @@ jobs:
           refresh__proxy__username: ${{ secrets.API_CONFIG_REFRESH_PROXY_USERNAME }}
           refresh__proxy__password: ${{ secrets.API_CONFIG_REFRESH_PROXY_PASSWORD }}
           refresh__proxy__address: ${{ secrets.API_CONFIG_REFRESH_PROXY_ADDRESS }}
+          accounts__email__address: ${{ secrets.API_CONFIG_ACCOUNTS_EMAIL }}
+          accounts__email__password: ${{ secrets.API_CONFIG_ACCOUNTS_PASSWORD }}
+          accounts__domain_name: ${{ secrets.API_CONFIG_ACCOUNTS_DOMAIN_NAME }}
       - name: upload to s3
         run: aws s3 cp base-config.json s3://maccas-application-config/base-config.json
