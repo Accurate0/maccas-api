@@ -60,7 +60,7 @@ itertools = "0.10.5"
 tokio = "1.24.1"
 rust-crypto = "0.2.36"
 mime = "0.3.16"
-anyhow = "1.0.66"
+anyhow = "1.0.69"
 fern = "0.6.1"
 utoipa = { version = "2.4.2", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
