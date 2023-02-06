@@ -92,7 +92,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             to = cap.get(1);
         }
 
-        if ac.is_some() {
+        if ac.is_some() && to.is_some() {
             let id = db
                 .get_device_id_for(
                     format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name).as_str(),
