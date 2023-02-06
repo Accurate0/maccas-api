@@ -25,7 +25,8 @@
             "offerId": "MaccasApiOfferId",
             "points": "MaccasApiPointDb",
             "refreshTracking": "MaccasRefreshTrackingDb",
-            "audit": "MaccasAudit"
+            "audit": "MaccasAudit",
+            "auditData": "MaccasAuditData"
         },
         "indexes": {
             "auditUserIdIndex": "UserIdIndex"

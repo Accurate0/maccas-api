@@ -158,6 +158,11 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             .await?;
     }
 
+    // setup the last run time
+    if env == DEFAULT_AWS_REGION {
+        database.set_last_refresh().await?;
+    }
+
     if has_error {
         let embed = embed
             .field(EmbedFieldBuilder::new(

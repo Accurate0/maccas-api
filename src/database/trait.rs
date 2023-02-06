@@ -43,7 +43,8 @@ pub trait Database {
         api_client: &ApiClient,
         ignored_offer_ids: &[i64],
     ) -> Result<Vec<OfferDatabase>, anyhow::Error>;
-    async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error>;
+    async fn set_last_refresh(&self) -> Result<(), anyhow::Error>;
+    async fn get_last_refresh(&self) -> Result<String, anyhow::Error>;
     async fn get_offer_by_id(
         &self,
         offer_id: &str,
