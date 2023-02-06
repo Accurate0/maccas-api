@@ -26,6 +26,7 @@ pub struct Tables {
     pub points: String,
     pub refresh_tracking: String,
     pub audit: String,
+    pub audit_data: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

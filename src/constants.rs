@@ -47,6 +47,7 @@ pub mod db {
     pub const DATA_TYPE: &str = "data_type";
     pub const LOCKED_DEALS: &str = "locked_deals";
     pub const DEAL_UUID: &str = "deal_uuid";
+    pub const KEY: &str = "key";
     pub const VALUE: &str = "value";
     pub const OFFER_ID: &str = "offer_id";
     pub const TTL: &str = "ttl";

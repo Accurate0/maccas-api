@@ -2,8 +2,8 @@ use super::DynamoDatabase;
 use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
-    DEVICE_ID, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO,
-    REFRESH_TOKEN, REGION, TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME,
+    DEVICE_ID, KEY, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID,
+    POINT_INFO, REFRESH_TOKEN, REGION, TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME, VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
@@ -113,6 +113,42 @@ impl Database for DynamoDatabase {
                 }
             })
             .collect_vec())
+    }
+
+    async fn set_last_refresh(&self) -> Result<(), anyhow::Error> {
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+
+        self.client
+            .put_item()
+            .table_name(&self.audit_data)
+            .item(KEY, AttributeValue::S(LAST_REFRESH.to_owned()))
+            .item(VALUE, AttributeValue::S(now))
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_last_refresh(&self) -> Result<String, anyhow::Error> {
+        let item = self
+            .client
+            .get_item()
+            .table_name(&self.audit_data)
+            .key(KEY, AttributeValue::S(LAST_REFRESH.to_owned()))
+            .send()
+            .await?;
+
+        let map = item.item().context("no items")?;
+        let value = map.get(VALUE);
+        return Ok(value
+            .unwrap_or(&AttributeValue::S(
+                Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339(),
+            ))
+            .as_s()
+            .unwrap()
+            .to_string());
     }
 
     async fn increment_refresh_tracking(
@@ -572,27 +608,6 @@ impl Database for DynamoDatabase {
                 Ok(resp)
             }
             None => bail!("could not get offers for {}", account),
-        }
-    }
-
-    async fn get_refresh_time_for_offer_cache(&self) -> Result<String, anyhow::Error> {
-        let table_resp = self
-            .client
-            .scan()
-            .limit(1)
-            .table_name(&self.cache_table_name)
-            .send()
-            .await
-            .unwrap();
-
-        if table_resp.count == 1 {
-            Ok(table_resp.items.unwrap().first().unwrap()[LAST_REFRESH]
-                .as_s()
-                .ok()
-                .unwrap()
-                .to_string())
-        } else {
-            panic!()
         }
     }
 
