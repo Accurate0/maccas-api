@@ -145,13 +145,13 @@ impl Database for DynamoDatabase {
                 let value = map.get(VALUE);
                 Ok(value
                     .unwrap_or(&AttributeValue::S(
-                        Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339(),
+                        Into::<DateTime<Utc>>::into(SystemTime::UNIX_EPOCH).to_rfc3339(),
                     ))
                     .as_s()
                     .unwrap()
                     .to_string())
             }
-            Err(_) => Ok(Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339()),
+            Err(_) => Ok(Into::<DateTime<Utc>>::into(SystemTime::UNIX_EPOCH).to_rfc3339()),
         }
     }
 
