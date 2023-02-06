@@ -140,15 +140,19 @@ impl Database for DynamoDatabase {
             .send()
             .await?;
 
-        let map = item.item().context("no items")?;
-        let value = map.get(VALUE);
-        return Ok(value
-            .unwrap_or(&AttributeValue::S(
-                Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339(),
-            ))
-            .as_s()
-            .unwrap()
-            .to_string());
+        match item.item().context("no items") {
+            Ok(map) => {
+                let value = map.get(VALUE);
+                Ok(value
+                    .unwrap_or(&AttributeValue::S(
+                        Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339(),
+                    ))
+                    .as_s()
+                    .unwrap()
+                    .to_string())
+            }
+            Err(_) => Ok(Into::<DateTime<Utc>>::into(SystemTime::now()).to_rfc3339()),
+        }
     }
 
     async fn increment_refresh_tracking(
