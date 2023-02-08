@@ -6,6 +6,7 @@ pub mod extensions;
 pub mod guards;
 pub mod logging;
 pub mod proxy;
+pub mod rng;
 pub mod routes;
 pub mod shared;
 pub mod types;

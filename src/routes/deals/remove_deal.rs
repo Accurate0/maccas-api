@@ -2,12 +2,14 @@ use crate::{
     constants::{config::MAX_PROXY_COUNT, mc_donalds},
     database::types::AuditActionType,
     guards::authorization::AuthorizationHeader,
-    proxy, routes,
+    proxy,
+    rng::RNG,
+    routes,
     types::error::ApiError,
 };
 use foundation::types::jwt::JwtClaim;
 use jwt::{Header, Token};
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::Rng;
 use rocket::{http::Status, State};
 
 #[utoipa::path(
@@ -27,7 +29,7 @@ pub async fn remove_deal(
     auth: AuthorizationHeader,
 ) -> Result<Status, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let mut rng = StdRng::from_entropy();
+        let mut rng = RNG.lock().await;
         let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
         let proxy = proxy::get_proxy(&ctx.config, random_number);

@@ -1,10 +1,12 @@
 use crate::{
     constants::{config::MAX_PROXY_COUNT, mc_donalds},
     guards::protected::ProtectedRoute,
-    proxy, routes,
+    proxy,
+    rng::RNG,
+    routes,
     types::{api::OfferPointsResponse, error::ApiError},
 };
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::Rng;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -26,7 +28,7 @@ pub async fn get_points_by_id(
     store: String,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
     if let Ok((account, points)) = ctx.database.get_points_by_account_hash(account_id).await {
-        let mut rng = StdRng::from_entropy();
+        let mut rng = RNG.lock().await;
         let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
         let proxy = proxy::get_proxy(&ctx.config, random_number);
