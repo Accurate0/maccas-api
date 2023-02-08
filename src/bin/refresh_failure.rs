@@ -5,11 +5,11 @@ use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::config::{MAXIMUM_FAILURE_HANDLER_RETRY, MAX_PROXY_COUNT};
 use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
+use maccas::rng::RNG;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{RefreshFailureMessage, SqsEvent};
 use maccas::{logging, proxy};
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -54,7 +54,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         log::info!("request: {:?}", message);
         let account = UserAccountDatabase::from(&message.0);
         log::info!("attempting login fix for {}", account.account_name);
-        let mut rng = StdRng::from_entropy();
+        let mut rng = RNG.lock().await;
         let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
         for attempt in 0..MAXIMUM_FAILURE_HANDLER_RETRY {

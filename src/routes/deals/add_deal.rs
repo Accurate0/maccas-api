@@ -3,6 +3,7 @@ use crate::constants::mc_donalds;
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::database::types::AuditActionType;
 use crate::guards::authorization::AuthorizationHeader;
+use crate::rng::RNG;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::images::OfferImageBaseName;
@@ -14,8 +15,7 @@ use chrono::Duration;
 use foundation::types::jwt::JwtClaim;
 use itertools::Itertools;
 use jwt::{Header, Token};
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -35,7 +35,7 @@ pub async fn add_deal(
     auth: AuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let mut rng = StdRng::from_entropy();
+        let mut rng = RNG.lock().await;
         let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
         let proxy = proxy::get_proxy(&ctx.config, random_number);

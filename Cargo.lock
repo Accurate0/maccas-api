@@ -2006,6 +2006,7 @@ dependencies = [
  "config",
  "fern",
  "foundation",
+ "futures",
  "http",
  "image",
  "imap",

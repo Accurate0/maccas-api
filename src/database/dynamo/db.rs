@@ -12,6 +12,7 @@ use crate::database::types::{
 };
 use crate::extensions::ApiClientExtensions;
 use crate::proxy;
+use crate::rng::RNG;
 use crate::types::audit::AuditEntry;
 use crate::types::config::GeneralConfig;
 use crate::types::refresh::RefreshOfferCache;
@@ -941,10 +942,14 @@ impl Database for DynamoDatabase {
     ) -> Result<(HashMap<UserAccountDatabase, ApiClient>, Vec<String>), anyhow::Error> {
         let mut failed_accounts = Vec::new();
         let mut client_map = HashMap::<UserAccountDatabase, ApiClient>::new();
-        let mut rng = StdRng::from_entropy();
-        let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
-        log::info!("[get_client_map] using proxy number: {}", random_number);
+        let mut rng = RNG.lock().await;
         for user in account_list {
+            let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
+            log::info!(
+                "[get_client_map] using proxy number: {} for {}",
+                random_number,
+                user.account_name
+            );
             let proxy = proxy::get_proxy(config, random_number);
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
