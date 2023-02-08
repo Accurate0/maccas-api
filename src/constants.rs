@@ -25,7 +25,7 @@ pub mod config {
     pub const CONFIG_APIM_API_KEY_ID: &str = "MaccasApi-ApimApiKey";
     pub const CONFIG_JWT_BYPASS_ID: &str = "MaccasApi-JwtBypassKey";
     pub const CONFIG_APPLICATION_AUDIENCE_ID: &str = "MaccasApi-ApplicationAudience";
-    pub const IMAGE_CDN: &str = "https://i.maccas.anurag.sh";
+    pub const IMAGE_CDN: &str = "https://i.maccas.one";
     pub const X_JWT_BYPASS_HEADER: &str = "X-Maccas-JWT-Bypass";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
