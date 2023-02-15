@@ -576,22 +576,6 @@ impl Database for DynamoDatabase {
                     })
                     .collect();
 
-                self.client
-                    .put_item()
-                    .table_name(&self.cache_table_name)
-                    .item(
-                        ACCOUNT_NAME,
-                        AttributeValue::S(account.account_name.to_string()),
-                    )
-                    .item(LAST_REFRESH, AttributeValue::S(now.clone()))
-                    .item(
-                        OFFER_LIST,
-                        AttributeValue::S(serde_json::to_string(&resp).unwrap()),
-                    )
-                    .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
-                    .send()
-                    .await?;
-
                 // v2 cache structure
                 for item in &resp {
                     self.client
@@ -608,6 +592,22 @@ impl Database for DynamoDatabase {
                         .send()
                         .await?;
                 }
+
+                self.client
+                    .put_item()
+                    .table_name(&self.cache_table_name)
+                    .item(
+                        ACCOUNT_NAME,
+                        AttributeValue::S(account.account_name.to_string()),
+                    )
+                    .item(LAST_REFRESH, AttributeValue::S(now.clone()))
+                    .item(
+                        OFFER_LIST,
+                        AttributeValue::S(serde_json::to_string(&resp).unwrap()),
+                    )
+                    .item(TTL, AttributeValue::N(ttl.timestamp().to_string()))
+                    .send()
+                    .await?;
 
                 log::info!("{}: offer cache refreshed", account);
                 Ok(resp)
