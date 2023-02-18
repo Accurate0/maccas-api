@@ -56,7 +56,7 @@
             "webhooks": [
                 null
             ],
-            "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
+            "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
             "username": "Maccas Service"
         },
         "clearDealStacks": false,
@@ -84,7 +84,7 @@
             "webhooks": [
                 null
             ],
-            "avatarUrl": "https://i.maccas.anurag.sh/webhook/avatar.webp",
+            "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
             "username": "Maccas"
         },
         "jwt": {
