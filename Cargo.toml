@@ -62,7 +62,7 @@ rust-crypto = "0.2.36"
 mime = "0.3.16"
 anyhow = "1.0.69"
 fern = "0.6.1"
-utoipa = { version = "3.0.2", features = ["rocket_extras"] }
+utoipa = { version = "3.0.3", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.11.0" }
 futures = "0.3.26"
