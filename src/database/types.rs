@@ -1,4 +1,4 @@
-use crate::types::{config::UserAccount, user::UserOptions};
+use crate::types::user::UserOptions;
 use foundation::util;
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
@@ -100,21 +100,15 @@ pub struct UserAccountDatabase {
     pub account_name: String,
     pub login_username: String,
     pub login_password: String,
+    #[serde(default)]
+    pub region: String,
+    #[serde(default)]
+    pub group: String,
 }
 
 impl Display for UserAccountDatabase {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{}", self.login_username))
-    }
-}
-
-impl From<&UserAccount> for UserAccountDatabase {
-    fn from(res: &UserAccount) -> Self {
-        Self {
-            account_name: res.account_name.clone(),
-            login_username: res.login_username.clone(),
-            login_password: res.login_password.clone(),
-        }
     }
 }
 

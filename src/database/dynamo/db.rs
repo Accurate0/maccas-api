@@ -2,8 +2,9 @@ use super::DynamoDatabase;
 use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
-    DEVICE_ID, KEY, LAST_REFRESH, OFFER, OFFER_ID, OFFER_LIST, OFFER_NAME, OPERATION_ID,
-    POINT_INFO, REFRESH_TOKEN, REGION, TIMESTAMP, TTL, USER_CONFIG, USER_ID, USER_NAME, VALUE,
+    DEVICE_ID, GROUP, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER, OFFER_ID,
+    OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO, REFRESH_TOKEN, REGION, TIMESTAMP, TTL,
+    USER_CONFIG, USER_ID, USER_NAME, VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
@@ -1041,5 +1042,100 @@ impl Database for DynamoDatabase {
                 .await?;
         }
         Ok(())
+    }
+
+    async fn add_user_account(
+        &self,
+        account_name: &str,
+        login_username: &str,
+        login_password: &str,
+        region: &str,
+        group: &str,
+    ) -> Result<(), anyhow::Error> {
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+
+        self.client
+            .put_item()
+            .table_name(&self.user_accounts)
+            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .item(
+                LOGIN_USERNAME,
+                AttributeValue::S(login_username.to_string()),
+            )
+            .item(
+                LOGIN_PASSWORD,
+                AttributeValue::S(login_password.to_string()),
+            )
+            .item(REGION, AttributeValue::S(region.to_string()))
+            .item(GROUP, AttributeValue::S(group.to_string()))
+            .item(TIMESTAMP, AttributeValue::S(now))
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_account(&self, account_name: &str) -> Result<UserAccountDatabase, anyhow::Error> {
+        let resp = self
+            .client
+            .query()
+            .table_name(&self.user_accounts)
+            .limit(1)
+            .key_condition_expression(format!("{ACCOUNT_NAME} = :selected_account"))
+            .expression_attribute_values(
+                ":selected_account",
+                AttributeValue::S(account_name.to_string()),
+            )
+            .send()
+            .await?;
+
+        let m = resp
+            .items()
+            .context("no account")?
+            .first()
+            .context("no account")?;
+
+        Ok(UserAccountDatabase {
+            account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
+            login_username: m[LOGIN_USERNAME].as_s().unwrap().to_string(),
+            login_password: m[LOGIN_PASSWORD].as_s().unwrap().to_string(),
+            region: m[REGION].as_s().unwrap().to_string(),
+            group: m[GROUP].as_s().unwrap().to_string(),
+        })
+    }
+
+    async fn get_accounts_for_region_and_group(
+        &self,
+        region: &str,
+        group: &str,
+    ) -> Result<Vec<UserAccountDatabase>, anyhow::Error> {
+        let resp = self
+            .client
+            .scan()
+            .table_name(&self.user_accounts)
+            .filter_expression("#region = :selected_region and #group = :selected_group")
+            .expression_attribute_names("#region", REGION)
+            .expression_attribute_names("#group", GROUP)
+            .expression_attribute_values(":selected_region", AttributeValue::S(region.to_string()))
+            .expression_attribute_values(":selected_group", AttributeValue::S(group.to_string()))
+            .send()
+            .await?;
+
+        let items = resp.items();
+        Ok(match items {
+            Some(items) => items
+                .into_iter()
+                .map(|m| UserAccountDatabase {
+                    account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
+                    login_username: m[LOGIN_USERNAME].as_s().unwrap().to_string(),
+                    login_password: m[LOGIN_PASSWORD].as_s().unwrap().to_string(),
+                    region: m[REGION].as_s().unwrap().to_string(),
+                    group: m[GROUP].as_s().unwrap().to_string(),
+                })
+                .collect_vec(),
+            None => Vec::default(),
+        })
     }
 }

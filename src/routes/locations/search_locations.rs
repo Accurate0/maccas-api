@@ -53,8 +53,11 @@ pub async fn search_locations(
     let proxy = proxy::get_proxy(&ctx.config, random_number);
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
-    let account = &ctx.config.mcdonalds.service_account;
-    let account = &account.into();
+    let account = &ctx
+        .database
+        .get_account(&ctx.config.mcdonalds.service_account_name)
+        .await?;
+
     let api_client = ctx
         .database
         .get_specific_client(

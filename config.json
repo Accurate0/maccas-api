@@ -10,11 +10,7 @@
             3067279
         ],
         "sensorData": null,
-        "serviceAccount": {
-            "accountName": null,
-            "loginUsername": null,
-            "loginPassword": null
-        }
+        "serviceAccountName": null
     },
     "database": {
         "tables": {
@@ -26,7 +22,8 @@
             "points": "MaccasApiPointDb",
             "refreshTracking": "MaccasRefreshTrackingDb",
             "audit": "MaccasAudit",
-            "auditData": "MaccasAuditData"
+            "auditData": "MaccasAuditData",
+            "userAccounts": "MaccasUserAccounts"
         },
         "indexes": {
             "auditUserIdIndex": "UserIdIndex"

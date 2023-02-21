@@ -103,4 +103,18 @@ pub trait Database {
         &self,
         user_id: String,
     ) -> Result<Vec<AuditEntry>, anyhow::Error>;
+    async fn add_user_account(
+        &self,
+        account_name: &str,
+        login_username: &str,
+        login_password: &str,
+        region: &str,
+        group: &str,
+    ) -> Result<(), anyhow::Error>;
+    async fn get_account(&self, account_name: &str) -> Result<UserAccountDatabase, anyhow::Error>;
+    async fn get_accounts_for_region_and_group(
+        &self,
+        region: &str,
+        group: &str,
+    ) -> Result<Vec<UserAccountDatabase>, anyhow::Error>;
 }
