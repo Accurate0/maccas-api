@@ -36,6 +36,8 @@ pub mod config {
 
 pub mod db {
     pub const ACCOUNT_NAME: &str = "account_name";
+    pub const LOGIN_USERNAME: &str = "login_username";
+    pub const LOGIN_PASSWORD: &str = "login_password";
     pub const ACCOUNT_HASH: &str = "account_hash";
     pub const ACCOUNT_INFO: &str = "account_info";
     pub const ACCESS_TOKEN: &str = "access_token";
@@ -56,6 +58,7 @@ pub mod db {
     pub const USER_NAME: &str = "user_name";
     pub const DEVICE_ID: &str = "device_id";
     pub const REGION: &str = "region";
+    pub const GROUP: &str = "group";
     pub const CURRENT_LIST: &str = "current_list";
     pub const TIMESTAMP: &str = "timestamp";
     pub const OFFER_NAME: &str = "offer_name";

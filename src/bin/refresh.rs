@@ -8,11 +8,10 @@ use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::mc_donalds;
-use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
-use maccas::types::config::{GeneralConfig, UserList};
+use maccas::types::config::GeneralConfig;
 use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::{ImagesRefreshMessage, RefreshFailureMessage};
 use serde_json::Value;
@@ -32,7 +31,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let now = Instant::now();
     let shared_config = aws::config::get_shared_config().await;
 
-    let env = std::env::var(AWS_REGION)
+    let region = std::env::var(AWS_REGION)
         .context("AWS_REGION not set")
         .unwrap();
 
@@ -54,30 +53,27 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let embed = EmbedBuilder::new()
         .color(mc_donalds::RED)
         .description("**Error**")
-        .field(EmbedFieldBuilder::new("Region", &env))
+        .field(EmbedFieldBuilder::new("Region", &region))
         .timestamp(
             Timestamp::from_secs(Utc::now().timestamp())
                 .context("must have valid time")
                 .unwrap(),
         );
 
-    let count = database
-        .increment_refresh_tracking(&env, config.refresh.refresh_counts[&env])
+    let group = database
+        .increment_refresh_tracking(&region, config.refresh.refresh_counts[&region])
         .await?;
 
-    let account_list = UserList::load_from_s3(&shared_config, &env, count).await?;
-    let user_list = account_list
-        .users
-        .iter()
-        .map(UserAccountDatabase::from)
-        .collect_vec();
+    let account_list = database
+        .get_accounts_for_region_and_group(&region, &group.to_string())
+        .await?;
     let (client_map, login_failed_accounts) = database
         .get_client_map(
             &config,
             &config.mcdonalds.client_id,
             &config.mcdonalds.client_secret,
             &config.mcdonalds.sensor_data,
-            &user_list,
+            &account_list,
             false,
         )
         .await?;
@@ -117,7 +113,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
         let failed_accounts = failed_accounts.iter().unique().map(|account_name| {
             account_list
-                .users
                 .iter()
                 .find(|&account| account.account_name == *account_name)
                 .unwrap()
@@ -153,13 +148,13 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     }
 
     // only send on 1 AWS region
-    if config.accounts.enabled && env == DEFAULT_AWS_REGION {
+    if config.accounts.enabled && region == DEFAULT_AWS_REGION {
         aws::sqs::send_to_queue::<Option<String>>(&sqs_client, &config.accounts.queue_name, None)
             .await?;
     }
 
     // setup the last run time
-    if env == DEFAULT_AWS_REGION {
+    if region == DEFAULT_AWS_REGION {
         database.set_last_refresh().await?;
     }
 

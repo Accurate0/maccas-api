@@ -3,7 +3,6 @@ use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::config::{MAXIMUM_FAILURE_HANDLER_RETRY, MAX_PROXY_COUNT};
-use maccas::database::types::UserAccountDatabase;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::rng::RNG;
 use maccas::types::config::GeneralConfig;
@@ -52,7 +51,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     // batch size is 10
     for message in messages {
         log::info!("request: {:?}", message);
-        let account = UserAccountDatabase::from(&message.0);
+        let account = message.0;
         log::info!("attempting login fix for {}", account.account_name);
         let mut rng = RNG.lock().await;
         let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);

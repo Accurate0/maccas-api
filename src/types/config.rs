@@ -1,19 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Display};
-
-#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UserAccount {
-    pub account_name: String,
-    pub login_username: String,
-    pub login_password: String,
-}
-
-impl Display for UserAccount {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}", self.login_username))
-    }
-}
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -27,6 +13,7 @@ pub struct Tables {
     pub refresh_tracking: String,
     pub audit: String,
     pub audit_data: String,
+    pub user_accounts: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -69,7 +56,7 @@ pub struct McDonaldsConfig {
     pub client_secret: String,
     pub ignored_offer_ids: Vec<i64>,
     pub sensor_data: String,
-    pub service_account: UserAccount,
+    pub service_account_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -140,10 +127,4 @@ pub struct GeneralConfig {
     pub cleanup: CleanupConfig,
     pub images: ImageConfig,
     pub accounts: AccountsConfig,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct UserList {
-    pub users: Vec<UserAccount>,
 }

@@ -11,6 +11,7 @@ pub struct DynamoDatabase {
     refresh_tracking: String,
     audit: String,
     audit_data: String,
+    user_accounts: String,
 
     audit_user_id_index: String,
 }
@@ -29,6 +30,7 @@ impl DynamoDatabase {
             audit: tables.audit.to_owned(),
             audit_user_id_index: indexes.audit_user_id_index.to_owned(),
             audit_data: tables.audit_data.to_owned(),
+            user_accounts: tables.user_accounts.to_owned(),
         }
     }
 }

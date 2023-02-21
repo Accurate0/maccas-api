@@ -1,4 +1,6 @@
-use super::{config::UserAccount, images::OfferImageBaseName};
+use crate::database::types::UserAccountDatabase;
+
+use super::images::OfferImageBaseName;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -14,7 +16,7 @@ pub struct ImagesRefreshMessage {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct RefreshFailureMessage(pub UserAccount);
+pub struct RefreshFailureMessage(pub UserAccountDatabase);
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SqsMessage {
