@@ -1,12 +1,7 @@
 use crate::{
-    constants::{
-        config::MAX_PROXY_COUNT,
-        mc_donalds::{self, default::LOCATION_SEARCH_DISTANCE},
-    },
+    constants::mc_donalds::{self, default::LOCATION_SEARCH_DISTANCE},
     extensions::SecretsManagerExtensions,
-    proxy,
-    rng::RNG,
-    routes,
+    proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
 use foundation::constants;
@@ -14,7 +9,6 @@ use foundation::constants::{CORRELATION_ID_HEADER, X_API_KEY_HEADER};
 use foundation::rocket::guards::correlation_id::CorrelationId;
 use foundation::types::places::PlacesResponse;
 use http::Method;
-use rand::Rng;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -47,10 +41,7 @@ pub async fn search_locations(
         .json::<PlacesResponse>()
         .await?;
 
-    let mut rng = RNG.lock().await;
-    let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
-
-    let proxy = proxy::get_proxy(&ctx.config, random_number);
+    let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
     let account = &ctx

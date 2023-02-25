@@ -1,11 +1,8 @@
 use crate::{
-    constants::{config::MAX_PROXY_COUNT, mc_donalds},
-    proxy,
-    rng::RNG,
-    routes,
+    constants::mc_donalds,
+    proxy, routes,
     types::{api::OfferResponse, error::ApiError},
 };
-use rand::Rng;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -23,10 +20,7 @@ pub async fn get_code(
     store: String,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, _offer)) = ctx.database.get_offer_by_id(deal_id).await {
-        let mut rng = RNG.lock().await;
-        let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
-
-        let proxy = proxy::get_proxy(&ctx.config, random_number);
+        let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = ctx
             .database

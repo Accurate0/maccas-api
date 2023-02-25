@@ -3,15 +3,13 @@ use aws_sdk_dynamodb::Client;
 use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::constants::config::{MAXIMUM_CLEANUP_RETRY, MAX_PROXY_COUNT};
+use maccas::constants::config::MAXIMUM_CLEANUP_RETRY;
 use maccas::constants::mc_donalds::default;
 use maccas::database::types::AuditActionType;
 use maccas::database::{Database, DynamoDatabase};
-use maccas::rng::RNG;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{CleanupMessage, SqsEvent};
 use maccas::{logging, proxy};
-use rand::Rng;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -60,11 +58,9 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
     let user_id = message.user_id.clone();
     let (account, offer) = database.get_offer_by_id(&message.deal_uuid).await?;
-    let mut rng = RNG.lock().await;
-    let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
 
     for _ in 0..MAXIMUM_CLEANUP_RETRY {
-        let proxy = proxy::get_proxy(&config, random_number);
+        let proxy = proxy::get_proxy(&config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
         match database

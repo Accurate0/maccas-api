@@ -57,13 +57,13 @@
             "username": "Maccas Service"
         },
         "clearDealStacks": false,
-        "proxy": {
-            "address": null,
-            "username": null,
-            "password": null
-        },
         "enableFailureHandler": true,
         "failureQueueName": "maccas-refresh-failure-queue"
+    },
+    "proxy": {
+        "address": null,
+        "username": null,
+        "password": null
     },
     "accounts": {
         "enabled": true,

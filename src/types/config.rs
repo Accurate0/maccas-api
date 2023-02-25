@@ -81,7 +81,6 @@ pub struct RefreshConfig {
     pub discord_error: DiscordConfig,
     pub enabled: bool,
     pub clear_deal_stacks: bool,
-    pub proxy: ProxyConfig,
     pub enable_failure_handler: bool,
     pub failure_queue_name: String,
 }
@@ -126,5 +125,6 @@ pub struct GeneralConfig {
     pub api: ApiConfig,
     pub cleanup: CleanupConfig,
     pub images: ImageConfig,
+    pub proxy: ProxyConfig,
     pub accounts: AccountsConfig,
 }
