@@ -1,15 +1,9 @@
 use crate::{
-    constants::{
-        config::MAX_PROXY_COUNT,
-        mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
-    },
-    proxy,
-    rng::RNG,
-    routes,
+    constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
+    proxy, routes,
     types::{error::ApiError, user::UserOptions},
 };
 use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
-use rand::Rng;
 use rocket::{http::Status, serde::json::Json, State};
 
 #[utoipa::path(
@@ -53,10 +47,7 @@ pub async fn update_user_config(
     let user_id = auth.claims.oid;
     let user_name = auth.claims.name;
 
-    let mut rng = RNG.lock().await;
-    let random_number = rng.gen_range(1..=MAX_PROXY_COUNT);
-
-    let proxy = proxy::get_proxy(&ctx.config, random_number);
+    let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let account = &ctx
         .database

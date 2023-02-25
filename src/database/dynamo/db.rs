@@ -951,7 +951,7 @@ impl Database for DynamoDatabase {
                 random_number,
                 user.account_name
             );
-            let proxy = proxy::get_proxy(config, random_number);
+            let proxy = proxy::get_specific_proxy(&config.proxy, random_number);
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
             match self
@@ -1126,7 +1126,7 @@ impl Database for DynamoDatabase {
         let items = resp.items();
         Ok(match items {
             Some(items) => items
-                .into_iter()
+                .iter()
                 .map(|m| UserAccountDatabase {
                     account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
                     login_username: m[LOGIN_USERNAME].as_s().unwrap().to_string(),
