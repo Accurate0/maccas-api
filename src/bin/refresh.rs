@@ -158,7 +158,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         database.set_last_refresh().await?;
     }
 
-    if has_error {
+    if has_error && config.refresh.discord_error.enabled {
         let embed = embed
             .field(EmbedFieldBuilder::new(
                 "Login Failed",
