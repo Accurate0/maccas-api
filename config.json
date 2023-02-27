@@ -43,7 +43,7 @@
     },
     "refresh": {
         "enabled": true,
-        "refreshCounts": {
+        "totalGroups": {
             "ap-southeast-1": 4,
             "ap-southeast-2": 3,
             "ap-southeast-4": 3
