@@ -1309,7 +1309,7 @@ dependencies = [
 [[package]]
 name = "foundation"
 version = "0.11.0"
-source = "git+https://github.com/Accurate0/foundation.git?tag=v0.11.0#b249022115a11ce83c112f2ad5b317eb07435615"
+source = "git+https://github.com/Accurate0/foundation.git?tag=v0.12.0#e9bfecbb40425d628893bc3fecd400171cc6d956"
 dependencies = [
  "aliri",
  "aliri_clock",
@@ -1992,9 +1992,9 @@ dependencies = [
 
 [[package]]
 name = "libmaccas"
-version = "0.37.0"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f8d81fafa0917b439aa34e4f5fdf5f8b5b511785b181c5f283358285ca016cc"
+checksum = "876d2454d0e2433d8ba518eacddde995fe87d83b4691bed0b3d85d41ab656243"
 dependencies = [
  "anyhow",
  "http",

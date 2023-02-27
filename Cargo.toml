@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-libmaccas = "0.37.0"
+libmaccas = "0.40.0"
 
 lambda_runtime = "0.7.3"
 lambda_http = "0.7.3"
@@ -64,7 +64,7 @@ anyhow = "1.0.69"
 fern = "0.6.1"
 utoipa = { version = "3.0.3", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
-foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.11.0" }
+foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.12.0" }
 futures = "0.3.26"
 
 [build-dependencies]

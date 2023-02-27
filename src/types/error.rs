@@ -1,6 +1,7 @@
 use crate::constants::mc_donalds;
 use aws_sdk_dynamodb::types::SdkError;
 use http::StatusCode;
+use libmaccas::ClientError;
 use rocket::response::Responder;
 use rocket::{http::Status, response, Request};
 use serde::{Deserialize, Serialize};
@@ -43,8 +44,15 @@ impl<'r> Responder<'r, 'static> for ApiError {
 
 impl From<anyhow::Error> for ApiError {
     fn from(e: anyhow::Error) -> Self {
-        log::error!("UNHANDLED ERROR: {:#?}", e);
-        Self::UnhandledError
+        // check error type, we handle client errors differently
+        let client_error: Result<ClientError, anyhow::Error> = e.downcast();
+        match client_error {
+            Ok(e) => handle_client_error(e),
+            Err(e) => {
+                log::error!("anyhow: UNHANDLED ERROR: {:#?}", e);
+                Self::UnhandledError
+            }
+        }
     }
 }
 
@@ -74,10 +82,21 @@ fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
     }
 }
 
+fn handle_client_error(e: ClientError) -> ApiError {
+    match e {
+        ClientError::RequestOrMiddlewareError(e) => match e {
+            reqwest_middleware::Error::Middleware(_) => ApiError::UnhandledError,
+            reqwest_middleware::Error::Reqwest(e) => handle_mcdonalds_403(e),
+        },
+        ClientError::RequestError(e) => handle_mcdonalds_403(e),
+        ClientError::Other(_) => ApiError::UnhandledError,
+    }
+}
+
 impl From<reqwest::Error> for ApiError {
     fn from(e: reqwest::Error) -> Self {
         log::error!("reqwest: UNHANDLED ERROR: {:#?}", e);
-        handle_mcdonalds_403(e)
+        Self::UnhandledError
     }
 }
 
@@ -104,5 +123,12 @@ impl<T> From<SdkError<T>> for ApiError {
     fn from(e: SdkError<T>) -> Self {
         log::error!("AWS SDK: UNHANDLED ERROR: {}", e);
         Self::UnhandledError
+    }
+}
+
+impl From<ClientError> for ApiError {
+    fn from(e: ClientError) -> Self {
+        log::error!("libmaccas: UNHANDLED ERROR: {}", e);
+        handle_client_error(e)
     }
 }
