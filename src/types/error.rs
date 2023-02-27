@@ -54,20 +54,24 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
+// getting a lot of 403 from McDonalds recently
+// often this resolves itself by simply trying again
+// so we'll instruct the client (APIM) to retry this error
+fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
+    if let Some(status_code) = e.status() {
+        match status_code {
+            StatusCode::FORBIDDEN => ApiError::TryAgain,
+            _ => ApiError::UnhandledError,
+        }
+    } else {
+        ApiError::UnhandledError
+    }
+}
+
 impl From<reqwest::Error> for ApiError {
     fn from(e: reqwest::Error) -> Self {
         log::error!("reqwest: UNHANDLED ERROR: {:#?}", e);
-        if let Some(status_code) = e.status() {
-            match status_code {
-                // getting a lot of 403 from McDonalds recently
-                // often this resolves itself by simply trying again
-                // so we'll instruct the client (APIM) to retry this error
-                StatusCode::FORBIDDEN => Self::TryAgain,
-                _ => Self::UnhandledError,
-            }
-        } else {
-            Self::UnhandledError
-        }
+        handle_mcdonalds_403(e)
     }
 }
 
@@ -78,20 +82,7 @@ impl From<reqwest_middleware::Error> for ApiError {
                 log::error!("reqwest_middleware: UNHANDLED ERROR: {:#?}", e);
                 Self::UnhandledError
             }
-            reqwest_middleware::Error::Reqwest(e) => {
-                log::error!("reqwest: UNHANDLED ERROR: {:#?}", e);
-                if let Some(status_code) = e.status() {
-                    match status_code {
-                        // getting a lot of 403 from McDonalds recently
-                        // often this resolves itself by simply trying again
-                        // so we'll instruct the client (APIM) to retry this error
-                        StatusCode::FORBIDDEN => Self::TryAgain,
-                        _ => Self::UnhandledError,
-                    }
-                } else {
-                    Self::UnhandledError
-                }
-            }
+            reqwest_middleware::Error::Reqwest(e) => handle_mcdonalds_403(e),
         }
     }
 }
