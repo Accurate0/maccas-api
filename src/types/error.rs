@@ -86,11 +86,17 @@ fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
 fn handle_client_error(e: ClientError) -> ApiError {
     match e {
         ClientError::RequestOrMiddlewareError(e) => match e {
-            reqwest_middleware::Error::Middleware(_) => ApiError::UnhandledError,
+            reqwest_middleware::Error::Middleware(_) => {
+                log::error!("ClientError: UNHANDLED ERROR: {:#?}", e);
+                ApiError::UnhandledError
+            }
             reqwest_middleware::Error::Reqwest(e) => handle_mcdonalds_403(e),
         },
         ClientError::RequestError(e) => handle_mcdonalds_403(e),
-        ClientError::Other(_) => ApiError::UnhandledError,
+        ClientError::Other(_) => {
+            log::error!("ClientError: UNHANDLED ERROR: {:#?}", e);
+            ApiError::UnhandledError
+        }
     }
 }
 
