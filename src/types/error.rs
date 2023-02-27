@@ -1,10 +1,9 @@
+use crate::constants::mc_donalds;
 use aws_sdk_dynamodb::types::SdkError;
 use http::StatusCode;
 use rocket::response::Responder;
 use rocket::{http::Status, response, Request};
 use serde::{Deserialize, Serialize};
-
-use crate::constants::mc_donalds;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
