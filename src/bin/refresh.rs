@@ -61,7 +61,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         );
 
     let group = database
-        .increment_refresh_tracking(&region, config.refresh.refresh_counts[&region])
+        .increment_refresh_tracking(&region, config.refresh.total_groups[&region])
         .await?;
 
     let account_list = database

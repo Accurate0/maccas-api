@@ -77,7 +77,7 @@ pub struct ProxyConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RefreshConfig {
-    pub refresh_counts: HashMap<String, i8>,
+    pub total_groups: HashMap<String, i8>,
     pub discord_error: DiscordConfig,
     pub enabled: bool,
     pub clear_deal_stacks: bool,
