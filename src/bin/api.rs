@@ -43,7 +43,7 @@ extern crate rocket;
 
 #[rocket::main]
 async fn main() -> Result<(), LambdaError> {
-    foundation::log::init_logger();
+    foundation::log::init_logger(log::LevelFilter::Info);
     logging::dump_build_details();
     let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
     let shared_config = aws::config::get_shared_config().await;

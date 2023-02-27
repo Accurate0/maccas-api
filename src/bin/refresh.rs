@@ -21,7 +21,7 @@ use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    foundation::log::init_logger();
+    foundation::log::init_logger(log::LevelFilter::Info);
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
