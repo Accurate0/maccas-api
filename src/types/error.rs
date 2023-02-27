@@ -73,8 +73,26 @@ impl From<reqwest::Error> for ApiError {
 
 impl From<reqwest_middleware::Error> for ApiError {
     fn from(e: reqwest_middleware::Error) -> Self {
-        log::error!("reqwest_middleware: UNHANDLED ERROR: {:#?}", e);
-        Self::UnhandledError
+        match e {
+            reqwest_middleware::Error::Middleware(e) => {
+                log::error!("reqwest_middleware: UNHANDLED ERROR: {:#?}", e);
+                Self::UnhandledError
+            }
+            reqwest_middleware::Error::Reqwest(e) => {
+                log::error!("reqwest: UNHANDLED ERROR: {:#?}", e);
+                if let Some(status_code) = e.status() {
+                    match status_code {
+                        // getting a lot of 403 from McDonalds recently
+                        // often this resolves itself by simply trying again
+                        // so we'll instruct the client (APIM) to retry this error
+                        StatusCode::FORBIDDEN => Self::TryAgain,
+                        _ => Self::UnhandledError,
+                    }
+                } else {
+                    Self::UnhandledError
+                }
+            }
+        }
     }
 }
 
