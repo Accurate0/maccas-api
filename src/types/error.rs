@@ -4,6 +4,8 @@ use rocket::response::Responder;
 use rocket::{http::Status, response, Request};
 use serde::{Deserialize, Serialize};
 
+use crate::constants::mc_donalds;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ApiError {
@@ -60,7 +62,12 @@ impl From<serde_json::Error> for ApiError {
 fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
     if let Some(status_code) = e.status() {
         match status_code {
-            StatusCode::FORBIDDEN => ApiError::TryAgain,
+            StatusCode::FORBIDDEN => match e.url() {
+                Some(url) if url.as_str().starts_with(mc_donalds::default::BASE_URL) => {
+                    ApiError::TryAgain
+                }
+                _ => ApiError::UnhandledError,
+            },
             _ => ApiError::UnhandledError,
         }
     } else {
