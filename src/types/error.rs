@@ -71,6 +71,7 @@ fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
         match status_code {
             StatusCode::FORBIDDEN => match e.url() {
                 Some(url) if url.as_str().starts_with(mc_donalds::default::BASE_URL) => {
+                    log::info!("mcdonalds: 403 detected, requesting retry with 599 response");
                     ApiError::TryAgain
                 }
                 _ => ApiError::UnhandledError,
