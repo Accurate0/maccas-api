@@ -3819,9 +3819,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-util"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6edb6a3d2173b73d850c14f61d58afba0b3e5e46258c66070cd908f2941e27aa"
+checksum = "daea8f367a2c57b351543a0bbaaf366c2439da4b2d9c6fc34a01f0d190ff7301"
 dependencies = [
  "twilight-model",
  "twilight-validate",
@@ -3829,9 +3829,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-validate"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ff2bd5e7fff1e1ab3ef6067f7960abc47ef02f9b99f2c864689e8d6fa537dd8"
+checksum = "973fd6fa055343f0345600d8ae2a194b7896edf7d23b3240ed4fc13d38ea8f24"
 dependencies = [
  "twilight-model",
 ]
