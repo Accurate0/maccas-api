@@ -17,7 +17,7 @@ aws-sdk-sqs = "0.24.0"
 aws-sdk-secretsmanager = "0.24.0"
 
 serde = "1.0.152"
-serde_json = "1.0.93"
+serde_json = "1.0.94"
 serde_derive = "1.0.152"
 serde_dynamo = { version = "4.0.12", features = ["aws-sdk-dynamodb+0_24"] }
 strum = "0.24"
