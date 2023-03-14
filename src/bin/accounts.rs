@@ -24,7 +24,7 @@ extern crate imap;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    foundation::log::init_logger(log::LevelFilter::Info);
+    foundation::log::init_logger(log::LevelFilter::Info, &[]);
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())
