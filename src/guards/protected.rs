@@ -1,8 +1,12 @@
 use crate::{
-    constants::config::X_JWT_BYPASS_HEADER, extensions::SecretsManagerExtensions, routes,
+    constants::config::{CONFIG_JWT_BYPASS_ID, X_JWT_BYPASS_HEADER},
+    routes,
     types::error::ApiError,
 };
-use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
+use foundation::{
+    extensions::SecretsManagerExtensions,
+    rocket::guards::authorization::RequiredAuthorizationHeader,
+};
 use rocket::{
     http::Status,
     outcome::Outcome,
@@ -27,7 +31,12 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
         if let Some(jwt_bypass_key) = jwt_bypass_key {
             if !jwt_bypass_key.is_empty()
-                && jwt_bypass_key == ctx.secrets_client.get_jwt_bypass_key().await
+                && jwt_bypass_key
+                    == ctx
+                        .secrets_client
+                        .get_secret(CONFIG_JWT_BYPASS_ID)
+                        .await
+                        .unwrap()
             {
                 return Outcome::Success(ProtectedRoute);
             }

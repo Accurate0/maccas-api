@@ -1,5 +1,5 @@
 use crate::{
-    extensions::SecretsManagerExtensions,
+    constants::config::CONFIG_APIM_API_KEY_ID,
     guards::admin::AdminOnlyRoute,
     routes,
     shared::spending::generate_spending_information,
@@ -10,6 +10,7 @@ use crate::{
 };
 use foundation::{
     constants::{CORRELATION_ID_HEADER, GRAPH_API_BASE_URL, X_API_KEY_HEADER},
+    extensions::SecretsManagerExtensions,
     rocket::guards::correlation_id::CorrelationId,
     types::graph::GetUsersResponse,
 };
@@ -38,7 +39,9 @@ pub async fn get_all_user_spending(
         .get(format!("{GRAPH_API_BASE_URL}/users"))
         .header(
             X_API_KEY_HEADER,
-            &ctx.secrets_client.get_apim_api_key().await,
+            &ctx.secrets_client
+                .get_secret(CONFIG_APIM_API_KEY_ID)
+                .await?,
         )
         .header(CORRELATION_ID_HEADER, correlation_id.0)
         .send()
