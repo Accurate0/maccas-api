@@ -49,7 +49,7 @@
             "ap-southeast-4": 3
         },
         "discordError": {
-            "enabled": true,
+            "enabled": false,
             "webhooks": [
                 null
             ],
