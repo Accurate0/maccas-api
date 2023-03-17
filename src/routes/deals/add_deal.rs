@@ -86,7 +86,7 @@ pub async fn add_deal(
                     // this lock will keep it removed and provide an error
                     // 409 Conflict means the offer already exists
                     // 404 when offer is already redeemed
-                    if status.as_u16() != 409 && !status.is_success() {
+                    if !status.is_success() && status.as_u16() != 409 {
                         return Err(ApiError::McDonaldsError);
                     }
                 } else {
