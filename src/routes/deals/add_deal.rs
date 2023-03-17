@@ -74,14 +74,33 @@ pub async fn add_deal(
 
         let resp = api_client
             .add_to_offers_dealstack(&offer_proposition_id, mc_donalds::default::OFFSET, &store)
-            .await?;
+            .await;
+
+        match resp {
+            Ok(_) => {}
+            Err(ref e) => {
+                if let Some(status) = e.status() {
+                    // if adding to the deal stack fails, we fail...
+                    // we let the code above lock the deal though.
+                    // likely case is someone redeeming a deal but also removing it..
+                    // this lock will keep it removed and provide an error
+                    // 409 Conflict means the offer already exists
+                    // 404 when offer is already redeemed
+                    if status.as_u16() != 409 && !status.is_success() {
+                        return Err(ApiError::McDonaldsError);
+                    }
+                } else {
+                    return Err(e.into());
+                }
+            }
+        };
 
         // this can cause the offer id to change.. for offers with id == 0
         // we need to update the database to avoid inconsistency
         // but we also need to find the uuid for the refreshed deal and lock it
         // only need to do this when the deal was successfully added, otherwise the refresh won't
         // get any new offer_id
-        if resp.status.is_success() && offer_id == 0 {
+        if resp.is_ok() && offer_id == 0 {
             // consider doing this async...
             // may not be quick enough...
             log::info!("offer_id = 0, refreshing account: {}", account);
@@ -142,63 +161,64 @@ pub async fn add_deal(
             };
         }
 
-        // if adding to the deal stack fails, we fail...
-        // we let the code above lock the deal though.
-        // likely case is someone redeeming a deal but also removing it..
-        // this lock will keep it removed and provide an error
-        // 409 Conflict means the offer already exists
-        // 404 when offer is already redeemed
-        if !resp.status.is_success() && resp.status.as_u16() != 409 {
-            return Err(ApiError::McDonaldsError);
-        }
+        // don't add to audit if it was a 409...
+        let user_id = if resp.is_ok() {
+            if let Some(auth_header) = auth.0 {
+                let auth_header = auth_header.replace("Bearer ", "");
+                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
+                let claims = jwt.claims();
+                let user_name = &jwt.claims().name;
+                let user_id = &jwt.claims().oid;
 
-        let user_id = if let Some(auth_header) = auth.0 {
-            let auth_header = auth_header.replace("Bearer ", "");
-            let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
-            let claims = jwt.claims();
-            let user_name = &jwt.claims().name;
-            let user_id = &jwt.claims().oid;
+                if !claims.extension_role.is_admin() && ctx.config.api.discord_deal_use.enabled {
+                    let restaurant_info = api_client
+                        .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
+                        .await;
 
-            if !claims.extension_role.is_admin() && ctx.config.api.discord_deal_use.enabled {
-                let restaurant_info = api_client
-                    .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
-                    .await;
-
-                let store_name = match restaurant_info {
-                    Ok(restaurant_info) => {
-                        let response = restaurant_info.body.response;
-                        match response {
-                            Some(response) => response.restaurant.name,
-                            None => "Unknown/Invalid Name".to_owned(),
+                    let store_name = match restaurant_info {
+                        Ok(restaurant_info) => {
+                            let response = restaurant_info.body.response;
+                            match response {
+                                Some(response) => response.restaurant.name,
+                                None => "Unknown/Invalid Name".to_owned(),
+                            }
                         }
-                    }
-                    _ => "Error getting store name".to_string(),
-                };
+                        _ => "Error getting store name".to_string(),
+                    };
 
-                let http_client = foundation::http::get_default_http_client();
-                execute_discord_webhooks(&http_client, &ctx.config, user_name, &offer, &store_name)
+                    let http_client = foundation::http::get_default_http_client();
+                    execute_discord_webhooks(
+                        &http_client,
+                        &ctx.config,
+                        user_name,
+                        &offer,
+                        &store_name,
+                    )
                     .await;
+                }
+
+                ctx.database
+                    .add_to_audit(
+                        AuditActionType::Add,
+                        Some(user_id.to_string()),
+                        Some(user_name.to_string()),
+                        &offer,
+                    )
+                    .await;
+
+                Some(user_id.to_owned())
+            } else {
+                ctx.database
+                    .add_to_audit(AuditActionType::Add, None, None, &offer)
+                    .await;
+                None
             }
-
-            ctx.database
-                .add_to_audit(
-                    AuditActionType::Add,
-                    Some(user_id.to_string()),
-                    Some(user_name.to_string()),
-                    &offer,
-                )
-                .await;
-
-            Some(user_id.to_owned())
         } else {
-            ctx.database
-                .add_to_audit(AuditActionType::Add, None, None, &offer)
-                .await;
             None
         };
 
-        // if we get 409 Conflict. offer already exists
-        let resp = if resp.status.as_u16() == 409 {
+        // if we get here with an error, it must be 409 because we return on other errors
+        let resp = if resp.is_err() {
             api_client
                 .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
                 .await?
@@ -217,7 +237,8 @@ pub async fn add_deal(
                 .await?;
             }
 
-            resp
+            // no error so we can unwrap here
+            resp.unwrap()
         };
 
         let resp = OfferResponse::from(resp.body);
