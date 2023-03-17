@@ -47,7 +47,7 @@ impl From<anyhow::Error> for ApiError {
         // check error type, we handle client errors differently
         let client_error: Result<ClientError, anyhow::Error> = e.downcast();
         match client_error {
-            Ok(e) => handle_client_error(e),
+            Ok(e) => handle_client_error(&e),
             Err(e) => {
                 log::error!("anyhow: UNHANDLED ERROR: {:#?}", e);
                 Self::UnhandledError
@@ -66,7 +66,7 @@ impl From<serde_json::Error> for ApiError {
 // getting a lot of 403 from McDonalds recently
 // often this resolves itself by simply trying again
 // so we'll instruct the client (APIM) to retry this error
-fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
+fn handle_mcdonalds_403(e: &reqwest::Error) -> ApiError {
     if let Some(status_code) = e.status() {
         match status_code {
             StatusCode::FORBIDDEN => match e.url() {
@@ -83,7 +83,7 @@ fn handle_mcdonalds_403(e: reqwest::Error) -> ApiError {
     }
 }
 
-fn handle_client_error(e: ClientError) -> ApiError {
+fn handle_client_error(e: &ClientError) -> ApiError {
     match e {
         ClientError::RequestOrMiddlewareError(e) => match e {
             reqwest_middleware::Error::Middleware(_) => {
@@ -114,7 +114,7 @@ impl From<reqwest_middleware::Error> for ApiError {
                 log::error!("reqwest_middleware: UNHANDLED ERROR: {:#?}", e);
                 Self::UnhandledError
             }
-            reqwest_middleware::Error::Reqwest(e) => handle_mcdonalds_403(e),
+            reqwest_middleware::Error::Reqwest(e) => handle_mcdonalds_403(&e),
         }
     }
 }
@@ -135,6 +135,13 @@ impl<T> From<SdkError<T>> for ApiError {
 
 impl From<ClientError> for ApiError {
     fn from(e: ClientError) -> Self {
+        log::error!("libmaccas: UNHANDLED ERROR: {}", e);
+        handle_client_error(&e)
+    }
+}
+
+impl From<&ClientError> for ApiError {
+    fn from(e: &ClientError) -> Self {
         log::error!("libmaccas: UNHANDLED ERROR: {}", e);
         handle_client_error(e)
     }
