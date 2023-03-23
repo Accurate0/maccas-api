@@ -85,12 +85,12 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
                 if deal_stack.is_none() {
                     log::info!("no deal stack for {}", account);
-                    continue;
+                    break;
                 }
 
                 if deal_stack.as_ref().unwrap().deal_stack.is_none() {
                     log::info!("no deal stack for {}", account);
-                    continue;
+                    break;
                 }
 
                 let deal_stack = deal_stack.unwrap().deal_stack.unwrap();
