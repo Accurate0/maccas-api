@@ -19,7 +19,7 @@ async fn main() -> Result<(), Error> {
 
 async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     let shared_config = aws::config::get_shared_config().await;
-    let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load(&shared_config).await?;
     if !config.refresh.enable_failure_handler {
         log::warn!(
             "refresh failure handler is disabled, ignoring event: {:?}",
