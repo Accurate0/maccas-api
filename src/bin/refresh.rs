@@ -35,7 +35,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         .context("AWS_REGION not set")
         .unwrap();
 
-    let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load(&shared_config).await?;
     if !config.refresh.enabled {
         log::warn!("refresh task is disabled, ignoring event: {:?}", &event);
         return Ok(());

@@ -49,7 +49,7 @@ async fn main() -> Result<(), LambdaError> {
     let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
     let shared_config = aws::config::get_shared_config().await;
 
-    let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load(&shared_config).await?;
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let secrets_client = aws_sdk_secretsmanager::Client::new(&shared_config);

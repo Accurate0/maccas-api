@@ -33,7 +33,7 @@ async fn main() -> Result<(), Error> {
 async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     let now = Instant::now();
     let shared_config = aws::config::get_shared_config().await;
-    let config = GeneralConfig::load_from_s3(&shared_config).await?;
+    let config = GeneralConfig::load(&shared_config).await?;
     if !config.accounts.enabled {
         log::warn!("accounts task is disabled, ignoring event: {:?}", &event);
         return Ok(());
