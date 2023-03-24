@@ -68,7 +68,7 @@ foundation = { git = "https://github.com/Accurate0/foundation.git", tag = "v0.33
 futures = "0.3.27"
 
 [build-dependencies]
-vergen = "7.5.1"
+vergen = "8.0.0"
 
 # [patch.crates-io]
 # libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
