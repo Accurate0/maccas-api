@@ -38,7 +38,7 @@ image = "0.24.5"
 webp = "0.2.2"
 
 # accounts
-regex = "1.7.2"
+regex = "1.7.3"
 imap = "2.4.1"
 native-tls = "0.2.11"
 
