@@ -31,19 +31,26 @@ pub fn generate_spending_information(audit_entries: &[AuditEntry]) -> UserSpendi
             .collect_vec()
             .len();
 
-        let final_count = all_add_count - all_remove_count;
+        if all_add_count >= all_remove_count {
+            let final_count = all_add_count - all_remove_count;
 
-        if final_count > 0 {
-            list.append(
-                &mut item
-                    .iter()
-                    .take(final_count)
-                    .map(|e| GetDealsOffer::from(e.offer.clone()))
-                    .collect_vec(),
-            );
+            if final_count > 0 {
+                list.append(
+                    &mut item
+                        .iter()
+                        .take(final_count)
+                        .map(|e| GetDealsOffer::from(e.offer.clone()))
+                        .collect_vec(),
+                );
+            }
+
+            final_list.append(&mut list);
+        } else {
+            log::warn!("{:?}", item);
+            log::warn!("add: {}, remove: {}", all_add_count, all_remove_count);
+            log::warn!("this is a bug, should never occur");
+            // lets ignore it instead of data fix
         }
-
-        final_list.append(&mut list);
     }
 
     let total_cost = audit_entries
