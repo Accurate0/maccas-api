@@ -70,6 +70,7 @@ foundation = { git = "https://github.com/Accurate0/foundation.git", features = [
     "http",
     "discord",
     "rocket",
+    "jwt",
 ] }
 futures = "0.3.28"
 
