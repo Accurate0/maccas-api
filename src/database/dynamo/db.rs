@@ -19,7 +19,7 @@ use crate::types::config::GeneralConfig;
 use crate::types::refresh::RefreshOfferCache;
 use anyhow::{bail, Context};
 use async_trait::async_trait;
-use aws_sdk_dynamodb::model::{AttributeValue, AttributeValueUpdate};
+use aws_sdk_dynamodb::types::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use foundation::hash::{calculate_default_hash, get_short_sha1};
