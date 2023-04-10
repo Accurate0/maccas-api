@@ -1,5 +1,5 @@
 use anyhow::Context;
-use aws_sdk_s3::types::ByteStream;
+use aws_sdk_s3::primitives::ByteStream;
 use foundation::aws;
 use image::io::Reader as ImageReader;
 use lambda_runtime::service_fn;

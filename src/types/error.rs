@@ -1,5 +1,5 @@
 use crate::constants::mc_donalds;
-use aws_sdk_dynamodb::types::SdkError;
+use aws_sdk_dynamodb::error::SdkError;
 use http::StatusCode;
 use libmaccas::ClientError;
 use rocket::response::Responder;
