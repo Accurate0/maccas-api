@@ -8,7 +8,7 @@ build = "build.rs"
 [dependencies]
 libmaccas = "0.41.0"
 
-lambda_runtime = "0.7.3"
+lambda_runtime = "0.8.0"
 lambda_http = "0.7.3"
 aws-sdk-dynamodb = "0.25.1"
 aws-config = "0.55.0"
