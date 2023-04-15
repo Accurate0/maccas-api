@@ -14,6 +14,8 @@ concurrency:
 
 jobs:
   build-deploy:
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: install musl gcc
@@ -44,22 +46,29 @@ jobs:
           strip ./bootstrap
           zip -r bootstrap.zip ./bootstrap
 
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
       - name: deploy dev
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: aws lambda update-function-code --function-name MaccasApi-api-dev --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
   upload-config:
+    permissions:
+      id-token: write
     needs: [build-deploy]
     runs-on: ubuntu-latest
     name: upload config
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ap-southeast-2
 
     steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
       - uses: actions/checkout@v3
       - uses: Accurate0/modify-json@v1.1.0
         with:
