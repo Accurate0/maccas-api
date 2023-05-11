@@ -3,11 +3,11 @@ use crate::{
         config::CONFIG_APIM_API_KEY_ID,
         mc_donalds::{self, default::LOCATION_SEARCH_DISTANCE},
     },
+    guards::correlation_id::CorrelationId,
     proxy, routes,
     types::{api::RestaurantInformation, error::ApiError},
 };
 use foundation::constants::{CORRELATION_ID_HEADER, X_API_KEY_HEADER};
-use foundation::rocket::guards::correlation_id::CorrelationId;
 use foundation::types::places::PlacesResponse;
 use foundation::{constants, extensions::SecretsManagerExtensions};
 use http::Method;

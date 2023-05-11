@@ -1,6 +1,6 @@
 use crate::{
     constants::config::CONFIG_APIM_API_KEY_ID,
-    guards::admin::AdminOnlyRoute,
+    guards::{admin::AdminOnlyRoute, correlation_id::CorrelationId},
     routes,
     shared::spending::generate_spending_information,
     types::{
@@ -11,7 +11,6 @@ use crate::{
 use foundation::{
     constants::{CORRELATION_ID_HEADER, GRAPH_API_BASE_URL, X_API_KEY_HEADER},
     extensions::SecretsManagerExtensions,
-    rocket::guards::correlation_id::CorrelationId,
     types::graph::GetUsersResponse,
 };
 use itertools::Itertools;
