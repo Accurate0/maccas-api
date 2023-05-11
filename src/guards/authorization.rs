@@ -1,5 +1,4 @@
 use http::header;
-
 use rocket::{
     outcome::Outcome,
     request::{self, FromRequest},

@@ -3,16 +3,15 @@ use crate::{
     routes,
     types::error::ApiError,
 };
-use foundation::{
-    extensions::SecretsManagerExtensions,
-    rocket::guards::authorization::RequiredAuthorizationHeader,
-};
+use foundation::extensions::SecretsManagerExtensions;
 use rocket::{
     http::Status,
     outcome::Outcome,
     request::{self, FromRequest},
     Request, State,
 };
+
+use super::required_authorization::RequiredAuthorizationHeader;
 
 pub struct ProtectedRoute;
 

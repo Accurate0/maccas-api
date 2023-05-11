@@ -1,13 +1,14 @@
 use crate::constants::config::{CONFIG_JWT_BYPASS_ID, X_JWT_BYPASS_HEADER};
 use crate::{routes, types::error::ApiError};
 use foundation::extensions::SecretsManagerExtensions;
-use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{
     http::Status,
     outcome::Outcome,
     request::{self, FromRequest},
     Request, State,
 };
+
+use super::required_authorization::RequiredAuthorizationHeader;
 
 pub struct AdminOnlyRoute;
 

@@ -1,5 +1,7 @@
-use crate::{routes, shared::spending, types::api::UserSpending, types::error::ApiError};
-use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
+use crate::{
+    guards::required_authorization::RequiredAuthorizationHeader, routes, shared::spending,
+    types::api::UserSpending, types::error::ApiError,
+};
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(

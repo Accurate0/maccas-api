@@ -1,9 +1,9 @@
 use crate::{
     constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
+    guards::required_authorization::RequiredAuthorizationHeader,
     proxy, routes,
     types::{error::ApiError, user::UserOptions},
 };
-use foundation::rocket::guards::authorization::RequiredAuthorizationHeader;
 use rocket::{http::Status, serde::json::Json, State};
 
 #[utoipa::path(
