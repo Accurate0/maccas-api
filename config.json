@@ -77,7 +77,7 @@
     },
     "api": {
         "discordDealUse": {
-            "enabled": true,
+            "enabled": false,
             "webhooks": [
                 null
             ],
