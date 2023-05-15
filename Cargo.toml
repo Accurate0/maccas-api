@@ -55,7 +55,7 @@ tokio-stream = "0.1.14"
 log = "0.4.17"
 async-trait = "0.1.68"
 task-local-extensions = "0.1.4"
-reqwest-tracing = "0.4.1"
+reqwest-tracing = "0.4.4"
 rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.10.5"
 tokio = "1.28.1"
