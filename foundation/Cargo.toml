@@ -6,20 +6,9 @@ publish = false
 
 [features]
 default = []
-aws = [
-    "dep:aws-config",
-    "dep:aws-sdk-s3",
-    "dep:aws-sdk-sqs",
-    "dep:aws-sdk-secretsmanager",
-]
+aws = ["dep:aws-config", "dep:aws-sdk-s3", "dep:aws-sdk-sqs", "dep:aws-sdk-secretsmanager"]
 
-http = [
-    "dep:http",
-    "dep:reqwest",
-    "dep:reqwest-retry",
-    "dep:reqwest-middleware",
-    "dep:reqwest-tracing",
-]
+http = ["dep:http", "dep:reqwest", "dep:reqwest-retry", "dep:reqwest-middleware", "dep:reqwest-tracing"]
 
 discord = ["dep:twilight-model", "dep:mime"]
 jwt = ["dep:aliri", "dep:aliri_oauth2", "dep:aliri_clock", "dep:jwt"]
@@ -60,3 +49,5 @@ fern = "0.6.2"
 serde = "1.0.169"
 config = "0.13.3"
 async-trait = "0.1.71"
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["json"] }
