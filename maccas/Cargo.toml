@@ -102,7 +102,3 @@ path = "src/bin/images.rs"
 [[bin]]
 name = "refresh-failure"
 path = "src/bin/refresh_failure.rs"
-
-[profile.release-strip]
-inherits = "release"
-strip = "symbols"
