@@ -1,0 +1,108 @@
+[package]
+name = "maccas-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "build.rs"
+
+[dependencies]
+libmaccas = "0.41.0"
+
+lambda_runtime = "0.8.1"
+lambda_http = "0.8.1"
+aws-sdk-dynamodb = "0.28.0"
+aws-config = "0.55.3"
+aws-sdk-s3 = "0.28.0"
+aws-types = "0.55.3"
+aws-sdk-sqs = "0.28.0"
+aws-sdk-secretsmanager = "0.28.0"
+
+serde = "1.0.169"
+serde_json = "1.0.100"
+serde_derive = "1.0.169"
+serde_dynamo = { version = "4.2.3", features = ["aws-sdk-dynamodb+0_28"] }
+strum = "0.25"
+strum_macros = "0.25"
+
+twilight-model = "0.15.2"
+twilight-util = { version = "0.15.2", features = ["builder"] }
+
+rocket = { version = "0.5.0-rc.3", features = ["json"] }
+rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
+
+jwt = "0.16.0"
+aliri = "0.6.2"
+aliri_oauth2 = "0.10.0"
+aliri_clock = "0.1.4"
+
+image = "0.24.6"
+webp = "0.2.3"
+
+# accounts
+regex = "1.9.1"
+imap = "2.4.1"
+native-tls = "0.2.11"
+
+openssl = { version = "0.10", features = ["vendored"] }
+config = { version = "0.13.3", features = ["yaml"] }
+uuid = { version = "1.4.0", features = ["v4"] }
+http = "0.2.9"
+chrono = "0.4.26"
+reqwest = { version = "0.11.18", features = ["json", "gzip"] }
+reqwest-middleware = "0.2.2"
+reqwest-retry = "0.2.2"
+tokio-stream = "0.1.14"
+log = "0.4.19"
+async-trait = "0.1.71"
+task-local-extensions = "0.1.4"
+reqwest-tracing = "0.4.5"
+rand = { version = "0.8.5", features = ["small_rng"] }
+itertools = "0.11.0"
+tokio = "1.29.1"
+rust-crypto = "0.2.36"
+mime = "0.3.17"
+anyhow = "1.0.71"
+fern = "0.6.2"
+utoipa = { version = "3.3.0", features = ["rocket_extras"] }
+lazy_static = "1.4.0"
+foundation = { path = "../foundation", features = [
+    "aws",
+    "http",
+    "discord",
+    "jwt",
+] }
+futures = "0.3.28"
+
+[build-dependencies]
+vergen = { version = "8.2.4", features = ["build", "rustc", "git", "gitoxide"] }
+
+# [patch.crates-io]
+# libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
+
+[lib]
+name = "maccas"
+path = "src/lib.rs"
+
+[[bin]]
+name = "api"
+path = "src/bin/api.rs"
+
+[[bin]]
+name = "refresh"
+path = "src/bin/refresh.rs"
+
+[[bin]]
+name = "cleanup"
+path = "src/bin/cleanup.rs"
+
+[[bin]]
+name = "images"
+path = "src/bin/images.rs"
+
+[[bin]]
+name = "refresh-failure"
+path = "src/bin/refresh_failure.rs"
+
+[profile.release-strip]
+inherits = "release"
+strip = "symbols"

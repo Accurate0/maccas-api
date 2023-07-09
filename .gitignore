@@ -7,3 +7,5 @@ sensor-data.json
 src/bin/sensor_data
 src/bin/subscriptions.json
 src/bin/preferences.json
+
+foundation/Cargo.lock
