@@ -14,5 +14,6 @@
     "utoipa",
     "vergen",
     "webp"
-  ]
+  ],
+  "rust-analyzer.linkedProjects": ["./Cargo.toml"]
 }
