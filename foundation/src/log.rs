@@ -37,3 +37,19 @@ pub fn init_logger(level: LevelFilter, warn_modules: &[&'static str]) {
         .context("failed to set up logger")
         .unwrap();
 }
+
+#[cfg(not(debug_assertions))]
+pub fn init_logger_v2() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .json()
+        .with_ansi(false)
+        .init()
+}
+
+#[cfg(debug_assertions)]
+pub fn init_logger_v2() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init()
+}
