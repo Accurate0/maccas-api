@@ -246,7 +246,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         let response = client
                             .put_customer_activation(&request, &config.mcdonalds.sensor_data)
                             .await;
-                        log::info!("{:#?}", response);
+                        log::info!("{:?}", response);
                     } else {
                         log::info!("dry run, not activating");
                     }
