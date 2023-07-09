@@ -63,7 +63,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         )
         .map_err(|e| e.0)?;
 
-    let x = imap_session.select("INBOX")?.exists;
+    let x: u32 = imap_session.select("INBOX")?.exists;
 
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let db = DynamoDatabase::new(
@@ -73,7 +73,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     );
 
     let messages = imap_session.fetch(format!("{}:{}", x, x - 20), "RFC822")?;
-    log::info!("{}", messages.len());
+    log::info!("messages: {}", messages.len());
     for message in messages.iter() {
         let body = message.body().expect("message did not have a body!");
         let body = std::str::from_utf8(body)
@@ -86,7 +86,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             ac = cap.get(1);
         }
 
-        let re = Regex::new(r"To: ([a-zA-Z0-9]+)").unwrap();
+        let re = Regex::new(r"To: ([a-zA-Z0-9\.]+)").unwrap();
         let mut to = None;
         for cap in re.captures_iter(&body) {
             to = cap.get(1);
@@ -98,14 +98,14 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name).as_str(),
                 )
                 .await?;
-            log::info!("{:#?}", id);
+            log::info!("existing device id: {:#?}", id);
 
             let device_id = id.unwrap_or_else(|| {
                 let mut rng = StdRng::from_entropy();
                 Alphanumeric.sample_string(&mut rng, 16)
             });
-            log::info!("{:?}", ac.unwrap().as_str());
-            log::info!("{:?}", to.unwrap().as_str().to_string());
+            log::info!("code: {:?}", ac.unwrap().as_str());
+            log::info!("email to: {:?}", to.unwrap().as_str().to_string());
             let request = ActivationRequest {
                 activation_code: ac.unwrap().as_str().to_string()[2..ac.unwrap().as_str().len()]
                     .to_string(),

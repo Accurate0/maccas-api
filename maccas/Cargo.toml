@@ -1,5 +1,5 @@
 [package]
-name = "maccas-api"
+name = "maccas"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -28,7 +28,7 @@ twilight-model = "0.15.2"
 twilight-util = { version = "0.15.2", features = ["builder"] }
 
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "54fae07" }
+rocket_cors = "0.6.0-alpha2"
 
 jwt = "0.16.0"
 aliri = "0.6.2"
