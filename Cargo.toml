@@ -1,2 +1,6 @@
 [workspace]
 members = ["foundation", "maccas"]
+
+[profile.release-strip]
+inherits = "release"
+strip = "symbols"
