@@ -160,9 +160,11 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
 
                 log::info!("[{}] added to database", request.email_address);
-                log::info!("sleeping for 10 seconds");
                 if real_run {
+                    log::info!("sleeping for 10 seconds");
                     tokio::time::sleep(Duration::from_secs(10)).await
+                } else {
+                    log::info!("dry run, not created");
                 }
             }
         }
