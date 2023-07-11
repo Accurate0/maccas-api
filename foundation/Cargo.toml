@@ -57,7 +57,7 @@ uuid = { version = "1.4.0", features = ["v4"] }
 anyhow = "1.0.71"
 log = "0.4.19"
 fern = "0.6.2"
-serde = "1.0.169"
+serde = "1.0.171"
 config = "0.13.3"
 async-trait = "0.1.71"
 tracing = "0.1.37"
