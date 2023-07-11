@@ -272,6 +272,7 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         }
         Commands::ActivateAndLogin { count } => {
+            // TODO: actually finish this, not needed yet apparently.. things kinda just work..
             log::info!("attempting to activate and login accounts");
             let tls = native_tls::TlsConnector::builder().build().unwrap();
             let imap_client = imap::connect(
