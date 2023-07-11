@@ -95,9 +95,8 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
         if ac.is_some() && to.is_some() {
             let to = to.unwrap().get_value();
-            let id = db
-                .get_device_id_for(format!("{}@{}", to, config.accounts.domain_name).as_str())
-                .await?;
+            let login_username = format!("{}@{}", to, config.accounts.domain_name);
+            let id = db.get_device_id_for(&login_username).await?;
             log::info!("existing device id: {:?}", id);
 
             let device_id = id.unwrap_or_else(|| {
@@ -111,7 +110,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             let request = ActivationRequest {
                 activation_code: ac.to_string(),
                 credentials: Credentials {
-                    login_username: format!("{}@{}", to, config.accounts.domain_name),
+                    login_username: login_username.to_owned(),
                     type_field: "device".to_string(),
                     password: None,
                 },
@@ -127,14 +126,10 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 }
             };
 
-            db.set_device_id_for(
-                format!("{}@{}", to, config.accounts.domain_name).as_str(),
-                device_id.as_str(),
-            )
-            .await
-            .ok();
+            db.set_device_id_for(&login_username, &device_id).await.ok();
         }
 
+        // there is a rate limit : )
         sleep(Duration::from_secs(5)).await;
     }
 
