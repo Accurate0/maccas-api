@@ -1,8 +1,9 @@
+use anyhow::Context;
 use anyhow::Result;
 use foundation::aws;
 use foundation::http::get_default_http_client;
 use lambda_http::service_fn;
-use lambda_http::Error;
+use lambda_http::Error as LambdaError;
 use lambda_runtime::LambdaEvent;
 use libmaccas::types::request::ActivationRequest;
 use libmaccas::types::request::Credentials;
@@ -12,18 +13,20 @@ use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::SqsEvent;
+use mailparse::MailHeaderMap;
 use rand::distributions::Alphanumeric;
 use rand::distributions::DistString;
 use rand::prelude::StdRng;
 use rand::SeedableRng;
 use regex::Regex;
+use std::error::Error;
 use std::time::Duration;
 use std::time::Instant;
 use tokio::time::sleep;
 extern crate imap;
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), LambdaError> {
     foundation::log::init_logger(log::LevelFilter::Info, &[]);
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
@@ -63,8 +66,6 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         )
         .map_err(|e| e.0)?;
 
-    let x: u32 = imap_session.select("INBOX")?.exists;
-
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let db = DynamoDatabase::new(
         dynamodb_client,
@@ -72,13 +73,16 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.indexes,
     );
 
-    let messages = imap_session.fetch(format!("{}:{}", x, x - 20), "RFC822")?;
-    log::info!("messages: {}", messages.len());
-    for message in messages.iter() {
-        let body = message.body().expect("message did not have a body!");
-        let body = std::str::from_utf8(body)
-            .expect("message was not valid utf-8")
-            .to_string();
+    // get all
+    imap_session.select("INBOX")?;
+    let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
+    log::info!("unseen messages: {}", all_unseen_emails.len());
+    for message_uid in all_unseen_emails.iter() {
+        let messages = imap_session.uid_fetch(message_uid.to_string(), "RFC822")?;
+        let message = messages.first().context("should have at least one")?;
+        let parsed_email = mailparse::parse_mail(message.body().context("must have body")?)?;
+
+        let body = parsed_email.get_body()?;
 
         let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
         let mut ac = None;
@@ -86,47 +90,45 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             ac = cap.get(1);
         }
 
-        let re = Regex::new(r"To: ([a-zA-Z0-9\.]+)").unwrap();
-        let mut to = None;
-        for cap in re.captures_iter(&body) {
-            to = cap.get(1);
-        }
+        let headers = parsed_email.get_headers();
+        let to = headers.get_first_header("To");
 
         if ac.is_some() && to.is_some() {
+            let to = to.unwrap().get_value();
             let id = db
-                .get_device_id_for(
-                    format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name).as_str(),
-                )
+                .get_device_id_for(format!("{}@{}", to, config.accounts.domain_name).as_str())
                 .await?;
-            log::info!("existing device id: {:#?}", id);
+            log::info!("existing device id: {:?}", id);
 
             let device_id = id.unwrap_or_else(|| {
                 let mut rng = StdRng::from_entropy();
                 Alphanumeric.sample_string(&mut rng, 16)
             });
-            log::info!("code: {:?}", ac.unwrap().as_str());
-            log::info!("email to: {:?}", to.unwrap().as_str().to_string());
+
+            let ac = ac.unwrap().as_str();
+            log::info!("code: {:?}", ac);
+            log::info!("email to: {:?}", to.to_string());
             let request = ActivationRequest {
-                activation_code: ac.unwrap().as_str().to_string()[2..ac.unwrap().as_str().len()]
-                    .to_string(),
+                activation_code: ac.to_string(),
                 credentials: Credentials {
-                    login_username: format!(
-                        "{}@{}",
-                        to.unwrap().as_str(),
-                        config.accounts.domain_name
-                    ),
+                    login_username: format!("{}@{}", to, config.accounts.domain_name),
                     type_field: "device".to_string(),
                     password: None,
                 },
                 device_id: device_id.to_string(),
             };
-            let response = client
+            match client
                 .put_customer_activation(&request, &config.mcdonalds.sensor_data)
-                .await;
+                .await
+            {
+                Ok(r) => log::info!("response: {} ({})", r.status, r.body.status.code),
+                Err(e) => {
+                    log::error!("status: {:?}, {:?}", e.status(), e.source());
+                }
+            };
 
-            log::info!("{:#?}", response);
             db.set_device_id_for(
-                format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name).as_str(),
+                format!("{}@{}", to, config.accounts.domain_name).as_str(),
                 device_id.as_str(),
             )
             .await
