@@ -73,6 +73,8 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         &config.database.indexes,
     );
 
+    let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
+
     // get all
     imap_session.select("INBOX")?;
     let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
@@ -84,7 +86,6 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
         let body = parsed_email.get_body()?;
 
-        let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
         let mut ac = None;
         for cap in re.captures_iter(&body) {
             ac = cap.get(1);
