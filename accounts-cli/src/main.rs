@@ -53,6 +53,8 @@ enum Commands {
     },
 }
 
+// TODO: upgrade cli to use mailparse too
+// TODO: use unseen lookup, smarter...
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     foundation::log::init_logger(log::LevelFilter::Info, &[]);
