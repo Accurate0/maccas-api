@@ -2,8 +2,9 @@ use clap::{Parser, Subcommand};
 use foundation::aws;
 use libmaccas::{
     types::request::{
-        AcceptancePolicies, ActivationRequest, Address, Audit, Credentials, Device, Policies,
-        Preference, RegistrationRequest, Subscription,
+        AcceptancePolicies, ActivateAndSignInRequest, ActivationDevice, ActivationRequest, Address,
+        Audit, ClientInfo, Credentials, Device, Policies, Preference, RegistrationRequest,
+        Subscription,
     },
     ApiClient,
 };
@@ -46,11 +47,15 @@ enum Commands {
         #[arg(short, long)]
         count: u32,
     },
+    ActivateAndLogin {
+        #[arg(short, long)]
+        count: u32,
+    },
 }
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    foundation::log::init_logger_v2();
+    foundation::log::init_logger(log::LevelFilter::Info, &[]);
     maccas::logging::dump_build_details();
 
     let shared_config = aws::config::get_shared_config().await;
@@ -192,7 +197,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 &config.database.indexes,
             );
 
-            let messages = imap_session.fetch(format!("{}:{}", x, x - count), "RFC822")?;
+            log::info!("total messages: {}", x);
+            let messages = imap_session.fetch(format!("{}:{}", x, x - count + 1), "RFC822")?;
             log::info!("messages: {}", messages.len());
             for message in messages.iter() {
                 let body = message.body().expect("message did not have a body!");
@@ -245,6 +251,120 @@ async fn main() -> Result<(), anyhow::Error> {
                     if real_run {
                         let response = client
                             .put_customer_activation(&request, &config.mcdonalds.sensor_data)
+                            .await;
+                        log::info!("{:?}", response);
+                    } else {
+                        log::info!("dry run, not activating");
+                    }
+
+                    db.set_device_id_for(
+                        format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
+                            .as_str(),
+                        device_id.as_str(),
+                    )
+                    .await
+                    .ok();
+
+                    if real_run {
+                        tokio::time::sleep(Duration::from_secs(5)).await;
+                    }
+                }
+            }
+        }
+        Commands::ActivateAndLogin { count } => {
+            log::info!("attempting to activate and login accounts");
+            let tls = native_tls::TlsConnector::builder().build().unwrap();
+            let imap_client = imap::connect(
+                (config.accounts.email.server_address.clone(), 993),
+                config.accounts.email.server_address,
+                &tls,
+            )?;
+            let mut imap_session = imap_client
+                .login(
+                    config.accounts.email.address,
+                    config.accounts.email.password,
+                )
+                .map_err(|e| e.0)?;
+
+            let x = imap_session.select("INBOX")?.exists;
+
+            let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
+            let db = DynamoDatabase::new(
+                dynamodb_client,
+                &config.database.tables,
+                &config.database.indexes,
+            );
+
+            // let mut counter = 0;
+            let messages = imap_session.fetch(format!("{}:{}", x, x - count - 1), "RFC822")?;
+            log::info!("messages: {}", messages.len());
+            for message in messages.iter() {
+                let body = message.body().expect("message did not have a body!");
+                let body = std::str::from_utf8(body)
+                    .expect("message was not valid utf-8")
+                    .to_string();
+
+                // let mut file = std::fs::File::create(format!("body.{}.html", counter))?;
+                // file.write_all(body.as_bytes())?;
+                // counter += 1;
+                let re = Regex::new(r"ml=([a-zA-Z0-9]+)").unwrap();
+                let mut magic_link = None;
+                for cap in re.captures_iter(&body) {
+                    log::info!("capture: {:#?}", cap);
+                    magic_link = cap.get(1);
+                }
+
+                let re = Regex::new(r"To: ([a-zA-Z0-9\.]+)").unwrap();
+                let mut to = None;
+                for cap in re.captures_iter(&body) {
+                    to = cap.get(1);
+                }
+
+                let re = Regex::new(r"From: ([<> @a-zA-Z0-9\.]+)").unwrap();
+                let mut from = None;
+                for cap in re.captures_iter(&body) {
+                    from = cap.get(1);
+                }
+
+                if !from.is_some_and(|x| x.as_str().contains("accounts@au.mcdonalds.com")) {
+                    log::warn!("skipping non maccas email, {:#?}", from);
+                    continue;
+                }
+
+                if magic_link.is_some() && to.is_some() {
+                    let id = db
+                        .get_device_id_for(
+                            format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
+                                .as_str(),
+                        )
+                        .await?;
+                    log::info!("existing device id: {:?}", id);
+
+                    let device_id = id.unwrap_or_else(|| {
+                        let mut rng = StdRng::from_entropy();
+                        Alphanumeric.sample_string(&mut rng, 16)
+                    });
+                    // let ac = &magic_link.unwrap().as_str().to_string()
+                    //     [2..magic_link.unwrap().as_str().len()];
+                    let magic_link = magic_link.unwrap().as_str().to_string();
+                    log::info!("code: {:?}", magic_link);
+                    log::info!("email to: {:?}", to.unwrap().as_str().to_string());
+
+                    if real_run {
+                        let response = client
+                            .activate_and_signin(
+                                &ActivateAndSignInRequest {
+                                    activation_link: magic_link,
+                                    client_info: ClientInfo {
+                                        device: ActivationDevice {
+                                            device_unique_id: device_id.to_owned(),
+                                            os: "android".to_owned(),
+                                            os_version: "12".to_owned(),
+                                        },
+                                    },
+                                },
+                                &config.mcdonalds.sensor_data,
+                            )
                             .await;
                         log::info!("{:?}", response);
                     } else {

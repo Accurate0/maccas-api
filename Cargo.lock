@@ -13,7 +13,7 @@ dependencies = [
  "clap 4.3.11",
  "foundation",
  "imap",
- "libmaccas",
+ "libmaccas 0.43.0",
  "log",
  "maccas",
  "native-tls",
@@ -2748,6 +2748,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "libmaccas"
+version = "0.43.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fdd5470750bdb932c1592f43559294ac2c03e40258b33781be67c7d80d83f3b"
+dependencies = [
+ "anyhow",
+ "http",
+ "reqwest",
+ "reqwest-middleware",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "libwebp-sys"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2834,7 +2851,7 @@ dependencies = [
  "lambda_http",
  "lambda_runtime",
  "lazy_static",
- "libmaccas",
+ "libmaccas 0.41.0",
  "log",
  "mime",
  "native-tls",
