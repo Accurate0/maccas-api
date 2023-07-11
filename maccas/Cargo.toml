@@ -36,7 +36,7 @@ aliri_oauth2 = "0.10.0"
 aliri_clock = "0.1.4"
 
 image = "0.24.6"
-webp = "0.2.3"
+webp = "0.2.4"
 
 # accounts
 regex = "1.9.1"
