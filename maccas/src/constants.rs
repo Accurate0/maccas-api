@@ -20,7 +20,6 @@ pub mod config {
     pub const BASE_FILE: &str = "base-config-dev.json";
     #[cfg(not(debug_assertions))]
     pub const BASE_FILE: &str = "base-config.json";
-    pub const REGION_ACCOUNTS_FILE: &str = "{region}/accounts-{region}-{option}.json";
     pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
     pub const CONFIG_APIM_API_KEY_ID: &str = "MaccasApi-ApimApiKey";
     pub const CONFIG_JWT_BYPASS_ID: &str = "MaccasApi-JwtBypassKey";
