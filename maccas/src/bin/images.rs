@@ -8,7 +8,10 @@ use maccas::constants::mc_donalds::IMAGE_CDN;
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{ImagesRefreshMessage, SqsEvent};
+use mime::IMAGE_PNG;
+use oxipng::{Deflaters, Headers, Options};
 use std::io::Cursor;
+use std::num::NonZeroU8;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -36,7 +39,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         .iter()
         .map(|msg| {
             serde_json::from_str(msg.body.as_ref().unwrap())
-                .context("must deserialize")
+                .context("must deserialize sqs request")
                 .unwrap()
         })
         .collect();
@@ -69,10 +72,18 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     let image = ImageReader::new(Cursor::new(image_bytes.clone()))
                         .with_guessed_format()?
                         .decode()?;
-                    let webp_image_memory = webp::Encoder::from_image(&image)
-                        .unwrap()
-                        .encode(config.images.webp_quality);
-                    let webp_image: Vec<u8> = webp_image_memory.iter().cloned().collect();
+
+                    let mut bytes: Vec<u8> = Vec::new();
+                    image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png)?;
+                    let optimized_png = oxipng::optimize_from_memory(
+                        &bytes,
+                        &Options {
+                            force: true,
+                            strip: Headers::All,
+                            deflate: Deflaters::Libdeflater { compression: 12 },
+                            ..Default::default()
+                        },
+                    )?;
 
                     if config.images.copy_originals {
                         s3_client
@@ -88,8 +99,8 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                         .put_object()
                         .bucket(&config.images.bucket_name)
                         .key(&offer.new)
-                        .content_type("image/webp")
-                        .body(ByteStream::from(webp_image))
+                        .content_type(IMAGE_PNG.to_string())
+                        .body(ByteStream::from(optimized_png))
                         .send()
                         .await?;
 
