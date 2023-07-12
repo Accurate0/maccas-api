@@ -1,7 +1,7 @@
 use anyhow::Context;
 use anyhow::Result;
 use foundation::aws;
-use foundation::http::get_default_http_client;
+use foundation::http::get_default_http_client_with_proxy;
 use lambda_http::service_fn;
 use lambda_http::Error as LambdaError;
 use lambda_runtime::LambdaEvent;
@@ -11,6 +11,7 @@ use libmaccas::ApiClient;
 use maccas::constants;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::logging;
+use maccas::proxy;
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::SqsEvent;
 use mailparse::MailHeaderMap;
@@ -41,7 +42,9 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         log::warn!("accounts task is disabled, ignoring event: {:?}", &event);
         return Ok(());
     }
-    let http_client = get_default_http_client();
+
+    let proxy = proxy::get_proxy(&config.proxy).await;
+    let http_client = get_default_http_client_with_proxy(proxy);
     let mut client = ApiClient::new(
         constants::mc_donalds::default::BASE_URL.to_string(),
         http_client,
@@ -74,6 +77,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     );
 
     let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
+    let mut rng = StdRng::from_entropy();
 
     // get all
     imap_session.select("INBOX")?;
@@ -94,16 +98,13 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         let headers = parsed_email.get_headers();
         let to = headers.get_first_header("To");
 
+        log::info!("ac: {:?}, to: {:?}", ac, to);
         if ac.is_some() && to.is_some() {
             let to = to.unwrap().get_value();
-            let login_username = format!("{}@{}", to, config.accounts.domain_name);
-            let id = db.get_device_id_for(&login_username).await?;
+            let id = db.get_device_id_for(&to).await?;
             log::info!("existing device id: {:?}", id);
 
-            let device_id = id.unwrap_or_else(|| {
-                let mut rng = StdRng::from_entropy();
-                Alphanumeric.sample_string(&mut rng, 16)
-            });
+            let device_id = id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
 
             let ac = ac.unwrap().as_str();
             log::info!("code: {:?}", ac);
@@ -111,7 +112,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             let request = ActivationRequest {
                 activation_code: ac.to_string(),
                 credentials: Credentials {
-                    login_username: login_username.to_owned(),
+                    login_username: to.to_owned(),
                     type_field: "device".to_string(),
                     password: None,
                 },
@@ -127,7 +128,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 }
             };
 
-            db.set_device_id_for(&login_username, &device_id).await.ok();
+            db.set_device_id_for(&to, &device_id).await.ok();
         }
 
         // there is a rate limit : )
