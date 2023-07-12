@@ -42,8 +42,7 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
             .unwrap_or(&offer.name.as_str())
             .to_string();
 
-        let base_name_with_webp =
-            format!("{}.webp", util::remove_extension(&offer.image_base_name));
+        let base_name_with_png = format!("{}.png", util::remove_extension(&offer.image_base_name));
 
         Self {
             deal_uuid: Uuid::new_v4().as_hyphenated().to_string(),
@@ -57,7 +56,7 @@ impl From<libmaccas::types::response::Offer> for OfferDatabase {
             short_name,
             description: offer.long_description,
             creation_date_utc: offer.creation_date_utc,
-            image_base_name: base_name_with_webp,
+            image_base_name: base_name_with_png,
             original_image_base_name: offer.image_base_name,
             price: None,
         }

@@ -37,7 +37,6 @@
         "enabled": true,
         "forceRefresh": false,
         "copyOriginals": false,
-        "webpQuality": 75.0,
         "bucketName": "maccas-image-bucket",
         "queueName": "maccas-images-queue"
     },
