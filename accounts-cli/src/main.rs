@@ -117,7 +117,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         type_field: "email".to_string(),
                     },
                     device: Device {
-                        device_id,
+                        device_id: device_id.to_string(),
                         device_id_type: "AndroidId".to_string(),
                         is_active: "Y".to_string(),
                         os: "android".to_string(),
@@ -164,6 +164,8 @@ async fn main() -> Result<(), anyhow::Error> {
                             &group.to_string(),
                         )
                         .await?;
+
+                    database.set_device_id_for(&username, &device_id).await?;
                 }
 
                 log::info!("[{}] added to database", request.email_address);
