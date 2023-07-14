@@ -1,6 +1,5 @@
 use crate::types::discord::DiscordWebhookMessage;
 use twilight_model::channel::message::Embed;
-#[cfg(feature = "http")]
 use {http::header::CONTENT_TYPE, reqwest::Response, reqwest_middleware::ClientWithMiddleware};
 
 impl DiscordWebhookMessage {
@@ -24,7 +23,6 @@ impl DiscordWebhookMessage {
         self
     }
 
-    #[cfg(feature = "http")]
     pub async fn send(
         &self,
         http_client: &ClientWithMiddleware,
