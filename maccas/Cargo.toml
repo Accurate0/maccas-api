@@ -19,7 +19,7 @@ aws-sdk-secretsmanager = "0.28.0"
 
 serde = "1.0.171"
 serde_json = "1.0.102"
-serde_derive = "1.0.169"
+serde_derive = "1.0.171"
 serde_dynamo = { version = "4.2.3", features = ["aws-sdk-dynamodb+0_28"] }
 strum = "0.25"
 strum_macros = "0.25"
@@ -36,7 +36,7 @@ aliri_oauth2 = "0.10.0"
 aliri_clock = "0.1.4"
 
 image = "0.24.6"
-webp = "0.2.3"
+webp = "0.2.4"
 
 # accounts
 regex = "1.9.1"
