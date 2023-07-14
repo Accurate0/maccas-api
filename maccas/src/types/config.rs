@@ -45,6 +45,7 @@ pub struct ImageConfig {
     pub force_refresh: bool,
     pub bucket_name: String,
     pub copy_originals: bool,
+    pub webp_quality: f32,
     pub queue_name: String,
 }
 

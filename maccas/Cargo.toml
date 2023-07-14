@@ -36,6 +36,7 @@ aliri_oauth2 = "0.10.0"
 aliri_clock = "0.1.4"
 
 image = "0.24.6"
+webp = "0.2.3"
 
 # accounts
 regex = "1.9.1"
@@ -72,7 +73,6 @@ foundation = { path = "../foundation", features = [
     "jwt",
 ] }
 futures = "0.3.28"
-oxipng = "8.0.0"
 
 [build-dependencies]
 vergen = { version = "8.2.4", features = ["build", "rustc", "git", "gitoxide"] }
