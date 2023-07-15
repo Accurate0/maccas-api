@@ -40,6 +40,7 @@ imap = "2.4.1"
 native-tls = "0.2.11"
 mailparse = "0.14.0"
 
+openssl = { version = "0.10", features = ["vendored"] }
 foundation = { path = "../foundation" }
 config = { version = "0.13.3", features = ["yaml"] }
 uuid = { version = "1.4.0", features = ["v4"] }
