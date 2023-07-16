@@ -115,7 +115,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                             .add_to_audit(
                                 AuditActionType::Remove,
                                 user_id,
-                                Some("SA-Cleanup".to_owned()),
+                                "SA-Cleanup".to_owned(),
                                 &offer,
                             )
                             .await;

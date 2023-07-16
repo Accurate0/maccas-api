@@ -96,7 +96,7 @@ pub trait Database {
         &self,
         action: AuditActionType,
         user_id: Option<String>,
-        user_name: Option<String>,
+        actor: String,
         offer_id: &OfferDatabase,
     );
     async fn get_audit_entries_for(

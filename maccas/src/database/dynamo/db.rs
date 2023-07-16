@@ -1,7 +1,7 @@
 use super::DynamoDatabase;
 use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
-    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, CURRENT_LIST, DEAL_UUID,
+    ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, ACTOR, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, GROUP, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER, OFFER_ID,
     OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO, REFRESH_TOKEN, REGION, TIMESTAMP, TTL,
     USER_CONFIG, USER_ID, USER_NAME, VALUE,
@@ -40,13 +40,12 @@ impl Database for DynamoDatabase {
         &self,
         action: AuditActionType,
         user_id: Option<String>,
-        user_name: Option<String>,
+        actor: String,
         offer: &OfferDatabase,
     ) {
-        let user_name = user_name.unwrap_or_else(|| "unknown".to_owned());
         let user_id = user_id.unwrap_or_else(|| "unknown".to_owned());
 
-        log::info!("adding to audit table: {user_id}/{user_name} {:?}", offer);
+        log::info!("adding to audit table: {user_id}/{actor} {:?}", offer);
 
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -74,7 +73,8 @@ impl Database for DynamoDatabase {
             .item(ACTION, AttributeValue::S(action.to_string()))
             .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.to_string()))
             .item(USER_ID, AttributeValue::S(user_id))
-            .item(USER_NAME, AttributeValue::S(user_name))
+            .item(USER_NAME, AttributeValue::S(actor.clone()))
+            .item(ACTOR, AttributeValue::S(actor))
             .item(OFFER_NAME, AttributeValue::S(offer.short_name.to_string()))
             .item(TIMESTAMP, AttributeValue::S(now))
             .item(OFFER, AttributeValue::M(offer_attribute.unwrap()))

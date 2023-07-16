@@ -59,7 +59,12 @@ pub async fn remove_deal(
             }
 
             ctx.database
-                .add_to_audit(AuditActionType::Remove, user_id, user_name, &offer)
+                .add_to_audit(
+                    AuditActionType::Remove,
+                    user_id,
+                    user_name.unwrap_or("SA-API".to_owned()),
+                    &offer,
+                )
                 .await;
             ctx.database.unlock_deal(deal_id).await?;
             Ok(Status::NoContent)
