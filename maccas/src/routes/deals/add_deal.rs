@@ -201,7 +201,7 @@ pub async fn add_deal(
                     .add_to_audit(
                         AuditActionType::Add,
                         Some(user_id.to_string()),
-                        Some(user_name.to_string()),
+                        user_name.to_string(),
                         &offer,
                     )
                     .await;
@@ -209,7 +209,7 @@ pub async fn add_deal(
                 Some(user_id.to_owned())
             } else {
                 ctx.database
-                    .add_to_audit(AuditActionType::Add, None, None, &offer)
+                    .add_to_audit(AuditActionType::Add, None, "SA-API".to_owned(), &offer)
                     .await;
                 None
             }

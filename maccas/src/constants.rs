@@ -55,6 +55,7 @@ pub mod db {
     pub const USER_ID: &str = "user_id";
     pub const USER_CONFIG: &str = "user_config";
     pub const USER_NAME: &str = "user_name";
+    pub const ACTOR: &str = "actor";
     pub const DEVICE_ID: &str = "device_id";
     pub const REGION: &str = "region";
     pub const GROUP: &str = "group";
