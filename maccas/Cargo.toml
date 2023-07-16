@@ -6,7 +6,7 @@ publish = false
 build = "build.rs"
 
 [dependencies]
-libmaccas = "0.44.0"
+libmaccas = "0.45.0"
 
 lambda_runtime = "0.8.1"
 lambda_http = "0.8.1"
@@ -17,7 +17,7 @@ aws-sdk-sqs = "0.28.0"
 aws-sdk-secretsmanager = "0.28.0"
 
 serde = "1.0.171"
-serde_json = "1.0.102"
+serde_json = "1.0.103"
 serde_derive = "1.0.171"
 serde_dynamo = { version = "4.2.3", features = ["aws-sdk-dynamodb+0_28"] }
 strum_macros = "0.25"
@@ -54,7 +54,7 @@ async-trait = "0.1.71"
 rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.11.0"
 tokio = "1.29.1"
-anyhow = "1.0.71"
+anyhow = "1.0.72"
 utoipa = { version = "3.4.0", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 futures = "0.3.28"
