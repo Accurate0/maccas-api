@@ -112,7 +112,12 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                             .await?;
 
                         database
-                            .add_to_audit(AuditActionType::Remove, user_id, None, &offer)
+                            .add_to_audit(
+                                AuditActionType::Remove,
+                                user_id,
+                                Some("SA-Cleanup".to_owned()),
+                                &offer,
+                            )
                             .await;
 
                         log::info!("removed from dealstack - {}", response.status);
