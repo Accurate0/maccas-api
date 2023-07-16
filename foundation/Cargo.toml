@@ -29,10 +29,10 @@ aliri_clock = { version = "0.1.4" }
 jwt = { version = "0.16.0" }
 
 # types
-serde_json = { version = "1.0.102" }
+serde_json = { version = "1.0.103" }
 lazy_static = "1.4.0"
 uuid = { version = "1.4.0", features = ["v4"] }
-anyhow = "1.0.71"
+anyhow = "1.0.72"
 log = "0.4.19"
 fern = "0.6.2"
 serde = "1.0.171"
