@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.3.12", features = ["derive"] }
+clap = { version = "4.3.14", features = ["derive"] }
 
 aws-sdk-dynamodb = "0.28.0"
 
