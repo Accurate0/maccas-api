@@ -22,7 +22,7 @@ use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
-use foundation::hash::{calculate_default_hash, get_short_sha1};
+use foundation::hash::get_short_sha1;
 use http::StatusCode;
 use itertools::Itertools;
 use libmaccas::ApiClient;
@@ -63,12 +63,7 @@ impl Database for DynamoDatabase {
             .table_name(&self.audit)
             .item(
                 OPERATION_ID,
-                AttributeValue::S(
-                    calculate_default_hash(
-                        &format!("{}-{}-{}", action, offer.deal_uuid, now).to_string(),
-                    )
-                    .to_string(),
-                ),
+                AttributeValue::S(uuid::Uuid::now_v7().to_string()),
             )
             .item(ACTION, AttributeValue::S(action.to_string()))
             .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.to_string()))
