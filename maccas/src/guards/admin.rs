@@ -1,11 +1,9 @@
-use crate::constants::config::{CONFIG_JWT_BYPASS_ID, X_JWT_BYPASS_HEADER};
-use crate::{routes, types::error::ApiError};
-use foundation::extensions::SecretsManagerExtensions;
+use crate::types::error::ApiError;
 use rocket::{
     http::Status,
     outcome::Outcome,
     request::{self, FromRequest},
-    Request, State,
+    Request,
 };
 
 use super::required_authorization::RequiredAuthorizationHeader;
@@ -17,27 +15,6 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
     type Error = ApiError;
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
-        let ctx = request.guard::<&State<routes::Context>>().await;
-        if ctx.is_failure() {
-            return Outcome::Failure((Status::InternalServerError, ApiError::InternalServerError));
-        };
-
-        let ctx = ctx.unwrap();
-
-        let jwt_bypass_key = request.headers().get_one(X_JWT_BYPASS_HEADER);
-        if let Some(jwt_bypass_key) = jwt_bypass_key {
-            if !jwt_bypass_key.is_empty()
-                && jwt_bypass_key
-                    == ctx
-                        .secrets_client
-                        .get_secret(CONFIG_JWT_BYPASS_ID)
-                        .await
-                        .unwrap()
-            {
-                return Outcome::Success(AdminOnlyRoute);
-            }
-        }
-
         let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
         if auth_header.is_failure() {
             return auth_header

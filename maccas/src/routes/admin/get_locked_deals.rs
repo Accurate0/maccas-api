@@ -11,9 +11,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
-    params(
-        ("X-Maccas-JWT-Bypass" = Option<String>, Header, description = "Key to bypass JWT checks"),
-    ),
 )]
 #[get("/admin/locked-deals")]
 pub async fn get_locked_deals(
