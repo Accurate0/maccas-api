@@ -1,5 +1,4 @@
 use crate::{
-    guards::protected::ProtectedRoute,
     routes,
     types::{api::AccountPointResponse, error::ApiError},
 };
@@ -18,7 +17,6 @@ use rocket::{serde::json::Json, State};
 #[get("/points")]
 pub async fn get_points(
     ctx: &State<routes::Context<'_>>,
-    _protected: ProtectedRoute,
 ) -> Result<Json<AccountPointResponse>, ApiError> {
     let point_map = ctx.database.get_point_map().await?;
     Ok(Json(point_map.into()))
