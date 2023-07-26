@@ -1,6 +1,5 @@
 use crate::{
     constants::mc_donalds,
-    guards::protected::ProtectedRoute,
     proxy, routes,
     types::{api::OfferPointsResponse, error::ApiError},
 };
@@ -20,7 +19,6 @@ use rocket::{serde::json::Json, State};
 #[get("/points/<account_id>?<store>")]
 pub async fn get_points_by_id(
     ctx: &State<routes::Context<'_>>,
-    _protected: ProtectedRoute,
     account_id: &str,
     store: String,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
