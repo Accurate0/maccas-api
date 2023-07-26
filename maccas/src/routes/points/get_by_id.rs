@@ -12,9 +12,6 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "points",
-    params(
-        ("X-Maccas-JWT-Bypass" = Option<String>, Header, description = "Key to bypass JWT checks"),
-    ),
 )]
 #[get("/points/<account_id>?<store>")]
 pub async fn get_points_by_id(

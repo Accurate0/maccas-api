@@ -134,7 +134,6 @@ async fn main() -> Result<(), LambdaError> {
                 "Accept",
                 "Content-Type",
                 "X-Api-Key",
-                "X-Maccas-JWT-Bypass",
             ]),
             allow_credentials: true,
             ..Default::default()

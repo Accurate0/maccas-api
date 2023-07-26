@@ -23,9 +23,6 @@ use std::collections::HashMap;
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
-    params(
-        ("X-Maccas-JWT-Bypass" = Option<String>, Header, description = "Key to bypass JWT checks"),
-    ),
 )]
 #[get("/admin/user/spending")]
 pub async fn get_all_user_spending(
