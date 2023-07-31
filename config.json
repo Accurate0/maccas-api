@@ -1,92 +1,83 @@
 {
-    "mcdonalds": {
-        "clientId": null,
-        "clientSecret": null,
-        "ignoredOfferIds": [
-            30762,
-            162091,
-            165964,
-            2946152,
-            3067279
-        ],
-        "sensorData": null,
-        "serviceAccountName": null
+  "mcdonalds": {
+    "clientId": null,
+    "clientSecret": null,
+    "ignoredOfferIds": [30762, 162091, 165964, 2946152, 3067279],
+    "sensorData": null,
+    "serviceAccountName": null
+  },
+  "database": {
+    "tables": {
+      "tokenCache": "MaccasApiDb",
+      "userConfig": "MaccasApiUserConfig-v2",
+      "offerCache": "MaccasApiCache",
+      "offerCacheV2": "MaccasApiCache-v2",
+      "offerId": "MaccasApiOfferId",
+      "points": "MaccasApiPointDb",
+      "refreshTracking": "MaccasRefreshTrackingDb",
+      "audit": "MaccasAudit",
+      "auditData": "MaccasAuditData",
+      "userAccounts": "MaccasUserAccounts"
     },
-    "database": {
-        "tables": {
-            "tokenCache": "MaccasApiDb",
-            "userConfig": "MaccasApiUserConfig-v2",
-            "offerCache": "MaccasApiCache",
-            "offerCacheV2": "MaccasApiCache-v2",
-            "offerId": "MaccasApiOfferId",
-            "points": "MaccasApiPointDb",
-            "refreshTracking": "MaccasRefreshTrackingDb",
-            "audit": "MaccasAudit",
-            "auditData": "MaccasAuditData",
-            "userAccounts": "MaccasUserAccounts"
-        },
-        "indexes": {
-            "auditUserIdIndex": "UserIdIndex"
-        }
-    },
-    "cleanup": {
-        "enabled": true,
-        "queueName": "maccas-cleanup-queue"
-    },
-    "images": {
-        "enabled": true,
-        "forceRefresh": false,
-        "copyOriginals": false,
-        "webpQuality": 75.0,
-        "bucketName": "maccas-image-bucket",
-        "queueName": "maccas-images-queue"
-    },
-    "refresh": {
-        "enabled": true,
-        "totalGroups": {
-            "ap-southeast-1": 4,
-            "ap-southeast-2": 4,
-            "ap-southeast-4": 3
-        },
-        "discordError": {
-            "enabled": false,
-            "webhooks": [
-                null
-            ],
-            "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
-            "username": "Maccas Service"
-        },
-        "clearDealStacks": false,
-        "enableFailureHandler": true,
-        "failureQueueName": "maccas-refresh-failure-queue"
-    },
-    "proxy": {
-        "address": null,
-        "username": null,
-        "password": null
-    },
-    "accounts": {
-        "enabled": true,
-        "email": {
-            "address": null,
-            "password": null,
-            "serverAddress": "imap.gmail.com"
-        },
-        "domainName": null,
-        "queueName": "maccas-accounts-queue"
-    },
-    "api": {
-        "discordDealUse": {
-            "enabled": false,
-            "webhooks": [
-                null
-            ],
-            "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
-            "username": "Maccas"
-        },
-        "jwt": {
-            "validate": false,
-            "jwksUrl": null
-        }
+    "indexes": {
+      "auditUserIdIndex": "UserIdIndex"
     }
+  },
+  "cleanup": {
+    "enabled": true,
+    "queueName": "maccas-cleanup-queue"
+  },
+  "images": {
+    "enabled": true,
+    "forceRefresh": false,
+    "copyOriginals": false,
+    "webpQuality": 75.0,
+    "bucketName": "maccas-image-bucket",
+    "queueName": "maccas-images-queue"
+  },
+  "refresh": {
+    "enabled": true,
+    "totalGroups": {
+      "ap-southeast-1": 4,
+      "ap-southeast-2": 4,
+      "ap-southeast-4": 3
+    },
+    "discordError": {
+      "enabled": false,
+      "webhooks": [null],
+      "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
+      "username": "Maccas Service"
+    },
+    "clearDealStacks": false,
+    "enableFailureHandler": true,
+    "failureQueueName": "maccas-refresh-failure-queue"
+  },
+  "proxy": {
+    "address": null,
+    "username": null,
+    "password": null
+  },
+  "accounts": {
+    "enabled": true,
+    "email": {
+      "address": null,
+      "password": null,
+      "serverAddress": "imap.gmail.com"
+    },
+    "domainName": null,
+    "queueName": "maccas-accounts-queue"
+  },
+  "api": {
+    "discordDealUse": {
+      "enabled": false,
+      "webhooks": [null],
+      "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
+      "username": "Maccas"
+    },
+    "jwt": {
+      "validate": false,
+      "jwksUrl": null,
+      "applicationId": "f285a3b9-c589-4fae-971e-edd635df6b96"
+    }
+  }
 }

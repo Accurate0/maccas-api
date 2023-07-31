@@ -1,6 +1,5 @@
-use std::{error::Error, fmt::Display, num::ParseIntError};
-
 use http::StatusCode;
+use std::{error::Error, fmt::Display, num::ParseIntError};
 
 #[derive(Debug)]
 pub enum ClientError {

@@ -146,3 +146,10 @@ impl From<&ClientError> for ApiError {
         handle_client_error(e)
     }
 }
+
+impl From<places::types::ClientError> for ApiError {
+    fn from(e: places::types::ClientError) -> Self {
+        log::error!("places: UNHANDLED ERROR: {}", e);
+        ApiError::UnhandledError
+    }
+}

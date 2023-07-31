@@ -22,7 +22,7 @@ use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
     AdminUserSpending, AdminUserSpendingMap, GetDealsOffer, LastRefreshInformation,
     OfferPointsResponse, OfferResponse, PointsResponse, RestaurantAddress, RestaurantInformation,
-    UserSpending,
+    RestaurantInformationList, UserSpending,
 };
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
@@ -70,6 +70,7 @@ use utoipa::OpenApi;
             GetDealsOffer,
             UserSpending,
             AdminUserSpending,
+            RestaurantInformationList,
             AdminUserSpendingMap
         ),
     )

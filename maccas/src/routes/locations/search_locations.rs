@@ -1,21 +1,17 @@
 use crate::{
     constants::{
-        config::CONFIG_APIM_API_KEY_ID,
+        config::CONFIG_PLACES_API_KEY_ID,
         mc_donalds::{self, default::LOCATION_SEARCH_DISTANCE},
     },
-    guards::correlation_id::CorrelationId,
     proxy, routes,
-    types::{api::RestaurantInformation, error::ApiError},
+    types::{api::RestaurantInformationList, error::ApiError},
 };
-use foundation::constants::{CORRELATION_ID_HEADER, X_API_KEY_HEADER};
-use foundation::types::places::PlacesResponse;
-use foundation::{constants, extensions::SecretsManagerExtensions};
-use http::Method;
+use foundation::extensions::SecretsManagerExtensions;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "Closest location near specified text", body = RestaurantInformation),
+        (status = 200, description = "Closest location near specified text", body = RestaurantInformationList),
         (status = 404, description = "No locations found"),
         (status = 500, description = "Internal Server Error"),
     ),
@@ -25,26 +21,15 @@ use rocket::{serde::json::Json, State};
 pub async fn search_locations(
     ctx: &State<routes::Context<'_>>,
     text: &str,
-    correlation_id: CorrelationId,
-) -> Result<Json<RestaurantInformation>, ApiError> {
+) -> Result<Json<RestaurantInformationList>, ApiError> {
     let http_client = foundation::http::get_default_http_client();
-    let response = http_client
-        .request(
-            Method::GET,
-            format!("{}/place?text={}", constants::PLACES_API_BASE_URL, text,).as_str(),
-        )
-        .header(CORRELATION_ID_HEADER, correlation_id.0)
-        .header(
-            X_API_KEY_HEADER,
-            &ctx.secrets_client
-                .get_secret(CONFIG_APIM_API_KEY_ID)
-                .await?,
-        )
-        .send()
-        .await?
-        .json::<PlacesResponse>()
-        .await?;
-
+    let api_client = places::ApiClient::new(
+        ctx.secrets_client
+            .get_secret(CONFIG_PLACES_API_KEY_ID)
+            .await?,
+        http_client,
+    );
+    let response = api_client.get_place_by_text(text).await?;
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
@@ -64,7 +49,7 @@ pub async fn search_locations(
             false,
         )
         .await?;
-    let response = response.result;
+    let response = response.body.candidates.first();
 
     match response {
         Some(response) => {
@@ -79,16 +64,7 @@ pub async fn search_locations(
                 )
                 .await?;
 
-            match resp.body.response {
-                Some(list) => {
-                    let resp = list.restaurants.first();
-                    match resp {
-                        Some(resp) => Ok(Json(RestaurantInformation::from(resp.clone()))),
-                        None => Err(ApiError::NotFound),
-                    }
-                }
-                None => Err(ApiError::NotFound),
-            }
+            Ok(Json(RestaurantInformationList::from(resp.body.response)))
         }
         None => Err(ApiError::NotFound),
     }
