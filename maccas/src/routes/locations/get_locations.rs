@@ -1,13 +1,13 @@
 use crate::{
     constants::mc_donalds,
     proxy, routes,
-    types::{api::RestaurantInformation, error::ApiError},
+    types::{api::RestaurantInformationList, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "List of locations near specified coordinates", body = [RestaurantInformation]),
+        (status = 200, description = "List of locations near specified coordinates", body = RestaurantInformationList),
         (status = 400, description = "Invalid/missing parameters"),
         (status = 500, description = "Internal Server Error"),
     ),
@@ -19,7 +19,7 @@ pub async fn get_locations(
     distance: f64,
     latitude: f64,
     longitude: f64,
-) -> Result<Json<Vec<RestaurantInformation>>, ApiError> {
+) -> Result<Json<RestaurantInformationList>, ApiError> {
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let account = &ctx
@@ -47,13 +47,7 @@ pub async fn get_locations(
         )
         .await?;
 
-    let mut location_list = Vec::new();
     let response = resp.body.response;
-    if let Some(response) = response {
-        for restaurant in response.restaurants {
-            location_list.push(RestaurantInformation::from(restaurant));
-        }
-    }
 
-    Ok(Json(location_list))
+    Ok(Json(RestaurantInformationList::from(response)))
 }

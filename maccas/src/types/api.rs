@@ -79,6 +79,29 @@ impl From<libmaccas::types::response::Restaurant> for RestaurantInformation {
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
+pub struct RestaurantInformationList(Vec<RestaurantInformation>);
+
+impl From<Option<libmaccas::types::response::RestaurantLocationList>>
+    for RestaurantInformationList
+{
+    fn from(res: Option<libmaccas::types::response::RestaurantLocationList>) -> Self {
+        let mut location_list = Vec::new();
+        match res {
+            Some(res) => {
+                for restaurant in res.restaurants {
+                    location_list.push(RestaurantInformation::from(restaurant));
+                }
+            }
+            None => todo!(),
+        }
+
+        RestaurantInformationList(location_list)
+    }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[derive(ToSchema)]
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }

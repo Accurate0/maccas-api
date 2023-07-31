@@ -21,9 +21,9 @@ pub mod config {
     #[cfg(not(debug_assertions))]
     pub const BASE_FILE: &str = "base-config.json";
     pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
+    pub const CONFIG_BASE_URL: &str = "https://api.maccas.one/v1";
     pub const CONFIG_APIM_API_KEY_ID: &str = "MaccasApi-ApimApiKey";
-    pub const CONFIG_JWT_BYPASS_ID: &str = "MaccasApi-JwtBypassKey";
-    pub const CONFIG_APPLICATION_AUDIENCE_ID: &str = "MaccasApi-ApplicationAudience";
+    pub const CONFIG_PLACES_API_KEY_ID: &str = "MaccasApi-PlacesApiKey";
     pub const IMAGE_CDN: &str = "https://i.maccas.one";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;

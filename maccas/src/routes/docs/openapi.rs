@@ -1,5 +1,4 @@
-use crate::{doc::openapi::ApiDoc, types::error::ApiError};
-use foundation::constants;
+use crate::{constants, doc::openapi::ApiDoc, types::error::ApiError};
 use rocket::serde::json::Json;
 use utoipa::{
     openapi::{
@@ -21,7 +20,7 @@ use utoipa::{
 pub fn get_openapi() -> Result<Json<openapi::OpenApi>, ApiError> {
     let mut spec = ApiDoc::openapi();
     let info = InfoBuilder::new().title("Maccas API").version("v1");
-    spec.servers = Some(vec![Server::new(constants::MACCAS_API_BASE_URL)]);
+    spec.servers = Some(vec![Server::new(constants::config::CONFIG_BASE_URL)]);
     spec.info = info.build();
 
     let jwt = SecurityScheme::Http(
