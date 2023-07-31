@@ -1,3 +1,4 @@
+use anyhow::Context;
 use clap::{Parser, Subcommand};
 use foundation::aws;
 use libmaccas::{
@@ -13,6 +14,7 @@ use maccas::{
     database::{Database, DynamoDatabase},
     types::config::GeneralConfig,
 };
+use mailparse::MailHeaderMap;
 use rand::{
     distributions::{Alphanumeric, DistString},
     rngs::StdRng,
@@ -40,17 +42,12 @@ enum Commands {
         group: i64,
         #[arg(short, long)]
         region: String,
-        #[arg(short, long)]
-        account_password: String,
     },
     ActivateAccounts {
         #[arg(short, long)]
         count: u32,
     },
-    ActivateAndLogin {
-        #[arg(short, long)]
-        count: u32,
-    },
+    ActivateAndLogin,
 }
 
 // TODO: upgrade cli to use mailparse too
@@ -74,7 +71,8 @@ async fn main() -> Result<(), anyhow::Error> {
         &config.database.indexes,
     );
 
-    let http_client = foundation::http::get_default_http_client();
+    let proxy = maccas::proxy::get_proxy(&config.proxy).await;
+    let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let mut client = ApiClient::new(
         constants::mc_donalds::default::BASE_URL.to_string(),
         http_client,
@@ -93,7 +91,6 @@ async fn main() -> Result<(), anyhow::Error> {
             count,
             group,
             region,
-            account_password,
         } => {
             for _ in 0..count {
                 let firstname = petname::Petnames::default().generate(&mut rng, 1, "");
@@ -106,14 +103,15 @@ async fn main() -> Result<(), anyhow::Error> {
                 let request = RegistrationRequest {
                     address: Address {
                         country: "AU".to_string(),
-                        zip_code: "0880".to_string(),
+                        zip_code: "6233".to_string(),
                     },
                     audit: Audit {
                         registration_channel: "M".to_string(),
                     },
                     credentials: Credentials {
                         login_username: username.to_string(),
-                        password: Some(account_password.to_string()),
+                        password: None,
+                        send_magic_link: Some(true),
                         type_field: "email".to_string(),
                     },
                     device: Device {
@@ -121,13 +119,13 @@ async fn main() -> Result<(), anyhow::Error> {
                         device_id_type: "AndroidId".to_string(),
                         is_active: "Y".to_string(),
                         os: "android".to_string(),
-                        os_version: "12".to_string(),
-                        timezone: "Australia/Perth".to_string(),
+                        os_version: "13".to_string(),
+                        timezone: "Australia/West".to_string(),
                     },
                     email_address: username.to_string(),
                     first_name: titlecase(&firstname),
                     last_name: titlecase(&lastname),
-                    opt_in_for_marketing: true,
+                    opt_in_for_marketing: false,
                     policies: Policies {
                         acceptance_policies: AcceptancePolicies { n1: true, n4: true },
                     },
@@ -159,7 +157,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         .add_user_account(
                             &username,
                             &username,
-                            &account_password,
+                            "(UNUSED)",
                             &region,
                             &group.to_string(),
                         )
@@ -248,6 +246,7 @@ async fn main() -> Result<(), anyhow::Error> {
                             ),
                             type_field: "email".to_string(),
                             password: None,
+                            send_magic_link: None,
                         },
                         device_id: device_id.to_string(),
                     };
@@ -266,8 +265,7 @@ async fn main() -> Result<(), anyhow::Error> {
                             .as_str(),
                         device_id.as_str(),
                     )
-                    .await
-                    .ok();
+                    .await?;
 
                     if real_run {
                         tokio::time::sleep(Duration::from_secs(5)).await;
@@ -275,7 +273,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             }
         }
-        Commands::ActivateAndLogin { count } => {
+        Commands::ActivateAndLogin => {
             // TODO: actually finish this, not needed yet apparently.. things kinda just work..
             log::info!("attempting to activate and login accounts");
             let tls = native_tls::TlsConnector::builder().build().unwrap();
@@ -291,8 +289,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 )
                 .map_err(|e| e.0)?;
 
-            let x = imap_session.select("INBOX")?.exists;
-
+            imap_session.select("INBOX")?;
             let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
             let db = DynamoDatabase::new(
                 dynamodb_client,
@@ -300,49 +297,38 @@ async fn main() -> Result<(), anyhow::Error> {
                 &config.database.indexes,
             );
 
-            // let mut counter = 0;
-            let messages = imap_session.fetch(format!("{}:{}", x, x - count - 1), "RFC822")?;
-            log::info!("messages: {}", messages.len());
-            for message in messages.iter() {
+            let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
+            for message_uid in all_unseen_emails.iter() {
+                let messages = imap_session.uid_fetch(message_uid.to_string(), "RFC822")?;
+                let message = messages.first().context("should have at least one")?;
                 let body = message.body().expect("message did not have a body!");
-                let body = std::str::from_utf8(body)
-                    .expect("message was not valid utf-8")
-                    .to_string();
 
-                // let mut file = std::fs::File::create(format!("body.{}.html", counter))?;
-                // file.write_all(body.as_bytes())?;
-                // counter += 1;
+                let parsed_email = mailparse::parse_mail(body)?;
+                let body: &String = &parsed_email.get_body()?;
                 let re = Regex::new(r"ml=([a-zA-Z0-9]+)").unwrap();
                 let mut magic_link = None;
-                for cap in re.captures_iter(&body) {
-                    log::info!("capture: {:#?}", cap);
+                for cap in re.captures_iter(body) {
+                    log::info!("capture: {:?}", cap);
                     magic_link = cap.get(1);
                 }
 
-                let re = Regex::new(r"To: ([a-zA-Z0-9\.]+)").unwrap();
-                let mut to = None;
-                for cap in re.captures_iter(&body) {
-                    to = cap.get(1);
-                }
+                let headers = parsed_email.get_headers();
+                let to = headers
+                    .get_first_header("To")
+                    .context("must have to")?
+                    .get_value();
+                let from = headers
+                    .get_first_header("From")
+                    .context("must have from")?
+                    .get_value();
 
-                let re = Regex::new(r"From: ([<> @a-zA-Z0-9\.]+)").unwrap();
-                let mut from = None;
-                for cap in re.captures_iter(&body) {
-                    from = cap.get(1);
-                }
-
-                if !from.is_some_and(|x| x.as_str().contains("accounts@au.mcdonalds.com")) {
-                    log::warn!("skipping non maccas email, {:#?}", from);
+                if !from.contains("accounts@au.mcdonalds.com") {
+                    log::warn!("skipping non maccas email, {:?}", from);
                     continue;
                 }
 
-                if magic_link.is_some() && to.is_some() {
-                    let id = db
-                        .get_device_id_for(
-                            format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
-                                .as_str(),
-                        )
-                        .await?;
+                if magic_link.is_some() {
+                    let id = db.get_device_id_for(&to).await?;
                     log::info!("existing device id: {:?}", id);
 
                     let device_id = id.unwrap_or_else(|| {
@@ -353,7 +339,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     //     [2..magic_link.unwrap().as_str().len()];
                     let magic_link = magic_link.unwrap().as_str().to_string();
                     log::info!("code: {:?}", magic_link);
-                    log::info!("email to: {:?}", to.unwrap().as_str().to_string());
+                    log::info!("email to: {:?}", to.as_str().to_string());
 
                     if real_run {
                         let response = client
@@ -364,25 +350,26 @@ async fn main() -> Result<(), anyhow::Error> {
                                         device: ActivationDevice {
                                             device_unique_id: device_id.to_owned(),
                                             os: "android".to_owned(),
-                                            os_version: "12".to_owned(),
+                                            os_version: "13".to_owned(),
                                         },
                                     },
                                 },
                                 &config.mcdonalds.sensor_data,
                             )
-                            .await;
+                            .await?;
                         log::info!("{:?}", response);
+                        db.set_device_id_for(&to, device_id.as_str()).await?;
+                        if let Some(token_response) = response.body.response {
+                            db.set_access_and_refresh_token_for(
+                                &to,
+                                &token_response.access_token,
+                                &token_response.refresh_token,
+                            )
+                            .await?;
+                        }
                     } else {
                         log::info!("dry run, not activating");
                     }
-
-                    db.set_device_id_for(
-                        format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
-                            .as_str(),
-                        device_id.as_str(),
-                    )
-                    .await
-                    .ok();
                 }
 
                 if real_run {

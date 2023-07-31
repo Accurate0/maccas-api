@@ -14,6 +14,7 @@ dependencies = [
  "libmaccas",
  "log",
  "maccas",
+ "mailparse",
  "native-tls",
  "petname",
  "rand 0.8.5",
@@ -2745,9 +2746,7 @@ checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "libmaccas"
-version = "0.45.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7e8e1344e15f52506ccfded49cb6dd48e2c50f09b44b073412069ee648f81e"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "http",

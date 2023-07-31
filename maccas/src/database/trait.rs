@@ -117,4 +117,10 @@ pub trait Database {
         region: &str,
         group: &str,
     ) -> Result<Vec<UserAccountDatabase>, anyhow::Error>;
+    async fn set_access_and_refresh_token_for(
+        &self,
+        account_name: &str,
+        access_token: &str,
+        refresh_token: &str,
+    ) -> Result<(), anyhow::Error>;
 }

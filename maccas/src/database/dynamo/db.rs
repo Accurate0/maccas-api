@@ -505,6 +505,44 @@ impl Database for DynamoDatabase {
         Ok(())
     }
 
+    async fn set_access_and_refresh_token_for(
+        &self,
+        account_name: &str,
+        access_token: &str,
+        refresh_token: &str,
+    ) -> Result<(), anyhow::Error> {
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+
+        self.client
+            .update_item()
+            .table_name(&self.table_name)
+            .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .attribute_updates(
+                ACCESS_TOKEN,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::S(access_token.to_string()))
+                    .build(),
+            )
+            .attribute_updates(
+                REFRESH_TOKEN,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::S(refresh_token.to_string()))
+                    .build(),
+            )
+            .attribute_updates(
+                LAST_REFRESH,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::S(now.clone()))
+                    .build(),
+            )
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
     async fn refresh_offer_cache_for(
         &self,
         account: &UserAccountDatabase,

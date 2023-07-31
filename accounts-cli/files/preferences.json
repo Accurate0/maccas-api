@@ -1,148 +1,148 @@
 [
-    {
-        "details": {
-            "legacyId": "1",
-            "MobileApp": "en-AU",
-            "Email": "en-AU"
-        },
-        "preferenceId": 1
+  {
+    "details": {
+      "legacyId": "1",
+      "MobileApp": "en-AU",
+      "Email": "en-AU"
     },
-    {
-        "details": {
-            "legacyId": "2",
-            "MobileApp": "Y",
-            "Email": "Y"
-        },
-        "preferenceId": 2
+    "preferenceId": 1
+  },
+  {
+    "details": {
+      "legacyId": "2",
+      "MobileApp": "N",
+      "Email": "N"
     },
-    {
-        "details": {
-            "legacyId": "3",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 3
+    "preferenceId": 2
+  },
+  {
+    "details": {
+      "legacyId": "3",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "4",
-            "MobileApp": "123456",
-            "Email": "123456"
-        },
-        "preferenceId": 4
+    "preferenceId": 3
+  },
+  {
+    "details": {
+      "legacyId": "4",
+      "MobileApp": "123456",
+      "Email": "123456"
     },
-    {
-        "details": {
-            "legacyId": "6",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 6
+    "preferenceId": 4
+  },
+  {
+    "details": {
+      "legacyId": "6",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "7",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 7
+    "preferenceId": 6
+  },
+  {
+    "details": {
+      "legacyId": "7",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "8",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 8
+    "preferenceId": 7
+  },
+  {
+    "details": {
+      "legacyId": "8",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "9",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 9
+    "preferenceId": 8
+  },
+  {
+    "details": {
+      "legacyId": "9",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "10",
-            "MobileApp": "True",
-            "Email": "False"
-        },
-        "preferenceId": 10
+    "preferenceId": 9
+  },
+  {
+    "details": {
+      "legacyId": "10",
+      "MobileApp": "True",
+      "Email": "False"
     },
-    {
-        "details": {
-            "legacyId": "18",
-            "MobileApp": "[4,5]",
-            "Email": "[1,2,3]"
-        },
-        "preferenceId": 11
+    "preferenceId": 10
+  },
+  {
+    "details": {
+      "legacyId": "18",
+      "MobileApp": "[4,5]",
+      "Email": "[1,2,3]"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 12
+    "preferenceId": 11
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 13
+    "preferenceId": 12
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 14
+    "preferenceId": 13
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 15
+    "preferenceId": 14
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 16
+    "preferenceId": 15
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 17
+    "preferenceId": 16
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "Y"
-        },
-        "preferenceId": 18
+    "preferenceId": 17
+  },
+  {
+    "details": {
+      "enabled": "Y"
     },
-    {
-        "details": {
-            "enabled": "N"
-        },
-        "preferenceId": 19
+    "preferenceId": 18
+  },
+  {
+    "details": {
+      "enabled": "N"
     },
-    {
-        "details": {
-            "enabled": "N"
-        },
-        "preferenceId": 20
+    "preferenceId": 19
+  },
+  {
+    "details": {
+      "enabled": "N"
     },
-    {
-        "details": {
-            "enabled": "N"
-        },
-        "preferenceId": 21
+    "preferenceId": 20
+  },
+  {
+    "details": {
+      "enabled": "N"
     },
-    {
-        "details": {
-            "enabled": "N"
-        },
-        "preferenceId": 22
-    }
+    "preferenceId": 21
+  },
+  {
+    "details": {
+      "enabled": "N"
+    },
+    "preferenceId": 22
+  }
 ]
