@@ -31,11 +31,11 @@ where
 
 #[derive(Error, Debug)]
 pub enum ClientError {
-    #[error("data store disconnected")]
+    #[error("request or middleware error")]
     RequestOrMiddlewareError(#[from] reqwest_middleware::Error),
-    #[error("the data for key `{0}` is not available")]
+    #[error("request error")]
     RequestError(#[from] reqwest::Error),
-    #[error("unknown data store error")]
+    #[error("unknown error")]
     Unknown,
 }
 
