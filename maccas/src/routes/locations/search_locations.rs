@@ -55,7 +55,7 @@ pub async fn search_locations(
         Some(response) => {
             let lat = response.geometry.location.lat;
             let lng = response.geometry.location.lng;
-            let resp = api_client
+            let response = api_client
                 .restaurant_location(
                     &LOCATION_SEARCH_DISTANCE,
                     &lat,
@@ -64,7 +64,12 @@ pub async fn search_locations(
                 )
                 .await?;
 
-            Ok(Json(RestaurantInformationList::from(resp.body.response)))
+            match response.body.response {
+                Some(response) if !response.restaurants.is_empty() => {
+                    Ok(Json(RestaurantInformationList::from(response)))
+                }
+                _ => Err(ApiError::NotFound),
+            }
         }
         None => Err(ApiError::NotFound),
     }
