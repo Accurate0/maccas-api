@@ -18,6 +18,8 @@ use std::collections::HashMap;
     tag = "deals",
 )]
 #[get("/deals")]
+// TODO: optimise, its getting quite slow
+// caching in dynamo probs
 pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffer>>, ApiError> {
     let locked_deals = ctx.database.get_all_locked_deals().await?;
     let offer_list = ctx.database.get_all_offers_as_vec().await?;
