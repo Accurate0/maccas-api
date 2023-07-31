@@ -6,7 +6,7 @@ publish = false
 build = "build.rs"
 
 [dependencies]
-libmaccas = "0.45.0"
+libmaccas = { path = "../libmaccas-rs" }
 
 lambda_runtime = "0.8.1"
 lambda_http = "0.8.1"

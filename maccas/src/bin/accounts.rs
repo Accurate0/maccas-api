@@ -115,6 +115,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     login_username: to.to_owned(),
                     type_field: "device".to_string(),
                     password: None,
+                    send_magic_link: None,
                 },
                 device_id: device_id.to_string(),
             };
