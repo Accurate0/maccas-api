@@ -81,18 +81,11 @@ impl From<libmaccas::types::response::Restaurant> for RestaurantInformation {
 #[derive(ToSchema)]
 pub struct RestaurantInformationList(Vec<RestaurantInformation>);
 
-impl From<Option<libmaccas::types::response::RestaurantLocationList>>
-    for RestaurantInformationList
-{
-    fn from(res: Option<libmaccas::types::response::RestaurantLocationList>) -> Self {
+impl From<libmaccas::types::response::RestaurantLocationList> for RestaurantInformationList {
+    fn from(res: libmaccas::types::response::RestaurantLocationList) -> Self {
         let mut location_list = Vec::new();
-        match res {
-            Some(res) => {
-                for restaurant in res.restaurants {
-                    location_list.push(RestaurantInformation::from(restaurant));
-                }
-            }
-            None => todo!(),
+        for restaurant in res.restaurants {
+            location_list.push(RestaurantInformation::from(restaurant));
         }
 
         RestaurantInformationList(location_list)

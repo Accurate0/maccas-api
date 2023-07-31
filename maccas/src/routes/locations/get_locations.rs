@@ -48,6 +48,10 @@ pub async fn get_locations(
         .await?;
 
     let response = resp.body.response;
-
-    Ok(Json(RestaurantInformationList::from(response)))
+    match response {
+        Some(response) if !response.restaurants.is_empty() => {
+            Ok(Json(RestaurantInformationList::from(response)))
+        }
+        _ => Err(ApiError::NotFound),
+    }
 }
