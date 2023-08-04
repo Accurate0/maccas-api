@@ -34,6 +34,7 @@ use std::str::FromStr;
 use std::time::SystemTime;
 use tokio_stream::StreamExt;
 
+// TODO: fix all scans to use last evaluated key
 #[async_trait]
 impl Database for DynamoDatabase {
     async fn add_to_audit(
@@ -60,7 +61,7 @@ impl Database for DynamoDatabase {
         if let Err(e) = self
             .client
             .put_item()
-            .table_name(&self.audit)
+            .table_name(&self.audit_table_name)
             .item(
                 OPERATION_ID,
                 AttributeValue::S(uuid::Uuid::now_v7().to_string()),
@@ -87,7 +88,7 @@ impl Database for DynamoDatabase {
         let resp = self
             .client
             .query()
-            .table_name(&self.audit)
+            .table_name(&self.audit_table_name)
             .index_name(&self.audit_user_id_index)
             .key_condition_expression("#user = :user_id")
             .expression_attribute_names("#user", USER_ID)
@@ -119,7 +120,7 @@ impl Database for DynamoDatabase {
 
         self.client
             .put_item()
-            .table_name(&self.audit_data)
+            .table_name(&self.last_refresh_table_name)
             .item(KEY, AttributeValue::S(LAST_REFRESH.to_owned()))
             .item(VALUE, AttributeValue::S(now))
             .send()
@@ -132,7 +133,7 @@ impl Database for DynamoDatabase {
         let item = self
             .client
             .get_item()
-            .table_name(&self.audit_data)
+            .table_name(&self.last_refresh_table_name)
             .key(KEY, AttributeValue::S(LAST_REFRESH.to_owned()))
             .send()
             .await?;
@@ -160,7 +161,7 @@ impl Database for DynamoDatabase {
         let table_resp = self
             .client
             .get_item()
-            .table_name(&self.refresh_tracking)
+            .table_name(&self.refresh_tracking_table_name)
             .key(REGION, AttributeValue::S(region.to_string()))
             .send()
             .await?;
@@ -177,7 +178,7 @@ impl Database for DynamoDatabase {
 
                 self.client
                     .put_item()
-                    .table_name(&self.refresh_tracking)
+                    .table_name(&self.refresh_tracking_table_name)
                     .item(REGION, AttributeValue::S(region.to_string()))
                     .item(CURRENT_LIST, AttributeValue::N(new_count.to_string()))
                     .send()
@@ -188,7 +189,7 @@ impl Database for DynamoDatabase {
             None => {
                 self.client
                     .put_item()
-                    .table_name(&self.refresh_tracking)
+                    .table_name(&self.refresh_tracking_table_name)
                     .item(REGION, AttributeValue::S(region.to_string()))
                     .item(CURRENT_LIST, AttributeValue::N("0".to_string()))
                     .send()
@@ -206,7 +207,7 @@ impl Database for DynamoDatabase {
         let table_resp: Result<Vec<_>, _> = self
             .client
             .scan()
-            .table_name(&self.cache_table_name)
+            .table_name(&self.account_cache_table_name)
             .into_paginator()
             .items()
             .send()
@@ -232,7 +233,7 @@ impl Database for DynamoDatabase {
         let table_resp: Result<Vec<_>, _> = self
             .client
             .scan()
-            .table_name(&self.cache_table_name)
+            .table_name(&self.account_cache_table_name)
             .into_paginator()
             .items()
             .send()
@@ -259,7 +260,7 @@ impl Database for DynamoDatabase {
         let table_resp = self
             .client
             .get_item()
-            .table_name(&self.cache_table_name)
+            .table_name(&self.account_cache_table_name)
             .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
             .send()
             .await?;
@@ -288,7 +289,7 @@ impl Database for DynamoDatabase {
 
         self.client
             .put_item()
-            .table_name(&self.cache_table_name)
+            .table_name(&self.account_cache_table_name)
             .item(
                 ACCOUNT_NAME,
                 AttributeValue::S(account.account_name.to_string()),
@@ -311,7 +312,7 @@ impl Database for DynamoDatabase {
         for offer in offer_list {
             self.client
                 .put_item()
-                .table_name(&self.cache_table_name_v2)
+                .table_name(&self.offer_cache_table_name)
                 .item(DEAL_UUID, AttributeValue::S(offer.deal_uuid.clone()))
                 .item(
                     ACCOUNT_INFO,
@@ -468,7 +469,7 @@ impl Database for DynamoDatabase {
         let resp = self
             .client
             .get_item()
-            .table_name(&self.table_name)
+            .table_name(&self.token_cache_table_name)
             .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
             .send()
             .await?;
@@ -491,7 +492,7 @@ impl Database for DynamoDatabase {
     ) -> Result<(), anyhow::Error> {
         self.client
             .update_item()
-            .table_name(&self.table_name)
+            .table_name(&self.token_cache_table_name)
             .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
             .attribute_updates(
                 DEVICE_ID,
@@ -517,7 +518,7 @@ impl Database for DynamoDatabase {
 
         self.client
             .update_item()
-            .table_name(&self.table_name)
+            .table_name(&self.token_cache_table_name)
             .key(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
             .attribute_updates(
                 ACCESS_TOKEN,
@@ -614,7 +615,7 @@ impl Database for DynamoDatabase {
                 for item in &resp {
                     self.client
                         .put_item()
-                        .table_name(&self.cache_table_name_v2)
+                        .table_name(&self.offer_cache_table_name)
                         .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
                         .item(
                             ACCOUNT_INFO,
@@ -629,7 +630,7 @@ impl Database for DynamoDatabase {
 
                 self.client
                     .put_item()
-                    .table_name(&self.cache_table_name)
+                    .table_name(&self.account_cache_table_name)
                     .item(
                         ACCOUNT_NAME,
                         AttributeValue::S(account.account_name.to_string()),
@@ -657,7 +658,7 @@ impl Database for DynamoDatabase {
         let resp = self
             .client
             .query()
-            .table_name(&self.cache_table_name_v2)
+            .table_name(&self.offer_cache_table_name)
             .key_condition_expression("#uuid = :offer")
             .expression_attribute_names("#uuid", DEAL_UUID)
             .expression_attribute_values(":offer", AttributeValue::S(offer_id.to_string()))
@@ -744,7 +745,7 @@ impl Database for DynamoDatabase {
         let resp = self
             .client
             .get_item()
-            .table_name(&self.table_name)
+            .table_name(&self.token_cache_table_name)
             .key(
                 ACCOUNT_NAME,
                 AttributeValue::S(account.account_name.to_string()),
@@ -797,7 +798,7 @@ impl Database for DynamoDatabase {
 
             self.client
                 .put_item()
-                .table_name(&self.table_name)
+                .table_name(&self.token_cache_table_name)
                 .item(
                     ACCOUNT_NAME,
                     AttributeValue::S(account.account_name.to_string()),
@@ -943,7 +944,7 @@ impl Database for DynamoDatabase {
                                 api_client.set_auth_token(&new_access_token);
                                 self.client
                                     .put_item()
-                                    .table_name(&self.table_name)
+                                    .table_name(&self.token_cache_table_name)
                                     .item(
                                         ACCOUNT_NAME,
                                         AttributeValue::S(account.account_name.to_string()),
@@ -1016,7 +1017,7 @@ impl Database for DynamoDatabase {
 
         self.client
             .put_item()
-            .table_name(&self.offer_id_table_name)
+            .table_name(&self.locked_offers_table_name)
             .item(OFFER_ID, AttributeValue::S(deal_id.to_string()))
             .item(TTL, AttributeValue::N(utc.timestamp().to_string()))
             .send()
@@ -1028,7 +1029,7 @@ impl Database for DynamoDatabase {
     async fn unlock_deal(&self, deal_id: &str) -> Result<(), anyhow::Error> {
         self.client
             .delete_item()
-            .table_name(&self.offer_id_table_name)
+            .table_name(&self.locked_offers_table_name)
             .key(OFFER_ID, AttributeValue::S(deal_id.to_string()))
             .send()
             .await?;
@@ -1042,7 +1043,7 @@ impl Database for DynamoDatabase {
         let resp = self
             .client
             .scan()
-            .table_name(&self.offer_id_table_name)
+            .table_name(&self.locked_offers_table_name)
             .filter_expression("#ttl_key >= :time")
             .expression_attribute_names("#ttl_key", "ttl")
             .expression_attribute_values(":time", AttributeValue::N(utc.timestamp().to_string()))
@@ -1069,7 +1070,7 @@ impl Database for DynamoDatabase {
         for deal in locked_deals {
             self.client
                 .delete_item()
-                .table_name(&self.offer_id_table_name)
+                .table_name(&self.locked_offers_table_name)
                 .key(OFFER_ID, AttributeValue::S(deal))
                 .send()
                 .await?;
