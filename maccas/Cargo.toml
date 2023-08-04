@@ -60,6 +60,7 @@ utoipa = { version = "3.4.3", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 futures = "0.3.28"
 strum = { version = "0.25.0", features = ["derive"] }
+graph-rs-sdk = "1.1.1"
 
 [build-dependencies]
 vergen = { version = "8.2.4", features = ["build", "rustc", "git", "gitoxide"] }

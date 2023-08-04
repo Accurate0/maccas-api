@@ -1,5 +1,12 @@
 [workspace]
-members = ["foundation", "maccas", "accounts-cli", "libmaccas-rs", "places-rs"]
+members = [
+    "foundation",
+    "maccas",
+    "accounts-cli",
+    "libmaccas-rs",
+    "places-rs",
+    "migration",
+]
 
 [profile.release-strip]
 inherits = "release"

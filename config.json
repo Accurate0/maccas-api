@@ -8,16 +8,16 @@
   },
   "database": {
     "tables": {
-      "tokenCache": "MaccasApiDb",
-      "userConfig": "MaccasApiUserConfig-v2",
-      "offerCache": "MaccasApiCache",
-      "offerCacheV2": "MaccasApiCache-v2",
-      "offerId": "MaccasApiOfferId",
-      "points": "MaccasApiPointDb",
-      "refreshTracking": "MaccasRefreshTrackingDb",
-      "audit": "MaccasAudit",
-      "auditData": "MaccasAuditData",
-      "userAccounts": "MaccasUserAccounts"
+      "tokenCache": "MaccasApi-Tokens",
+      "userConfig": "MaccasApi-UserConfig",
+      "offerCache": "MaccasApi-Accounts",
+      "offerCacheV2": "MaccasApi-Deals",
+      "offerId": "MaccasApi-LockedOffers",
+      "points": "MaccasApi-Points",
+      "refreshTracking": "MaccasApi-RefreshTracking",
+      "audit": "MaccasApi-Audit",
+      "auditData": "MaccasApi-LastRefresh",
+      "userAccounts": "MaccasApi-UserAccounts"
     },
     "indexes": {
       "auditUserIdIndex": "UserIdIndex"
@@ -78,6 +78,9 @@
       "validate": false,
       "jwksUrl": null,
       "applicationId": "f285a3b9-c589-4fae-971e-edd635df6b96"
+    },
+    "graph": {
+      "tenantId": "b1f3a0a4-f4e2-4300-b952-88f3dc55ee9b"
     }
   }
 }

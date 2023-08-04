@@ -1,6 +1,6 @@
 use crate::{
-    constants::config::CONFIG_APIM_API_KEY_ID,
-    guards::{admin::AdminOnlyRoute, correlation_id::CorrelationId},
+    constants::{config::CONFIG_AD_CLIENT_SECRET_KEY_ID, graph},
+    guards::admin::AdminOnlyRoute,
     routes,
     shared::spending::generate_spending_information,
     types::{
@@ -8,11 +8,8 @@ use crate::{
         error::ApiError,
     },
 };
-use foundation::{
-    constants::{CORRELATION_ID_HEADER, GRAPH_API_BASE_URL, X_API_KEY_HEADER},
-    extensions::SecretsManagerExtensions,
-    types::graph::GetUsersResponse,
-};
+use foundation::{extensions::SecretsManagerExtensions, types::graph::GetUsersResponse};
+use graph_rs_sdk::{oauth::AccessToken, Graph};
 use itertools::Itertools;
 use rocket::{futures::future::try_join_all, serde::json::Json, State};
 use std::collections::HashMap;
@@ -27,19 +24,39 @@ use std::collections::HashMap;
 #[get("/admin/user/spending")]
 pub async fn get_all_user_spending(
     ctx: &State<routes::Context<'_>>,
-    correlation_id: CorrelationId,
     _admin: AdminOnlyRoute,
 ) -> Result<Json<AdminUserSpendingMap>, ApiError> {
-    let http_client = foundation::http::get_default_http_client();
-    let user_list = http_client
-        .get(format!("{GRAPH_API_BASE_URL}/users"))
-        .header(
-            X_API_KEY_HEADER,
+    let token_request_url = format!(
+        "https://login.microsoftonline.com/{}/oauth2/v2.0/token",
+        ctx.config.api.graph.tenant_id
+    );
+
+    let mut oauth_client = graph_rs_sdk::oauth::OAuth::new();
+    let oauth_client = oauth_client
+        .client_id(&ctx.config.api.jwt.application_id)
+        .access_token_url(&token_request_url)
+        .client_secret(
             &ctx.secrets_client
-                .get_secret(CONFIG_APIM_API_KEY_ID)
+                .get_secret(CONFIG_AD_CLIENT_SECRET_KEY_ID)
                 .await?,
         )
-        .header(CORRELATION_ID_HEADER, correlation_id.0)
+        .add_scope(graph::DEFAULT_CLIENT_SCOPE)
+        .build_async();
+
+    let token_response = oauth_client
+        .client_credentials()
+        .access_token()
+        .send()
+        .await?
+        .json::<AccessToken>()
+        .await?;
+
+    let mut graph_client = Graph::new(token_response.bearer_token());
+    let graph_client = graph_client.beta();
+
+    let user_list = graph_client
+        .users()
+        .list_user()
         .send()
         .await?
         .json::<GetUsersResponse>()
