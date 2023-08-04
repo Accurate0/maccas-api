@@ -6,13 +6,13 @@ use std::collections::HashMap;
 pub struct Tables {
     pub token_cache: String,
     pub user_config: String,
-    pub offer_cache: String,
-    pub offer_cache_v2: String,
-    pub offer_id: String,
+    pub account_cache: String,
+    pub deal_cache: String,
+    pub locked_offers: String,
     pub points: String,
     pub refresh_tracking: String,
     pub audit: String,
-    pub audit_data: String,
+    pub last_refresh: String,
     pub user_accounts: String,
 }
 
