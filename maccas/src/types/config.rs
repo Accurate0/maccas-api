@@ -41,6 +41,12 @@ pub struct JwtConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct GraphConfig {
+    pub tenant_id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ImageConfig {
     pub enabled: bool,
     pub force_refresh: bool,
@@ -98,6 +104,7 @@ pub struct CleanupConfig {
 pub struct ApiConfig {
     pub discord_deal_use: DiscordConfig,
     pub jwt: JwtConfig,
+    pub graph: GraphConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
