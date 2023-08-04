@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-serde = "1.0.179"
+serde = "1.0.181"
 serde_json = "1.0.104"
 serde_derive = "1.0.171"
 
