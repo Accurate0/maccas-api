@@ -10,13 +10,13 @@
     "tables": {
       "tokenCache": "MaccasApi-Tokens",
       "userConfig": "MaccasApi-UserConfig",
-      "offerCache": "MaccasApi-Accounts",
-      "offerCacheV2": "MaccasApi-Deals",
-      "offerId": "MaccasApi-LockedOffers",
+      "accountCache": "MaccasApi-Accounts",
+      "dealCache": "MaccasApi-Deals",
+      "lockedOffers": "MaccasApi-LockedOffers",
       "points": "MaccasApi-Points",
       "refreshTracking": "MaccasApi-RefreshTracking",
       "audit": "MaccasApi-Audit",
-      "auditData": "MaccasApi-LastRefresh",
+      "lastRefresh": "MaccasApi-LastRefresh",
       "userAccounts": "MaccasApi-UserAccounts"
     },
     "indexes": {

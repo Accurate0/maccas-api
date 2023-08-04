@@ -22,14 +22,14 @@ impl DynamoDatabase {
             client,
             table_name: tables.token_cache.to_owned(),
             user_config_table_name: tables.user_config.to_owned(),
-            cache_table_name: tables.offer_cache.to_owned(),
-            cache_table_name_v2: tables.offer_cache_v2.to_owned(),
-            offer_id_table_name: tables.offer_id.to_owned(),
+            cache_table_name: tables.account_cache.to_owned(),
+            cache_table_name_v2: tables.deal_cache.to_owned(),
+            offer_id_table_name: tables.locked_offers.to_owned(),
             point_table_name: tables.points.to_owned(),
             refresh_tracking: tables.refresh_tracking.to_owned(),
             audit: tables.audit.to_owned(),
             audit_user_id_index: indexes.audit_user_id_index.to_owned(),
-            audit_data: tables.audit_data.to_owned(),
+            audit_data: tables.last_refresh.to_owned(),
             user_accounts: tables.user_accounts.to_owned(),
         }
     }
