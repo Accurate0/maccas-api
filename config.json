@@ -2,7 +2,7 @@
   "mcdonalds": {
     "clientId": null,
     "clientSecret": null,
-    "ignoredOfferIds": [30762, 162091, 165964, 2946152, 3067279],
+    "ignoredOfferIds": [30762, 162091, 165964, 2946152, 3067279, 173634],
     "sensorData": null,
     "serviceAccountName": null
   },
