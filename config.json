@@ -58,7 +58,7 @@
     "password": null
   },
   "accounts": {
-    "enabled": true,
+    "enabled": false,
     "email": {
       "address": null,
       "password": null,
