@@ -17,9 +17,9 @@ aws-types = "0.55.3"
 aws-sdk-sqs = "0.28.0"
 aws-sdk-secretsmanager = "0.28.0"
 
-serde = "1.0.179"
+serde = "1.0.181"
 serde_json = "1.0.104"
-serde_derive = "1.0.171"
+serde_derive = "1.0.181"
 serde_dynamo = { version = "4.2.3", features = ["aws-sdk-dynamodb+0_28"] }
 strum_macros = "0.25"
 
@@ -33,7 +33,7 @@ jwt = "0.16.0"
 aliri_oauth2 = "0.10.0"
 
 image = "0.24.6"
-webp = "0.2.4"
+webp = "0.2.5"
 
 # accounts
 regex = "1.9.1"
@@ -56,7 +56,7 @@ rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.11.0"
 tokio = "1.29.1"
 anyhow = "1.0.72"
-utoipa = { version = "3.4.3", features = ["rocket_extras"] }
+utoipa = { version = "3.4.4", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 futures = "0.3.28"
 strum = { version = "0.25.0", features = ["derive"] }
