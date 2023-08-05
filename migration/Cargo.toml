@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.3.19", features = ["derive"] }
 maccas = { path = "../maccas" }
-aws-sdk-dynamodb = "0.28.0"
+aws-sdk-dynamodb = "0.29.0"
 foundation = { path = "../foundation" }
 log = "0.4.19"
 tokio = { version = "1.29.1", features = ["macros"] }

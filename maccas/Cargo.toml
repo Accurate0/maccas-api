@@ -11,11 +11,11 @@ places = { path = "../places-rs" }
 
 lambda_runtime = "0.8.1"
 lambda_http = "0.8.1"
-aws-sdk-dynamodb = "0.28.0"
-aws-sdk-s3 = "0.28.0"
-aws-types = "0.55.3"
-aws-sdk-sqs = "0.28.0"
-aws-sdk-secretsmanager = "0.28.0"
+aws-sdk-dynamodb = "0.29.0"
+aws-sdk-s3 = "0.29.0"
+aws-types = "0.56.0"
+aws-sdk-sqs = "0.29.0"
+aws-sdk-secretsmanager = "0.29.0"
 
 serde = "1.0.181"
 serde_json = "1.0.104"
