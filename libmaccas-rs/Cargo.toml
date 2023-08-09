@@ -9,12 +9,12 @@ repository = "https://github.com/Accurate0/libmaccas-rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.181", features = ["derive"] }
+serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.104"
 serde_derive = "1.0.181"
 reqwest = { version = "0.11.18", features = ["json", "gzip"] }
 uuid = { version = "1.4.1", features = ["v4"] }
 http = "0.2.9"
-reqwest-middleware = "0.2.2"
+reqwest-middleware = "0.2.3"
 tracing = "0.1.37"
 anyhow = "1.0.72"
