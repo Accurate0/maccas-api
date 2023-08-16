@@ -11,16 +11,16 @@ places = { path = "../places-rs" }
 
 lambda_runtime = "0.8.1"
 lambda_http = "0.8.1"
-aws-sdk-dynamodb = "0.28.0"
-aws-sdk-s3 = "0.28.0"
-aws-types = "0.55.3"
-aws-sdk-sqs = "0.28.0"
-aws-sdk-secretsmanager = "0.28.0"
+aws-sdk-dynamodb = "0.29.0"
+aws-sdk-s3 = "0.29.0"
+aws-types = "0.56.0"
+aws-sdk-sqs = "0.29.0"
+aws-sdk-secretsmanager = "0.29.0"
 
-serde = "1.0.181"
-serde_json = "1.0.104"
+serde = "1.0.183"
+serde_json = "1.0.105"
 serde_derive = "1.0.181"
-serde_dynamo = { version = "4.2.3", features = ["aws-sdk-dynamodb+0_28"] }
+serde_dynamo = { version = "4.2.4", features = ["aws-sdk-dynamodb+0_28"] }
 strum_macros = "0.25"
 
 twilight-model = "0.15.2"
@@ -32,11 +32,11 @@ rocket_cors = "0.6.0-alpha2"
 jwt = "0.16.0"
 aliri_oauth2 = "0.10.0"
 
-image = "0.24.6"
+image = "0.24.7"
 webp = "0.2.5"
 
 # accounts
-regex = "1.9.1"
+regex = "1.9.3"
 imap = "2.4.1"
 native-tls = "0.2.11"
 mailparse = "0.14.0"
@@ -48,14 +48,14 @@ uuid = { version = "1.4.1", features = ["v4", "v7"] }
 http = "0.2.9"
 chrono = "0.4.26"
 reqwest = { version = "0.11.18", features = ["json", "gzip"] }
-reqwest-middleware = "0.2.2"
+reqwest-middleware = "0.2.3"
 tokio-stream = "0.1.14"
-log = "0.4.19"
-async-trait = "0.1.72"
+log = "0.4.20"
+async-trait = "0.1.73"
 rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.11.0"
-tokio = "1.29.1"
-anyhow = "1.0.72"
+tokio = "1.31.0"
+anyhow = "1.0.74"
 utoipa = { version = "3.4.4", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
 futures = "0.3.28"
