@@ -4,15 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.3.21", features = ["derive"] }
+clap = { version = "4.3.23", features = ["derive"] }
 
 aws-sdk-dynamodb = "0.29.0"
 
 maccas = { path = "../maccas" }
 foundation = { path = "../foundation" }
 log = "0.4.20"
-tokio = { version = "1.31.0", features = ["macros"] }
-anyhow = "1.0.74"
+tokio = { version = "1.32.0", features = ["macros"] }
+anyhow = "1.0.75"
 serde_json = "1.0.105"
 libmaccas = { path = "../libmaccas-rs" }
 rand = "0.8.5"
