@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.3.24", features = ["derive"] }
+clap = { version = "4.4.0", features = ["derive"] }
 
-aws-sdk-dynamodb = "0.29.0"
+aws-sdk-dynamodb = "0.30.0"
 
 maccas = { path = "../maccas" }
 foundation = { path = "../foundation" }
