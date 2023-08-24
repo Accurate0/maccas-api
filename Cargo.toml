@@ -5,7 +5,6 @@ members = [
     "accounts-cli",
     "libmaccas-rs",
     "places-rs",
-    "migration",
 ]
 
 [profile.release-strip]
