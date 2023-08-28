@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "4.3.24", features = ["derive"] }
+clap = { version = "4.4.1", features = ["derive"] }
 
-aws-sdk-dynamodb = "0.29.0"
+aws-sdk-dynamodb = "0.30.0"
 
 maccas = { path = "../maccas" }
 foundation = { path = "../foundation" }
@@ -18,7 +18,7 @@ libmaccas = { path = "../libmaccas-rs" }
 rand = "0.8.5"
 petname = "1.1.3"
 titlecase = "2.2.1"
-regex = "1.9.3"
+regex = "1.9.4"
 imap = "2.4.1"
 native-tls = "0.2.11"
 mailparse = "0.14.0"
