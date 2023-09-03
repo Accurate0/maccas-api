@@ -11,7 +11,7 @@ jobs:
   deploy:
     permissions:
       id-token: write
-    environment: production-infra
+    environment: development-infra
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,7 +32,7 @@ jobs:
           terraform_version: latest
 
       - name: terraform init
-        run: terraform init -backend-config="key=maccas/api-gateway.tfstate"
+        run: terraform init -backend-config="key=maccas/api-gateway-dev.tfstate"
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
 
