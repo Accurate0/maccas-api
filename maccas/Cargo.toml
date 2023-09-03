@@ -6,21 +6,22 @@ publish = false
 build = "build.rs"
 
 [dependencies]
-libmaccas = { path = "../libmaccas-rs" }
-places = { path = "../places-rs" }
+libmaccas = { path = "../libs/libmaccas-rs" }
+places = { path = "../libs/places-rs" }
+foundation = { path = "../libs/foundation" }
 
 lambda_runtime = "0.8.1"
 lambda_http = "0.8.1"
-aws-sdk-dynamodb = "0.29.0"
-aws-sdk-s3 = "0.29.0"
+aws-sdk-dynamodb = "0.30.0"
+aws-sdk-s3 = "0.30.0"
 aws-types = "0.56.1"
-aws-sdk-sqs = "0.29.0"
-aws-sdk-secretsmanager = "0.29.0"
+aws-sdk-sqs = "0.30.0"
+aws-sdk-secretsmanager = "0.30.0"
 
-serde = "1.0.185"
+serde = "1.0.188"
 serde_json = "1.0.105"
-serde_derive = "1.0.183"
-serde_dynamo = { version = "4.2.4", features = ["aws-sdk-dynamodb+0_29"] }
+serde_derive = "1.0.188"
+serde_dynamo = { version = "4.2.5", features = ["aws-sdk-dynamodb+0_30"] }
 strum_macros = "0.25"
 
 twilight-model = "0.15.2"
@@ -36,17 +37,16 @@ image = "0.24.7"
 webp = "0.2.5"
 
 # accounts
-regex = "1.9.3"
+regex = "1.9.5"
 imap = "2.4.1"
 native-tls = "0.2.11"
 mailparse = "0.14.0"
 
 openssl = { version = "0.10", features = ["vendored"] }
-foundation = { path = "../foundation" }
 config = { version = "0.13.3", features = ["yaml"] }
 uuid = { version = "1.4.1", features = ["v4", "v7"] }
 http = "0.2.9"
-chrono = "0.4.26"
+chrono = "0.4.28"
 reqwest = { version = "0.11.20", features = ["json", "gzip"] }
 reqwest-middleware = "0.2.3"
 tokio-stream = "0.1.14"
@@ -65,8 +65,6 @@ graph-rs-sdk = "1.1.1"
 [build-dependencies]
 vergen = { version = "8.2.4", features = ["build", "rustc", "git", "gitoxide"] }
 
-# [patch.crates-io]
-# libmaccas = { path = "/home/anurag/Projects/libmaccas-rs" }
 
 [lib]
 name = "maccas"
