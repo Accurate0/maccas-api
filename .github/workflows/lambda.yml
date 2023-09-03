@@ -50,7 +50,7 @@ jobs:
           name: maccas-api
           path: ./maccas-api
 
-  artifacts:
+  deployment-gate:
     needs: build
     runs-on: ubuntu-latest
     environment: production
