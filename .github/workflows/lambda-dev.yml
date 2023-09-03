@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   build-deploy:
+    environment: development
     permissions:
       id-token: write
     runs-on: ubuntu-latest
