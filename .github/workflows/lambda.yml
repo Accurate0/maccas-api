@@ -84,7 +84,7 @@ jobs:
   deploy:
     permissions:
       id-token: write
-    needs: artifacts
+    needs: deployment-gate
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
