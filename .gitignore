@@ -5,4 +5,5 @@ accounts.json
 sensor-data.json
 
 foundation/Cargo.lock
+hidden
 hidden/*

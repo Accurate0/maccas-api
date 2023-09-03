@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "foundation",
     "maccas",
     "accounts-cli",
-    "libmaccas-rs",
-    "places-rs",
+    "libs/foundation",
+    "libs/libmaccas-rs",
+    "libs/places-rs",
 ]
 
 [profile.release-strip]
