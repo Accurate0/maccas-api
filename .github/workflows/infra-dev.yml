@@ -1,4 +1,4 @@
-name: infra
+name: infra-dev
 on:
   workflow_dispatch:
   push:
