@@ -54,6 +54,8 @@ jobs:
     environment: production
     needs: build
     runs-on: ubuntu-latest
+    steps:
+      - run: echo 'started'
 
   artifacts:
     needs: deployment-gate
