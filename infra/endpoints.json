@@ -1,0 +1,87 @@
+[
+    {
+        "method": "GET",
+        "url": "/locations"
+    },
+    {
+        "method": "GET",
+        "url": "/locations/search"
+    },
+    {
+        "method": "GET",
+        "url": "/code/{dealId}"
+    },
+    {
+        "method": "GET",
+        "url": "/deals"
+    },
+    {
+        "method": "GET",
+        "url": "/deals/{dealId}"
+    },
+    {
+        "method": "POST",
+        "url": "/deals/{dealId}"
+    },
+    {
+        "method": "DELETE",
+        "url": "/deals/{dealId}"
+    },
+    {
+        "method": "GET",
+        "url": "/deals/last-refresh"
+    },
+    {
+        "method": "GET",
+        "url": "/statistics/account"
+    },
+    {
+        "method": "GET",
+        "url": "/statistics/total-accounts"
+    },
+    {
+        "method": "GET",
+        "url": "/points"
+    },
+    {
+        "method": "GET",
+        "url": "/points/{accountId}"
+    },
+    {
+        "method": "GET",
+        "url": "/docs/openapi"
+    },
+    {
+        "method": "POST",
+        "url": "/admin/locked-deals/{dealId}"
+    },
+    {
+        "method": "DELETE",
+        "url": "/admin/locked-deals/{dealId}"
+    },
+    {
+        "method": "GET",
+        "url": "/admin/locked-deals"
+    },
+    {
+        "method": "GET",
+        "url": "/admin/user/spending"
+    },
+    {
+        "method": "GET",
+        "url": "/user/config"
+    },
+    {
+        "method": "POST",
+        "url": "/user/config"
+    },
+    {
+        "method": "GET",
+        "url": "/user/spending"
+    },
+    {
+        "method": "GET",
+        "url": "/health/status",
+        "disableAuthorization": true
+    }
+]

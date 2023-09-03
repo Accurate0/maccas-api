@@ -1,0 +1,45 @@
+name: lambda
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra.yml"
+
+jobs:
+  deploy:
+    permissions:
+      id-token: write
+    environment: production
+    runs-on: ubuntu-latest
+
+    name: deploy infra
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: terraform init
+        run: terraform init
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+
+      - name: terraform validate
+        run: terraform validate
+
+      - name: terraform apply
+        run: terraform apply -auto-approve
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          TF_VAR_AWS_API_GATEWAY_ID: ${{ secrets.AWS_API_GATEWAY_ID }}
+          TF_VAR_AWS_API_GATEWAY_ID_DEV: ${{ secrets.AWS_API_GATEWAY_ID_DEV }}
+          TF_VAR_ADB2C_APPLICATION_ID: ${{ secrets.ADB2C_APPLICATION_ID }}
