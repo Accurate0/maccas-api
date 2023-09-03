@@ -7,7 +7,6 @@ terraform {
   }
 
   backend "s3" {
-    key            =
     bucket         = "shared-tf-state"
     region         = "ap-southeast-2"
     encrypt        = true
