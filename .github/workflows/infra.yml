@@ -40,7 +40,7 @@ jobs:
         run: terraform validate
 
       - name: terraform apply
-        run: terraform apply -auto-approve
+        run: terraform apply -input=false -auto-approve
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
           TF_VAR_AWS_API_GATEWAY_ID: ${{ secrets.AWS_API_GATEWAY_ID }}
