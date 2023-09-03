@@ -1,5 +1,5 @@
 data "aws_apigatewayv2_api" "this-dev" {
-  api_id = var.API_GATEWAY_ID_DEV
+  api_id = var.AWS_API_GATEWAY_ID_DEV
 }
 
 resource "aws_apigatewayv2_route" "this-dev" {
