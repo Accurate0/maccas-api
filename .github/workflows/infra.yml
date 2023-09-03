@@ -11,7 +11,7 @@ jobs:
   deploy:
     permissions:
       id-token: write
-    environment: production
+    environment: production-infra
     runs-on: ubuntu-latest
     defaults:
       run:
