@@ -1,4 +1,4 @@
-name: lambda
+name: infra
 on:
   workflow_dispatch:
   push:
