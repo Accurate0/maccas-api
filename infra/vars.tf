@@ -1,9 +1,9 @@
-variable "API_GATEWAY_ID" {
+variable "AWS_API_GATEWAY_ID" {
   type      = string
   sensitive = true
 }
 
-variable "API_GATEWAY_ID_DEV" {
+variable "AWS_API_GATEWAY_ID_DEV" {
   type      = string
   sensitive = true
 }
