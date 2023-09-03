@@ -82,7 +82,7 @@ jobs:
 
   deployment-gate:
     environment: production
-    needs: build
+    needs: artifacts
     runs-on: ubuntu-latest
     steps:
       - run: echo 'started'
