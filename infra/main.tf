@@ -7,7 +7,7 @@ terraform {
   }
 
   backend "s3" {
-    key            = "maccas/api-gateway.tfstate"
+    key            =
     bucket         = "shared-tf-state"
     region         = "ap-southeast-2"
     encrypt        = true
