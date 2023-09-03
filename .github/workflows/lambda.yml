@@ -50,15 +50,8 @@ jobs:
           name: maccas-api
           path: ./maccas-api
 
-  deployment-gate:
-    environment: production
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'started'
-
   artifacts:
-    needs: deployment-gate
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -87,10 +80,17 @@ jobs:
           name: ${{ matrix.task }}
           path: ./bootstrap.zip
 
+  deployment-gate:
+    environment: production
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'started'
+
   deploy:
     permissions:
       id-token: write
-    needs: artifacts
+    needs: deployment-gate
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -128,7 +128,7 @@ jobs:
   upload-config:
     permissions:
       id-token: write
-    needs: artifacts
+    needs: deployment-gate
     runs-on: ubuntu-latest
     name: upload config
 
