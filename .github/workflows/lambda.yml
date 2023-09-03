@@ -53,6 +53,7 @@ jobs:
   artifacts:
     needs: build
     runs-on: ubuntu-latest
+    environment: production
     strategy:
       fail-fast: false
       matrix:
@@ -83,7 +84,6 @@ jobs:
   deploy:
     permissions:
       id-token: write
-    environment: production
     needs: artifacts
     runs-on: ubuntu-latest
     strategy:
@@ -96,8 +96,6 @@ jobs:
           - refresh
           - refresh-failure
           - accounts
-
-    name: deploy ${{ matrix.task }}
 
     steps:
       - name: configure oicd aws credentials
@@ -124,7 +122,6 @@ jobs:
   upload-config:
     permissions:
       id-token: write
-    environment: production
     needs: [artifacts]
     runs-on: ubuntu-latest
     name: upload config
