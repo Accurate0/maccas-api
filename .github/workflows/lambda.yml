@@ -16,7 +16,7 @@ jobs:
       - name: install musl gcc
         run: sudo apt install musl-tools
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Accurate0/rust-toolchain@main
         with:
           profile: minimal
@@ -139,7 +139,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Accurate0/modify-json@v1.1.0
         with:
           __inputFile: ./config.json
