@@ -14,13 +14,13 @@ reqwest = { version = "0.11.20" }
 reqwest-retry = { version = "0.3.0" }
 reqwest-middleware = { version = "0.2.3" }
 reqwest-tracing = { version = "0.4.6" }
-twilight-model = { version = "0.15.2" }
+twilight-model = { version = "0.15.4" }
 mime = { version = "0.3.17" }
 aliri = { version = "0.6.2" }
 aliri_oauth2 = { version = "0.10.0" }
 aliri_clock = { version = "0.1.4" }
 jwt = { version = "0.16.0" }
-serde_json = { version = "1.0.105" }
+serde_json = { version = "1.0.106" }
 lazy_static = "1.4.0"
 uuid = { version = "1.4.1", features = ["v4"] }
 anyhow = "1.0.75"
