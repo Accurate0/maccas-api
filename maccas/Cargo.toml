@@ -19,13 +19,13 @@ aws-sdk-sqs = "0.30.0"
 aws-sdk-secretsmanager = "0.30.0"
 
 serde = "1.0.188"
-serde_json = "1.0.105"
+serde_json = "1.0.106"
 serde_derive = "1.0.188"
 serde_dynamo = { version = "4.2.5", features = ["aws-sdk-dynamodb+0_30"] }
 strum_macros = "0.25"
 
-twilight-model = "0.15.2"
-twilight-util = { version = "0.15.2", features = ["builder"] }
+twilight-model = "0.15.4"
+twilight-util = { version = "0.15.4", features = ["builder"] }
 
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
 rocket_cors = "0.6.0-alpha2"
@@ -63,7 +63,7 @@ strum = { version = "0.25.0", features = ["derive"] }
 graph-rs-sdk = "1.1.1"
 
 [build-dependencies]
-vergen = { version = "8.2.4", features = ["build", "rustc", "git", "gitoxide"] }
+vergen = { version = "8.2.5", features = ["build", "rustc", "git", "gitoxide"] }
 
 
 [lib]
