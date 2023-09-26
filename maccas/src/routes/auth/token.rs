@@ -16,7 +16,7 @@ use sha2::Sha256;
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "Random code for specified deal", body = TokenResponse),
+        (status = 200, description = "Trade previous access and refresh token for new ones", body = TokenResponse),
         (status = 404, description = "Deal not found"),
         (status = 500, description = "Internal Server Error"),
     ),
