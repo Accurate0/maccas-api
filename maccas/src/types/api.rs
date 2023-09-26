@@ -1,6 +1,7 @@
 use crate::constants::config::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
+use foundation::types::role::UserRole;
 use itertools::Itertools;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -208,3 +209,25 @@ pub struct AdminUserSpending {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct AdminUserSpendingMap(pub HashMap<String, AdminUserSpending>);
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenResponse {
+    pub token: String,
+    pub refresh_token: String,
+    pub role: UserRole,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginRequest {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenRequest {
+    pub token: String,
+    pub refresh_token: String,
+}

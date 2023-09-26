@@ -1,9 +1,8 @@
 use crate::{
     constants::mc_donalds, database::types::AuditActionType,
-    guards::authorization::AuthorizationHeader, proxy, routes, types::error::ApiError,
+    guards::required_authorization::RequiredAuthorizationHeader, proxy, routes,
+    types::error::ApiError,
 };
-use foundation::types::jwt::JwtClaim;
-use jwt::{Header, Token};
 use rocket::{http::Status, State};
 
 #[utoipa::path(
@@ -20,7 +19,7 @@ pub async fn remove_deal(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
     store: String,
-    auth: AuthorizationHeader,
+    auth: RequiredAuthorizationHeader,
 ) -> Result<Status, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
@@ -49,20 +48,13 @@ pub async fn remove_deal(
             .await?;
 
         if resp.status.is_success() {
-            let mut user_name: Option<String> = None;
-            let mut user_id: Option<String> = None;
-            if let Some(auth_header) = auth.0 {
-                let auth_header = auth_header.replace("Bearer ", "");
-                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
-                user_name = Some(jwt.claims().name.clone());
-                user_id = Some(jwt.claims().oid.clone());
-            }
+            let user_id = auth.claims.oid;
 
             ctx.database
                 .add_to_audit(
                     AuditActionType::Remove,
-                    user_id,
-                    user_name.unwrap_or("SA-API".to_owned()),
+                    Some(user_id),
+                    auth.claims.username,
                     &offer,
                 )
                 .await;

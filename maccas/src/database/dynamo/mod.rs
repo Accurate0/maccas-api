@@ -12,6 +12,8 @@ pub struct DynamoDatabase {
     audit_table_name: String,
     last_refresh_table_name: String,
     user_accounts: String,
+    users: String,
+    user_tokens: String,
 
     audit_user_id_index: String,
 }
@@ -31,6 +33,8 @@ impl DynamoDatabase {
             audit_user_id_index: indexes.audit_user_id_index.to_owned(),
             last_refresh_table_name: tables.last_refresh.to_owned(),
             user_accounts: tables.user_accounts.to_owned(),
+            users: tables.users.to_owned(),
+            user_tokens: tables.user_tokens.to_owned(),
         }
     }
 }

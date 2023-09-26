@@ -25,7 +25,7 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
         let auth_header = auth_header.unwrap();
 
         // if the admin extension is set and true, we allow
-        let role = auth_header.claims.extension_role;
+        let role = auth_header.claims.role;
         let user_id = auth_header.claims.oid;
 
         if role.is_admin() {

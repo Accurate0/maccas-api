@@ -4,6 +4,7 @@ use super::types::{
 use crate::types::{audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache};
 use async_trait::async_trait;
 use chrono::Duration;
+use foundation::types::role::UserRole;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
 
@@ -123,4 +124,25 @@ pub trait Database {
         access_token: &str,
         refresh_token: &str,
     ) -> Result<(), anyhow::Error>;
+    async fn is_user_exist(&self, username: String) -> Result<bool, anyhow::Error>;
+    async fn create_user(
+        &self,
+        user_id: String,
+        username: String,
+        password_hash: String,
+        salt: Vec<u8>,
+    ) -> Result<(), anyhow::Error>;
+
+    async fn set_user_role(&self, username: String, role: UserRole) -> Result<(), anyhow::Error>;
+    async fn set_user_tokens(
+        &self,
+        username: &str,
+        auth_token: &str,
+        refresh_token: &str,
+        ttl: Duration,
+    ) -> Result<(), anyhow::Error>;
+    async fn get_password_hash(&self, username: String) -> Result<String, anyhow::Error>;
+    async fn get_user_id(&self, username: String) -> Result<String, anyhow::Error>;
+    async fn get_user_role(&self, username: String) -> Result<UserRole, anyhow::Error>;
+    async fn get_user_tokens(&self, username: String) -> Result<(String, String), anyhow::Error>;
 }

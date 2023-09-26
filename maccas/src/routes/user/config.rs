@@ -45,7 +45,7 @@ pub async fn update_user_config(
     config: Json<UserOptions>,
 ) -> Result<Status, ApiError> {
     let user_id = auth.claims.oid;
-    let user_name = auth.claims.name;
+    let user_name = auth.claims.username;
 
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);

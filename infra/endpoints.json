@@ -83,5 +83,15 @@
         "method": "GET",
         "url": "/health/status",
         "disableAuthorization": true
+    },
+    {
+        "method": "POST",
+        "url": "/auth/token",
+        "disableAuthorization": true
+    },
+    {
+        "method": "POST",
+        "url": "/auth/login",
+        "disableAuthorization": true
     }
 ]

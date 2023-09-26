@@ -3,8 +3,8 @@ use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, ACTOR, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, GROUP, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER, OFFER_ID,
-    OFFER_LIST, OFFER_NAME, OPERATION_ID, POINT_INFO, REFRESH_TOKEN, REGION, TIMESTAMP, TTL,
-    USER_CONFIG, USER_ID, USER_NAME, VALUE,
+    OFFER_LIST, OFFER_NAME, OPERATION_ID, PASSWORD_HASH, POINT_INFO, REFRESH_TOKEN, REGION, ROLE,
+    SALT, TIMESTAMP, TTL, USERNAME, USER_CONFIG, USER_ID, USER_NAME, VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
@@ -19,10 +19,12 @@ use crate::types::config::GeneralConfig;
 use crate::types::refresh::RefreshOfferCache;
 use anyhow::{bail, Context};
 use async_trait::async_trait;
+use aws_sdk_dynamodb::primitives::Blob;
 use aws_sdk_dynamodb::types::{AttributeValue, AttributeValueUpdate};
 use chrono::{DateTime, FixedOffset};
 use chrono::{Duration, Utc};
 use foundation::hash::get_short_sha1;
+use foundation::types::role::UserRole;
 use http::StatusCode;
 use itertools::Itertools;
 use libmaccas::ApiClient;
@@ -37,6 +39,170 @@ use tokio_stream::StreamExt;
 // TODO: fix all scans to use last evaluated key
 #[async_trait]
 impl Database for DynamoDatabase {
+    async fn set_user_tokens(
+        &self,
+        username: &str,
+        auth_token: &str,
+        refresh_token: &str,
+        ttl: Duration,
+    ) -> Result<(), anyhow::Error> {
+        let utc: DateTime<Utc> = Utc::now().checked_add_signed(ttl).unwrap();
+
+        self.client
+            .put_item()
+            .table_name(&self.user_tokens)
+            .item(USERNAME, AttributeValue::S(username.to_owned()))
+            .item(ACCESS_TOKEN, AttributeValue::S(auth_token.to_owned()))
+            .item(REFRESH_TOKEN, AttributeValue::S(refresh_token.to_owned()))
+            .item(TTL, AttributeValue::N(utc.timestamp().to_string()))
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_user_tokens(&self, username: String) -> Result<(String, String), anyhow::Error> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.user_tokens)
+            .key(USERNAME, AttributeValue::S(username))
+            .send()
+            .await?;
+
+        let item = response.item.context("must have item")?;
+        let access_token = item
+            .get(ACCESS_TOKEN)
+            .context("must have access token")?
+            .as_s()
+            .cloned()
+            .unwrap();
+        let refresh_token = item
+            .get(REFRESH_TOKEN)
+            .context("must have refresh token")?
+            .as_s()
+            .cloned()
+            .unwrap();
+
+        Ok((access_token, refresh_token))
+    }
+
+    async fn get_user_id(&self, username: String) -> Result<String, anyhow::Error> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.users)
+            .key(USERNAME, AttributeValue::S(username))
+            .send()
+            .await?;
+
+        let item = response.item.context("must have item")?;
+        let user_id = item
+            .get(USER_ID)
+            .context("must have user id")?
+            .as_s()
+            .cloned()
+            .unwrap();
+
+        Ok(user_id)
+    }
+
+    async fn get_user_role(&self, username: String) -> Result<UserRole, anyhow::Error> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.users)
+            .key(USERNAME, AttributeValue::S(username))
+            .send()
+            .await?;
+
+        let item = response.item.context("must have item")?;
+        let role = item
+            .get(ROLE)
+            .context("must have password")?
+            .as_s()
+            .cloned()
+            .unwrap();
+
+        Ok(serde_json::from_str::<UserRole>(&role)?)
+    }
+
+    async fn set_user_role(&self, username: String, role: UserRole) -> Result<(), anyhow::Error> {
+        self.client
+            .update_item()
+            .table_name(&self.users)
+            .key(USERNAME, AttributeValue::S(username))
+            .attribute_updates(
+                ROLE,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::S(serde_json::to_string(&role)?))
+                    .build(),
+            )
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn is_user_exist(&self, username: String) -> Result<bool, anyhow::Error> {
+        Ok(self
+            .client
+            .get_item()
+            .table_name(&self.users)
+            .key(USERNAME, AttributeValue::S(username))
+            .send()
+            .await?
+            .item
+            .is_some())
+    }
+
+    async fn create_user(
+        &self,
+        user_id: String,
+        username: String,
+        password_hash: String,
+        salt: Vec<u8>,
+    ) -> Result<(), anyhow::Error> {
+        let now = SystemTime::now();
+        let now: DateTime<Utc> = now.into();
+        let now = now.to_rfc3339();
+
+        log::info!("inserting new user: {user_id} / {username}");
+
+        self.client
+            .put_item()
+            .table_name(&self.users)
+            .item(TIMESTAMP, AttributeValue::S(now))
+            .item(USER_ID, AttributeValue::S(user_id))
+            .item(USERNAME, AttributeValue::S(username))
+            .item(PASSWORD_HASH, AttributeValue::S(password_hash))
+            .item(SALT, AttributeValue::B(Blob::new(salt)))
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_password_hash(&self, username: String) -> Result<String, anyhow::Error> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.users)
+            .key(USERNAME, AttributeValue::S(username))
+            .send()
+            .await?;
+
+        let item = response.item.context("must have item")?;
+        let password_hash = item
+            .get(PASSWORD_HASH)
+            .context("must have password")?
+            .as_s()
+            .cloned()
+            .unwrap();
+
+        Ok(password_hash)
+    }
+
     async fn add_to_audit(
         &self,
         action: AuditActionType,

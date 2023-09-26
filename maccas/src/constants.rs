@@ -29,15 +29,18 @@ pub mod config {
     pub const CONFIG_BASE_URL: &str = "https://api.maccas.one/v1";
     pub const CONFIG_PLACES_API_KEY_ID: &str = "MaccasApi-PlacesApiKey";
     pub const CONFIG_AD_CLIENT_SECRET_KEY_ID: &str = "MaccasApi-AdClientSecret";
+    pub const CONFIG_SECRET_KEY_ID: &str = "MaccasApi-SecretKey";
     pub const IMAGE_CDN: &str = "https://i.maccas.one";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
     pub const MAXIMUM_FAILURE_HANDLER_RETRY: i8 = 5;
     pub const MAXIMUM_CLEANUP_RETRY: i8 = 5;
     pub const MAX_PROXY_COUNT: i8 = 10;
+    pub const TOKEN_VALID_TIME: i64 = 86400;
 }
 
 pub mod db {
+    pub const USERNAME: &str = "username";
     pub const ACCOUNT_NAME: &str = "account_name";
     pub const LOGIN_USERNAME: &str = "login_username";
     pub const LOGIN_PASSWORD: &str = "login_password";
@@ -68,4 +71,7 @@ pub mod db {
     pub const OFFER_NAME: &str = "offer_name";
     pub const ACTION: &str = "action";
     pub const OPERATION_ID: &str = "operation_id";
+    pub const PASSWORD_HASH: &str = "password_hash";
+    pub const SALT: &str = "salt";
+    pub const ROLE: &str = "role";
 }

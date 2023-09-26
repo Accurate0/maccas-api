@@ -4,6 +4,7 @@
     "apim",
     "donalds",
     "ETAG",
+    "Hmac",
     "itertools",
     "jwks",
     "libcore",
