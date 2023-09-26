@@ -1,6 +1,7 @@
 use crate::{database::Database, types::config::GeneralConfig};
 
 pub mod admin;
+pub mod auth;
 pub mod catchers;
 pub mod code;
 pub mod deals;

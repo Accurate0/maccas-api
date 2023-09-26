@@ -2,6 +2,8 @@ use crate::routes::admin::get_locked_deals::*;
 use crate::routes::admin::get_spending::*;
 use crate::routes::admin::lock_deal::*;
 use crate::routes::admin::unlock_deal::*;
+use crate::routes::auth::login::*;
+use crate::routes::auth::token::*;
 use crate::routes::code::get_code::*;
 use crate::routes::deals::add_deal::*;
 use crate::routes::deals::get_deal::*;
@@ -20,11 +22,12 @@ use crate::routes::user::config::*;
 use crate::routes::user::spending::*;
 use crate::types::api::{
     AccountPointMap, AccountPointResponse, AccountResponse, AdminLockedDealsResponse,
-    AdminUserSpending, AdminUserSpendingMap, GetDealsOffer, LastRefreshInformation,
+    AdminUserSpending, AdminUserSpendingMap, GetDealsOffer, LastRefreshInformation, LoginRequest,
     OfferPointsResponse, OfferResponse, PointsResponse, RestaurantAddress, RestaurantInformation,
-    RestaurantInformationList, UserSpending,
+    RestaurantInformationList, TokenRequest, TokenResponse, UserSpending,
 };
 use crate::types::user::UserOptions;
+use foundation::types::role::UserRole;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
@@ -52,6 +55,8 @@ use utoipa::OpenApi;
         get_all_user_spending,
         get_status,
         get_openapi,
+        login,
+        get_token,
     ),
     components(
         responses(),
@@ -71,7 +76,11 @@ use utoipa::OpenApi;
             UserSpending,
             AdminUserSpending,
             RestaurantInformationList,
-            AdminUserSpendingMap
+            AdminUserSpendingMap,
+            TokenResponse,
+            LoginRequest,
+            TokenRequest,
+            UserRole,
         ),
     )
 )]

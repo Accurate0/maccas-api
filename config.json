@@ -2,7 +2,14 @@
   "mcdonalds": {
     "clientId": null,
     "clientSecret": null,
-    "ignoredOfferIds": [30762, 162091, 165964, 2946152, 3067279, 173634],
+    "ignoredOfferIds": [
+      30762,
+      162091,
+      165964,
+      2946152,
+      3067279,
+      173634
+    ],
     "sensorData": null,
     "serviceAccountName": null
   },
@@ -17,7 +24,9 @@
       "refreshTracking": "MaccasApi-RefreshTracking",
       "audit": "MaccasApi-Audit",
       "lastRefresh": "MaccasApi-LastRefresh",
-      "userAccounts": "MaccasApi-UserAccounts"
+      "userAccounts": "MaccasApi-UserAccounts",
+      "users": "MaccasApi-Users",
+      "userTokens": "MaccasApi-UserTokens"
     },
     "indexes": {
       "auditUserIdIndex": "UserIdIndex"
@@ -44,7 +53,9 @@
     },
     "discordError": {
       "enabled": false,
-      "webhooks": [null],
+      "webhooks": [
+        null
+      ],
       "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
       "username": "Maccas Service"
     },
@@ -70,7 +81,9 @@
   "api": {
     "discordDealUse": {
       "enabled": false,
-      "webhooks": [null],
+      "webhooks": [
+        null
+      ],
       "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
       "username": "Maccas"
     },

@@ -1,6 +1,6 @@
-use aliri_oauth2::Authority;
-use foundation::{extensions::AliriOAuth2Extensions, types::jwt::JwtClaim};
-use jwt::{Header, Token};
+use foundation::extensions::SecretsManagerExtensions;
+use hmac::{digest::KeyInit, Hmac};
+use jwt::{Header, Token, VerifyWithKey};
 use rocket::{
     http::hyper::header,
     http::Status,
@@ -8,6 +8,9 @@ use rocket::{
     request::{self, FromRequest},
     Request, State,
 };
+use sha2::Sha256;
+
+use crate::{constants::config::CONFIG_SECRET_KEY_ID, routes::Context, types::token::JwtClaim};
 
 const UNAUTHORIZED_MESSAGE: &str = "Unauthorized";
 
@@ -21,49 +24,26 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
         let auth = request.headers().get_one(header::AUTHORIZATION.as_str());
-        let authority = request.guard::<&State<Authority>>().await;
+        let ctx = request.guard::<&State<Context>>().await.unwrap();
 
         match auth {
             Some(auth) => {
-                let token = auth.replace("Bearer ", "");
-                match authority {
-                    Outcome::Success(authority) => {
-                        let jwt_result = authority.verify_token_from_str::<JwtClaim>(&token);
-                        match jwt_result {
-                            Ok(jwt) => {
-                                log::info!("verified jwt for {}", jwt.oid);
-                                Outcome::Success(Self { claims: jwt })
-                            }
-                            Err(e) => {
-                                log::error!("error validating jwt: {e}");
-                                Outcome::Failure((
-                                    Status::Unauthorized,
-                                    anyhow::Error::msg(UNAUTHORIZED_MESSAGE),
-                                ))
-                            }
-                        }
-                    }
+                let auth = auth.replace("Bearer ", "");
+                let secret = ctx
+                    .secrets_client
+                    .get_secret(CONFIG_SECRET_KEY_ID)
+                    .await
+                    .unwrap();
+                let key: Hmac<Sha256> = Hmac::new_from_slice(secret.as_bytes()).unwrap();
+                log::info!("checking token {:?}", auth);
 
-                    _ => {
-                        let jwt: Result<Token<Header, JwtClaim, _>, _> =
-                            jwt::Token::parse_unverified(&token);
-                        match jwt {
-                            Ok(jwt) => {
-                                log::info!(
-                                    "no authority found, unverified jwt for {}",
-                                    jwt.claims().oid
-                                );
-                                Outcome::Success(Self {
-                                    claims: jwt.claims().clone(),
-                                })
-                            }
-                            Err(_) => Outcome::Failure((
-                                Status::Unauthorized,
-                                anyhow::Error::msg(UNAUTHORIZED_MESSAGE),
-                            )),
-                        }
-                    }
-                }
+                let unverified: Token<Header, JwtClaim, jwt::Unverified<'_>> =
+                    Token::parse_unverified(&auth).unwrap();
+                let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key).unwrap();
+                log::info!("validated token with claims: {:?}", token.claims());
+                Outcome::Success(RequiredAuthorizationHeader {
+                    claims: token.claims().clone(),
+                })
             }
             None => Outcome::Failure((
                 Status::Unauthorized,

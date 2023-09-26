@@ -2,8 +2,7 @@ use crate::constants::config::DEFAULT_LOCK_TTL_HOURS;
 use crate::constants::mc_donalds;
 use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::database::types::AuditActionType;
-use crate::guards::authorization::AuthorizationHeader;
-
+use crate::guards::required_authorization::RequiredAuthorizationHeader;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::images::OfferImageBaseName;
@@ -12,9 +11,7 @@ use crate::webhook::execute::execute_discord_webhooks;
 use crate::{proxy, routes};
 use anyhow::Context;
 use chrono::Duration;
-use foundation::types::jwt::JwtClaim;
 use itertools::Itertools;
-use jwt::{Header, Token};
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -31,7 +28,7 @@ pub async fn add_deal(
     ctx: &State<routes::Context<'_>>,
     deal_id: &str,
     store: String,
-    auth: AuthorizationHeader,
+    auth: RequiredAuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
@@ -163,56 +160,40 @@ pub async fn add_deal(
 
         // don't add to audit if it was a 409...
         let user_id = if resp.is_ok() {
-            if let Some(auth_header) = auth.0 {
-                let auth_header = auth_header.replace("Bearer ", "");
-                let jwt: Token<Header, JwtClaim, _> = jwt::Token::parse_unverified(&auth_header)?;
-                let claims = jwt.claims();
-                let user_name = &jwt.claims().name;
-                let user_id = &jwt.claims().oid;
+            let user_name = &auth.claims.username;
+            let user_id = &auth.claims.oid;
 
-                if !claims.extension_role.is_admin() && ctx.config.api.discord_deal_use.enabled {
-                    let restaurant_info = api_client
-                        .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
-                        .await;
+            if !auth.claims.role.is_admin() && ctx.config.api.discord_deal_use.enabled {
+                let restaurant_info = api_client
+                    .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
+                    .await;
 
-                    let store_name = match restaurant_info {
-                        Ok(restaurant_info) => {
-                            let response = restaurant_info.body.response;
-                            match response {
-                                Some(response) => response.restaurant.name,
-                                None => "Unknown/Invalid Name".to_owned(),
-                            }
+                let store_name = match restaurant_info {
+                    Ok(restaurant_info) => {
+                        let response = restaurant_info.body.response;
+                        match response {
+                            Some(response) => response.restaurant.name,
+                            None => "Unknown/Invalid Name".to_owned(),
                         }
-                        _ => "Error getting store name".to_string(),
-                    };
+                    }
+                    _ => "Error getting store name".to_string(),
+                };
 
-                    let http_client = foundation::http::get_default_http_client();
-                    execute_discord_webhooks(
-                        &http_client,
-                        &ctx.config,
-                        user_name,
-                        &offer,
-                        &store_name,
-                    )
+                let http_client = foundation::http::get_default_http_client();
+                execute_discord_webhooks(&http_client, &ctx.config, user_name, &offer, &store_name)
                     .await;
-                }
-
-                ctx.database
-                    .add_to_audit(
-                        AuditActionType::Add,
-                        Some(user_id.to_string()),
-                        user_name.to_string(),
-                        &offer,
-                    )
-                    .await;
-
-                Some(user_id.to_owned())
-            } else {
-                ctx.database
-                    .add_to_audit(AuditActionType::Add, None, "SA-API".to_owned(), &offer)
-                    .await;
-                None
             }
+
+            ctx.database
+                .add_to_audit(
+                    AuditActionType::Add,
+                    Some(user_id.to_string()),
+                    user_name.to_string(),
+                    &offer,
+                )
+                .await;
+
+            Some(user_id.to_owned())
         } else {
             None
         };

@@ -25,7 +25,7 @@ impl<'r> FromRequest<'r> for ProtectedRoute {
         let auth_header = auth_header.unwrap();
 
         let user_id = auth_header.claims.oid;
-        let role = auth_header.claims.extension_role;
+        let role = auth_header.claims.role;
 
         // allow admin access to protected routes
         if role.is_allowed_protected_access() {

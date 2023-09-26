@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct JwtClaim {
+pub struct Adb2cClaims {
     pub exp: u64,
     pub nbf: u64,
     pub ver: String,
     pub iss: aliri::jwt::Issuer,
     pub sub: aliri::jwt::Subject,
     pub aud: aliri::jwt::Audiences,
-    pub nonce: String,
+    pub nonce: Option<String>,
     pub iat: i64,
     pub scp: aliri_oauth2::Scope,
     pub oid: String,
@@ -23,13 +23,13 @@ pub struct JwtClaim {
     pub extension_role: UserRole,
 }
 
-impl HasScope for JwtClaim {
+impl HasScope for Adb2cClaims {
     fn scope(&self) -> &aliri_oauth2::Scope {
         &self.scp
     }
 }
 
-impl CoreClaims for JwtClaim {
+impl CoreClaims for Adb2cClaims {
     fn nbf(&self) -> Option<UnixTime> {
         Some(UnixTime(self.nbf))
     }

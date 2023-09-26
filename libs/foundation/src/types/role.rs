@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(ToSchema)]
 pub enum UserRole {
     Admin,
     Privileged,

@@ -14,6 +14,8 @@ pub struct Tables {
     pub audit: String,
     pub last_refresh: String,
     pub user_accounts: String,
+    pub users: String,
+    pub user_tokens: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

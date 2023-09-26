@@ -8,6 +8,8 @@ use maccas::routes::admin::get_locked_deals::get_locked_deals;
 use maccas::routes::admin::get_spending::get_all_user_spending;
 use maccas::routes::admin::lock_deal::lock_deal;
 use maccas::routes::admin::unlock_deal::unlock_deal;
+use maccas::routes::auth::login::login;
+use maccas::routes::auth::token::get_token;
 use maccas::routes::catchers::default;
 use maccas::routes::code::get_code::get_code;
 use maccas::routes::deals::add_deal::add_deal;
@@ -111,6 +113,8 @@ async fn main() -> Result<(), LambdaError> {
                 unlock_deal,
                 get_user_spending,
                 get_all_user_spending,
+                login,
+                get_token,
             ],
         )
         .configure(config);
@@ -118,7 +122,7 @@ async fn main() -> Result<(), LambdaError> {
     #[cfg(debug_assertions)]
     let rocket = {
         let allowed_origins =
-            AllowedOrigins::some_exact(&["http://localhost:3000", "https://dev.maccas.one"]);
+            AllowedOrigins::some_exact(&["http://localhost:5173", "https://dev.maccas.one"]);
         let cors = rocket_cors::CorsOptions {
             allowed_origins,
             allowed_methods: vec![Method::Get, Method::Post, Method::Delete]
