@@ -25,7 +25,7 @@ const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmic
 #[utoipa::path(
     responses(
         (status = 200, description = "Login and fetch auth and refresh tokens", body = TokenResponse),
-        (status = 404, description = "Deal not found"),
+        (status = 401, description = "Account doesn't exist"),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "auth",
