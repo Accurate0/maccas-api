@@ -5,6 +5,7 @@ pub mod doc;
 pub mod extensions;
 pub mod guards;
 pub mod logging;
+pub mod r#macro;
 pub mod proxy;
 pub mod rng;
 pub mod routes;

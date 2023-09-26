@@ -11,6 +11,7 @@ use lambda_http::Error as LambdaError;
 use lambda_runtime::LambdaEvent;
 use maccas::constants::config::CONFIG_SECRET_KEY_ID;
 use maccas::logging;
+use maccas::return_jwt_unauthorized;
 use maccas::types::config::GeneralConfig;
 use maccas::types::token::JwtClaim;
 use maccas::types::token::LambdaAuthorizerPayload;
@@ -33,12 +34,14 @@ async fn run(
     let secrets_client = aws_sdk_secretsmanager::Client::new(&shared_config);
 
     let token = event.payload.headers.authorization.replace("Bearer ", "");
-    let secret = secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-    let key: Hmac<Sha256> = Hmac::new_from_slice(secret.as_bytes())?;
+    let secret = return_jwt_unauthorized!(secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await);
+    let key: Hmac<Sha256> = return_jwt_unauthorized!(Hmac::new_from_slice(secret.as_bytes()));
     log::info!("checking token {:?}", token);
 
-    let unverified: Token<Header, JwtClaim, jwt::Unverified<'_>> = Token::parse_unverified(&token)?;
-    let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
+    let unverified: Token<Header, JwtClaim, jwt::Unverified<'_>> =
+        return_jwt_unauthorized!(Token::parse_unverified(&token));
+    let token: Token<_, _, jwt::Verified> =
+        return_jwt_unauthorized!(unverified.verify_with_key(&key));
     log::info!("validated token with claims: {:?}", token.claims());
 
     // TODO: check expiry etc
