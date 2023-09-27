@@ -35,11 +35,11 @@ pub async fn get_token(
     let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
 
     let username = token.claims().username.to_owned();
-    let (access_token, refresh_token) = ctx.database.get_user_tokens(username.to_owned()).await?;
+    let (_, refresh_token) = ctx.database.get_user_tokens(username.to_owned()).await?;
     log::info!("refresh token for {username}");
 
-    // if tokens provided are the most recent ones
-    if refresh_token == request.refresh_token && access_token == request.token {
+    // the token is verified and the refresh token matches the last one created
+    if refresh_token == request.refresh_token {
         log::info!("token matches last created refresh and access, generating new ones");
         let user_id = ctx.database.get_user_id(username.to_owned()).await?;
         let role = ctx.database.get_user_role(username.to_owned()).await?;
