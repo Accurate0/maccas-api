@@ -1,24 +1,20 @@
 use crate::{
-    constants::config::{CONFIG_SECRET_KEY_ID, TOKEN_VALID_TIME},
+    constants::config::CONFIG_SECRET_KEY_ID,
     routes,
+    shared::jwt::generate_signed_jwt,
     types::{
         adb2c::Adb2cTokenResponse,
         api::{LoginRequest, TokenResponse},
         error::ApiError,
-        token::JwtClaim,
     },
 };
-use chrono::Utc;
 use foundation::{extensions::SecretsManagerExtensions, types::jwt::Adb2cClaims};
-use hmac::{Hmac, Mac};
 use http::StatusCode;
-use jwt::SignWithKey;
-use jwt::{AlgorithmType, Header, Token};
+use jwt::{Header, Token};
 use rand::Rng;
 use reqwest::multipart::Part;
 use reqwest_tracing::TracingMiddleware;
 use rocket::{serde::json::Json, State};
-use sha2::Sha256;
 
 const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmicrosoft.com/B2C_1_ROPC_Auth/oauth2/v2.0/token";
 
@@ -64,31 +60,14 @@ pub async fn login(
                 .get_user_role(request.username.to_owned())
                 .await?;
 
-            let dt = Utc::now();
             let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-            let key: Hmac<Sha256> =
-                Hmac::new_from_slice(secret.as_bytes()).map_err(|_| ApiError::Unauthorized)?;
-            let timestamp: i64 = dt.timestamp() + TOKEN_VALID_TIME;
-            let header = Header {
-                algorithm: AlgorithmType::Hs256,
-                ..Default::default()
-            };
-
-            let claims = JwtClaim {
-                exp: timestamp,
-                iss: "Maccas API".to_owned(),
-                sub: user_id.to_owned(),
-                aud: ctx.config.api.jwt.application_id.to_owned(),
-                iat: Utc::now().timestamp(),
-                oid: user_id,
-                role: role.clone(),
-                username: request.username.to_owned(),
-            };
-
-            let new_jwt = jwt::Token::new(header, claims)
-                .sign_with_key(&key)?
-                .as_str()
-                .to_owned();
+            let new_jwt = generate_signed_jwt(
+                secret,
+                &user_id,
+                &ctx.config.api.jwt.application_id,
+                &role,
+                &request.username,
+            )?;
 
             let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
@@ -169,31 +148,14 @@ pub async fn login(
                     .set_user_role(request.username.to_owned(), role.clone())
                     .await?;
 
-                let dt = Utc::now();
                 let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-                let key: Hmac<Sha256> =
-                    Hmac::new_from_slice(secret.as_bytes()).map_err(|_| ApiError::Unauthorized)?;
-                let timestamp: i64 = dt.timestamp() + TOKEN_VALID_TIME;
-                let header = Header {
-                    algorithm: AlgorithmType::Hs256,
-                    ..Default::default()
-                };
-
-                let claims = JwtClaim {
-                    exp: timestamp,
-                    iss: "Maccas API".to_owned(),
-                    sub: claims.oid.to_owned(),
-                    aud: ctx.config.api.jwt.application_id.to_owned(),
-                    iat: Utc::now().timestamp(),
-                    oid: claims.oid.to_owned(),
-                    role: claims.extension_role.to_owned(),
-                    username: request.username.to_owned(),
-                };
-
-                let new_jwt = jwt::Token::new(header, claims)
-                    .sign_with_key(&key)?
-                    .as_str()
-                    .to_owned();
+                let new_jwt = generate_signed_jwt(
+                    secret,
+                    &claims.oid,
+                    &ctx.config.api.jwt.application_id,
+                    &role,
+                    &request.username,
+                )?;
 
                 let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
