@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::Utc;
 use foundation::aws;
 use foundation::extensions::SecretsManagerExtensions;
 use hmac::digest::KeyInit;
@@ -36,17 +37,22 @@ async fn run(
     let token = event.payload.headers.authorization.replace("Bearer ", "");
     let secret = return_jwt_unauthorized!(secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await);
     let key: Hmac<Sha256> = return_jwt_unauthorized!(Hmac::new_from_slice(secret.as_bytes()));
+
     log::info!("checking token {:?}", token);
 
     let unverified: Token<Header, JwtClaim, jwt::Unverified<'_>> =
         return_jwt_unauthorized!(Token::parse_unverified(&token));
+
+    // verify token
     let token: Token<_, _, jwt::Verified> =
         return_jwt_unauthorized!(unverified.verify_with_key(&key));
-    log::info!("validated token with claims: {:?}", token.claims());
 
-    // TODO: check expiry etc
+    let claims = token.claims();
 
-    Ok(LambdaAuthorizerResponse {
-        is_authorized: token.claims().aud == config.api.jwt.application_id,
-    })
+    log::info!("validated token with claims: {:?}", claims);
+
+    let now = Utc::now().timestamp();
+    let is_authorized = claims.aud == config.api.jwt.application_id && now <= claims.exp;
+
+    Ok(LambdaAuthorizerResponse { is_authorized })
 }
