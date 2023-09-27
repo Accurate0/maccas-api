@@ -1,16 +1,16 @@
 use crate::{
-    constants::config::{CONFIG_SECRET_KEY_ID, TOKEN_VALID_TIME},
+    constants::config::CONFIG_SECRET_KEY_ID,
     routes,
+    shared::jwt::generate_signed_jwt,
     types::{
         api::{TokenRequest, TokenResponse},
         error::ApiError,
         token::JwtClaim,
     },
 };
-use chrono::Utc;
 use foundation::extensions::SecretsManagerExtensions;
 use hmac::{digest::KeyInit, Hmac};
-use jwt::{AlgorithmType, Header, SignWithKey, Token, VerifyWithKey};
+use jwt::{Header, Token, VerifyWithKey};
 use rocket::{serde::json::Json, State};
 use sha2::Sha256;
 
@@ -44,31 +44,13 @@ pub async fn get_token(
         let user_id = ctx.database.get_user_id(username.to_owned()).await?;
         let role = ctx.database.get_user_role(username.to_owned()).await?;
 
-        let dt = Utc::now();
-        let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-        let key: Hmac<Sha256> =
-            Hmac::new_from_slice(secret.as_bytes()).map_err(|_| ApiError::Unauthorized)?;
-        let timestamp: i64 = dt.timestamp() + TOKEN_VALID_TIME;
-        let header = Header {
-            algorithm: AlgorithmType::Hs256,
-            ..Default::default()
-        };
-
-        let claims = JwtClaim {
-            exp: timestamp,
-            iss: "Maccas API".to_owned(),
-            sub: user_id.to_owned(),
-            aud: ctx.config.api.jwt.application_id.to_owned(),
-            iat: Utc::now().timestamp(),
-            oid: user_id,
-            role: role.clone(),
-            username: username.to_owned(),
-        };
-
-        let new_jwt = jwt::Token::new(header, claims)
-            .sign_with_key(&key)?
-            .as_str()
-            .to_owned();
+        let new_jwt = generate_signed_jwt(
+            secret,
+            &user_id,
+            &ctx.config.api.jwt.application_id,
+            &role,
+            &username,
+        )?;
 
         let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
