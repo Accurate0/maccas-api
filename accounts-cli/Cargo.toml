@@ -8,8 +8,8 @@ maccas = { path = "../maccas" }
 foundation = { path = "../libs/foundation" }
 libmaccas = { path = "../libs/libmaccas-rs" }
 
-clap = { version = "4.4.4", features = ["derive"] }
-aws-sdk-dynamodb = "0.30.0"
+clap = { version = "4.4.6", features = ["derive"] }
+aws-sdk-dynamodb = "0.31.1"
 log = "0.4.20"
 tokio = { version = "1.32.0", features = ["macros"] }
 anyhow = "1.0.75"
