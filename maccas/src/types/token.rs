@@ -19,6 +19,14 @@ pub struct JwtClaim {
     pub username: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SharedTokenClaims {
+    pub iss: String,
+    pub aud: String,
+    pub iat: i64,
+    pub role: UserRole,
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaAuthorizerPayload {

@@ -12,12 +12,25 @@ use lambda_http::Error as LambdaError;
 use lambda_runtime::LambdaEvent;
 use maccas::constants::config::CONFIG_SECRET_KEY_ID;
 use maccas::logging;
-use maccas::return_jwt_unauthorized;
 use maccas::types::config::GeneralConfig;
 use maccas::types::token::JwtClaim;
 use maccas::types::token::LambdaAuthorizerPayload;
 use maccas::types::token::LambdaAuthorizerResponse;
 use sha2::Sha256;
+
+macro_rules! return_jwt_unauthorized {
+    ($res:expr) => {
+        match $res {
+            Ok(val) => val,
+            Err(e) => {
+                log::warn!("return unauthorized: {}", e);
+                return Ok(LambdaAuthorizerResponse {
+                    is_authorized: false,
+                });
+            }
+        }
+    };
+}
 
 #[tokio::main]
 async fn main() -> Result<(), LambdaError> {

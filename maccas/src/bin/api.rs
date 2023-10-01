@@ -7,8 +7,10 @@ use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
 use maccas::routes::admin::get_spending::get_all_user_spending;
 use maccas::routes::admin::lock_deal::lock_deal;
+use maccas::routes::admin::register::registration_token;
 use maccas::routes::admin::unlock_deal::unlock_deal;
 use maccas::routes::auth::login::login;
+use maccas::routes::auth::register::register;
 use maccas::routes::auth::token::get_token;
 use maccas::routes::catchers::default;
 use maccas::routes::code::get_code::get_code;
@@ -115,6 +117,8 @@ async fn main() -> Result<(), LambdaError> {
                 get_all_user_spending,
                 login,
                 get_token,
+                register,
+                registration_token,
             ],
         )
         .configure(config);
