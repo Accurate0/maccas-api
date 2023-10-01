@@ -31,3 +31,4 @@ config = "0.13.3"
 async-trait = "0.1.73"
 rust-crypto = "0.2.36"
 utoipa = "3.5.0"
+rocket = { version = "0.5.0-rc.3", features = ["json"] }

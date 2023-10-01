@@ -1554,6 +1554,7 @@ dependencies = [
  "reqwest-middleware",
  "reqwest-retry",
  "reqwest-tracing",
+ "rocket",
  "rust-crypto",
  "serde",
  "serde_json",

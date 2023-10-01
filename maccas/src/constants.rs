@@ -37,6 +37,8 @@ pub mod config {
     pub const MAXIMUM_CLEANUP_RETRY: i8 = 5;
     pub const MAX_PROXY_COUNT: i8 = 10;
     pub const TOKEN_VALID_TIME: i64 = 86400;
+    pub const TOKEN_SHARED_REGISTER_ISS: &str = "maccas-api-registration";
+    pub const TOKEN_ACCESS_ISS: &str = "Maccas API";
 }
 
 pub mod db {

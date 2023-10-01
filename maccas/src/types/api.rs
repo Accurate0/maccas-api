@@ -227,6 +227,13 @@ pub struct LoginRequest {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
+pub struct RegistrationRequest {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct TokenRequest {
     pub token: String,
     pub refresh_token: String,
