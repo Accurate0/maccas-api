@@ -39,6 +39,10 @@ pub async fn get_token(
     log::info!("refresh token for {username}");
 
     // the token is verified and the refresh token matches the last one created
+    log::info!(
+        "saved: {refresh_token} compared to provided: {}",
+        request.refresh_token
+    );
     if refresh_token == request.refresh_token {
         log::info!("token matches last created refresh and access, generating new ones");
         let user_id = ctx.database.get_user_id(username.to_owned()).await?;
