@@ -47,7 +47,7 @@ config = { version = "0.13.3", features = ["yaml"] }
 uuid = { version = "1.4.1", features = ["v4", "v7"] }
 http = "0.2.9"
 chrono = "0.4.31"
-reqwest = { version = "0.11.20", features = ["json", "gzip"] }
+reqwest = { version = "0.11.21", features = ["json", "gzip"] }
 reqwest-middleware = "0.2.3"
 reqwest-tracing = { version = "0.4.6" }
 tokio-stream = "0.1.14"
