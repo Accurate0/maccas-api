@@ -48,10 +48,6 @@
         "url": "/points/{accountId}"
     },
     {
-        "method": "GET",
-        "url": "/docs/openapi"
-    },
-    {
         "method": "POST",
         "url": "/admin/locked-deals/{dealId}"
     },
@@ -82,6 +78,11 @@
     {
         "method": "GET",
         "url": "/user/spending"
+    },
+    {
+        "method": "GET",
+        "url": "/docs/openapi",
+        "disableAuthorization": true
     },
     {
         "method": "GET",
