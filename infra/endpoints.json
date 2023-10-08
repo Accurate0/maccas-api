@@ -68,6 +68,11 @@
         "url": "/admin/user/spending"
     },
     {
+        "method": "POST",
+        "url": "/admin/auth/register",
+        "disableAuthorization": false
+    },
+    {
         "method": "GET",
         "url": "/user/config"
     },
@@ -92,6 +97,11 @@
     {
         "method": "POST",
         "url": "/auth/login",
+        "disableAuthorization": true
+    },
+    {
+        "method": "POST",
+        "url": "/auth/register",
         "disableAuthorization": true
     }
 ]
