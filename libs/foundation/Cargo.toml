@@ -6,11 +6,11 @@ publish = false
 
 [dependencies]
 aws-config = { version = "0.56.1" }
-aws-sdk-s3 = { version = "0.30.0" }
-aws-sdk-sqs = { version = "0.30.0" }
-aws-sdk-secretsmanager = { version = "0.30.0" }
+aws-sdk-s3 = { version = "0.33.0" }
+aws-sdk-sqs = { version = "0.33.0" }
+aws-sdk-secretsmanager = { version = "0.33.0" }
 http = { version = "0.2.9" }
-reqwest = { version = "0.11.20" }
+reqwest = { version = "0.11.22" }
 reqwest-retry = { version = "0.3.0" }
 reqwest-middleware = { version = "0.2.3" }
 reqwest-tracing = { version = "0.4.6" }
@@ -26,9 +26,9 @@ uuid = { version = "1.4.1", features = ["v4"] }
 anyhow = "1.0.75"
 log = "0.4.20"
 fern = "0.6.2"
-serde = "1.0.188"
+serde = "1.0.189"
 config = "0.13.3"
 async-trait = "0.1.73"
 rust-crypto = "0.2.36"
-utoipa = "3.5.0"
+utoipa = "4.0.0"
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
