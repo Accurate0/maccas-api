@@ -81,7 +81,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
     // get all
     imap_session.select("INBOX")?;
-    let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
+    let all_unseen_emails = imap_session.uid_search("(UNSEEN) SINCE 12-Oct-2023")?;
     log::info!("unseen messages: {}", all_unseen_emails.len());
     for message_uid in all_unseen_emails.iter() {
         let messages = imap_session.uid_fetch(message_uid.to_string(), "RFC822")?;
@@ -97,6 +97,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
         let headers = parsed_email.get_headers();
         let to = headers.get_first_header("To");
+        log::info!("email from: {:#?}", headers.get_first_header("Date"));
 
         log::info!("ac: {:?}, to: {:?}", ac, to);
         if ac.is_some() && to.is_some() {
@@ -123,7 +124,12 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 .put_customer_activation(&request, &config.mcdonalds.sensor_data)
                 .await
             {
-                Ok(r) => log::info!("response: {} ({})", r.status, r.body.status.code),
+                Ok(r) => log::info!(
+                    "response: {} ({}) {:#?}",
+                    r.status,
+                    r.body.status.code,
+                    r.body
+                ),
                 Err(e) => {
                     log::error!("status: {:?}, {:?}", e.status(), e.source());
                 }
