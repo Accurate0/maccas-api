@@ -21,7 +21,7 @@ use rand::{
     SeedableRng,
 };
 use regex::Regex;
-use std::time::Duration;
+use std::{error::Error, time::Duration};
 use titlecase::titlecase;
 
 #[derive(Parser, Debug)]
@@ -48,6 +48,12 @@ enum Commands {
         count: u32,
     },
     ActivateAndLogin,
+    ActivateAccount {
+        #[arg(short, long)]
+        email: String,
+        #[arg(short, long)]
+        activation_code: String,
+    },
 }
 
 // TODO: upgrade cli to use mailparse too
@@ -376,6 +382,50 @@ async fn main() -> Result<(), anyhow::Error> {
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             }
+        }
+        Commands::ActivateAccount {
+            email,
+            activation_code,
+        } => {
+            let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
+            let db = DynamoDatabase::new(
+                dynamodb_client,
+                &config.database.tables,
+                &config.database.indexes,
+            );
+            let device_id = db.get_device_id_for(&email).await?;
+            log::info!("existing device id: {:?}", device_id);
+
+            let device_id = device_id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
+
+            log::info!("code: {:?}", activation_code);
+            log::info!("email to: {:?}", email);
+            let request = ActivationRequest {
+                activation_code,
+                credentials: Credentials {
+                    login_username: email.to_owned(),
+                    type_field: "device".to_string(),
+                    password: None,
+                    send_magic_link: None,
+                },
+                device_id: device_id.to_string(),
+            };
+            match client
+                .put_customer_activation(&request, &config.mcdonalds.sensor_data)
+                .await
+            {
+                Ok(r) => log::info!(
+                    "response: {} ({}) {:#?}",
+                    r.status,
+                    r.body.status.code,
+                    r.body
+                ),
+                Err(e) => {
+                    log::error!("status: {:?}, {:?}", e.status(), e.source());
+                }
+            };
+
+            db.set_device_id_for(&email, &device_id).await.ok();
         }
     }
 
