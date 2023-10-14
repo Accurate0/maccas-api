@@ -50,6 +50,8 @@ enum Commands {
     ActivateAndLogin,
     ActivateAccount {
         #[arg(short, long)]
+        account_name: Option<String>,
+        #[arg(short, long)]
         email: String,
         #[arg(short, long)]
         activation_code: String,
@@ -384,16 +386,18 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         }
         Commands::ActivateAccount {
+            account_name,
             email,
             activation_code,
         } => {
+            let account_name = account_name.unwrap_or_else(|| email.clone());
             let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
             let db = DynamoDatabase::new(
                 dynamodb_client,
                 &config.database.tables,
                 &config.database.indexes,
             );
-            let device_id = db.get_device_id_for(&email).await?;
+            let device_id = db.get_device_id_for(&account_name).await?;
             log::info!("existing device id: {:?}", device_id);
 
             let device_id = device_id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
@@ -425,7 +429,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             };
 
-            db.set_device_id_for(&email, &device_id).await.ok();
+            db.set_device_id_for(&account_name, &device_id).await.ok();
         }
     }
 
