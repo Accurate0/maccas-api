@@ -60,7 +60,7 @@ use utoipa::OpenApi;
         login,
         get_token,
         register,
-        registration_token
+        registration_token,
     ),
     components(
         responses(),

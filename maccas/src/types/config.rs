@@ -36,8 +36,6 @@ pub struct DiscordConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct JwtConfig {
-    pub validate: bool,
-    pub jwks_url: String,
     pub application_id: String,
 }
 

@@ -200,11 +200,7 @@ pub async fn add_deal(
         };
 
         // if we get here with an error, it must be 409 because we return on other errors
-        let resp = if resp.is_err() {
-            api_client
-                .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
-                .await?
-        } else {
+        let resp = if let Ok(resp) = resp {
             // queue this to be removed in 15 minutes
             if ctx.config.cleanup.enabled {
                 foundation::aws::sqs::send_to_queue(
@@ -219,8 +215,11 @@ pub async fn add_deal(
                 .await?;
             }
 
-            // no error so we can unwrap here
-            resp.unwrap()
+            resp
+        } else {
+            api_client
+                .get_offers_dealstack(mc_donalds::default::OFFSET, &store)
+                .await?
         };
 
         let resp = OfferResponse::from(resp.body);

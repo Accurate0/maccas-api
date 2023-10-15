@@ -100,46 +100,48 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         log::info!("email from: {:#?}", headers.get_first_header("Date"));
 
         log::info!("ac: {:?}, to: {:?}", ac, to);
-        if ac.is_some() && to.is_some() {
-            let to = to.unwrap().get_value();
-            let id = db.get_device_id_for(&to).await?;
-            log::info!("existing device id: {:?}", id);
+        match (ac, to) {
+            (Some(ac), Some(to)) => {
+                let to = to.get_value();
+                let id = db.get_device_id_for(&to).await?;
+                log::info!("existing device id: {:?}", id);
 
-            let device_id = id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
+                let device_id = id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
 
-            let ac = ac.unwrap().as_str();
-            log::info!("code: {:?}", ac);
-            log::info!("email to: {:?}", to.to_string());
-            let request = ActivationRequest {
-                activation_code: ac.to_string(),
-                credentials: Credentials {
-                    login_username: to.to_owned(),
-                    type_field: "device".to_string(),
-                    password: None,
-                    send_magic_link: None,
-                },
-                device_id: device_id.to_string(),
-            };
-            match client
-                .put_customer_activation(&request, &config.mcdonalds.sensor_data)
-                .await
-            {
-                Ok(r) => log::info!(
-                    "response: {} ({}) {:#?}",
-                    r.status,
-                    r.body.status.code,
-                    r.body
-                ),
-                Err(e) => {
-                    log::error!("status: {:?}, {:?}", e.status(), e.source());
-                }
-            };
+                let ac = ac.as_str();
+                log::info!("code: {:?}", ac);
+                log::info!("email to: {:?}", to.to_string());
+                let request = ActivationRequest {
+                    activation_code: ac.to_string(),
+                    credentials: Credentials {
+                        login_username: to.to_owned(),
+                        type_field: "device".to_string(),
+                        password: None,
+                        send_magic_link: None,
+                    },
+                    device_id: device_id.to_string(),
+                };
+                match client
+                    .put_customer_activation(&request, &config.mcdonalds.sensor_data)
+                    .await
+                {
+                    Ok(r) => log::info!(
+                        "response: {} ({}) {:#?}",
+                        r.status,
+                        r.body.status.code,
+                        r.body
+                    ),
+                    Err(e) => {
+                        log::error!("status: {:?}, {:?}", e.status(), e.source());
+                    }
+                };
 
-            db.set_device_id_for(&to, &device_id).await.ok();
+                db.set_device_id_for(&to, &device_id).await.ok();
+                // there is a rate limit : )
+                sleep(Duration::from_secs(5)).await;
+            }
+            _ => log::info!("skipped since no code found"),
         }
-
-        // there is a rate limit : )
-        sleep(Duration::from_secs(5)).await;
     }
 
     imap_session.logout()?;
