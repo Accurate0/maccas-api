@@ -33,7 +33,6 @@ use maccas::routes::user::spending::get_user_spending;
 use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
 use rocket::Config;
-use std::time::Duration;
 
 #[cfg(debug_assertions)]
 use {
@@ -62,19 +61,6 @@ async fn main() -> Result<(), LambdaError> {
     );
 
     let rocket = rocket::build();
-    let rocket = if config.api.jwt.validate {
-        let authority = foundation::jwt::create_authority_with_defaults(
-            config.api.jwt.jwks_url.clone(),
-            config.api.jwt.application_id.clone(),
-        )
-        .await?;
-        // not sure if needed
-        authority.spawn_refresh(Duration::from_secs(60));
-        rocket.manage(authority)
-    } else {
-        rocket
-    };
-
     let context = routes::Context {
         secrets_client,
         sqs_client,

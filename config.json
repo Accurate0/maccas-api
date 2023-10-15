@@ -88,8 +88,6 @@
       "username": "Maccas"
     },
     "jwt": {
-      "validate": false,
-      "jwksUrl": null,
       "applicationId": "f285a3b9-c589-4fae-971e-edd635df6b96"
     },
     "graph": {
