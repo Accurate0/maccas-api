@@ -9,6 +9,6 @@ use rocket::http::Status;
     tag = "health",
 )]
 #[get("/health/status")]
-pub async fn get_status() -> Result<Status, ApiError> {
+pub fn get_status() -> Result<Status, ApiError> {
     Ok(Status::NoContent)
 }
