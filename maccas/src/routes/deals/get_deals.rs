@@ -44,7 +44,7 @@ pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffe
         };
     }
 
-    let mut offer_list: Vec<GetDealsOffer> = offer_list
+    let offer_list: Vec<GetDealsOffer> = offer_list
         .into_iter()
         .unique_by(|offer| offer.offer_proposition_id)
         .map(|original_offer| {
@@ -54,8 +54,6 @@ pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffe
             offer
         })
         .collect();
-
-    offer_list.sort_by_key(|offer| offer.name.to_lowercase());
 
     Ok(Json(offer_list))
 }
