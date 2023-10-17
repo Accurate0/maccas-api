@@ -401,12 +401,6 @@ impl Database for DynamoDatabase {
             .client
             .scan()
             .table_name(&self.account_cache_table_name)
-            .filter_expression("#name = :name")
-            .expression_attribute_names("#name", "account_name")
-            .expression_attribute_values(
-                ":name",
-                AttributeValue::S("stork.starling@cahtdawg.xyz".to_string()),
-            )
             .into_paginator()
             .items()
             .send()
