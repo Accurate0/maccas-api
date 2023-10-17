@@ -18,7 +18,7 @@ use sha2::Sha256;
 #[utoipa::path(
     responses(
         (status = 200, description = "Register a new account using a shared token", body = TokenResponse),
-        (status = 401, description = "Account doesn't exist"),
+        (status = 409, description = "Account with this username already exists"),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "auth",
@@ -66,6 +66,10 @@ pub async fn register(
             password_hash.to_string(),
             salt.to_vec(),
         )
+        .await?;
+
+    ctx.database
+        .set_user_role(request.username.clone(), role.clone())
         .await?;
 
     let new_jwt = generate_signed_jwt(
