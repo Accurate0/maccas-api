@@ -145,4 +145,8 @@ pub trait Database {
     async fn get_user_id(&self, username: String) -> Result<String, anyhow::Error>;
     async fn get_user_role(&self, username: String) -> Result<UserRole, anyhow::Error>;
     async fn get_user_tokens(&self, username: String) -> Result<(String, String), anyhow::Error>;
+    async fn find_all_by_proposition_id(
+        &self,
+        proposition_id: &str,
+    ) -> Result<Vec<String>, anyhow::Error>;
 }

@@ -3,8 +3,9 @@ use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, ACTOR, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, GROUP, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER, OFFER_ID,
-    OFFER_LIST, OFFER_NAME, OPERATION_ID, PASSWORD_HASH, POINT_INFO, REFRESH_TOKEN, REGION, ROLE,
-    SALT, TIMESTAMP, TTL, USERNAME, USER_CONFIG, USER_ID, USER_NAME, VALUE,
+    OFFER_LIST, OFFER_NAME, OFFER_PROPOSITION_ID, OPERATION_ID, PASSWORD_HASH, POINT_INFO,
+    REFRESH_TOKEN, REGION, ROLE, SALT, TIMESTAMP, TTL, USERNAME, USER_CONFIG, USER_ID, USER_NAME,
+    VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
@@ -400,6 +401,12 @@ impl Database for DynamoDatabase {
             .client
             .scan()
             .table_name(&self.account_cache_table_name)
+            .filter_expression("#name = :name")
+            .expression_attribute_names("#name", "account_name")
+            .expression_attribute_values(
+                ":name",
+                AttributeValue::S("stork.starling@cahtdawg.xyz".to_string()),
+            )
             .into_paginator()
             .items()
             .send()
@@ -794,6 +801,58 @@ impl Database for DynamoDatabase {
                         .await?;
                 }
 
+                // v3 cache structure
+                // find all old entries
+                log::info!("finding entries to remove");
+                let to_delete = self
+                    .client
+                    .query()
+                    .table_name(&self.current_deals)
+                    .index_name(&self.current_deals_account_name)
+                    .key_condition_expression("#name = :name")
+                    .expression_attribute_names("#name", ACCOUNT_NAME)
+                    .expression_attribute_values(
+                        ":name",
+                        AttributeValue::S(account.account_name.to_string()),
+                    )
+                    .send()
+                    .await?;
+
+                // add new ones immediately
+                for item in &resp {
+                    self.client
+                        .put_item()
+                        .table_name(&self.current_deals)
+                        .item(DEAL_UUID, AttributeValue::S(item.deal_uuid.clone()))
+                        .item(
+                            ACCOUNT_NAME,
+                            AttributeValue::S(account.account_name.to_owned()),
+                        )
+                        .item(LAST_REFRESH, AttributeValue::S(now.clone()))
+                        .item(
+                            OFFER_PROPOSITION_ID,
+                            AttributeValue::S(item.offer_proposition_id.to_string()),
+                        )
+                        .send()
+                        .await?;
+                }
+
+                // remove old ones
+                if let Some(items) = to_delete.items() {
+                    log::info!("removing {} entries", items.len());
+                    for item in items {
+                        let id = item.get(DEAL_UUID);
+                        if let Some(id) = id {
+                            self.client
+                                .delete_item()
+                                .table_name(&self.current_deals)
+                                .key(DEAL_UUID, id.clone())
+                                .send()
+                                .await?;
+                        }
+                    }
+                }
+
                 self.client
                     .put_item()
                     .table_name(&self.account_cache_table_name)
@@ -815,6 +874,29 @@ impl Database for DynamoDatabase {
             }
             None => bail!("could not get offers for {}", account),
         }
+    }
+
+    async fn find_all_by_proposition_id(
+        &self,
+        proposition_id: &str,
+    ) -> Result<Vec<String>, anyhow::Error> {
+        let resp = self
+            .client
+            .query()
+            .table_name(&self.current_deals)
+            .index_name(&self.current_deals_offer_proposition_id)
+            .key_condition_expression("#id = :id")
+            .expression_attribute_names("#id", OFFER_PROPOSITION_ID)
+            .expression_attribute_values(":id", AttributeValue::S(proposition_id.to_string()))
+            .send()
+            .await?;
+
+        Ok(resp
+            .items()
+            .unwrap_or_default()
+            .iter()
+            .map(|o| o.get(DEAL_UUID).unwrap().as_s().unwrap().to_owned())
+            .collect_vec())
     }
 
     async fn get_offer_by_id(
@@ -1211,7 +1293,7 @@ impl Database for DynamoDatabase {
             .scan()
             .table_name(&self.locked_offers_table_name)
             .filter_expression("#ttl_key >= :time")
-            .expression_attribute_names("#ttl_key", "ttl")
+            .expression_attribute_names("#ttl_key", TTL)
             .expression_attribute_values(":time", AttributeValue::N(utc.timestamp().to_string()))
             .send()
             .await?;

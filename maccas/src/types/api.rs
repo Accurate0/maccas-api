@@ -12,7 +12,9 @@ use utoipa::ToSchema;
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct GetDealsOffer {
+    #[deprecated]
     pub deal_uuid: String,
+    pub offer_proposition_id: String,
     pub count: u32,
     pub valid_from_utc: String,
     pub valid_to_utc: String,
@@ -30,6 +32,7 @@ impl From<OfferDatabase> for GetDealsOffer {
 
         Self {
             deal_uuid: offer.deal_uuid,
+            offer_proposition_id: offer.offer_proposition_id.to_string(),
             count: 1,
             valid_from_utc: offer.valid_from_utc,
             valid_to_utc: offer.valid_to_utc,
@@ -106,6 +109,7 @@ pub struct LastRefreshInformation {
 pub struct OfferResponse {
     pub random_code: String,
     pub message: String,
+    pub deal_uuid: Option<String>,
 }
 
 impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse {
@@ -119,6 +123,7 @@ impl From<libmaccas::types::response::OfferDealStackResponse> for OfferResponse 
                 .status
                 .message
                 .unwrap_or_else(|| "No message".to_string()),
+            deal_uuid: None,
         }
     }
 }

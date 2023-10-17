@@ -16,12 +16,15 @@ pub struct Tables {
     pub user_accounts: String,
     pub users: String,
     pub user_tokens: String,
+    pub current_deals: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Indexes {
     pub audit_user_id_index: String,
+    pub current_deals_offer_proposition_id: String,
+    pub current_deals_account_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

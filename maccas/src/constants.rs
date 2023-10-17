@@ -54,6 +54,7 @@ pub mod db {
     pub const POINT_INFO: &str = "point_info";
     pub const OFFER_LIST: &str = "offer_list";
     pub const OFFER: &str = "offer";
+    pub const OFFER_PROPOSITION_ID: &str = "offer_proposition_id";
     pub const DATA_TYPE: &str = "data_type";
     pub const LOCKED_DEALS: &str = "locked_deals";
     pub const DEAL_UUID: &str = "deal_uuid";
