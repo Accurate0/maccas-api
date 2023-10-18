@@ -82,29 +82,12 @@ jobs:
           name: ${{ matrix.task }}
           path: ./bootstrap.zip
 
-  deployment-gate:
-    environment: production
-    needs: artifacts
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'started'
-
-  deploy:
+  deploy-api:
     permissions:
       id-token: write
-    needs: deployment-gate
+    needs: artifacts
+    environment: production
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        task:
-          - cleanup
-          - images
-          - api
-          - refresh
-          - refresh-failure
-          - accounts
-          - jwt
 
     steps:
       - name: configure oicd aws credentials
@@ -115,23 +98,148 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.task }}
+          name: api
 
-      - name: deploy ${{ matrix.task }}
-        run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-2
+      - name: deploy api
+        run: aws lambda update-function-code --function-name MaccasApi-api --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
-      - name: deploy ${{ matrix.task }} (ap-southeast-1)
-        if: matrix.task == 'refresh'
-        run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-1
+  deploy-cleanup:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
 
-      - name: deploy ${{ matrix.task }} (ap-southeast-4)
-        if: matrix.task == 'refresh'
-        run: aws lambda update-function-code --function-name MaccasApi-${{ matrix.task }} --zip-file fileb://bootstrap.zip --region ap-southeast-4
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: cleanup
+
+      - name: deploy cleanup
+        run: aws lambda update-function-code --function-name MaccasApi-cleanup --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+  deploy-images:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: images
+
+      - name: deploy images
+        run: aws lambda update-function-code --function-name MaccasApi-images --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+  deploy-refresh:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: refresh
+
+      - name: deploy refresh
+        run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+      - name: deploy refresh (ap-southeast-1)
+        run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ap-southeast-1
+
+      - name: deploy refresh (ap-southeast-4)
+        run: aws lambda update-function-code --function-name MaccasApi-refresh --zip-file fileb://bootstrap.zip --region ap-southeast-4
+
+  deploy-refresh-failure:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: refresh-failure
+
+      - name: deploy refresh-failure
+        run: aws lambda update-function-code --function-name MaccasApi-refresh-failure --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+  deploy-accounts:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: accounts
+
+      - name: deploy accounts
+        run: aws lambda update-function-code --function-name MaccasApi-accounts --zip-file fileb://bootstrap.zip --region ap-southeast-2
+
+  deploy-jwt:
+    permissions:
+      id-token: write
+    needs: artifacts
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: configure oicd aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: jwt
+
+      - name: deploy jwt
+        run: aws lambda update-function-code --function-name MaccasApi-jwt --zip-file fileb://bootstrap.zip --region ap-southeast-2
 
   upload-config:
     permissions:
       id-token: write
-    needs: deployment-gate
+    needs: artifacts
+    environment: production
     runs-on: ubuntu-latest
     name: upload config
 
