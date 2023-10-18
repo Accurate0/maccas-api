@@ -7,7 +7,7 @@ use rocket::State;
 
 #[utoipa::path(
     responses(
-        (status = 200, description = "Unlocked deal", body = String),
+        (status = 200, description = "Token that can be used for registration", body = String),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
