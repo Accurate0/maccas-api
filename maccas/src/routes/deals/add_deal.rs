@@ -22,7 +22,7 @@ use rocket::{serde::json::Json, State};
         (status = 200, description = "Added a deal", body = OfferResponse),
         (status = 400, description = "Error on McDonald's side"),
         (status = 409, description = "This deal is temporarily unavailable"),
-        (status = 404, description = "Deal not found"),
+        (status = 404, description = "No deals found of this type"),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "deals",
