@@ -12,6 +12,9 @@ use crate::{proxy, routes};
 use anyhow::Context;
 use chrono::Duration;
 use itertools::Itertools;
+use rand::rngs::StdRng;
+use rand::seq::SliceRandom;
+use rand::SeedableRng;
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -31,19 +34,21 @@ pub async fn add_deal(
     store: String,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
+    let mut rng = StdRng::from_entropy();
     let locked_deals = ctx.database.get_all_locked_deals().await?;
 
     let all_deals = ctx
         .database
         .find_all_by_proposition_id(proposition_id)
         .await?;
-    let deals: Vec<_> = all_deals
+    let mut deals: Vec<_> = all_deals
         .iter()
         .filter(|offer| !locked_deals.contains(offer))
         .collect();
 
     log::info!("found {} matching deals", deals.len());
 
+    deals.shuffle(&mut rng);
     match deals.first() {
         Some(deal_id) => {
             let (account, offer) = ctx.database.get_offer_by_id(deal_id).await?;
