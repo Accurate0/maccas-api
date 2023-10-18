@@ -1,5 +1,5 @@
 use super::types::{
-    AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
+    AuditActionType, OfferDatabase, PointsDatabase, User, UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::types::{audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache};
 use async_trait::async_trait;
@@ -149,4 +149,5 @@ pub trait Database {
         &self,
         proposition_id: &str,
     ) -> Result<Vec<String>, anyhow::Error>;
+    async fn get_all_users(&self) -> Result<Vec<User>, anyhow::Error>;
 }

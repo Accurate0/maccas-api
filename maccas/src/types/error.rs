@@ -1,6 +1,5 @@
 use crate::constants::mc_donalds;
 use aws_sdk_dynamodb::error::SdkError;
-use graph_rs_sdk::GraphFailure;
 use http::StatusCode;
 use libmaccas::ClientError;
 use rocket::response::Responder;
@@ -153,13 +152,6 @@ impl From<&ClientError> for ApiError {
 impl From<places::types::ClientError> for ApiError {
     fn from(e: places::types::ClientError) -> Self {
         log::error!("places: UNHANDLED ERROR: {}", e);
-        ApiError::UnhandledError
-    }
-}
-
-impl From<GraphFailure> for ApiError {
-    fn from(e: GraphFailure) -> Self {
-        log::error!("graph: UNHANDLED ERROR: {}", e);
         ApiError::UnhandledError
     }
 }

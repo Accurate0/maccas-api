@@ -1,13 +1,11 @@
 use crate::constants::config::DEFAULT_LOCK_TTL_HOURS;
 use crate::constants::mc_donalds;
-use crate::constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE};
 use crate::database::types::AuditActionType;
 use crate::guards::required_authorization::RequiredAuthorizationHeader;
 use crate::types::api::OfferResponse;
 use crate::types::error::ApiError;
 use crate::types::images::OfferImageBaseName;
 use crate::types::sqs::{CleanupMessage, ImagesRefreshMessage};
-use crate::webhook::execute::execute_discord_webhooks;
 use crate::{proxy, routes};
 use anyhow::Context;
 use chrono::Duration;
@@ -183,33 +181,6 @@ pub async fn add_deal(
             let user_id = if resp.is_ok() {
                 let user_name = &auth.claims.username;
                 let user_id = &auth.claims.oid;
-
-                if !auth.claims.role.is_admin() && ctx.config.api.discord_deal_use.enabled {
-                    let restaurant_info = api_client
-                        .get_restaurant(&store, FILTER, STORE_UNIQUE_ID_TYPE)
-                        .await;
-
-                    let store_name = match restaurant_info {
-                        Ok(restaurant_info) => {
-                            let response = restaurant_info.body.response;
-                            match response {
-                                Some(response) => response.restaurant.name,
-                                None => "Unknown/Invalid Name".to_owned(),
-                            }
-                        }
-                        _ => "Error getting store name".to_string(),
-                    };
-
-                    let http_client = foundation::http::get_default_http_client();
-                    execute_discord_webhooks(
-                        &http_client,
-                        &ctx.config,
-                        user_name,
-                        &offer,
-                        &store_name,
-                    )
-                    .await;
-                }
 
                 ctx.database
                     .add_to_audit(

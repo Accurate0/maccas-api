@@ -86,7 +86,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-api
     runs-on: ubuntu-latest
 
     steps:
@@ -107,7 +107,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-cleanup
     runs-on: ubuntu-latest
 
     steps:
@@ -128,7 +128,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-images
     runs-on: ubuntu-latest
 
     steps:
@@ -149,7 +149,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-refresh
     runs-on: ubuntu-latest
 
     steps:
@@ -176,7 +176,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-refresh-failure
     runs-on: ubuntu-latest
 
     steps:
@@ -197,7 +197,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-accounts
     runs-on: ubuntu-latest
 
     steps:
@@ -218,7 +218,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-jwt
     runs-on: ubuntu-latest
 
     steps:
@@ -239,7 +239,7 @@ jobs:
     permissions:
       id-token: write
     needs: artifacts
-    environment: production
+    environment: production-config
     runs-on: ubuntu-latest
     name: upload config
 
