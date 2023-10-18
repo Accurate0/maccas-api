@@ -15,10 +15,6 @@ pub mod mc_donalds {
         "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
 }
 
-pub mod graph {
-    pub const DEFAULT_CLIENT_SCOPE: &str = "https://graph.microsoft.com/.default";
-}
-
 pub mod config {
     // TODO: config file
     #[cfg(debug_assertions)]
@@ -28,7 +24,6 @@ pub mod config {
     pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
     pub const CONFIG_BASE_URL: &str = "https://api.maccas.one/v1";
     pub const CONFIG_PLACES_API_KEY_ID: &str = "MaccasApi-PlacesApiKey";
-    pub const CONFIG_AD_CLIENT_SECRET_KEY_ID: &str = "MaccasApi-AdClientSecret";
     pub const CONFIG_SECRET_KEY_ID: &str = "MaccasApi-SecretKey";
     pub const IMAGE_CDN: &str = "https://i.maccas.one";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;

@@ -148,3 +148,9 @@ impl Display for AuditActionType {
         write!(f, "{:?}", self)
     }
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct User {
+    pub id: String,
+    pub username: String,
+}

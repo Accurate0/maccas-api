@@ -54,14 +54,6 @@
       "ap-southeast-2": 4,
       "ap-southeast-4": 3
     },
-    "discordError": {
-      "enabled": false,
-      "webhooks": [
-        null
-      ],
-      "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
-      "username": "Maccas Service"
-    },
     "clearDealStacks": false,
     "enableFailureHandler": true,
     "failureQueueName": "maccas-refresh-failure-queue"
@@ -82,19 +74,8 @@
     "queueName": "maccas-accounts-queue"
   },
   "api": {
-    "discordDealUse": {
-      "enabled": false,
-      "webhooks": [
-        null
-      ],
-      "avatarUrl": "https://i.maccas.one/webhook/avatar.webp",
-      "username": "Maccas"
-    },
     "jwt": {
       "applicationId": "f285a3b9-c589-4fae-971e-edd635df6b96"
-    },
-    "graph": {
-      "tenantId": "b1f3a0a4-f4e2-4300-b952-88f3dc55ee9b"
     }
   }
 }

@@ -29,23 +29,8 @@ pub struct Indexes {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct DiscordConfig {
-    pub enabled: bool,
-    pub webhooks: Vec<String>,
-    pub avatar_url: String,
-    pub username: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct JwtConfig {
     pub application_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct GraphConfig {
-    pub tenant_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,7 +73,6 @@ pub struct ProxyConfig {
 #[serde(rename_all = "camelCase")]
 pub struct RefreshConfig {
     pub total_groups: HashMap<String, i8>,
-    pub discord_error: DiscordConfig,
     pub enabled: bool,
     pub clear_deal_stacks: bool,
     pub enable_failure_handler: bool,
@@ -105,9 +89,7 @@ pub struct CleanupConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
-    pub discord_deal_use: DiscordConfig,
     pub jwt: JwtConfig,
-    pub graph: GraphConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

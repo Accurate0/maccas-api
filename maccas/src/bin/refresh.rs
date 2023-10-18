@@ -1,13 +1,10 @@
 use anyhow::Context;
 use aws_sdk_dynamodb::Client;
-use chrono::Utc;
 use foundation::aws;
 use foundation::constants::{AWS_REGION, DEFAULT_AWS_REGION};
-use foundation::types::discord::DiscordWebhookMessage;
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::constants::mc_donalds;
 use maccas::database::{Database, DynamoDatabase};
 use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
@@ -16,8 +13,6 @@ use maccas::types::images::OfferImageBaseName;
 use maccas::types::sqs::{ImagesRefreshMessage, RefreshFailureMessage};
 use serde_json::Value;
 use std::time::Instant;
-use twilight_model::util::Timestamp;
-use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -48,17 +43,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         &config.database.tables,
         &config.database.indexes,
     ));
-
-    let mut has_error = false;
-    let embed = EmbedBuilder::new()
-        .color(mc_donalds::RED)
-        .description("**Error**")
-        .field(EmbedFieldBuilder::new("Region", &region))
-        .timestamp(
-            Timestamp::from_secs(Utc::now().timestamp())
-                .context("must have valid time")
-                .unwrap(),
-        );
 
     let group = database
         .increment_refresh_tracking(&region, config.refresh.total_groups[&region])
@@ -99,7 +83,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     }
 
     if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
-        has_error = true;
         log::error!("login failed: {:#?}", login_failed_accounts);
         log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
     }
@@ -156,39 +139,6 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     // setup the last run time
     if region == DEFAULT_AWS_REGION {
         database.set_last_refresh().await?;
-    }
-
-    if has_error && config.refresh.discord_error.enabled {
-        let embed = embed
-            .field(EmbedFieldBuilder::new(
-                "Login Failed",
-                login_failed_accounts.len().to_string(),
-            ))
-            .field(EmbedFieldBuilder::new(
-                "Refresh Failed",
-                refresh_cache.failed_accounts.len().to_string(),
-            ));
-
-        let mut message = DiscordWebhookMessage::new(
-            config.refresh.discord_error.username.clone(),
-            config.refresh.discord_error.avatar_url.clone(),
-        );
-
-        match embed.validate() {
-            Ok(embed) => {
-                let http_client = foundation::http::get_default_http_client();
-                message.add_embed(embed.build());
-
-                for webhook_url in &config.refresh.discord_error.webhooks {
-                    let resp = message.send(&http_client, webhook_url).await;
-                    match resp {
-                        Ok(_) => {}
-                        Err(e) => log::error!("{:?}", e),
-                    }
-                }
-            }
-            Err(e) => log::error!("{:?}", e),
-        }
     }
 
     log::info!(

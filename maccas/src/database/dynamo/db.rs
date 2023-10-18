@@ -10,7 +10,7 @@ use crate::constants::db::{
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
 use crate::database::types::{
-    AuditActionType, OfferDatabase, PointsDatabase, UserAccountDatabase, UserOptionsDatabase,
+    AuditActionType, OfferDatabase, PointsDatabase, User, UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::extensions::ApiClientExtensions;
 use crate::proxy;
@@ -155,6 +155,39 @@ impl Database for DynamoDatabase {
             .await?
             .item
             .is_some())
+    }
+
+    async fn get_all_users(&self) -> Result<Vec<User>, anyhow::Error> {
+        let users = self
+            .client
+            .scan()
+            .table_name(&self.users)
+            .send()
+            .await?
+            .items()
+            .unwrap_or_default()
+            .iter()
+            .map(|i| -> Result<User, anyhow::Error> {
+                Ok(User {
+                    id: i
+                        .get(USER_ID)
+                        .context("missing user id")?
+                        .as_s()
+                        .map_err(|e| anyhow::Error::msg(format!("{:#?}", e)))?
+                        .clone(),
+                    username: i
+                        .get(USERNAME)
+                        .context("missing user name")?
+                        .as_s()
+                        .map_err(|e| anyhow::Error::msg(format!("{:#?}", e)))?
+                        .clone(),
+                })
+            })
+            .filter(|r| r.is_ok())
+            .map(|r| r.unwrap())
+            .collect();
+
+        Ok(users)
     }
 
     async fn create_user(

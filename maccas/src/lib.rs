@@ -10,7 +10,6 @@ pub mod rng;
 pub mod routes;
 pub mod shared;
 pub mod types;
-pub mod webhook;
 
 #[macro_use]
 extern crate rocket;
