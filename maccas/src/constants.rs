@@ -22,6 +22,8 @@ pub mod config {
     #[cfg(not(debug_assertions))]
     pub const BASE_FILE: &str = "base-config.json";
     pub const CONFIG_BUCKET_NAME: &str = "maccas-application-config";
+    pub const CONFIG_BASE_URL: &str = "https://api.dev.maccas.one/v1";
+    #[cfg(not(debug_assertions))]
     pub const CONFIG_BASE_URL: &str = "https://api.maccas.one/v1";
     pub const CONFIG_PLACES_API_KEY_ID: &str = "MaccasApi-PlacesApiKey";
     pub const CONFIG_SECRET_KEY_ID: &str = "MaccasApi-SecretKey";
