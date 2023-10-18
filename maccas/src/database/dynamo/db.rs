@@ -183,8 +183,7 @@ impl Database for DynamoDatabase {
                         .clone(),
                 })
             })
-            .filter(|r| r.is_ok())
-            .map(|r| r.unwrap())
+            .filter_map(|r| r.ok())
             .collect();
 
         Ok(users)
