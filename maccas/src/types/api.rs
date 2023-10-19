@@ -12,6 +12,7 @@ use utoipa::ToSchema;
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct GetDealsOffer {
+    pub deal_uuid: String,
     pub offer_proposition_id: String,
     pub count: u32,
     pub valid_from_utc: String,
@@ -29,6 +30,7 @@ impl From<OfferDatabase> for GetDealsOffer {
         let image_url = format!("{}/{}", IMAGE_CDN, offer.image_base_name);
 
         Self {
+            deal_uuid: offer.deal_uuid,
             offer_proposition_id: offer.offer_proposition_id.to_string(),
             count: 1,
             valid_from_utc: offer.valid_from_utc,
