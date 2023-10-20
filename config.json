@@ -52,7 +52,7 @@
     "totalGroups": {
       "ap-southeast-1": 4,
       "ap-southeast-2": 4,
-      "ap-southeast-4": 3
+      "ap-southeast-4": 4
     },
     "clearDealStacks": true,
     "enableFailureHandler": true,
