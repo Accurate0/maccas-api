@@ -54,7 +54,7 @@
       "ap-southeast-2": 4,
       "ap-southeast-4": 3
     },
-    "clearDealStacks": false,
+    "clearDealStacks": true,
     "enableFailureHandler": true,
     "failureQueueName": "maccas-refresh-failure-queue"
   },
@@ -64,7 +64,7 @@
     "password": null
   },
   "accounts": {
-    "enabled": false,
+    "enabled": true,
     "email": {
       "address": null,
       "password": null,
