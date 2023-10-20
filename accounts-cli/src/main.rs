@@ -18,6 +18,7 @@ use mailparse::MailHeaderMap;
 use rand::{
     distributions::{Alphanumeric, DistString},
     rngs::StdRng,
+    seq::SliceRandom,
     SeedableRng,
 };
 use regex::Regex;
@@ -100,13 +101,25 @@ async fn main() -> Result<(), anyhow::Error> {
             group,
             region,
         } => {
+            let first_name_list = include_str!("../files/first_names.txt")
+                .split('\n')
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<&str>>();
+
+            let last_name_list = include_str!("../files/last_names.txt")
+                .split('\n')
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<&str>>();
+
             for _ in 0..count {
-                let firstname = petname::Petnames::default().generate(&mut rng, 1, "");
-                let lastname = petname::Petnames::default().generate(&mut rng, 1, "");
+                let first_name = first_name_list.choose(&mut rng).unwrap();
+                let last_name = last_name_list.choose(&mut rng).unwrap();
 
                 let device_id = Alphanumeric.sample_string(&mut rng, 16);
-                let username =
-                    format!("{}.{}@{}", firstname, lastname, config.accounts.domain_name);
+                let username = format!(
+                    "{}.{}@{}",
+                    first_name, last_name, config.accounts.domain_name
+                );
 
                 let request = RegistrationRequest {
                     address: Address {
@@ -131,8 +144,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         timezone: "Australia/West".to_string(),
                     },
                     email_address: username.to_string(),
-                    first_name: titlecase(&firstname),
-                    last_name: titlecase(&lastname),
+                    first_name: titlecase(first_name),
+                    last_name: titlecase(last_name),
                     opt_in_for_marketing: false,
                     policies: Policies {
                         acceptance_policies: AcceptancePolicies { n1: true, n4: true },
@@ -156,8 +169,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 log::info!(
                     "[{}] created account with name {} {}",
                     request.email_address,
-                    firstname,
-                    lastname
+                    first_name,
+                    last_name
                 );
 
                 if real_run {
