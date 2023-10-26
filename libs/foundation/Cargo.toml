@@ -26,7 +26,7 @@ uuid = { version = "1.5.0", features = ["v4"] }
 anyhow = "1.0.75"
 log = "0.4.20"
 fern = "0.6.2"
-serde = "1.0.189"
+serde = "1.0.190"
 config = "0.13.3"
 async-trait = "0.1.74"
 rust-crypto = "0.2.36"
