@@ -59,7 +59,7 @@ tokio = "1.33.0"
 anyhow = "1.0.75"
 utoipa = { version = "4.0.0", features = ["rocket_extras"] }
 lazy_static = "1.4.0"
-futures = "0.3.28"
+futures = "0.3.29"
 strum = { version = "0.25.0", features = ["derive"] }
 hmac = "0.12.1"
 sha2 = "0.10.8"
