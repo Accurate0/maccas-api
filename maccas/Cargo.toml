@@ -15,7 +15,7 @@ lambda_http = "0.8.1"
 aws-sdk-dynamodb = "0.33.0"
 aws-sdk-s3 = "0.33.0"
 aws-types = "0.56.1"
-aws-sdk-sqs = "0.33.0"
+aws-sdk-sqs = "0.34.0"
 aws-sdk-secretsmanager = "0.33.0"
 
 serde = "1.0.189"
