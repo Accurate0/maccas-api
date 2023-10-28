@@ -3,12 +3,12 @@ use crate::{
     routes,
     shared::jwt::generate_signed_jwt,
     types::{
-        adb2c::Adb2cTokenResponse,
+        adb2c::{Adb2cClaims, Adb2cTokenResponse},
         api::{LoginRequest, TokenResponse},
         error::ApiError,
     },
 };
-use foundation::{extensions::SecretsManagerExtensions, types::jwt::Adb2cClaims};
+use foundation::extensions::SecretsManagerExtensions;
 use http::StatusCode;
 use jwt::{Header, Token};
 use rand::Rng;

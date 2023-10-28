@@ -1,8 +1,11 @@
 use crate::{
-    constants::config::CONFIG_SECRET_KEY_ID, guards::admin::AdminOnlyRoute, routes, shared::jwt,
-    types::error::ApiError,
+    constants::config::CONFIG_SECRET_KEY_ID,
+    guards::admin::AdminOnlyRoute,
+    routes,
+    shared::jwt,
+    types::{error::ApiError, role::UserRole},
 };
-use foundation::{extensions::SecretsManagerExtensions, types::role::UserRole};
+use foundation::extensions::SecretsManagerExtensions;
 use rocket::State;
 
 #[utoipa::path(

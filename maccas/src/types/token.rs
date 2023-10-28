@@ -1,4 +1,4 @@
-use foundation::types::role::UserRole;
+use super::role::UserRole;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 

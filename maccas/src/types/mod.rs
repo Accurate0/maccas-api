@@ -5,6 +5,7 @@ pub mod config;
 pub mod error;
 pub mod images;
 pub mod refresh;
+pub mod role;
 pub mod sqs;
 pub mod token;
 pub mod user;
