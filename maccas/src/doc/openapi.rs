@@ -28,8 +28,8 @@ use crate::types::api::{
     OfferPointsResponse, OfferResponse, PointsResponse, RegistrationRequest, RestaurantAddress,
     RestaurantInformation, RestaurantInformationList, TokenRequest, TokenResponse, UserSpending,
 };
+use crate::types::role::UserRole;
 use crate::types::user::UserOptions;
-use foundation::types::role::UserRole;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]

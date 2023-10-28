@@ -1,7 +1,7 @@
+use super::role::UserRole;
 use crate::constants::config::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
-use foundation::types::role::UserRole;
 use itertools::Itertools;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;

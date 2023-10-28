@@ -1,10 +1,11 @@
 use super::types::{
     AuditActionType, OfferDatabase, PointsDatabase, User, UserAccountDatabase, UserOptionsDatabase,
 };
-use crate::types::{audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache};
+use crate::types::{
+    audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache, role::UserRole,
+};
 use async_trait::async_trait;
 use chrono::Duration;
-use foundation::types::role::UserRole;
 use libmaccas::ApiClient;
 use std::collections::HashMap;
 

@@ -1,9 +1,11 @@
 use crate::{
     constants::config::{TOKEN_ACCESS_ISS, TOKEN_SHARED_REGISTER_ISS, TOKEN_VALID_TIME},
-    types::token::{JwtClaim, SharedTokenClaims},
+    types::{
+        role::UserRole,
+        token::{JwtClaim, SharedTokenClaims},
+    },
 };
 use chrono::Utc;
-use foundation::types::role::UserRole;
 use hmac::{digest::KeyInit, Hmac};
 use jwt::{AlgorithmType, Header, SignWithKey};
 use sha2::Sha256;
