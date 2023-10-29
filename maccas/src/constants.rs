@@ -35,7 +35,6 @@ pub mod config {
     pub const MAXIMUM_CLEANUP_RETRY: i8 = 5;
     pub const MAX_PROXY_COUNT: i8 = 10;
     pub const TOKEN_VALID_TIME: i64 = 86400;
-    pub const TOKEN_SHARED_REGISTER_ISS: &str = "maccas-api-registration";
     pub const TOKEN_ACCESS_ISS: &str = "Maccas API";
 }
 
@@ -47,6 +46,7 @@ pub mod db {
     pub const ACCOUNT_HASH: &str = "account_hash";
     pub const ACCOUNT_INFO: &str = "account_info";
     pub const ACCESS_TOKEN: &str = "access_token";
+    pub const TOKEN: &str = "token";
     pub const REFRESH_TOKEN: &str = "refresh_token";
     pub const LAST_REFRESH: &str = "last_refresh";
     pub const POINT_INFO: &str = "point_info";
@@ -74,5 +74,7 @@ pub mod db {
     pub const OPERATION_ID: &str = "operation_id";
     pub const PASSWORD_HASH: &str = "password_hash";
     pub const SALT: &str = "salt";
+    pub const IS_IMPORTED: &str = "is_imported";
+    pub const REGISTRATION_TOKEN: &str = "registration_token";
     pub const ROLE: &str = "role";
 }

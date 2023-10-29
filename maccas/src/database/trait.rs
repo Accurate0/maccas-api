@@ -1,5 +1,6 @@
 use super::types::{
-    AuditActionType, OfferDatabase, PointsDatabase, User, UserAccountDatabase, UserOptionsDatabase,
+    AuditActionType, OfferDatabase, PointsDatabase, RegistrationTokenMetadata, User,
+    UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::types::{
     audit::AuditEntry, config::GeneralConfig, refresh::RefreshOfferCache, role::UserRole,
@@ -132,6 +133,8 @@ pub trait Database {
         username: String,
         password_hash: String,
         salt: Vec<u8>,
+        is_imported: bool,
+        registration_token: Option<&str>,
     ) -> Result<(), anyhow::Error>;
 
     async fn set_user_role(&self, username: String, role: UserRole) -> Result<(), anyhow::Error>;
@@ -151,4 +154,13 @@ pub trait Database {
         proposition_id: &str,
     ) -> Result<Vec<String>, anyhow::Error>;
     async fn get_all_users(&self) -> Result<Vec<User>, anyhow::Error>;
+    async fn create_registration_token(
+        &self,
+        registration_token: &str,
+        role: UserRole,
+    ) -> Result<(), anyhow::Error>;
+    async fn get_registration_token(
+        &self,
+        registration_token: &str,
+    ) -> Result<RegistrationTokenMetadata, anyhow::Error>;
 }

@@ -141,6 +141,8 @@ pub async fn login(
                         request.username.to_owned(),
                         password_hash.to_string(),
                         salt.to_vec(),
+                        true,
+                        None,
                     )
                     .await?;
 

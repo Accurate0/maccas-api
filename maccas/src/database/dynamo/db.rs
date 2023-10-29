@@ -2,15 +2,16 @@ use super::DynamoDatabase;
 use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, ACTOR, CURRENT_LIST, DEAL_UUID,
-    DEVICE_ID, GROUP, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER, OFFER_ID,
-    OFFER_LIST, OFFER_NAME, OFFER_PROPOSITION_ID, OPERATION_ID, PASSWORD_HASH, POINT_INFO,
-    REFRESH_TOKEN, REGION, ROLE, SALT, TIMESTAMP, TTL, USERNAME, USER_CONFIG, USER_ID, USER_NAME,
-    VALUE,
+    DEVICE_ID, GROUP, IS_IMPORTED, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER,
+    OFFER_ID, OFFER_LIST, OFFER_NAME, OFFER_PROPOSITION_ID, OPERATION_ID, PASSWORD_HASH,
+    POINT_INFO, REFRESH_TOKEN, REGION, REGISTRATION_TOKEN, ROLE, SALT, TIMESTAMP, TOKEN, TTL,
+    USERNAME, USER_CONFIG, USER_ID, USER_NAME, VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
 use crate::database::types::{
-    AuditActionType, OfferDatabase, PointsDatabase, User, UserAccountDatabase, UserOptionsDatabase,
+    AuditActionType, OfferDatabase, PointsDatabase, RegistrationTokenMetadata, User,
+    UserAccountDatabase, UserOptionsDatabase,
 };
 use crate::extensions::ApiClientExtensions;
 use crate::proxy;
@@ -40,6 +41,49 @@ use tokio_stream::StreamExt;
 // TODO: fix all scans to use last evaluated key
 #[async_trait]
 impl Database for DynamoDatabase {
+    async fn create_registration_token(
+        &self,
+        registration_token: &str,
+        role: UserRole,
+    ) -> Result<(), anyhow::Error> {
+        let utc: DateTime<Utc> = Utc::now();
+
+        self.client
+            .put_item()
+            .table_name(&self.registration_tokens)
+            .item(TOKEN, AttributeValue::S(registration_token.to_owned()))
+            .item(ROLE, AttributeValue::S(serde_json::to_string(&role)?))
+            .item(TIMESTAMP, AttributeValue::N(utc.timestamp().to_string()))
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_registration_token(
+        &self,
+        registration_token: &str,
+    ) -> Result<RegistrationTokenMetadata, anyhow::Error> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.registration_tokens)
+            .key(TOKEN, AttributeValue::S(registration_token.to_owned()))
+            .send()
+            .await?;
+
+        let item = response.item.context("cannot find registration token")?;
+
+        Ok(RegistrationTokenMetadata {
+            role: serde_json::from_str(
+                item.get(ROLE)
+                    .context("must have role")?
+                    .as_s()
+                    .map_err(|_| anyhow::Error::msg("not a string"))?,
+            )?,
+        })
+    }
+
     async fn set_user_tokens(
         &self,
         username: &str,
@@ -195,6 +239,8 @@ impl Database for DynamoDatabase {
         username: String,
         password_hash: String,
         salt: Vec<u8>,
+        is_imported: bool,
+        registration_token: Option<&str>,
     ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -210,6 +256,11 @@ impl Database for DynamoDatabase {
             .item(USERNAME, AttributeValue::S(username))
             .item(PASSWORD_HASH, AttributeValue::S(password_hash))
             .item(SALT, AttributeValue::B(Blob::new(salt)))
+            .item(IS_IMPORTED, AttributeValue::Bool(is_imported))
+            .item(
+                REGISTRATION_TOKEN,
+                AttributeValue::S(serde_json::to_string(&registration_token)?),
+            )
             .send()
             .await?;
 

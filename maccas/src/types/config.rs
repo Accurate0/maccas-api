@@ -17,6 +17,7 @@ pub struct Tables {
     pub users: String,
     pub user_tokens: String,
     pub current_deals: String,
+    pub registration_tokens: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

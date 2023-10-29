@@ -3693,6 +3693,7 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "ubyte",
+ "uuid",
  "version_check",
  "yansi 0.5.1",
 ]
@@ -3755,6 +3756,7 @@ dependencies = [
  "time 0.3.30",
  "tokio",
  "uncased",
+ "uuid",
 ]
 
 [[package]]
@@ -4787,6 +4789,7 @@ checksum = "88ad59a7560b41a70d191093a945f0b87bc1deeda46fb237479708a1d6b6cdfc"
 dependencies = [
  "atomic",
  "getrandom",
+ "serde",
 ]
 
 [[package]]
