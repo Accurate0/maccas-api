@@ -1,4 +1,4 @@
-use crate::types::user::UserOptions;
+use crate::types::{role::UserRole, user::UserOptions};
 use foundation::util;
 use libmaccas::types::response::PointInformationResponse;
 use serde::{Deserialize, Serialize};
@@ -153,4 +153,9 @@ impl Display for AuditActionType {
 pub struct User {
     pub id: String,
     pub username: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RegistrationTokenMetadata {
+    pub role: UserRole,
 }

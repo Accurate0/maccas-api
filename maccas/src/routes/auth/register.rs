@@ -1,19 +1,15 @@
 use crate::{
-    constants::config::{CONFIG_SECRET_KEY_ID, TOKEN_SHARED_REGISTER_ISS},
+    constants::config::CONFIG_SECRET_KEY_ID,
     routes,
     shared::jwt::generate_signed_jwt,
     types::{
         api::{RegistrationRequest, TokenResponse},
         error::ApiError,
-        token::SharedTokenClaims,
     },
 };
 use foundation::extensions::SecretsManagerExtensions;
-use hmac::{digest::KeyInit, Hmac};
-use jwt::{Header, Token, VerifyWithKey};
 use rand::Rng;
 use rocket::{serde::json::Json, State};
-use sha2::Sha256;
 
 #[utoipa::path(
     responses(
@@ -27,21 +23,9 @@ use sha2::Sha256;
 pub async fn register(
     ctx: &State<routes::Context<'_>>,
     request: Json<RegistrationRequest>,
-    token: String,
+    token: uuid::Uuid,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-    let key: Hmac<Sha256> =
-        Hmac::new_from_slice(secret.as_bytes()).map_err(|_| ApiError::Unauthorized)?;
-
-    let unverified: Token<Header, SharedTokenClaims, jwt::Unverified<'_>> =
-        Token::parse_unverified(&token)?;
-    let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
-
-    if token.claims().aud != ctx.config.api.jwt.application_id
-        && token.claims().iss != TOKEN_SHARED_REGISTER_ISS
-    {
-        return Err(ApiError::Unauthorized);
-    }
 
     if ctx
         .database
@@ -52,7 +36,10 @@ pub async fn register(
         return Err(ApiError::Conflict);
     }
 
-    let role = &token.claims().role;
+    let metadata = ctx
+        .database
+        .get_registration_token(&token.as_hyphenated().to_string())
+        .await?;
 
     let salt: [u8; 16] = rand::thread_rng().gen();
     let password_hash = bcrypt::hash_with_salt(request.password.clone(), 10, salt)
@@ -65,18 +52,20 @@ pub async fn register(
             request.username.clone(),
             password_hash.to_string(),
             salt.to_vec(),
+            false,
+            None,
         )
         .await?;
 
     ctx.database
-        .set_user_role(request.username.clone(), role.clone())
+        .set_user_role(request.username.clone(), metadata.role.clone())
         .await?;
 
     let new_jwt = generate_signed_jwt(
         secret,
         &user_id,
         &ctx.config.api.jwt.application_id,
-        role,
+        &metadata.role,
         &request.username,
     )?;
 
@@ -94,6 +83,6 @@ pub async fn register(
     Ok(Json(TokenResponse {
         token: new_jwt,
         refresh_token,
-        role: role.clone(),
+        role: metadata.role.clone(),
     }))
 }

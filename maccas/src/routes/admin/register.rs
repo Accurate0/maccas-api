@@ -1,11 +1,8 @@
 use crate::{
-    constants::config::CONFIG_SECRET_KEY_ID,
     guards::admin::AdminOnlyRoute,
     routes,
-    shared::jwt,
     types::{error::ApiError, role::UserRole},
 };
-use foundation::extensions::SecretsManagerExtensions;
 use rocket::State;
 
 #[utoipa::path(
@@ -21,11 +18,11 @@ pub async fn registration_token(
     _admin: AdminOnlyRoute,
     role: UserRole,
 ) -> Result<String, ApiError> {
-    let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
-    let application_id = &ctx.config.api.jwt.application_id;
-    Ok(jwt::generate_shared_registration_token(
-        secret,
-        application_id,
-        &role,
-    )?)
+    let registration_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
+
+    ctx.database
+        .create_registration_token(&registration_token, role)
+        .await?;
+
+    Ok(registration_token)
 }

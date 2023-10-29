@@ -15,6 +15,7 @@ pub struct DynamoDatabase {
     users: String,
     user_tokens: String,
     current_deals: String,
+    registration_tokens: String,
 
     current_deals_offer_proposition_id: String,
     current_deals_account_name: String,
@@ -38,6 +39,7 @@ impl DynamoDatabase {
             users: tables.users.to_owned(),
             user_tokens: tables.user_tokens.to_owned(),
             current_deals: tables.current_deals.to_owned(),
+            registration_tokens: tables.registration_tokens.to_owned(),
 
             audit_user_id_index: indexes.audit_user_id_index.to_owned(),
             current_deals_offer_proposition_id: indexes

@@ -27,7 +27,7 @@ strum_macros = "0.25"
 twilight-model = "0.15.4"
 twilight-util = { version = "0.15.4", features = ["builder"] }
 
-rocket = { version = "0.5.0-rc.3", features = ["json"] }
+rocket = { version = "0.5.0-rc.3", features = ["json", "uuid"] }
 rocket_cors = "0.6.0-alpha2"
 
 jwt = "0.16.0"

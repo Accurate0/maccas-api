@@ -27,7 +27,8 @@
       "userAccounts": "MaccasApi-UserAccounts",
       "users": "MaccasApi-Users",
       "userTokens": "MaccasApi-UserTokens",
-      "currentDeals": "MaccasApi-Deals-v3"
+      "currentDeals": "MaccasApi-Deals-v3",
+      "registrationTokens": "MaccasApi-RegistrationTokens"
     },
     "indexes": {
       "auditUserIdIndex": "UserIdIndex",

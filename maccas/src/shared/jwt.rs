@@ -1,9 +1,6 @@
 use crate::{
-    constants::config::{TOKEN_ACCESS_ISS, TOKEN_SHARED_REGISTER_ISS, TOKEN_VALID_TIME},
-    types::{
-        role::UserRole,
-        token::{JwtClaim, SharedTokenClaims},
-    },
+    constants::config::{TOKEN_ACCESS_ISS, TOKEN_VALID_TIME},
+    types::{role::UserRole, token::JwtClaim},
 };
 use chrono::Utc;
 use hmac::{digest::KeyInit, Hmac};
@@ -34,30 +31,6 @@ pub fn generate_signed_jwt(
         oid: user_id.to_owned(),
         role: role.clone(),
         username: username.to_owned(),
-    };
-
-    Ok(jwt::Token::new(header, claims)
-        .sign_with_key(&key)?
-        .as_str()
-        .to_owned())
-}
-
-pub fn generate_shared_registration_token(
-    secret_key: impl AsRef<[u8]>,
-    application_id: &str,
-    role: &UserRole,
-) -> Result<String, anyhow::Error> {
-    let key: Hmac<Sha256> = Hmac::new_from_slice(secret_key.as_ref())?;
-    let header = Header {
-        algorithm: AlgorithmType::Hs256,
-        ..Default::default()
-    };
-
-    let claims = SharedTokenClaims {
-        iss: TOKEN_SHARED_REGISTER_ISS.to_owned(),
-        aud: application_id.to_owned(),
-        iat: Utc::now().timestamp(),
-        role: role.clone(),
     };
 
     Ok(jwt::Token::new(header, claims)
