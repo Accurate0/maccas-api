@@ -222,18 +222,20 @@ pub struct TokenResponse {
     pub role: UserRole,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, FromForm)]
 #[serde(rename_all = "camelCase")]
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, FromForm)]
 #[serde(rename_all = "camelCase")]
 pub struct RegistrationRequest {
     pub username: String,
+    #[field(validate = len(6..))]
     pub password: String,
+    pub token: uuid::Uuid,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]

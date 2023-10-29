@@ -158,4 +158,6 @@ pub struct User {
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegistrationTokenMetadata {
     pub role: UserRole,
+    pub is_single_use: bool,
+    pub use_count: u32,
 }

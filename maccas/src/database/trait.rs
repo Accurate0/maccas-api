@@ -158,9 +158,15 @@ pub trait Database {
         &self,
         registration_token: &str,
         role: UserRole,
+        single_use: bool,
     ) -> Result<(), anyhow::Error>;
     async fn get_registration_token(
         &self,
         registration_token: &str,
     ) -> Result<RegistrationTokenMetadata, anyhow::Error>;
+    async fn set_registration_token_use_count(
+        &self,
+        registration_token: &str,
+        count: u32,
+    ) -> Result<(), anyhow::Error>;
 }

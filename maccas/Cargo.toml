@@ -59,7 +59,7 @@ rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.11.0"
 tokio = "1.33.0"
 anyhow = "1.0.75"
-utoipa = { version = "4.0.0", features = ["rocket_extras"] }
+utoipa = { version = "4.0.0", features = ["rocket_extras", "uuid"] }
 lazy_static = "1.4.0"
 futures = "0.3.29"
 strum = { version = "0.25.0", features = ["derive"] }

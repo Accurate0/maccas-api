@@ -16,16 +16,18 @@ use rocket::{serde::json::Json, State};
     ),
     tag = "admin",
 )]
-#[post("/admin/auth/register?<role>")]
+#[post("/admin/auth/register?<role>&<single_use>")]
 pub async fn registration_token(
     ctx: &State<routes::Context<'_>>,
     _admin: AdminOnlyRoute,
     role: UserRole,
+    single_use: Option<bool>,
 ) -> Result<Json<RegistrationTokenResponse>, ApiError> {
+    let single_use = single_use.unwrap_or(true);
     let registration_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
     ctx.database
-        .create_registration_token(&registration_token, role)
+        .create_registration_token(&registration_token, role, single_use)
         .await?;
 
     let shared_config = aws::config::get_shared_config().await;
