@@ -29,6 +29,7 @@ pub mod config {
     pub const CONFIG_PLACES_API_KEY_ID: &str = "MaccasApi-PlacesApiKey";
     pub const CONFIG_SECRET_KEY_ID: &str = "MaccasApi-SecretKey";
     pub const IMAGE_CDN: &str = "https://i.maccas.one";
+    pub const WEBSITE_BASE_URL: &str = "https://maccas.one";
     pub const DEFAULT_REFRESH_TTL_HOURS: i64 = 24;
     pub const DEFAULT_LOCK_TTL_HOURS: i64 = 12;
     pub const MAXIMUM_FAILURE_HANDLER_RETRY: i8 = 5;

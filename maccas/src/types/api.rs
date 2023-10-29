@@ -242,3 +242,10 @@ pub struct TokenRequest {
     pub token: String,
     pub refresh_token: String,
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct RegistrationTokenResponse {
+    pub token: String,
+    pub qr_code_link: String,
+}
