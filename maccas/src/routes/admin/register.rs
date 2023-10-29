@@ -15,6 +15,9 @@ use rocket::{serde::json::Json, State};
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "admin",
+    params(
+        ("role" = UserRole, Query, description = "Role to use for this user"),
+    )
 )]
 #[post("/admin/auth/register?<role>&<single_use>")]
 pub async fn registration_token(
