@@ -79,9 +79,6 @@ jobs:
           mcdonalds__client_secret: ${{ secrets.API_CONFIG_CLIENT_SECRET }}
           mcdonalds__sensor_data: ${{ secrets.API_CONFIG_SENSOR_DATA }}
           mcdonalds__service_account_name: ${{ secrets.API_CONFIG_SERVICE_ACCOUNT_NAME }}
-          api__discord_deal_use__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_ELLIOT }}
-          api__discord_deal_use__webhooks__1: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_KEVIN }}
-          refresh__discord_error__webhooks__0: ${{ secrets.API_CONFIG_DISCORD_WEBHOOK_SERVICE }}
           proxy__username: ${{ secrets.API_CONFIG_REFRESH_PROXY_USERNAME }}
           proxy__password: ${{ secrets.API_CONFIG_REFRESH_PROXY_PASSWORD }}
           proxy__address: ${{ secrets.API_CONFIG_REFRESH_PROXY_ADDRESS }}
