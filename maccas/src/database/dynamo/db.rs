@@ -3,9 +3,9 @@ use crate::constants::config::{DEFAULT_REFRESH_TTL_HOURS, MAX_PROXY_COUNT};
 use crate::constants::db::{
     ACCESS_TOKEN, ACCOUNT_HASH, ACCOUNT_INFO, ACCOUNT_NAME, ACTION, ACTOR, CURRENT_LIST, DEAL_UUID,
     DEVICE_ID, GROUP, IS_IMPORTED, KEY, LAST_REFRESH, LOGIN_PASSWORD, LOGIN_USERNAME, OFFER,
-    OFFER_ID, OFFER_LIST, OFFER_NAME, OFFER_PROPOSITION_ID, OPERATION_ID, PASSWORD_HASH,
-    POINT_INFO, REFRESH_TOKEN, REGION, REGISTRATION_TOKEN, ROLE, SALT, TIMESTAMP, TOKEN, TTL,
-    USERNAME, USER_CONFIG, USER_ID, USER_NAME, VALUE,
+    OFFER_ID, OFFER_LIST, OFFER_NAME, OFFER_PROPOSITION_ID, ONE_TIME_TOKEN, OPERATION_ID,
+    PASSWORD_HASH, POINT_INFO, REFRESH_TOKEN, REGION, REGISTRATION_TOKEN, ROLE, SALT, TIMESTAMP,
+    TOKEN, TTL, USERNAME, USER_CONFIG, USER_ID, USER_NAME, USES, VALUE,
 };
 use crate::constants::mc_donalds;
 use crate::database::r#trait::Database;
@@ -45,6 +45,7 @@ impl Database for DynamoDatabase {
         &self,
         registration_token: &str,
         role: UserRole,
+        single_use: bool,
     ) -> Result<(), anyhow::Error> {
         let utc: DateTime<Utc> = Utc::now();
 
@@ -54,6 +55,8 @@ impl Database for DynamoDatabase {
             .item(TOKEN, AttributeValue::S(registration_token.to_owned()))
             .item(ROLE, AttributeValue::S(serde_json::to_string(&role)?))
             .item(TIMESTAMP, AttributeValue::N(utc.timestamp().to_string()))
+            .item(ONE_TIME_TOKEN, AttributeValue::Bool(single_use))
+            .item(USES, AttributeValue::N(0.to_string()))
             .send()
             .await?;
 
@@ -81,7 +84,40 @@ impl Database for DynamoDatabase {
                     .as_s()
                     .map_err(|_| anyhow::Error::msg("not a string"))?,
             )?,
+            is_single_use: *item
+                .get(ONE_TIME_TOKEN)
+                .context("must have one time token field")?
+                .as_bool()
+                .map_err(|_| anyhow::Error::msg("not a string"))?,
+            use_count: item
+                .get(USES)
+                .context("must have one time token field")?
+                .as_n()
+                .map_err(|_| anyhow::Error::msg("not a string"))?
+                .clone()
+                .parse()?,
         })
+    }
+
+    async fn set_registration_token_use_count(
+        &self,
+        registration_token: &str,
+        count: u32,
+    ) -> Result<(), anyhow::Error> {
+        self.client
+            .update_item()
+            .table_name(&self.registration_tokens)
+            .key(TOKEN, AttributeValue::S(registration_token.to_owned()))
+            .attribute_updates(
+                USES,
+                AttributeValueUpdate::builder()
+                    .value(AttributeValue::N(count.to_string()))
+                    .build(),
+            )
+            .send()
+            .await?;
+
+        Ok(())
     }
 
     async fn set_user_tokens(

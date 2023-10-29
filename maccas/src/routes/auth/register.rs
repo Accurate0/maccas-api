@@ -1,6 +1,6 @@
 use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
-    routes,
+    routes::{self},
     shared::jwt::generate_signed_jwt,
     types::{
         api::{RegistrationRequest, TokenResponse},
@@ -9,23 +9,33 @@ use crate::{
 };
 use foundation::extensions::SecretsManagerExtensions;
 use rand::Rng;
-use rocket::{serde::json::Json, State};
+use rocket::{form::Form, serde::json::Json, State};
 
 #[utoipa::path(
     responses(
         (status = 200, description = "Register a new account using a shared token", body = TokenResponse),
+        (status = 404, description = "Token has expired"),
         (status = 409, description = "Account with this username already exists"),
         (status = 500, description = "Internal Server Error"),
     ),
     tag = "auth",
 )]
-#[post("/auth/register?<token>", data = "<request>")]
+#[post("/auth/register", data = "<request>")]
 pub async fn register(
     ctx: &State<routes::Context<'_>>,
-    request: Json<RegistrationRequest>,
-    token: uuid::Uuid,
+    request: Form<RegistrationRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
+
+    let registration_token = &request.token.as_hyphenated().to_string();
+    let metadata = ctx
+        .database
+        .get_registration_token(registration_token)
+        .await?;
+
+    if metadata.is_single_use && metadata.use_count > 0 {
+        return Err(ApiError::NotFound);
+    }
 
     if ctx
         .database
@@ -35,11 +45,6 @@ pub async fn register(
         log::info!("user: {} already exists, can't register", request.username);
         return Err(ApiError::Conflict);
     }
-
-    let metadata = ctx
-        .database
-        .get_registration_token(&token.as_hyphenated().to_string())
-        .await?;
 
     let salt: [u8; 16] = rand::thread_rng().gen();
     let password_hash = bcrypt::hash_with_salt(request.password.clone(), 10, salt)
@@ -53,7 +58,7 @@ pub async fn register(
             password_hash.to_string(),
             salt.to_vec(),
             false,
-            Some(&token.as_hyphenated().to_string()),
+            Some(registration_token),
         )
         .await?;
 
@@ -78,6 +83,10 @@ pub async fn register(
             &refresh_token,
             chrono::Duration::days(7),
         )
+        .await?;
+
+    ctx.database
+        .set_registration_token_use_count(registration_token, metadata.use_count + 1)
         .await?;
 
     Ok(Json(TokenResponse {

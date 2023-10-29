@@ -14,7 +14,7 @@ use jwt::{Header, Token};
 use rand::Rng;
 use reqwest::multipart::Part;
 use reqwest_tracing::TracingMiddleware;
-use rocket::{serde::json::Json, State};
+use rocket::{form::Form, serde::json::Json, State};
 
 const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmicrosoft.com/B2C_1_ROPC_Auth/oauth2/v2.0/token";
 
@@ -30,7 +30,7 @@ const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmic
 #[post("/auth/login", data = "<request>")]
 pub async fn login(
     ctx: &State<routes::Context<'_>>,
-    request: Json<LoginRequest>,
+    request: Form<LoginRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     if ctx
         .database
