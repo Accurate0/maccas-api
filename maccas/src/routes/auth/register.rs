@@ -53,7 +53,7 @@ pub async fn register(
             password_hash.to_string(),
             salt.to_vec(),
             false,
-            None,
+            Some(&token.as_hyphenated().to_string()),
         )
         .await?;
 
