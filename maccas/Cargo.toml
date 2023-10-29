@@ -67,6 +67,7 @@ hmac = "0.12.1"
 sha2 = "0.10.8"
 rust-argon2 = "2.0"
 bcrypt = "0.15.0"
+qrcode-generator = "4.1.9"
 
 [build-dependencies]
 vergen = { version = "8.2.5", features = ["build", "rustc", "git", "gitoxide"] }

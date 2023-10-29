@@ -10,6 +10,7 @@
     "libcore",
     "MSAL",
     "openapi",
+    "qrcode",
     "reqwest",
     "simplelog",
     "utoipa",
