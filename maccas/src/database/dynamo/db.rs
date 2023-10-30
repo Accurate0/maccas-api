@@ -132,7 +132,7 @@ impl Database for DynamoDatabase {
         self.client
             .put_item()
             .table_name(&self.user_tokens)
-            .item(USERNAME, AttributeValue::S(username.to_owned()))
+            .item(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .item(ACCESS_TOKEN, AttributeValue::S(auth_token.to_owned()))
             .item(REFRESH_TOKEN, AttributeValue::S(refresh_token.to_owned()))
             .item(TTL, AttributeValue::N(utc.timestamp().to_string()))
@@ -147,7 +147,7 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.user_tokens)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .send()
             .await?;
 
@@ -173,7 +173,7 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.users)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .send()
             .await?;
 
@@ -193,7 +193,7 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.users)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .send()
             .await?;
 
@@ -212,7 +212,7 @@ impl Database for DynamoDatabase {
         self.client
             .update_item()
             .table_name(&self.users)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .attribute_updates(
                 ROLE,
                 AttributeValueUpdate::builder()
@@ -230,7 +230,7 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.users)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .send()
             .await?
             .item
@@ -289,7 +289,7 @@ impl Database for DynamoDatabase {
             .table_name(&self.users)
             .item(TIMESTAMP, AttributeValue::S(now))
             .item(USER_ID, AttributeValue::S(user_id))
-            .item(USERNAME, AttributeValue::S(username))
+            .item(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .item(PASSWORD_HASH, AttributeValue::S(password_hash))
             .item(SALT, AttributeValue::B(Blob::new(salt)))
             .item(IS_IMPORTED, AttributeValue::Bool(is_imported))
@@ -308,7 +308,7 @@ impl Database for DynamoDatabase {
             .client
             .get_item()
             .table_name(&self.users)
-            .key(USERNAME, AttributeValue::S(username))
+            .key(USERNAME, AttributeValue::S(username.to_ascii_lowercase()))
             .send()
             .await?;
 
