@@ -2,6 +2,8 @@ use super::role::UserRole;
 use crate::constants::config::IMAGE_CDN;
 use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
+use crate::shared::validators::validate_password;
+use crate::shared::validators::validate_username;
 use itertools::Itertools;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -232,8 +234,9 @@ pub struct LoginRequest {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, FromForm)]
 #[serde(rename_all = "camelCase")]
 pub struct RegistrationRequest {
+    #[field(validate = validate_username())]
     pub username: String,
-    #[field(validate = len(6..))]
+    #[field(validate = validate_password())]
     pub password: String,
     pub token: uuid::Uuid,
 }
