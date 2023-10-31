@@ -4,18 +4,18 @@ pub trait StringExtensions {
 
 impl StringExtensions for String {
     fn lowercase_trim(&self) -> String {
-        self.to_ascii_uppercase().trim().to_owned()
+        self.to_ascii_lowercase().trim().to_owned()
     }
 }
 
 impl StringExtensions for &String {
     fn lowercase_trim(&self) -> String {
-        self.to_ascii_uppercase().trim().to_owned()
+        self.to_ascii_lowercase().trim().to_owned()
     }
 }
 
 impl StringExtensions for &str {
     fn lowercase_trim(&self) -> String {
-        self.to_ascii_uppercase().trim().to_owned()
+        self.to_ascii_lowercase().trim().to_owned()
     }
 }
