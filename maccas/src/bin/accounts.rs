@@ -9,7 +9,8 @@ use libmaccas::types::request::ActivationRequest;
 use libmaccas::types::request::Credentials;
 use libmaccas::ApiClient;
 use maccas::constants;
-use maccas::database::{Database, DynamoDatabase};
+use maccas::database::account::AccountRepository;
+
 use maccas::logging;
 use maccas::proxy;
 use maccas::types::config::GeneralConfig;
@@ -70,11 +71,8 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         .map_err(|e| e.0)?;
 
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let db = DynamoDatabase::new(
-        dynamodb_client,
-        &config.database.tables,
-        &config.database.indexes,
-    );
+    let account_repository =
+        AccountRepository::new(dynamodb_client.clone(), &config.database.tables);
 
     let re = Regex::new(r"ac=([A-Z0-9]+)").unwrap();
     let mut rng = StdRng::from_entropy();
@@ -103,7 +101,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
         match (ac, to) {
             (Some(ac), Some(to)) => {
                 let to = to.get_value();
-                let id = db.get_device_id_for(&to).await?;
+                let id = account_repository.get_device_id_for(&to).await?;
                 log::info!("existing device id: {:?}", id);
 
                 let device_id = id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
@@ -136,7 +134,10 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     }
                 };
 
-                db.set_device_id_for(&to, &device_id).await.ok();
+                account_repository
+                    .set_device_id_for(&to, &device_id)
+                    .await
+                    .ok();
                 // there is a rate limit : )
                 sleep(Duration::from_secs(5)).await;
             }

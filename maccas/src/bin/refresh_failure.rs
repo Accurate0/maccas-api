@@ -3,7 +3,10 @@ use foundation::aws;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::config::MAXIMUM_FAILURE_HANDLER_RETRY;
-use maccas::database::{Database, DynamoDatabase};
+use maccas::database::account::AccountRepository;
+use maccas::database::offer::OfferRepository;
+use maccas::database::point::PointRepository;
+
 
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{RefreshFailureMessage, SqsEvent};
@@ -29,11 +32,14 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     }
 
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let database = DynamoDatabase::new(
-        dynamodb_client,
+    let offer_repository = OfferRepository::new(
+        dynamodb_client.clone(),
         &config.database.tables,
         &config.database.indexes,
     );
+    let account_repository =
+        AccountRepository::new(dynamodb_client.clone(), &config.database.tables);
+    let point_repository = PointRepository::new(dynamodb_client.clone(), &config.database.tables);
 
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
@@ -57,7 +63,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             log::info!("retry attempt: {}", attempt);
             let proxy = proxy::get_proxy(&config.proxy).await;
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-            match database
+            match account_repository
                 .get_specific_client(
                     http_client,
                     &config.mcdonalds.client_id,
@@ -70,7 +76,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             {
                 Ok(api_client) => {
                     log::info!("login fixed for {}, refreshing..", account.account_name);
-                    if let Err(e) = database
+                    if let Err(e) = offer_repository
                         .refresh_offer_cache_for(
                             &account,
                             &api_client,
@@ -81,7 +87,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                         log::error!("refresh failed {}", e);
                     };
 
-                    if let Err(e) = database
+                    if let Err(e) = point_repository
                         .refresh_point_cache_for(&account, &api_client)
                         .await
                     {

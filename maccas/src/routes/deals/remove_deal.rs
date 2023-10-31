@@ -1,6 +1,11 @@
 use crate::{
-    constants::mc_donalds, database::types::AuditActionType,
-    guards::required_authorization::RequiredAuthorizationHeader, proxy, routes,
+    constants::mc_donalds,
+    database::{
+        account::AccountRepository, audit::AuditRepository, offer::OfferRepository,
+        types::AuditActionType,
+    },
+    guards::required_authorization::RequiredAuthorizationHeader,
+    proxy, routes,
     types::error::ApiError,
 };
 use rocket::{http::Status, State};
@@ -16,16 +21,18 @@ use rocket::{http::Status, State};
 )]
 #[delete("/deals/<deal_id>?<store>")]
 pub async fn remove_deal(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    offer_repo: &State<OfferRepository>,
+    audit_repo: &State<AuditRepository>,
+    account_repo: &State<AccountRepository>,
     deal_id: &str,
     store: String,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Status, ApiError> {
-    if let Ok((account, offer)) = ctx.database.get_offer_by_id(deal_id).await {
+    if let Ok((account, offer)) = offer_repo.get_offer_by_id(deal_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-        let api_client = ctx
-            .database
+        let api_client = account_repo
             .get_specific_client(
                 http_client,
                 &ctx.config.mcdonalds.client_id,
@@ -50,7 +57,7 @@ pub async fn remove_deal(
         if resp.status.is_success() {
             let user_id = auth.claims.oid;
 
-            ctx.database
+            audit_repo
                 .add_to_audit(
                     AuditActionType::Remove,
                     Some(user_id),
@@ -58,7 +65,7 @@ pub async fn remove_deal(
                     &offer,
                 )
                 .await;
-            ctx.database.unlock_deal(deal_id).await?;
+            offer_repo.unlock_deal(deal_id).await?;
             Ok(Status::NoContent)
         } else {
             Err(ApiError::McDonaldsError)

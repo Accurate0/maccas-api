@@ -1,6 +1,6 @@
 use crate::{
+    database::offer::OfferRepository,
     guards::admin::AdminOnlyRoute,
-    routes,
     types::{api::AdminLockedDealsResponse, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -14,9 +14,9 @@ use rocket::{serde::json::Json, State};
 )]
 #[get("/admin/locked-deals")]
 pub async fn get_locked_deals(
-    ctx: &State<routes::Context<'_>>,
+    offer_repo: &State<OfferRepository>,
     _admin: AdminOnlyRoute,
 ) -> Result<Json<AdminLockedDealsResponse>, ApiError> {
-    let locked_deals = ctx.database.get_all_locked_deals().await?;
+    let locked_deals = offer_repo.get_all_locked_deals().await?;
     Ok(Json(AdminLockedDealsResponse(locked_deals)))
 }

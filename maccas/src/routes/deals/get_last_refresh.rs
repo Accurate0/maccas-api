@@ -1,4 +1,4 @@
-use crate::routes::Context;
+use crate::database::refresh::RefreshRepository;
 use crate::types::api::LastRefreshInformation;
 use crate::types::error::ApiError;
 use rocket::serde::json::Json;
@@ -13,9 +13,9 @@ use rocket::State;
 )]
 #[get("/deals/last-refresh")]
 pub async fn get_last_refresh(
-    ctx: &State<Context<'_>>,
+    refresh_repo: &State<RefreshRepository>,
 ) -> Result<Json<LastRefreshInformation>, ApiError> {
-    let response = ctx.database.get_last_refresh().await?;
+    let response = refresh_repo.get_last_refresh().await?;
 
     Ok(Json(LastRefreshInformation {
         last_refresh: response,

@@ -1,6 +1,6 @@
 use crate::{
+    database::{audit::AuditRepository, user::UserRepository},
     guards::admin::AdminOnlyRoute,
-    routes,
     shared::spending::generate_spending_information,
     types::{
         api::{AdminUserSpending, AdminUserSpendingMap},
@@ -20,14 +20,15 @@ use std::collections::HashMap;
 )]
 #[get("/admin/user/spending")]
 pub async fn get_all_user_spending(
-    ctx: &State<routes::Context<'_>>,
+    user_repo: &State<UserRepository>,
+    audit_repo: &State<AuditRepository>,
     _admin: AdminOnlyRoute,
 ) -> Result<Json<AdminUserSpendingMap>, ApiError> {
-    let user_list = ctx.database.get_all_users().await?;
+    let user_list = user_repo.get_all_users().await?;
 
     let spending_futures = user_list
         .iter()
-        .map(|u| ctx.database.get_audit_entries_for(u.id.to_string()))
+        .map(|u| audit_repo.get_audit_entries_for(u.id.to_string()))
         .collect_vec();
 
     let spending_map: HashMap<_, _> = try_join_all(spending_futures)

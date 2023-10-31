@@ -1,5 +1,8 @@
 use crate::constants::config::DEFAULT_LOCK_TTL_HOURS;
 use crate::constants::mc_donalds;
+use crate::database::account::AccountRepository;
+use crate::database::audit::AuditRepository;
+use crate::database::offer::OfferRepository;
 use crate::database::types::AuditActionType;
 use crate::guards::required_authorization::RequiredAuthorizationHeader;
 use crate::types::api::OfferResponse;
@@ -27,16 +30,18 @@ use rocket::{serde::json::Json, State};
 )]
 #[post("/deals/<proposition_id>?<store>")]
 pub async fn add_deal(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    offer_repository: &State<OfferRepository>,
+    audit_repo: &State<AuditRepository>,
+    account_repo: &State<AccountRepository>,
     proposition_id: &str,
     store: String,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     let mut rng = StdRng::from_entropy();
-    let locked_deals = ctx.database.get_all_locked_deals().await?;
+    let locked_deals = offer_repository.get_all_locked_deals().await?;
 
-    let all_deals = ctx
-        .database
+    let all_deals = offer_repository
         .find_all_by_proposition_id(proposition_id)
         .await?;
     let mut deals: Vec<_> = all_deals
@@ -54,16 +59,15 @@ pub async fn add_deal(
 
     // need to catch errors and ensure the deal is unlocked to allow retries on 599
     let func = async move {
-        let (account, offer) = ctx.database.get_offer_by_id(deal_id).await?;
+        let (account, offer) = offer_repository.get_offer_by_id(deal_id).await?;
         // lock the deal from appearing in GET /deals
-        ctx.database
+        offer_repository
             .lock_deal(deal_id, Duration::hours(DEFAULT_LOCK_TTL_HOURS))
             .await?;
 
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-        let api_client = ctx
-            .database
+        let api_client = account_repo
             .get_specific_client(
                 http_client,
                 &ctx.config.mcdonalds.client_id,
@@ -125,8 +129,7 @@ pub async fn add_deal(
             // consider doing this async...
             // may not be quick enough...
             log::info!("offer_id = 0, refreshing account: {}", account);
-            let mut new_offers = ctx
-                .database
+            let mut new_offers = offer_repository
                 .refresh_offer_cache_for(
                     &account,
                     &api_client,
@@ -167,7 +170,9 @@ pub async fn add_deal(
                     // no need to lock it anymore
                     new_matching_offer.deal_uuid = offer.deal_uuid.clone();
 
-                    ctx.database.set_offers_for(&account, &new_offers).await?;
+                    offer_repository
+                        .set_offers_for(&account, &new_offers)
+                        .await?;
                     log::info!("updated uuid, and saved: {}", offer.deal_uuid);
                 }
                 Err(e) => {
@@ -187,7 +192,7 @@ pub async fn add_deal(
             let user_name = &auth.claims.username;
             let user_id = &auth.claims.oid;
 
-            ctx.database
+            audit_repo
                 .add_to_audit(
                     AuditActionType::Add,
                     Some(user_id.to_string()),
@@ -242,7 +247,7 @@ pub async fn add_deal(
     match func.await {
         Ok(response) => Ok(response),
         Err(err) => {
-            if let Err(e) = ctx.database.unlock_deal(deal_id).await {
+            if let Err(e) = offer_repository.unlock_deal(deal_id).await {
                 log::error!("error unlocking deal after initial error: {}", e);
             }
 

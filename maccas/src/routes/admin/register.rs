@@ -1,5 +1,6 @@
 use crate::{
     constants::config::{IMAGE_CDN, WEBSITE_BASE_URL},
+    database::user::UserRepository,
     guards::admin::AdminOnlyRoute,
     routes,
     types::{api::RegistrationTokenResponse, error::ApiError, role::UserRole},
@@ -21,7 +22,8 @@ use rocket::{serde::json::Json, State};
 )]
 #[post("/admin/auth/register?<role>&<single_use>")]
 pub async fn registration_token(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    user_repo: &State<UserRepository>,
     _admin: AdminOnlyRoute,
     role: UserRole,
     single_use: Option<bool>,
@@ -29,7 +31,7 @@ pub async fn registration_token(
     let single_use = single_use.unwrap_or(true);
     let registration_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
-    ctx.database
+    user_repo
         .create_registration_token(&registration_token, role, single_use)
         .await?;
 

@@ -1,7 +1,12 @@
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
 use lambda_http::Error as LambdaError;
-use maccas::database::DynamoDatabase;
+use maccas::database::account::AccountRepository;
+use maccas::database::audit::AuditRepository;
+use maccas::database::offer::OfferRepository;
+use maccas::database::point::PointRepository;
+use maccas::database::refresh::RefreshRepository;
+use maccas::database::user::UserRepository;
 use maccas::logging;
 use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
@@ -54,18 +59,29 @@ async fn main() -> Result<(), LambdaError> {
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
     let secrets_client = aws_sdk_secretsmanager::Client::new(&shared_config);
-    let database = DynamoDatabase::new(
-        dynamodb_client,
+
+    let user_repository = UserRepository::new(dynamodb_client.clone(), &config.database.tables);
+    let offer_repository = OfferRepository::new(
+        dynamodb_client.clone(),
         &config.database.tables,
         &config.database.indexes,
     );
+    let audit_repository = AuditRepository::new(
+        dynamodb_client.clone(),
+        &config.database.tables,
+        &config.database.indexes,
+    );
+    let account_repository =
+        AccountRepository::new(dynamodb_client.clone(), &config.database.tables);
+    let point_repository = PointRepository::new(dynamodb_client.clone(), &config.database.tables);
+    let refresh_repository =
+        RefreshRepository::new(dynamodb_client.clone(), &config.database.tables);
 
     let rocket = rocket::build();
     let context = routes::Context {
         secrets_client,
         sqs_client,
         config,
-        database: Box::new(database),
     };
 
     let config = Config {
@@ -76,6 +92,12 @@ async fn main() -> Result<(), LambdaError> {
 
     let rocket = rocket
         .manage(context)
+        .manage(user_repository)
+        .manage(offer_repository)
+        .manage(audit_repository)
+        .manage(account_repository)
+        .manage(point_repository)
+        .manage(refresh_repository)
         .register("/", catchers![default])
         .mount(
             "/",
