@@ -1,5 +1,6 @@
 use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
+    database::user::UserRepository,
     routes,
     shared::jwt::generate_signed_jwt,
     types::{
@@ -23,7 +24,8 @@ use sha2::Sha256;
 )]
 #[post("/auth/token", data = "<request>")]
 pub async fn get_token(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    user_repo: &State<UserRepository>,
     request: Json<TokenRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
@@ -35,7 +37,7 @@ pub async fn get_token(
     let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
 
     let username = token.claims().username.to_owned();
-    let (_, refresh_token) = ctx.database.get_user_tokens(username.to_owned()).await?;
+    let (_, refresh_token) = user_repo.get_user_tokens(username.to_owned()).await?;
     log::info!("refresh token for {username}");
 
     // the token is verified and the refresh token matches the last one created
@@ -45,8 +47,8 @@ pub async fn get_token(
     );
     if refresh_token == request.refresh_token {
         log::info!("token matches last created refresh and access, generating new ones");
-        let user_id = ctx.database.get_user_id(username.to_owned()).await?;
-        let role = ctx.database.get_user_role(username.to_owned()).await?;
+        let user_id = user_repo.get_user_id(username.to_owned()).await?;
+        let role = user_repo.get_user_role(username.to_owned()).await?;
 
         let new_jwt = generate_signed_jwt(
             secret,
@@ -58,7 +60,7 @@ pub async fn get_token(
 
         let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
-        ctx.database
+        user_repo
             .set_user_tokens(
                 &username,
                 &new_jwt,

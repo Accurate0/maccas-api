@@ -1,5 +1,6 @@
 use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
+    database::user::UserRepository,
     routes,
     shared::jwt::generate_signed_jwt,
     types::{
@@ -29,21 +30,17 @@ const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmic
 )]
 #[post("/auth/login", data = "<request>")]
 pub async fn login(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    user_repo: &State<UserRepository>,
     request: Form<LoginRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
-    if ctx
-        .database
-        .is_user_exist(request.username.to_owned())
-        .await?
-    {
+    if user_repo.is_user_exist(request.username.to_owned()).await? {
         log::info!(
             "user: {} already exists, comparing hash and generating token",
             request.username
         );
 
-        let password_hash = ctx
-            .database
+        let password_hash = user_repo
             .get_password_hash(request.username.clone())
             .await?;
 
@@ -51,15 +48,8 @@ pub async fn login(
             .map_err(|_| ApiError::Unauthorized)?;
 
         if is_password_correct {
-            let user_id = ctx
-                .database
-                .get_user_id(request.username.to_owned())
-                .await?;
-
-            let role = ctx
-                .database
-                .get_user_role(request.username.to_owned())
-                .await?;
+            let user_id = user_repo.get_user_id(request.username.to_owned()).await?;
+            let role = user_repo.get_user_role(request.username.to_owned()).await?;
 
             let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
             let new_jwt = generate_signed_jwt(
@@ -72,7 +62,7 @@ pub async fn login(
 
             let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
-            ctx.database
+            user_repo
                 .set_user_tokens(
                     &request.username,
                     &new_jwt,
@@ -135,7 +125,7 @@ pub async fn login(
                 let password_hash = bcrypt::hash_with_salt(request.password.clone(), 10, salt)
                     .map_err(|_| ApiError::InternalServerError)?;
 
-                ctx.database
+                user_repo
                     .create_user(
                         claims.oid.to_owned(),
                         request.username.to_owned(),
@@ -147,7 +137,7 @@ pub async fn login(
                     .await?;
 
                 let role = claims.extension_role.to_owned();
-                ctx.database
+                user_repo
                     .set_user_role(request.username.to_owned(), role.clone())
                     .await?;
 
@@ -162,7 +152,7 @@ pub async fn login(
 
                 let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
-                ctx.database
+                user_repo
                     .set_user_tokens(
                         &request.username,
                         &new_jwt,

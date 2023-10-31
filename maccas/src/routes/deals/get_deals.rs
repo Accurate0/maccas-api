@@ -1,3 +1,4 @@
+use crate::database::offer::OfferRepository;
 use crate::database::types::OfferDatabase;
 use crate::routes::Context;
 use crate::types::api::GetDealsOffer;
@@ -20,9 +21,12 @@ use std::collections::HashMap;
 #[get("/deals")]
 // TODO: optimise, its getting quite slow
 // caching in dynamo probs
-pub async fn get_deals(ctx: &State<Context<'_>>) -> Result<Json<Vec<GetDealsOffer>>, ApiError> {
-    let locked_deals = ctx.database.get_all_locked_deals().await?;
-    let offer_list = ctx.database.get_all_offers_as_vec().await?;
+pub async fn get_deals(
+    _ctx: &State<Context>,
+    offer_repository: &State<OfferRepository>,
+) -> Result<Json<Vec<GetDealsOffer>>, ApiError> {
+    let locked_deals = offer_repository.get_all_locked_deals().await?;
+    let offer_list = offer_repository.get_all_offers_as_vec().await?;
 
     // filter locked deals
     let mut offer_list: Vec<OfferDatabase> = offer_list

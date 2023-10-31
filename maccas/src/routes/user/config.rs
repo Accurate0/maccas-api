@@ -1,5 +1,6 @@
 use crate::{
     constants::mc_donalds::default::{FILTER, STORE_UNIQUE_ID_TYPE},
+    database::{account::AccountRepository, user::UserRepository},
     guards::required_authorization::RequiredAuthorizationHeader,
     proxy, routes,
     types::{error::ApiError, user::UserOptions},
@@ -16,11 +17,11 @@ use rocket::{http::Status, serde::json::Json, State};
 )]
 #[get("/user/config")]
 pub async fn get_user_config(
-    ctx: &State<routes::Context<'_>>,
+    user_repo: &State<UserRepository>,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<UserOptions>, ApiError> {
     let user_id = auth.claims.oid;
-    match ctx.database.get_config_by_user_id(&user_id).await {
+    match user_repo.get_config_by_user_id(&user_id).await {
         Ok(config) => Ok(Json(config.into())),
         Err(_) => Err(ApiError::NotFound),
     }
@@ -40,7 +41,9 @@ pub async fn get_user_config(
 )]
 #[post("/user/config", data = "<config>")]
 pub async fn update_user_config(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    user_repo: &State<UserRepository>,
+    account_repo: &State<AccountRepository>,
     auth: RequiredAuthorizationHeader,
     config: Json<UserOptions>,
 ) -> Result<Status, ApiError> {
@@ -49,13 +52,11 @@ pub async fn update_user_config(
 
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
-    let account = &ctx
-        .database
+    let account = &account_repo
         .get_account(&ctx.config.mcdonalds.service_account_name)
         .await?;
 
-    let api_client = ctx
-        .database
+    let api_client = account_repo
         .get_specific_client(
             http_client,
             &ctx.config.mcdonalds.client_id,
@@ -84,7 +85,7 @@ pub async fn update_user_config(
             ..config.0
         };
 
-        ctx.database
+        user_repo
             .set_config_by_user_id(&user_id, &config.into(), &user_name)
             .await?;
         Ok(Status::NoContent)

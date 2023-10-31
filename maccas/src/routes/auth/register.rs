@@ -1,5 +1,6 @@
 use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
+    database::user::UserRepository,
     routes::{self},
     shared::jwt::generate_signed_jwt,
     types::{
@@ -22,26 +23,20 @@ use rocket::{form::Form, serde::json::Json, State};
 )]
 #[post("/auth/register", data = "<request>")]
 pub async fn register(
-    ctx: &State<routes::Context<'_>>,
+    ctx: &State<routes::Context>,
+    user_repo: &State<UserRepository>,
     request: Form<RegistrationRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
 
     let registration_token = &request.token.as_hyphenated().to_string();
-    let metadata = ctx
-        .database
-        .get_registration_token(registration_token)
-        .await?;
+    let metadata = user_repo.get_registration_token(registration_token).await?;
 
     if metadata.is_single_use && metadata.use_count > 0 {
         return Err(ApiError::NotFound);
     }
 
-    if ctx
-        .database
-        .is_user_exist(request.username.to_owned())
-        .await?
-    {
+    if user_repo.is_user_exist(request.username.to_owned()).await? {
         log::info!("user: {} already exists, can't register", request.username);
         return Err(ApiError::Conflict);
     }
@@ -51,7 +46,7 @@ pub async fn register(
         .map_err(|_| ApiError::InternalServerError)?;
 
     let user_id = uuid::Uuid::new_v4().as_hyphenated().to_string();
-    ctx.database
+    user_repo
         .create_user(
             user_id.clone(),
             request.username.clone(),
@@ -62,7 +57,7 @@ pub async fn register(
         )
         .await?;
 
-    ctx.database
+    user_repo
         .set_user_role(request.username.clone(), metadata.role.clone())
         .await?;
 
@@ -76,7 +71,7 @@ pub async fn register(
 
     let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
-    ctx.database
+    user_repo
         .set_user_tokens(
             &request.username,
             &new_jwt,
@@ -85,7 +80,7 @@ pub async fn register(
         )
         .await?;
 
-    ctx.database
+    user_repo
         .set_registration_token_use_count(registration_token, metadata.use_count + 1)
         .await?;
 

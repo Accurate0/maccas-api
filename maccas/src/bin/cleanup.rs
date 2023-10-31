@@ -5,8 +5,10 @@ use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
 use maccas::constants::config::MAXIMUM_CLEANUP_RETRY;
 use maccas::constants::mc_donalds::default;
+use maccas::database::account::AccountRepository;
+use maccas::database::audit::AuditRepository;
+use maccas::database::offer::OfferRepository;
 use maccas::database::types::AuditActionType;
-use maccas::database::{Database, DynamoDatabase};
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{CleanupMessage, SqsEvent};
 use maccas::{logging, proxy};
@@ -29,13 +31,19 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     }
 
     let client = Client::new(&shared_config);
-    let database: Box<dyn Database> = Box::new(DynamoDatabase::new(
-        client,
+    let offer_repository = OfferRepository::new(
+        client.clone(),
         &config.database.tables,
         &config.database.indexes,
-    ));
+    );
+    let audit_repository = AuditRepository::new(
+        client.clone(),
+        &config.database.tables,
+        &config.database.indexes,
+    );
+    let account_repository = AccountRepository::new(client.clone(), &config.database.tables);
 
-    let locked_deals = database.get_all_locked_deals().await?;
+    let locked_deals = offer_repository.get_all_locked_deals().await?;
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
 
@@ -57,13 +65,13 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     }
 
     let user_id = message.user_id.clone();
-    let (account, offer) = database.get_offer_by_id(&message.deal_uuid).await?;
+    let (account, offer) = offer_repository.get_offer_by_id(&message.deal_uuid).await?;
 
     for _ in 0..MAXIMUM_CLEANUP_RETRY {
         let proxy = proxy::get_proxy(&config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
-        match database
+        match account_repository
             .get_specific_client(
                 http_client,
                 &config.mcdonalds.client_id,
@@ -111,7 +119,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                             )
                             .await?;
 
-                        database
+                        audit_repository
                             .add_to_audit(
                                 AuditActionType::Remove,
                                 user_id,
@@ -122,7 +130,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
                         log::info!("removed from dealstack - {}", response.status);
 
-                        database.unlock_deal(&message.deal_uuid).await?;
+                        offer_repository.unlock_deal(&message.deal_uuid).await?;
                         log::info!("unlocked deal - {}", &message.deal_uuid);
                     }
                     None => {

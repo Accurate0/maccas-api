@@ -1,4 +1,4 @@
-use crate::{database::Database, types::config::GeneralConfig};
+use crate::types::config::GeneralConfig;
 
 pub mod admin;
 pub mod auth;
@@ -12,9 +12,8 @@ pub mod points;
 pub mod statistics;
 pub mod user;
 
-pub struct Context<'a> {
+pub struct Context {
     pub sqs_client: aws_sdk_sqs::Client,
     pub secrets_client: aws_sdk_secretsmanager::Client,
     pub config: GeneralConfig,
-    pub database: Box<dyn Database + Send + Sync + 'a>,
 }

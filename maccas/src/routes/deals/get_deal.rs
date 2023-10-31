@@ -1,5 +1,5 @@
 use crate::{
-    routes::Context,
+    database::offer::OfferRepository,
     types::{api::GetDealsOffer, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -14,10 +14,10 @@ use rocket::{serde::json::Json, State};
 )]
 #[get("/deals/<deal_id>")]
 pub async fn get_deal(
-    ctx: &State<Context<'_>>,
+    offer_repository: &State<OfferRepository>,
     deal_id: &str,
 ) -> Result<Json<GetDealsOffer>, ApiError> {
-    if let Ok((_, offer)) = ctx.database.get_offer_by_id(deal_id).await {
+    if let Ok((_, offer)) = offer_repository.get_offer_by_id(deal_id).await {
         Ok(Json(GetDealsOffer::from(offer)))
     } else {
         Err(ApiError::NotFound)

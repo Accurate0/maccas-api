@@ -5,7 +5,10 @@ use foundation::constants::{AWS_REGION, DEFAULT_AWS_REGION};
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::database::{Database, DynamoDatabase};
+use maccas::database::account::AccountRepository;
+use maccas::database::offer::OfferRepository;
+use maccas::database::point::PointRepository;
+use maccas::database::refresh::RefreshRepository;
 use maccas::extensions::ApiClientExtensions;
 use maccas::logging;
 use maccas::types::config::GeneralConfig;
@@ -38,20 +41,23 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
     let client = Client::new(&shared_config);
     let sqs_client = aws_sdk_sqs::Client::new(&shared_config);
-    let database: Box<dyn Database> = Box::new(DynamoDatabase::new(
-        client,
+    let offer_repository = OfferRepository::new(
+        client.clone(),
         &config.database.tables,
         &config.database.indexes,
-    ));
+    );
+    let account_repository = AccountRepository::new(client.clone(), &config.database.tables);
+    let point_repository = PointRepository::new(client.clone(), &config.database.tables);
+    let refresh_repository = RefreshRepository::new(client.clone(), &config.database.tables);
 
-    let group = database
+    let group = refresh_repository
         .increment_refresh_tracking(&region, config.refresh.total_groups[&region])
         .await?;
 
-    let account_list = database
+    let account_list = account_repository
         .get_accounts_for_region_and_group(&region, &group.to_string())
         .await?;
-    let (client_map, login_failed_accounts) = database
+    let (client_map, login_failed_accounts) = account_repository
         .get_client_map(
             &config,
             &config.mcdonalds.client_id,
@@ -63,9 +69,32 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         .await?;
 
     log::info!("refresh started..");
-    let refresh_cache = database
-        .refresh_offer_cache(&client_map, &config.mcdonalds.ignored_offer_ids)
-        .await?;
+    let mut failed_accounts = Vec::new();
+    let mut new_offers = Vec::new();
+
+    for (account, api_client) in &client_map {
+        match offer_repository
+            .refresh_offer_cache_for(account, api_client, &config.mcdonalds.ignored_offer_ids)
+            .await
+        {
+            Ok(mut o) => {
+                new_offers.append(&mut o);
+                // TODO: PointRepository
+                point_repository
+                    .refresh_point_cache_for(account, api_client)
+                    .await?;
+            }
+            Err(e) => {
+                log::error!("{}: {}", account, e);
+                failed_accounts.push(account.account_name.clone());
+            }
+        };
+    }
+
+    log::info!(
+        "refreshed {} account offer caches..",
+        client_map.keys().len()
+    );
 
     if config.refresh.clear_deal_stacks {
         log::info!("clearing all deal stacks..");
@@ -73,7 +102,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
             let account_name = account.account_name;
             log::info!("clearing deal stack for {}", account_name);
             if login_failed_accounts.contains(&account_name)
-                || refresh_cache.failed_accounts.contains(&account_name)
+                || failed_accounts.contains(&account_name)
             {
                 log::info!("skipped due to login or refresh failure");
             } else {
@@ -82,17 +111,14 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
         }
     }
 
-    if !refresh_cache.failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
+    if !failed_accounts.is_empty() || !login_failed_accounts.is_empty() {
         log::error!("login failed: {:#?}", login_failed_accounts);
-        log::error!("refresh failed: {:#?}", refresh_cache.failed_accounts);
+        log::error!("refresh failed: {:#?}", failed_accounts);
     }
 
     if config.refresh.enable_failure_handler {
-        let failed_accounts = [
-            login_failed_accounts.to_owned(),
-            refresh_cache.failed_accounts.to_owned(),
-        ]
-        .concat();
+        let failed_accounts =
+            [login_failed_accounts.to_owned(), failed_accounts.to_owned()].concat();
 
         let failed_accounts = failed_accounts.iter().unique().map(|account_name| {
             account_list
@@ -112,8 +138,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     }
 
     if config.images.enabled {
-        let image_base_names = refresh_cache
-            .new_offers
+        let image_base_names = new_offers
             .iter()
             .map(|offer| OfferImageBaseName {
                 original: offer.original_image_base_name.clone(),
@@ -138,7 +163,7 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
     // setup the last run time
     if region == DEFAULT_AWS_REGION {
-        database.set_last_refresh().await?;
+        refresh_repository.set_last_refresh().await?;
     }
 
     log::info!(

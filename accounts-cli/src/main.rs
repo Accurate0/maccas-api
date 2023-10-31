@@ -9,11 +9,7 @@ use libmaccas::{
     },
     ApiClient,
 };
-use maccas::{
-    constants,
-    database::{Database, DynamoDatabase},
-    types::config::GeneralConfig,
-};
+use maccas::{constants, database::account::AccountRepository, types::config::GeneralConfig};
 use mailparse::MailHeaderMap;
 use rand::{
     distributions::{Alphanumeric, DistString},
@@ -74,12 +70,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let config = GeneralConfig::load(&shared_config).await?;
     let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-    let database = DynamoDatabase::new(
-        dynamodb_client,
-        &config.database.tables,
-        &config.database.indexes,
-    );
-
+    let account_repository =
+        AccountRepository::new(dynamodb_client.clone(), &config.database.tables);
     let proxy = maccas::proxy::get_proxy(&config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let mut client = ApiClient::new(
@@ -174,7 +166,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 );
 
                 if real_run {
-                    database
+                    account_repository
                         .add_user_account(
                             &username,
                             &username,
@@ -184,7 +176,9 @@ async fn main() -> Result<(), anyhow::Error> {
                         )
                         .await?;
 
-                    database.set_device_id_for(&username, &device_id).await?;
+                    account_repository
+                        .set_device_id_for(&username, &device_id)
+                        .await?;
                 }
 
                 log::info!("[{}] added to database", request.email_address);
@@ -213,13 +207,6 @@ async fn main() -> Result<(), anyhow::Error> {
 
             let x = imap_session.select("INBOX")?.exists;
 
-            let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-            let db = DynamoDatabase::new(
-                dynamodb_client,
-                &config.database.tables,
-                &config.database.indexes,
-            );
-
             log::info!("total messages: {}", x);
             let messages = imap_session.fetch(format!("{}:{}", x, x - count + 1), "RFC822")?;
             log::info!("messages: {}", messages.len());
@@ -242,7 +229,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
 
                 if ac.is_some() && to.is_some() {
-                    let id = db
+                    let id = account_repository
                         .get_device_id_for(
                             format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
                                 .as_str(),
@@ -281,12 +268,13 @@ async fn main() -> Result<(), anyhow::Error> {
                         log::info!("dry run, not activating");
                     }
 
-                    db.set_device_id_for(
-                        format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
-                            .as_str(),
-                        device_id.as_str(),
-                    )
-                    .await?;
+                    account_repository
+                        .set_device_id_for(
+                            format!("{}@{}", to.unwrap().as_str(), config.accounts.domain_name)
+                                .as_str(),
+                            device_id.as_str(),
+                        )
+                        .await?;
 
                     if real_run {
                         tokio::time::sleep(Duration::from_secs(5)).await;
@@ -311,12 +299,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 .map_err(|e| e.0)?;
 
             imap_session.select("INBOX")?;
-            let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-            let db = DynamoDatabase::new(
-                dynamodb_client,
-                &config.database.tables,
-                &config.database.indexes,
-            );
+            let _dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
 
             let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
             for message_uid in all_unseen_emails.iter() {
@@ -349,7 +332,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
 
                 if magic_link.is_some() {
-                    let id = db.get_device_id_for(&to).await?;
+                    let id = account_repository.get_device_id_for(&to).await?;
                     log::info!("existing device id: {:?}", id);
 
                     let device_id = id.unwrap_or_else(|| {
@@ -379,14 +362,17 @@ async fn main() -> Result<(), anyhow::Error> {
                             )
                             .await?;
                         log::info!("{:?}", response);
-                        db.set_device_id_for(&to, device_id.as_str()).await?;
-                        if let Some(token_response) = response.body.response {
-                            db.set_access_and_refresh_token_for(
-                                &to,
-                                &token_response.access_token,
-                                &token_response.refresh_token,
-                            )
+                        account_repository
+                            .set_device_id_for(&to, device_id.as_str())
                             .await?;
+                        if let Some(token_response) = response.body.response {
+                            account_repository
+                                .set_access_and_refresh_token_for(
+                                    &to,
+                                    &token_response.access_token,
+                                    &token_response.refresh_token,
+                                )
+                                .await?;
                         }
                     } else {
                         log::info!("dry run, not activating");
@@ -404,13 +390,8 @@ async fn main() -> Result<(), anyhow::Error> {
             activation_code,
         } => {
             let account_name = account_name.unwrap_or_else(|| email.clone());
-            let dynamodb_client = aws_sdk_dynamodb::Client::new(&shared_config);
-            let db = DynamoDatabase::new(
-                dynamodb_client,
-                &config.database.tables,
-                &config.database.indexes,
-            );
-            let device_id = db.get_device_id_for(&account_name).await?;
+
+            let device_id = account_repository.get_device_id_for(&account_name).await?;
             log::info!("existing device id: {:?}", device_id);
 
             let device_id = device_id.unwrap_or_else(|| Alphanumeric.sample_string(&mut rng, 16));
@@ -442,7 +423,10 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             };
 
-            db.set_device_id_for(&account_name, &device_id).await.ok();
+            account_repository
+                .set_device_id_for(&account_name, &device_id)
+                .await
+                .ok();
         }
     }
 

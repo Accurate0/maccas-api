@@ -1,6 +1,6 @@
 use crate::{
-    guards::required_authorization::RequiredAuthorizationHeader, routes, shared::spending,
-    types::api::UserSpending, types::error::ApiError,
+    database::audit::AuditRepository, guards::required_authorization::RequiredAuthorizationHeader,
+    shared::spending, types::api::UserSpending, types::error::ApiError,
 };
 use rocket::{serde::json::Json, State};
 
@@ -13,13 +13,12 @@ use rocket::{serde::json::Json, State};
 )]
 #[get("/user/spending")]
 pub async fn get_user_spending(
-    ctx: &State<routes::Context<'_>>,
+    audit_repo: &State<AuditRepository>,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<UserSpending>, ApiError> {
     let user_id = auth.claims.oid;
 
-    let entries = ctx
-        .database
+    let entries = audit_repo
         .get_audit_entries_for(user_id.to_string())
         .await
         .unwrap_or_default();

@@ -1,5 +1,5 @@
 use crate::{
-    routes,
+    database::offer::OfferRepository,
     types::{api::TotalAccountsResponse, error::ApiError},
 };
 use rocket::{serde::json::Json, State};
@@ -13,8 +13,8 @@ use rocket::{serde::json::Json, State};
 )]
 #[get("/statistics/total-accounts")]
 pub async fn get_total_accounts(
-    ctx: &State<routes::Context<'_>>,
+    offer_repository: &State<OfferRepository>,
 ) -> Result<Json<TotalAccountsResponse>, ApiError> {
-    let offers = ctx.database.get_all_offers_as_map().await?;
+    let offers = offer_repository.get_all_offers_as_map().await?;
     Ok(Json(TotalAccountsResponse(offers.len() as i64)))
 }
