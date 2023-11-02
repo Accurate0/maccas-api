@@ -5,10 +5,10 @@ edition = "2021"
 publish = false
 
 [dependencies]
-aws-config = { version = "0.56.1" }
-aws-sdk-s3 = { version = "0.33.0" }
-aws-sdk-sqs = { version = "0.33.0" }
-aws-sdk-secretsmanager = { version = "0.33.0" }
+aws-config = { version = "0.57.1" }
+aws-sdk-s3 = { version = "0.35.0" }
+aws-sdk-sqs = { version = "0.35.0" }
+aws-sdk-secretsmanager = { version = "0.35.0" }
 http = { version = "0.2.9" }
 reqwest = { version = "0.11.22" }
 reqwest-retry = { version = "0.3.0" }
@@ -17,7 +17,7 @@ reqwest-tracing = { version = "0.4.6" }
 twilight-model = { version = "0.15.4" }
 mime = { version = "0.3.17" }
 jwt = { version = "0.16.0" }
-serde_json = { version = "1.0.107" }
+serde_json = { version = "1.0.108" }
 lazy_static = "1.4.0"
 uuid = { version = "1.5.0", features = ["v4"] }
 anyhow = "1.0.75"
@@ -28,4 +28,4 @@ config = "0.13.3"
 async-trait = "0.1.74"
 rust-crypto = "0.2.36"
 utoipa = "4.0.0"
-rocket = { version = "0.5.0-rc.3", features = ["json"] }
+rocket = { version = "0.5.0-rc.4", features = ["json"] }
