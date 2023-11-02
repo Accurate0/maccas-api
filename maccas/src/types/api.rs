@@ -253,4 +253,5 @@ pub struct TokenRequest {
 pub struct RegistrationTokenResponse {
     pub token: String,
     pub qr_code_link: String,
+    pub registration_link: String,
 }
