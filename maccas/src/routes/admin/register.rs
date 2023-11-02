@@ -43,7 +43,7 @@ pub async fn registration_token(
     let link_in_qr_code = format!("{}/register?token={}", WEBSITE_BASE_URL, registration_token);
 
     let result: Vec<u8> =
-        qrcode_generator::to_png_to_vec(link_in_qr_code, QrCodeEcc::Low, 1024).unwrap();
+        qrcode_generator::to_png_to_vec(link_in_qr_code.clone(), QrCodeEcc::Low, 1024).unwrap();
 
     s3_client
         .put_object()
@@ -57,5 +57,6 @@ pub async fn registration_token(
     Ok(Json(RegistrationTokenResponse {
         token: registration_token,
         qr_code_link: image_link,
+        registration_link: link_in_qr_code,
     }))
 }
