@@ -50,7 +50,7 @@ pub async fn search_locations(
         )
         .await?;
 
-    log::info!("locations found: {:#?}", response.body);
+    log::info!("locations found: {:?}", response.body);
     let response = response.body.candidates.first();
 
     match response {
