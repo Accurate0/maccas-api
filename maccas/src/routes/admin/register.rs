@@ -5,6 +5,7 @@ use crate::{
     routes,
     types::{api::RegistrationTokenResponse, error::ApiError, role::UserRole},
 };
+use anyhow::Context;
 use aws_sdk_s3::primitives::ByteStream;
 use foundation::aws;
 use qrcode_generator::QrCodeEcc;
@@ -52,7 +53,8 @@ pub async fn registration_token(
         .content_type("image/png")
         .body(ByteStream::from(result))
         .send()
-        .await?;
+        .await
+        .context("error uploading qr code file to s3")?;
 
     Ok(Json(RegistrationTokenResponse {
         token: registration_token,

@@ -45,7 +45,7 @@ impl<'r> FromRequest<'r> for RequiredAuthorizationHeader {
                     claims: token.claims().clone(),
                 })
             }
-            None => Outcome::Failure((
+            None => Outcome::Error((
                 Status::Unauthorized,
                 anyhow::Error::msg(UNAUTHORIZED_MESSAGE),
             )),
