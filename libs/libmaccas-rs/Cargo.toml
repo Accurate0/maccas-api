@@ -6,9 +6,9 @@ license = "MIT"
 description = "McDonald's API Client"
 
 [dependencies]
-serde = { version = "1.0.190", features = ["derive"] }
-serde_json = "1.0.107"
-serde_derive = "1.0.190"
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_derive = { workspace = true }
 reqwest = { version = "0.11.22", features = ["json", "gzip"] }
 uuid = { version = "1.5.0", features = ["v4"] }
 http = "0.2.9"

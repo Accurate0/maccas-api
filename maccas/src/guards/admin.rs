@@ -16,10 +16,10 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
         let auth_header = request.guard::<RequiredAuthorizationHeader>().await;
-        if auth_header.is_failure() {
+        if auth_header.is_error() {
             return auth_header
                 .map(|_| AdminOnlyRoute)
-                .map_failure(|_| (Status::Unauthorized, ApiError::Unauthorized));
+                .map_error(|_| (Status::Unauthorized, ApiError::Unauthorized));
         };
 
         let auth_header = auth_header.unwrap();
@@ -32,7 +32,7 @@ impl<'r> FromRequest<'r> for AdminOnlyRoute {
             log::info!("allowing admin access to {user_id}, role = {:?}", role);
             Outcome::Success(AdminOnlyRoute)
         } else {
-            Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized))
+            Outcome::Error((Status::Unauthorized, ApiError::Unauthorized))
         }
     }
 }

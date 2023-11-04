@@ -39,12 +39,6 @@ use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
 use rocket::Config;
 
-#[cfg(debug_assertions)]
-use {
-    rocket::http::Method,
-    rocket_cors::{AllowedHeaders, AllowedOrigins},
-};
-
 #[macro_use]
 extern crate rocket;
 
@@ -130,29 +124,6 @@ async fn main() -> Result<(), LambdaError> {
             ],
         )
         .configure(config);
-
-    #[cfg(debug_assertions)]
-    let rocket = {
-        let allowed_origins =
-            AllowedOrigins::some_exact(&["http://localhost:5173", "https://dev.maccas.one"]);
-        let cors = rocket_cors::CorsOptions {
-            allowed_origins,
-            allowed_methods: vec![Method::Get, Method::Post, Method::Delete]
-                .into_iter()
-                .map(From::from)
-                .collect(),
-            allowed_headers: AllowedHeaders::some(&[
-                "Authorization",
-                "Accept",
-                "Content-Type",
-                "X-Api-Key",
-            ]),
-            allow_credentials: true,
-            ..Default::default()
-        }
-        .to_cors()?;
-        rocket.attach(cors)
-    };
 
     match rocket.launch().await {
         Ok(_) => {
