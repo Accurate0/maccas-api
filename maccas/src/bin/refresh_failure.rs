@@ -6,8 +6,6 @@ use maccas::constants::config::MAXIMUM_FAILURE_HANDLER_RETRY;
 use maccas::database::account::AccountRepository;
 use maccas::database::offer::OfferRepository;
 use maccas::database::point::PointRepository;
-
-
 use maccas::types::config::GeneralConfig;
 use maccas::types::sqs::{RefreshFailureMessage, SqsEvent};
 use maccas::{logging, proxy};
