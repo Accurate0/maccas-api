@@ -10,7 +10,6 @@ use libmaccas::types::request::Credentials;
 use libmaccas::ApiClient;
 use maccas::constants;
 use maccas::database::account::AccountRepository;
-
 use maccas::logging;
 use maccas::proxy;
 use maccas::types::config::GeneralConfig;
