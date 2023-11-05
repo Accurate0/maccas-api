@@ -137,21 +137,21 @@ impl<T> From<SdkError<T>> for ApiError {
 
 impl From<ClientError> for ApiError {
     fn from(e: ClientError) -> Self {
-        log::error!("libmaccas: UNHANDLED ERROR: {}", e);
+        log::error!("libmaccas: UNHANDLED ERROR: {:?}", e);
         handle_client_error(&e)
     }
 }
 
 impl From<&ClientError> for ApiError {
     fn from(e: &ClientError) -> Self {
-        log::error!("libmaccas: UNHANDLED ERROR: {}", e);
+        log::error!("libmaccas: UNHANDLED ERROR: {:?}", e);
         handle_client_error(e)
     }
 }
 
 impl From<places::types::ClientError> for ApiError {
     fn from(e: places::types::ClientError) -> Self {
-        log::error!("places: UNHANDLED ERROR: {}", e);
+        log::error!("places: UNHANDLED ERROR: {:?}", e);
         ApiError::UnhandledError
     }
 }
