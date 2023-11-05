@@ -8,6 +8,7 @@ use crate::{
     types::{api::RestaurantInformationList, error::ApiError},
 };
 use foundation::extensions::SecretsManagerExtensions;
+use places::types::{Area, Location, PlacesRequest, Rectangle};
 use rocket::{serde::json::Json, State};
 
 #[utoipa::path(
@@ -31,7 +32,31 @@ pub async fn search_locations(
             .await?,
         http_client,
     );
-    let response = api_client.get_place_by_text(text).await?;
+
+    // Australia square, low -> high
+    // -46.2858922444765, 109.62638287960314
+    // -10.481731180947541, 156.54739153571109
+    let response = api_client
+        .get_place_by_text(&PlacesRequest {
+            text_query: text.to_owned(),
+            max_result_count: 1,
+            location_bias: Area {
+                rectangle: Rectangle {
+                    low: Location {
+                        latitude: -46.2858922444765,
+                        longitude: 109.62638287960314,
+                    },
+                    high: Location {
+                        latitude: -10.481731180947541,
+                        longitude: 156.54739153571109,
+                    },
+                },
+            },
+        })
+        .await?;
+
+    log::info!("locations found: {:?}", response.body);
+
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
@@ -50,13 +75,12 @@ pub async fn search_locations(
         )
         .await?;
 
-    log::info!("locations found: {:?}", response.body);
-    let response = response.body.candidates.first();
+    let response = response.body.places.first();
 
     match response {
         Some(response) => {
-            let lat = response.geometry.location.lat;
-            let lng = response.geometry.location.lng;
+            let lat = response.location.latitude;
+            let lng = response.location.longitude;
             let response = api_client
                 .restaurant_location(
                     &LOCATION_SEARCH_DISTANCE,

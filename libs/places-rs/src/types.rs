@@ -35,37 +35,55 @@ pub enum ClientError {
     RequestOrMiddlewareError(#[from] reqwest_middleware::Error),
     #[error("request error")]
     RequestError(#[from] reqwest::Error),
+    #[error("serialization error")]
+    SerializationError(#[from] serde_json::Error),
     #[error("unknown error")]
     Unknown,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlacesRequest {
+    pub text_query: String,
+    pub location_bias: Area,
+    pub max_result_count: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Area {
+    pub rectangle: Rectangle,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rectangle {
+    pub low: Location,
+    pub high: Location,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlacesResponse {
-    pub status: String,
-    pub candidates: Vec<Place>,
+    pub places: Vec<Place>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Place {
-    pub formatted_address: String,
-    pub geometry: Geometry,
-    pub name: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Geometry {
     pub location: Location,
-    pub viewport: Viewport,
+    pub display_name: DisplayName,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Location {
-    pub lat: f64,
-    pub lng: f64,
+    pub latitude: f64,
+    pub longitude: f64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Viewport {
-    pub northeast: Location,
-    pub southwest: Location,
+#[serde(rename_all = "camelCase")]
+pub struct DisplayName {
+    pub text: String,
+    pub language_code: String,
 }
