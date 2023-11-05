@@ -75,9 +75,7 @@ pub async fn search_locations(
         )
         .await?;
 
-    let response = response.body.places.first();
-
-    match response {
+    match response.body.places.first() {
         Some(response) => {
             let lat = response.location.latitude;
             let lng = response.location.longitude;
