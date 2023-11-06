@@ -18,10 +18,10 @@ aws-types = { workspace = true }
 aws-sdk-sqs = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
 
-serde = "1.0.190"
+serde = "1.0.191"
 serde_json = "1.0.108"
 serde_derive = "1.0.190"
-serde_dynamo = { version = "4.2.8", features = ["aws-sdk-dynamodb+0_33"] }
+serde_dynamo = { version = "4.2.9", features = ["aws-sdk-dynamodb+0_33"] }
 strum_macros = "0.25"
 
 twilight-model = "0.15.4"
@@ -70,7 +70,7 @@ qrcode-generator = "4.1.9"
 async-recursion = "1.0.5"
 
 [build-dependencies]
-vergen = { version = "8.2.5", features = ["build", "rustc", "git", "gitoxide"] }
+vergen = { version = "8.2.6", features = ["build", "rustc", "git", "gitoxide"] }
 
 
 [lib]
