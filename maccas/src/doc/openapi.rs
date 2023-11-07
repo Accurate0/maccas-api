@@ -30,6 +30,7 @@ use crate::types::api::{
     TokenRequest, TokenResponse, UserSpending,
 };
 use crate::types::role::UserRole;
+use crate::types::token::JwtClaim;
 use crate::types::user::UserOptions;
 use utoipa::OpenApi;
 
@@ -87,7 +88,8 @@ use utoipa::OpenApi;
             TokenRequest,
             UserRole,
             RegistrationRequest,
-            RegistrationTokenResponse
+            RegistrationTokenResponse,
+            JwtClaim
         ),
     )
 )]

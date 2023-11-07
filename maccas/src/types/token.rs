@@ -1,8 +1,9 @@
 use super::role::UserRole;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, ToSchema)]
 pub struct JwtClaim {
     pub exp: i64,
     pub iss: String,
