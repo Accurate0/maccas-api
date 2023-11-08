@@ -10,7 +10,7 @@ libmaccas = { path = "../libs/libmaccas-rs" }
 places = { path = "../libs/places-rs" }
 foundation = { path = "../libs/foundation" }
 
-lambda_runtime = "0.8.2"
+lambda_runtime = "0.8.3"
 lambda_http = "0.8.1"
 aws-sdk-dynamodb = { workspace = true }
 aws-sdk-s3 = { workspace = true }
