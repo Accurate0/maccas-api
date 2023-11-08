@@ -11,7 +11,7 @@ places = { path = "../libs/places-rs" }
 foundation = { path = "../libs/foundation" }
 
 lambda_runtime = "0.8.2"
-lambda_http = "0.8.1"
+lambda_http = "0.8.2"
 aws-sdk-dynamodb = { workspace = true }
 aws-sdk-s3 = { workspace = true }
 aws-types = { workspace = true }
