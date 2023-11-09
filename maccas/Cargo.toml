@@ -56,7 +56,7 @@ log = "0.4.20"
 async-trait = "0.1.74"
 rand = { version = "0.8.5", features = ["small_rng"] }
 itertools = "0.11.0"
-tokio = "1.33.0"
+tokio = "1.34.0"
 anyhow = "1.0.75"
 utoipa = { version = "4.0.0", features = ["rocket_extras", "uuid"] }
 lazy_static = "1.4.0"
