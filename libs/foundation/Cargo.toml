@@ -9,7 +9,7 @@ aws-config = { workspace = true }
 aws-sdk-s3 = { workspace = true }
 aws-sdk-sqs = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
-http = { version = "0.2.10" }
+http = { version = "0.2.11" }
 reqwest = { version = "0.11.22" }
 reqwest-retry = { version = "0.3.0" }
 reqwest-middleware = { version = "0.2.4" }
@@ -27,5 +27,5 @@ serde = { workspace = true }
 config = "0.13.3"
 async-trait = "0.1.74"
 rust-crypto = "0.2.36"
-utoipa = "4.0.0"
+utoipa = "4.1.0"
 rocket = { workspace = true }
