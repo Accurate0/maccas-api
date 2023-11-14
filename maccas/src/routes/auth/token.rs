@@ -42,7 +42,7 @@ pub async fn get_token(
 
     // the token is verified and the refresh token matches the last one created
     log::info!(
-        "saved: {:#?} compared to provided: {}",
+        "saved: {:?} compared to provided: {}",
         refresh_tokens,
         request.refresh_token
     );
