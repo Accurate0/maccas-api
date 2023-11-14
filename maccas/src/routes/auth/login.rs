@@ -2,7 +2,7 @@ use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
     database::user::UserRepository,
     routes,
-    shared::jwt::generate_signed_jwt,
+    shared::jwt::{generate_signed_jwt, rotate_refresh_tokens},
     types::{
         adb2c::{Adb2cClaims, Adb2cTokenResponse},
         api::{LoginRequest, TokenResponse},
@@ -61,12 +61,17 @@ pub async fn login(
             )?;
 
             let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
+            let (_, mut refresh_tokens) = user_repo
+                .get_user_tokens(request.username.to_owned())
+                .await?;
+
+            rotate_refresh_tokens(&mut refresh_tokens, refresh_token.clone());
 
             user_repo
                 .set_user_tokens(
                     &request.username,
                     &new_jwt,
-                    &refresh_token,
+                    refresh_tokens,
                     chrono::Duration::days(7),
                 )
                 .await?;
@@ -156,7 +161,7 @@ pub async fn login(
                     .set_user_tokens(
                         &request.username,
                         &new_jwt,
-                        &refresh_token,
+                        vec![refresh_token.clone()],
                         chrono::Duration::days(7),
                     )
                     .await?;

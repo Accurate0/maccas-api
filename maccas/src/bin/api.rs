@@ -1,5 +1,6 @@
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
+use http::header::ORIGIN;
 use lambda_http::Error as LambdaError;
 use maccas::database::account::AccountRepository;
 use maccas::database::audit::AuditRepository;
@@ -38,6 +39,9 @@ use maccas::routes::user::spending::get_user_spending;
 use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
 use rocket::Config;
+
+#[cfg(debug_assertions)]
+use {rocket::fairing::AdHoc, rocket::http::Method, rocket::http::Status};
 
 #[macro_use]
 extern crate rocket;
@@ -124,6 +128,32 @@ async fn main() -> Result<(), LambdaError> {
             ],
         )
         .configure(config);
+
+    #[cfg(debug_assertions)]
+    let rocket = {
+        rocket.attach(AdHoc::on_response("cors", |req, response| {
+            Box::pin(async move {
+                let is_options = req.method() == Method::Options;
+                let origin = req.headers().get_one(ORIGIN.as_str());
+                let is_localhost = origin.map_or(false, |o| o.starts_with("http://localhost"));
+
+                if is_localhost {
+                    response.set_raw_header("Access-Control-Allow-Origin", origin.unwrap_or(""));
+                }
+
+                if is_options && is_localhost {
+                    response.set_raw_header("Access-Control-Allow-Methods", "GET,POST,DELETE");
+                    response.set_raw_header(
+                        "Access-Control-Allow-Headers",
+                        "Authorization,Content-Type",
+                    );
+                    response.set_raw_header("Access-Control-Allow-Credentials", "true");
+                    response.set_raw_header("Access-Control-Max-Age", "259200");
+                    response.set_status(Status::Ok)
+                }
+            })
+        }))
+    };
 
     match rocket.launch().await {
         Ok(_) => {
