@@ -75,7 +75,7 @@ pub async fn register(
         .set_user_tokens(
             &request.username,
             &new_jwt,
-            &refresh_token,
+            vec![refresh_token.clone()],
             chrono::Duration::days(7),
         )
         .await?;

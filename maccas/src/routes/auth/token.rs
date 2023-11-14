@@ -2,7 +2,7 @@ use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
     database::user::UserRepository,
     routes,
-    shared::jwt::generate_signed_jwt,
+    shared::jwt::{generate_signed_jwt, rotate_refresh_tokens},
     types::{
         api::{TokenRequest, TokenResponse},
         error::ApiError,
@@ -37,15 +37,17 @@ pub async fn get_token(
     let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
 
     let username = token.claims().username.to_owned();
-    let (_, refresh_token) = user_repo.get_user_tokens(username.to_owned()).await?;
+    let (_, mut refresh_tokens) = user_repo.get_user_tokens(username.to_owned()).await?;
     log::info!("refresh token for {username}");
 
     // the token is verified and the refresh token matches the last one created
     log::info!(
-        "saved: {refresh_token} compared to provided: {}",
+        "saved: {:#?} compared to provided: {}",
+        refresh_tokens,
         request.refresh_token
     );
-    if refresh_token == request.refresh_token {
+
+    if refresh_tokens.iter().any(|x| *x == request.refresh_token) {
         log::info!("token matches last created refresh and access, generating new ones");
         let user_id = user_repo.get_user_id(username.to_owned()).await?;
         let role = user_repo.get_user_role(username.to_owned()).await?;
@@ -59,12 +61,13 @@ pub async fn get_token(
         )?;
 
         let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
+        rotate_refresh_tokens(&mut refresh_tokens, refresh_token.clone());
 
         user_repo
             .set_user_tokens(
                 &username,
                 &new_jwt,
-                &refresh_token,
+                refresh_tokens,
                 chrono::Duration::days(7),
             )
             .await?;

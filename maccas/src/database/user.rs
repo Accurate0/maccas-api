@@ -39,7 +39,7 @@ impl UserRepository {
         &self,
         username: &str,
         auth_token: &str,
-        refresh_token: &str,
+        refresh_token: Vec<String>,
         ttl: Duration,
     ) -> Result<(), anyhow::Error> {
         let utc: DateTime<Utc> = Utc::now().checked_add_signed(ttl).unwrap();
@@ -49,7 +49,7 @@ impl UserRepository {
             .table_name(&self.user_tokens)
             .item(USERNAME, AttributeValue::S(username.lowercase_trim()))
             .item(ACCESS_TOKEN, AttributeValue::S(auth_token.to_owned()))
-            .item(REFRESH_TOKEN, AttributeValue::S(refresh_token.to_owned()))
+            .item(REFRESH_TOKEN, AttributeValue::Ss(refresh_token))
             .item(TTL, AttributeValue::N(utc.timestamp().to_string()))
             .send()
             .await?;
@@ -60,7 +60,7 @@ impl UserRepository {
     pub async fn get_user_tokens(
         &self,
         username: String,
-    ) -> Result<(String, String), anyhow::Error> {
+    ) -> Result<(String, Vec<String>), anyhow::Error> {
         let response = self
             .client
             .get_item()
@@ -76,12 +76,13 @@ impl UserRepository {
             .as_s()
             .cloned()
             .unwrap();
+
         let refresh_token = item
             .get(REFRESH_TOKEN)
             .context("must have refresh token")?
-            .as_s()
+            .as_ss()
             .cloned()
-            .unwrap();
+            .unwrap_or_else(|_| vec![item.get(REFRESH_TOKEN).unwrap().as_s().cloned().unwrap()]);
 
         Ok((access_token, refresh_token))
     }
