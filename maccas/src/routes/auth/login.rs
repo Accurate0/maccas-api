@@ -61,9 +61,14 @@ pub async fn login(
             )?;
 
             let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
-            let (_, mut refresh_tokens) = user_repo
-                .get_user_tokens(request.username.to_owned())
-                .await?;
+            let mut refresh_tokens =
+                match user_repo.get_user_tokens(request.username.to_owned()).await {
+                    Ok((_, refresh_tokens)) => refresh_tokens,
+                    Err(e) => {
+                        log::warn!("error getting existing refresh tokens because: {}", e);
+                        Default::default()
+                    }
+                };
 
             rotate_refresh_tokens(&mut refresh_tokens, refresh_token.clone());
 
