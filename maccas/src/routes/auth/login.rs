@@ -60,7 +60,7 @@ pub async fn login(
                 &request.username,
             )?;
 
-            let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
+            let new_refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
             let mut refresh_tokens =
                 match user_repo.get_user_tokens(request.username.to_owned()).await {
                     Ok((_, refresh_tokens)) => refresh_tokens,
@@ -70,7 +70,7 @@ pub async fn login(
                     }
                 };
 
-            rotate_refresh_tokens(&mut refresh_tokens, refresh_token.clone());
+            rotate_refresh_tokens(&mut refresh_tokens, new_refresh_token.clone());
 
             user_repo
                 .set_user_tokens(
@@ -83,7 +83,7 @@ pub async fn login(
 
             return Ok(Json(TokenResponse {
                 token: new_jwt,
-                refresh_token,
+                refresh_token: new_refresh_token,
                 role,
             }));
         } else {
