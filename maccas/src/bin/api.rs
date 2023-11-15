@@ -1,6 +1,5 @@
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
-use http::header::ORIGIN;
 use lambda_http::Error as LambdaError;
 use maccas::database::account::AccountRepository;
 use maccas::database::audit::AuditRepository;
@@ -41,7 +40,7 @@ use rocket::config::Ident;
 use rocket::Config;
 
 #[cfg(debug_assertions)]
-use {rocket::fairing::AdHoc, rocket::http::Method, rocket::http::Status};
+use {http::header::ORIGIN, rocket::fairing::AdHoc, rocket::http::Method, rocket::http::Status};
 
 #[macro_use]
 extern crate rocket;
