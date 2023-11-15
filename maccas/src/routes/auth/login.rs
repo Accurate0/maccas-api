@@ -45,7 +45,10 @@ pub async fn login(
             .await?;
 
         let is_password_correct = bcrypt::verify(request.password.as_bytes(), &password_hash)
-            .map_err(|_| ApiError::Unauthorized)?;
+            .map_err(|e| {
+                log::error!("bcrypt error: {}", e);
+                ApiError::Unauthorized
+            })?;
 
         if is_password_correct {
             let user_id = user_repo.get_user_id(request.username.to_owned()).await?;
