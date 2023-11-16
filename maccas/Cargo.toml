@@ -21,7 +21,7 @@ aws-sdk-secretsmanager = { workspace = true }
 serde = "1.0.192"
 serde_json = "1.0.108"
 serde_derive = "1.0.190"
-serde_dynamo = { version = "4.2.10", features = ["aws-sdk-dynamodb+0_33"] }
+serde_dynamo = { version = "4.2.11", features = ["aws-sdk-dynamodb+0_33"] }
 strum_macros = "0.25"
 
 twilight-model = "0.15.4"
