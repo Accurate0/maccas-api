@@ -18,7 +18,6 @@ use itertools::Itertools;
 use libmaccas::ApiClient;
 use std::iter::Iterator;
 use std::{collections::HashMap, time::SystemTime};
-use tokio_stream::StreamExt;
 
 struct Index {
     current_deals_account_name: String,
@@ -300,18 +299,16 @@ impl OfferRepository {
                 }
 
                 // remove old ones
-                if let Some(items) = to_delete.items() {
-                    log::info!("removing {} entries", items.len());
-                    for item in items {
-                        let id = item.get(DEAL_UUID);
-                        if let Some(id) = id {
-                            self.client
-                                .delete_item()
-                                .table_name(&self.current_deals)
-                                .key(DEAL_UUID, id.clone())
-                                .send()
-                                .await?;
-                        }
+                log::info!("removing {} entries", to_delete.items().len());
+                for item in to_delete.items() {
+                    let id = item.get(DEAL_UUID);
+                    if let Some(id) = id {
+                        self.client
+                            .delete_item()
+                            .table_name(&self.current_deals)
+                            .key(DEAL_UUID, id.clone())
+                            .send()
+                            .await?;
                     }
                 }
 
@@ -355,7 +352,6 @@ impl OfferRepository {
 
         Ok(resp
             .items()
-            .unwrap_or_default()
             .iter()
             .map(|o| o.get(DEAL_UUID).unwrap().as_s().unwrap().to_owned())
             .collect_vec())

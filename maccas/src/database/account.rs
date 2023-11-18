@@ -91,11 +91,7 @@ impl AccountRepository {
             .send()
             .await?;
 
-        let m = resp
-            .items()
-            .context("no account")?
-            .first()
-            .context("no account")?;
+        let m = resp.items().first().context("no account")?;
 
         Ok(UserAccountDatabase {
             account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
@@ -123,20 +119,17 @@ impl AccountRepository {
             .send()
             .await?;
 
-        let items = resp.items();
-        Ok(match items {
-            Some(items) => items
-                .iter()
-                .map(|m| UserAccountDatabase {
-                    account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
-                    login_username: m[LOGIN_USERNAME].as_s().unwrap().to_string(),
-                    login_password: m[LOGIN_PASSWORD].as_s().unwrap().to_string(),
-                    region: m[REGION].as_s().unwrap().to_string(),
-                    group: m[GROUP].as_s().unwrap().to_string(),
-                })
-                .collect_vec(),
-            None => Vec::default(),
-        })
+        Ok(resp
+            .items()
+            .iter()
+            .map(|m| UserAccountDatabase {
+                account_name: m[ACCOUNT_NAME].as_s().unwrap().to_string(),
+                login_username: m[LOGIN_USERNAME].as_s().unwrap().to_string(),
+                login_password: m[LOGIN_PASSWORD].as_s().unwrap().to_string(),
+                region: m[REGION].as_s().unwrap().to_string(),
+                group: m[GROUP].as_s().unwrap().to_string(),
+            })
+            .collect_vec())
     }
 
     #[async_recursion]
