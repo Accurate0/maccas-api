@@ -168,7 +168,6 @@ impl UserRepository {
             .send()
             .await?
             .items()
-            .unwrap_or_default()
             .iter()
             .map(|i| -> Result<User, anyhow::Error> {
                 Ok(User {
@@ -339,8 +338,8 @@ impl UserRepository {
             .send()
             .await?;
 
-        if resp.items().context("no user config found")?.len() == 1 {
-            let item = resp.items().unwrap().first().unwrap();
+        if resp.items().len() == 1 {
+            let item = resp.items().first().unwrap();
             let config: UserOptionsDatabase = serde_dynamo::from_item(
                 item[USER_CONFIG].as_m().ok().context("no config")?.clone(),
             )?;

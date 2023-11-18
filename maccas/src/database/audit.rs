@@ -8,7 +8,6 @@ use crate::{
         config::{Indexes, Tables},
     },
 };
-use anyhow::Context;
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
@@ -96,8 +95,6 @@ impl AuditRepository {
 
         Ok(resp
             .items()
-            .context("no entries for user id provided")
-            .unwrap_or_default()
             .iter()
             .map(|item| {
                 let action = AuditActionType::from_str(item[ACTION].as_s().unwrap()).unwrap();

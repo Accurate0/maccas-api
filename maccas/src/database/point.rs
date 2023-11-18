@@ -9,7 +9,6 @@ use chrono::{DateTime, Utc};
 use foundation::hash::get_short_sha1;
 use libmaccas::ApiClient;
 use std::{collections::HashMap, time::SystemTime};
-use tokio_stream::StreamExt;
 
 pub struct PointRepository {
     client: aws_sdk_dynamodb::Client,
@@ -107,8 +106,8 @@ impl PointRepository {
             .send()
             .await?;
 
-        if resp.items().context("no account found")?.len() == 1 {
-            let item = resp.items().unwrap().first().unwrap();
+        if resp.items().len() == 1 {
+            let item = resp.items().first().unwrap();
             let account: UserAccountDatabase = serde_dynamo::from_item(
                 item[ACCOUNT_INFO]
                     .as_m()
