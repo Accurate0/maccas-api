@@ -15,9 +15,9 @@ where
     type Error = R::Err;
 
     fn from_param(param: &'_ str) -> Result<Self, Self::Error> {
-        match param.parse::<L>() {
-            Ok(p) => Ok(Either::Left(p)),
-            Err(_) => Ok(Either::Right(param.parse::<R>()?)),
-        }
+        Ok(match param.parse::<L>() {
+            Ok(p) => Either::Left(p),
+            Err(_) => Either::Right(param.parse::<R>()?),
+        })
     }
 }
