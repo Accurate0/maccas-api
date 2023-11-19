@@ -1,6 +1,7 @@
 pub mod aws;
 pub mod config;
 pub mod constants;
+pub mod either;
 pub mod extensions;
 pub mod hash;
 pub mod http;
