@@ -15,9 +15,23 @@ where
     type Error = R::Err;
 
     fn from_param(param: &'_ str) -> Result<Self, Self::Error> {
-        Ok(match param.parse::<L>() {
+        Either::from_str(param)
+    }
+}
+
+impl<L, R> FromStr for Either<L, R>
+where
+    L: FromStr,
+    R: FromStr,
+    L::Err: Sync + Send + Debug,
+    R::Err: Sync + Send + Debug,
+{
+    type Err = R::Err;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.parse::<L>() {
             Ok(p) => Either::Left(p),
-            Err(_) => Either::Right(param.parse::<R>()?),
+            Err(_) => Either::Right(s.parse::<R>()?),
         })
     }
 }
