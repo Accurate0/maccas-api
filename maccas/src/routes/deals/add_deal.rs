@@ -42,6 +42,8 @@ pub async fn add_deal(
     let mut rng = StdRng::from_entropy();
     let locked_deals = offer_repository.get_all_locked_deals().await?;
 
+    // "".parse::<Either<i32, uuid::Uuid>>();
+
     let deal_id = match offer_id {
         Either::Left(proposition_id) => {
             let all_deals: Vec<String> = offer_repository
