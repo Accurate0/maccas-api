@@ -12,6 +12,7 @@ use crate::types::sqs::{CleanupMessage, ImagesRefreshMessage};
 use crate::{proxy, routes};
 use anyhow::Context;
 use chrono::Duration;
+use foundation::either::Either;
 use itertools::Itertools;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
@@ -28,41 +29,45 @@ use rocket::{serde::json::Json, State};
     ),
     tag = "deals",
 )]
-#[post("/deals/<proposition_id>?<store>")]
+#[post("/deals/<offer_id>?<store>")]
 pub async fn add_deal(
     ctx: &State<routes::Context>,
     offer_repository: &State<OfferRepository>,
     audit_repo: &State<AuditRepository>,
     account_repo: &State<AccountRepository>,
-    proposition_id: &str,
+    offer_id: Either<i64, uuid::Uuid>,
     store: String,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Json<OfferResponse>, ApiError> {
     let mut rng = StdRng::from_entropy();
     let locked_deals = offer_repository.get_all_locked_deals().await?;
 
-    let all_deals = offer_repository
-        .find_all_by_proposition_id(proposition_id)
-        .await?;
-    let mut deals: Vec<_> = all_deals
-        .iter()
-        .filter(|offer| !locked_deals.contains(offer))
-        .collect();
+    let deal_id = match offer_id {
+        Either::Left(proposition_id) => {
+            let all_deals: Vec<String> = offer_repository
+                .find_all_by_proposition_id(&proposition_id.to_string())
+                .await?
+                .into_iter()
+                .filter(|offer| !locked_deals.contains(offer))
+                .collect();
 
-    log::info!("found {} matching deals", deals.len());
+            log::info!("found {} matching deals", all_deals.len());
 
-    deals.shuffle(&mut rng);
-    let deal_id = deals
-        .first()
-        .context("must have at least one")
-        .map_err(|_| ApiError::NotFound)?;
+            all_deals
+                .choose(&mut rng)
+                .context("must find at least one")
+                .map_err(|_| ApiError::NotFound)?
+                .to_owned()
+        }
+        Either::Right(deal_id) => deal_id.as_hyphenated().to_string(),
+    };
 
     // need to catch errors and ensure the deal is unlocked to allow retries on 599
-    let func = async move {
-        let (account, offer) = offer_repository.get_offer_by_id(deal_id).await?;
+    let func = async {
+        let (account, offer) = offer_repository.get_offer_by_id(&deal_id).await?;
         // lock the deal from appearing in GET /deals
         offer_repository
-            .lock_deal(deal_id, Duration::hours(DEFAULT_LOCK_TTL_HOURS))
+            .lock_deal(&deal_id, Duration::hours(DEFAULT_LOCK_TTL_HOURS))
             .await?;
 
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
@@ -247,7 +252,7 @@ pub async fn add_deal(
     match func.await {
         Ok(response) => Ok(response),
         Err(err) => {
-            if let Err(e) = offer_repository.unlock_deal(deal_id).await {
+            if let Err(e) = offer_repository.unlock_deal(&deal_id).await {
                 log::error!("error unlocking deal after initial error: {}", e);
             }
 
