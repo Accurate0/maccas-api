@@ -1,22 +1,23 @@
 use rocket::request::FromParam;
 use std::{fmt::Debug, str::FromStr};
-use uuid::Uuid;
 
+#[derive(Debug)]
 pub enum Either<L, R> {
     Left(L),
     Right(R),
 }
 
-impl<L: FromStr> FromParam<'_> for Either<L, Uuid>
+impl<L: FromStr, R: FromStr> FromParam<'_> for Either<L, R>
 where
     L::Err: Sync + Send + Debug,
+    R::Err: Sync + Send + Debug,
 {
-    type Error = L::Err;
+    type Error = R::Err;
 
     fn from_param(param: &'_ str) -> Result<Self, Self::Error> {
-        match uuid::Uuid::parse_str(param) {
-            Ok(uuid) => Ok(Either::Right(uuid)),
-            Err(_) => Ok(Either::Left(param.parse()?)),
+        match param.parse::<L>() {
+            Ok(p) => Ok(Either::Left(p)),
+            Err(_) => Ok(Either::Right(param.parse::<R>()?)),
         }
     }
 }
