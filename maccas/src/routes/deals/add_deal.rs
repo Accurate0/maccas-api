@@ -41,6 +41,7 @@ pub async fn add_deal(
 ) -> Result<Json<OfferResponse>, ApiError> {
     let mut rng = StdRng::from_entropy();
     let locked_deals = offer_repository.get_all_locked_deals().await?;
+    log::info!("Either: {:#?}", offer_id);
 
     let deal_id = match offer_id {
         Either::Left(proposition_id) => {
