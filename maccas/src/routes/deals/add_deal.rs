@@ -106,22 +106,19 @@ pub async fn add_deal(
             .add_to_offers_dealstack(&offer_proposition_id, mc_donalds::default::OFFSET, &store)
             .await;
 
-        match resp {
-            Ok(_) => {}
-            Err(ref e) => {
-                if let Some(status) = e.status() {
-                    // if adding to the deal stack fails, we fail...
-                    // we let the code above lock the deal though.
-                    // likely case is someone redeeming a deal but also removing it..
-                    // this lock will keep it removed and provide an error
-                    // 409 Conflict means the offer already exists
-                    // 404 when offer is already redeemed
-                    if !status.is_success() && status.as_u16() != 409 {
-                        return Err(ApiError::McDonaldsError);
-                    }
-                } else {
-                    return Err(e.into());
+        if let Err(ref e) = resp {
+            if let Some(status) = e.status() {
+                // if adding to the deal stack fails, we fail...
+                // we let the code above lock the deal though.
+                // likely case is someone redeeming a deal but also removing it..
+                // this lock will keep it removed and provide an error
+                // 409 Conflict means the offer already exists
+                // 404 when offer is already redeemed
+                if !status.is_success() && status.as_u16() != 409 {
+                    return Err(ApiError::McDonaldsError);
                 }
+            } else {
+                return Err(e.into());
             }
         };
 
