@@ -24,7 +24,7 @@ anyhow = "1.0.75"
 log = "0.4.20"
 fern = "0.6.2"
 serde = { workspace = true }
-config = "0.13.3"
+config = "0.13.4"
 async-trait = "0.1.74"
 rust-crypto = "0.2.36"
 utoipa = "4.1.0"
