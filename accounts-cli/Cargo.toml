@@ -8,7 +8,7 @@ maccas = { path = "../maccas" }
 foundation = { path = "../libs/foundation" }
 libmaccas = { path = "../libs/libmaccas-rs" }
 
-clap = { version = "4.4.8", features = ["derive"] }
+clap = { version = "4.4.10", features = ["derive"] }
 aws-sdk-dynamodb = { workspace = true }
 log = "0.4.20"
 tokio = { version = "1.34.0", features = ["macros"] }
