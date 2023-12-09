@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Tables {
     pub token_cache: String,
@@ -20,7 +20,7 @@ pub struct Tables {
     pub registration_tokens: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Indexes {
     pub audit_user_id_index: String,
@@ -28,13 +28,13 @@ pub struct Indexes {
     pub current_deals_account_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct JwtConfig {
     pub application_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageConfig {
     pub enabled: bool,
@@ -45,7 +45,7 @@ pub struct ImageConfig {
     pub queue_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct McDonaldsConfig {
     pub client_id: String,
@@ -55,14 +55,14 @@ pub struct McDonaldsConfig {
     pub service_account_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DatabaseConfig {
     pub tables: Tables,
     pub indexes: Indexes,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyConfig {
     pub address: String,
@@ -70,7 +70,7 @@ pub struct ProxyConfig {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RefreshConfig {
     pub total_groups: HashMap<String, i8>,
@@ -80,20 +80,20 @@ pub struct RefreshConfig {
     pub failure_queue_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CleanupConfig {
     pub enabled: bool,
     pub queue_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiConfig {
     pub jwt: JwtConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct EmailConfig {
     pub address: String,
@@ -101,7 +101,7 @@ pub struct EmailConfig {
     pub server_address: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountsConfig {
     pub email: EmailConfig,
@@ -110,7 +110,7 @@ pub struct AccountsConfig {
     pub queue_name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GeneralConfig {
     pub mcdonalds: McDonaldsConfig,

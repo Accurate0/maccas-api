@@ -58,7 +58,7 @@ pub async fn register(
         .await?;
 
     user_repo
-        .set_role(request.username.clone(), metadata.role.clone())
+        .set_role(request.username.clone(), metadata.role)
         .await?;
 
     let new_jwt = generate_signed_jwt(
@@ -87,6 +87,6 @@ pub async fn register(
     Ok(Json(TokenResponse {
         token: new_jwt,
         refresh_token,
-        role: metadata.role.clone(),
+        role: metadata.role,
     }))
 }

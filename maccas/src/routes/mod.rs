@@ -19,6 +19,7 @@ pub mod points;
 pub mod statistics;
 pub mod user;
 
+#[derive(Clone)]
 pub struct Database {
     pub user_repository: UserRepository,
     pub account_repository: AccountRepository,
@@ -28,8 +29,7 @@ pub struct Database {
     pub refresh_repository: RefreshRepository,
 }
 
-impl juniper::Context for Context {}
-
+#[derive(Clone)]
 pub struct Context {
     pub sqs_client: aws_sdk_sqs::Client,
     pub secrets_client: aws_sdk_secretsmanager::Client,

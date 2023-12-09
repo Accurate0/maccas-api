@@ -29,7 +29,7 @@ pub fn generate_signed_jwt(
         aud: application_id.to_owned(),
         iat: Utc::now().timestamp(),
         oid: user_id.to_owned(),
-        role: role.clone(),
+        role: *role,
         username: username.to_owned(),
     };
 

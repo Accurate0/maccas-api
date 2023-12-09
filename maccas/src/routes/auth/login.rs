@@ -150,7 +150,7 @@ pub async fn login(
 
                 let role = claims.extension_role.to_owned();
                 user_repo
-                    .set_role(request.username.to_owned(), role.clone())
+                    .set_role(request.username.to_owned(), role)
                     .await?;
 
                 let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
@@ -176,7 +176,7 @@ pub async fn login(
                 Ok(Json(TokenResponse {
                     token: new_jwt,
                     refresh_token,
-                    role: role.clone(),
+                    role,
                 }))
             }
             Err(e) => {

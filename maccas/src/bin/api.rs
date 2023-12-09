@@ -1,7 +1,8 @@
+use async_graphql::EmptyMutation;
+use async_graphql::EmptySubscription;
+use async_graphql::Schema;
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
-use juniper::EmptyMutation;
-use juniper::EmptySubscription;
 use lambda_http::Error as LambdaError;
 use maccas::database::account::AccountRepository;
 use maccas::database::audit::AuditRepository;
@@ -9,7 +10,6 @@ use maccas::database::offer::OfferRepository;
 use maccas::database::point::PointRepository;
 use maccas::database::refresh::RefreshRepository;
 use maccas::database::user::UserRepository;
-use maccas::graphql::query::Query;
 use maccas::logging;
 use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
@@ -28,10 +28,9 @@ use maccas::routes::deals::get_deals::get_deals;
 use maccas::routes::deals::get_last_refresh::get_last_refresh;
 use maccas::routes::deals::remove_deal::remove_deal;
 use maccas::routes::docs::openapi::get_openapi;
-use maccas::routes::graphql::get_graphql;
-use maccas::routes::graphql::playground;
-use maccas::routes::graphql::post_graphql;
-use maccas::routes::graphql::Schema;
+use maccas::routes::graphql::graphiql;
+use maccas::routes::graphql::graphql_query;
+use maccas::routes::graphql::graphql_request;
 use maccas::routes::health::status::get_status;
 use maccas::routes::locations::get_locations::get_locations;
 use maccas::routes::locations::search_locations::search_locations;
@@ -103,6 +102,14 @@ async fn main() -> Result<(), LambdaError> {
         ..Default::default()
     };
 
+    let schema = Schema::build(
+        maccas::graphql::query::QueryRoot::default(),
+        EmptyMutation,
+        EmptySubscription,
+    )
+    .data(context.clone())
+    .finish();
+
     let rocket = rocket
         .manage(context)
         .manage(user_repository)
@@ -111,11 +118,7 @@ async fn main() -> Result<(), LambdaError> {
         .manage(account_repository)
         .manage(point_repository)
         .manage(refresh_repository)
-        .manage(Schema::new(
-            Query,
-            EmptyMutation::new(),
-            EmptySubscription::new(),
-        ))
+        .manage(schema)
         .register("/", catchers![default])
         .mount(
             "/",
@@ -145,9 +148,9 @@ async fn main() -> Result<(), LambdaError> {
                 get_token,
                 register,
                 registration_token,
-                playground,
-                get_graphql,
-                post_graphql
+                graphiql,
+                graphql_query,
+                graphql_request
             ],
         )
         .configure(config);

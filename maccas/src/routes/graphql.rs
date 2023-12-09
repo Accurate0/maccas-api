@@ -1,29 +1,28 @@
-use super::Context;
-use crate::graphql::query::Query;
-use juniper::{EmptyMutation, EmptySubscription, RootNode};
-use rocket::{response::content::RawHtml, State};
+use crate::{
+    graphql::schema::MaccasSchema, guards::required_authorization::RequiredAuthorizationHeader,
+};
+use async_graphql::http::GraphiQLSource;
+use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
+use rocket::{
+    response::content::{self},
+    State,
+};
 
-pub type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
-
-#[get("/playground")]
-pub fn playground() -> RawHtml<String> {
-    juniper_rocket::playground_source("/graphql", None)
+#[rocket::get("/playground")]
+pub fn graphiql() -> content::RawHtml<String> {
+    content::RawHtml(GraphiQLSource::build().endpoint("/graphql").finish())
 }
 
-#[get("/graphql?<request..>")]
-pub async fn get_graphql(
-    ctx: &State<Context>,
-    request: juniper_rocket::GraphQLRequest,
-    schema: &State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(schema, ctx).await
+#[rocket::get("/graphql?<query..>")]
+pub async fn graphql_query(schema: &State<MaccasSchema>, query: GraphQLQuery) -> GraphQLResponse {
+    query.execute(schema.inner()).await
 }
 
-#[post("/graphql", data = "<request>")]
-pub async fn post_graphql(
-    ctx: &State<Context>,
-    request: juniper_rocket::GraphQLRequest,
-    schema: &State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(schema, ctx).await
+#[rocket::post("/graphql", data = "<request>", format = "application/json")]
+pub async fn graphql_request(
+    schema: &State<MaccasSchema>,
+    request: GraphQLRequest,
+    auth: RequiredAuthorizationHeader,
+) -> GraphQLResponse {
+    request.data(auth.claims).execute(schema.inner()).await
 }

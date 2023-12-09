@@ -67,8 +67,9 @@ bcrypt = "0.15.0"
 qrcode-generator = "4.1.9"
 async-recursion = "1.0.5"
 
-juniper = { git = "https://github.com/graphql-rust/juniper/", features = ["anyhow"] }
-juniper_rocket = { git = "https://github.com/graphql-rust/juniper/" }
+async-graphql = "6.0.11"
+async-graphql-rocket = "6.0.11"
+
 
 [build-dependencies]
 vergen = { version = "8.2.6", features = ["build", "rustc", "git", "gitoxide"] }

@@ -1,10 +1,11 @@
+use async_graphql::Enum;
 use rocket::FromFormField;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[derive(FromFormField, ToSchema)]
+#[derive(FromFormField, ToSchema, Enum, Copy)]
 pub enum UserRole {
     Admin,
     Privileged,

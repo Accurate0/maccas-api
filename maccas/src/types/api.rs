@@ -4,8 +4,8 @@ use crate::database::types::OfferDatabase;
 use crate::database::types::PointsDatabase;
 use crate::shared::validators::validate_password;
 use crate::shared::validators::validate_username;
+use async_graphql::SimpleObject;
 use itertools::Itertools;
-use juniper::GraphQLObject;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ use utoipa::ToSchema;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-#[derive(ToSchema, GraphQLObject)]
+#[derive(ToSchema, SimpleObject)]
 pub struct GetDealsOffer {
     pub deal_uuid: String,
     pub offer_proposition_id: String,

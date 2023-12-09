@@ -1,18 +1,20 @@
-use crate::{database::types::OfferDatabase, routes, types::api::GetDealsOffer};
+use crate::{database::types::OfferDatabase, routes::Context, types::api::GetDealsOffer};
+use async_graphql::Object;
 use itertools::Itertools;
-use juniper::graphql_object;
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use std::collections::HashMap;
 
-#[derive(Clone, Copy, Debug)]
-pub struct Query;
+#[derive(Default)]
+pub struct DealsQuery;
 
-#[graphql_object(context = crate::routes::Context)]
-/// The root query object of the schema
-impl Query {
-    async fn deals(
-        #[graphql(context)] ctx: &routes::Context,
+#[Object]
+impl DealsQuery {
+    async fn deals<'a>(
+        &self,
+        gql_ctx: &'a async_graphql::Context<'a>,
+        // FIXME: use different type
     ) -> Result<Vec<GetDealsOffer>, anyhow::Error> {
+        let ctx = gql_ctx.data_unchecked::<Context>();
         let locked_deals = ctx.database.offer_repository.get_locked_offers().await?;
         let offer_list = ctx.database.offer_repository.get_all_offers_vec().await?;
 
