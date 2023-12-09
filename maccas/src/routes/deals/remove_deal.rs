@@ -29,11 +29,11 @@ pub async fn remove_deal(
     store: String,
     auth: RequiredAuthorizationHeader,
 ) -> Result<Status, ApiError> {
-    if let Ok((account, offer)) = offer_repo.get_offer_by_id(deal_id).await {
+    if let Ok((account, offer)) = offer_repo.get_offer(deal_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = account_repo
-            .get_specific_client(
+            .get_api_client(
                 http_client,
                 &ctx.config.mcdonalds.client_id,
                 &ctx.config.mcdonalds.client_secret,
@@ -58,14 +58,14 @@ pub async fn remove_deal(
             let user_id = auth.claims.oid;
 
             audit_repo
-                .add_to_audit(
+                .add_entry(
                     AuditActionType::Remove,
                     Some(user_id),
                     auth.claims.username,
                     &offer,
                 )
                 .await;
-            offer_repo.unlock_deal(deal_id).await?;
+            offer_repo.unlock_offer(deal_id).await?;
             Ok(Status::NoContent)
         } else {
             Err(ApiError::McDonaldsError)

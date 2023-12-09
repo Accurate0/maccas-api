@@ -1,6 +1,6 @@
 use crate::database::offer::OfferRepository;
 use crate::database::types::OfferDatabase;
-use crate::routes::Context;
+use crate::routes;
 use crate::types::api::GetDealsOffer;
 use crate::types::error::ApiError;
 use itertools::Itertools;
@@ -22,11 +22,11 @@ use std::collections::HashMap;
 // TODO: optimise, its getting quite slow
 // caching in dynamo probs
 pub async fn get_deals(
-    _ctx: &State<Context>,
+    _ctx: &State<routes::Context>,
     offer_repository: &State<OfferRepository>,
 ) -> Result<Json<Vec<GetDealsOffer>>, ApiError> {
-    let locked_deals = offer_repository.get_all_locked_deals().await?;
-    let offer_list = offer_repository.get_all_offers_as_vec().await?;
+    let locked_deals = offer_repository.get_locked_offers().await?;
+    let offer_list = offer_repository.get_all_offers_vec().await?;
 
     // filter locked deals
     let mut offer_list: Vec<OfferDatabase> = offer_list
@@ -37,7 +37,7 @@ pub async fn get_deals(
     let mut rng = StdRng::from_entropy();
     offer_list.shuffle(&mut rng);
 
-    let mut count_map = HashMap::<i64, u32>::new();
+    let mut count_map = HashMap::<i64, i32>::new();
     for offer in &offer_list {
         match count_map.get(&offer.offer_proposition_id) {
             Some(count) => {

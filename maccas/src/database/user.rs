@@ -16,6 +16,7 @@ use aws_sdk_dynamodb::{
 use chrono::{DateTime, Duration, Utc};
 use std::time::SystemTime;
 
+#[derive(Clone)]
 pub struct UserRepository {
     client: aws_sdk_dynamodb::Client,
     user_tokens: String,
@@ -35,7 +36,7 @@ impl UserRepository {
         }
     }
 
-    pub async fn set_user_tokens(
+    pub async fn set_tokens(
         &self,
         username: &str,
         auth_token: &str,
@@ -57,7 +58,7 @@ impl UserRepository {
         Ok(())
     }
 
-    pub async fn get_user_tokens(
+    pub async fn get_tokens(
         &self,
         username: String,
     ) -> Result<(String, Vec<String>), anyhow::Error> {
@@ -87,7 +88,7 @@ impl UserRepository {
         Ok((access_token, refresh_token))
     }
 
-    pub async fn get_user_id(&self, username: String) -> Result<String, anyhow::Error> {
+    pub async fn get_id(&self, username: String) -> Result<String, anyhow::Error> {
         let response = self
             .client
             .get_item()
@@ -107,7 +108,7 @@ impl UserRepository {
         Ok(user_id)
     }
 
-    pub async fn get_user_role(&self, username: String) -> Result<UserRole, anyhow::Error> {
+    pub async fn get_role(&self, username: String) -> Result<UserRole, anyhow::Error> {
         let response = self
             .client
             .get_item()
@@ -127,11 +128,7 @@ impl UserRepository {
         Ok(serde_json::from_str::<UserRole>(&role)?)
     }
 
-    pub async fn set_user_role(
-        &self,
-        username: String,
-        role: UserRole,
-    ) -> Result<(), anyhow::Error> {
+    pub async fn set_role(&self, username: String, role: UserRole) -> Result<(), anyhow::Error> {
         self.client
             .update_item()
             .table_name(&self.users)
@@ -148,7 +145,7 @@ impl UserRepository {
         Ok(())
     }
 
-    pub async fn is_user_exist(&self, username: String) -> Result<bool, anyhow::Error> {
+    pub async fn exists(&self, username: String) -> Result<bool, anyhow::Error> {
         Ok(self
             .client
             .get_item()

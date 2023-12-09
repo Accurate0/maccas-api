@@ -17,7 +17,7 @@ pub async fn get_deal(
     offer_repository: &State<OfferRepository>,
     deal_id: &str,
 ) -> Result<Json<GetDealsOffer>, ApiError> {
-    if let Ok((_, offer)) = offer_repository.get_offer_by_id(deal_id).await {
+    if let Ok((_, offer)) = offer_repository.get_offer(deal_id).await {
         Ok(Json(GetDealsOffer::from(offer)))
     } else {
         Err(ApiError::NotFound)

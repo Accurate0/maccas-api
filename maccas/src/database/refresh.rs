@@ -7,6 +7,7 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::{DateTime, Utc};
 use std::time::SystemTime;
 
+#[derive(Clone)]
 pub struct RefreshRepository {
     client: aws_sdk_dynamodb::Client,
     refresh_tracking: String,
@@ -62,7 +63,7 @@ impl RefreshRepository {
         }
     }
 
-    pub async fn increment_refresh_tracking(
+    pub async fn increment_refresh_key(
         &self,
         region: &str,
         max_count: i8,

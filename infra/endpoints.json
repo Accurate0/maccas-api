@@ -80,6 +80,14 @@
         "url": "/user/spending"
     },
     {
+        "method": "POST",
+        "url": "/graphql"
+    },
+    {
+        "method": "GET",
+        "url": "/graphql"
+    },
+    {
         "method": "GET",
         "url": "/docs/openapi",
         "disableAuthorization": true

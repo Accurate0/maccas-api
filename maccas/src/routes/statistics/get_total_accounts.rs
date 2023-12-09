@@ -15,6 +15,6 @@ use rocket::{serde::json::Json, State};
 pub async fn get_total_accounts(
     offer_repository: &State<OfferRepository>,
 ) -> Result<Json<TotalAccountsResponse>, ApiError> {
-    let offers = offer_repository.get_all_offers_as_map().await?;
+    let offers = offer_repository.get_all_offers().await?;
     Ok(Json(TotalAccountsResponse(offers.len() as i64)))
 }

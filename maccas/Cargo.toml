@@ -18,7 +18,7 @@ aws-types = { workspace = true }
 aws-sdk-sqs = { workspace = true }
 aws-sdk-secretsmanager = { workspace = true }
 
-serde ={ workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 serde_derive = { workspace = true }
 serde_dynamo = { workspace = true }
@@ -66,6 +66,9 @@ rust-argon2 = "2.0"
 bcrypt = "0.15.0"
 qrcode-generator = "4.1.9"
 async-recursion = "1.0.5"
+
+juniper = { git = "https://github.com/graphql-rust/juniper/", features = ["anyhow"] }
+juniper_rocket = { git = "https://github.com/graphql-rust/juniper/" }
 
 [build-dependencies]
 vergen = { version = "8.2.6", features = ["build", "rustc", "git", "gitoxide"] }

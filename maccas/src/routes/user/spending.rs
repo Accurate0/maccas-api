@@ -19,7 +19,7 @@ pub async fn get_user_spending(
     let user_id = auth.claims.oid;
 
     let entries = audit_repo
-        .get_audit_entries_for(user_id.to_string())
+        .get_entries(user_id.to_string())
         .await
         .unwrap_or_default();
 

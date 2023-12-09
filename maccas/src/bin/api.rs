@@ -1,5 +1,7 @@
 use foundation::aws;
 use foundation::constants::AWS_LAMBDA_FUNCTION_NAME;
+use juniper::EmptyMutation;
+use juniper::EmptySubscription;
 use lambda_http::Error as LambdaError;
 use maccas::database::account::AccountRepository;
 use maccas::database::audit::AuditRepository;
@@ -7,6 +9,7 @@ use maccas::database::offer::OfferRepository;
 use maccas::database::point::PointRepository;
 use maccas::database::refresh::RefreshRepository;
 use maccas::database::user::UserRepository;
+use maccas::graphql::query::Query;
 use maccas::logging;
 use maccas::routes;
 use maccas::routes::admin::get_locked_deals::get_locked_deals;
@@ -25,6 +28,10 @@ use maccas::routes::deals::get_deals::get_deals;
 use maccas::routes::deals::get_last_refresh::get_last_refresh;
 use maccas::routes::deals::remove_deal::remove_deal;
 use maccas::routes::docs::openapi::get_openapi;
+use maccas::routes::graphql::get_graphql;
+use maccas::routes::graphql::playground;
+use maccas::routes::graphql::post_graphql;
+use maccas::routes::graphql::Schema;
 use maccas::routes::health::status::get_status;
 use maccas::routes::locations::get_locations::get_locations;
 use maccas::routes::locations::search_locations::search_locations;
@@ -35,6 +42,7 @@ use maccas::routes::statistics::get_total_accounts::get_total_accounts;
 use maccas::routes::user::config::get_user_config;
 use maccas::routes::user::config::update_user_config;
 use maccas::routes::user::spending::get_user_spending;
+use maccas::routes::Database;
 use maccas::types::config::GeneralConfig;
 use rocket::config::Ident;
 use rocket::Config;
@@ -79,6 +87,14 @@ async fn main() -> Result<(), LambdaError> {
         secrets_client,
         sqs_client,
         config,
+        database: Database {
+            user_repository: user_repository.clone(),
+            account_repository: account_repository.clone(),
+            audit_repository: audit_repository.clone(),
+            offer_repository: offer_repository.clone(),
+            point_repository: point_repository.clone(),
+            refresh_repository: refresh_repository.clone(),
+        },
     };
 
     let config = Config {
@@ -95,6 +111,11 @@ async fn main() -> Result<(), LambdaError> {
         .manage(account_repository)
         .manage(point_repository)
         .manage(refresh_repository)
+        .manage(Schema::new(
+            Query,
+            EmptyMutation::new(),
+            EmptySubscription::new(),
+        ))
         .register("/", catchers![default])
         .mount(
             "/",
@@ -124,6 +145,9 @@ async fn main() -> Result<(), LambdaError> {
                 get_token,
                 register,
                 registration_token,
+                playground,
+                get_graphql,
+                post_graphql
             ],
         )
         .configure(config);

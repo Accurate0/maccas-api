@@ -34,7 +34,7 @@ pub async fn login(
     user_repo: &State<UserRepository>,
     request: Form<LoginRequest>,
 ) -> Result<Json<TokenResponse>, ApiError> {
-    if user_repo.is_user_exist(request.username.to_owned()).await? {
+    if user_repo.exists(request.username.to_owned()).await? {
         log::info!(
             "user: {} already exists, comparing hash and generating token",
             request.username
@@ -51,8 +51,8 @@ pub async fn login(
             })?;
 
         if is_password_correct {
-            let user_id = user_repo.get_user_id(request.username.to_owned()).await?;
-            let role = user_repo.get_user_role(request.username.to_owned()).await?;
+            let user_id = user_repo.get_id(request.username.to_owned()).await?;
+            let role = user_repo.get_role(request.username.to_owned()).await?;
 
             let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
             let new_jwt = generate_signed_jwt(
@@ -64,19 +64,18 @@ pub async fn login(
             )?;
 
             let new_refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
-            let mut refresh_tokens =
-                match user_repo.get_user_tokens(request.username.to_owned()).await {
-                    Ok((_, refresh_tokens)) => refresh_tokens,
-                    Err(e) => {
-                        log::warn!("error getting existing refresh tokens because: {}", e);
-                        Default::default()
-                    }
-                };
+            let mut refresh_tokens = match user_repo.get_tokens(request.username.to_owned()).await {
+                Ok((_, refresh_tokens)) => refresh_tokens,
+                Err(e) => {
+                    log::warn!("error getting existing refresh tokens because: {}", e);
+                    Default::default()
+                }
+            };
 
             rotate_refresh_tokens(&mut refresh_tokens, new_refresh_token.clone());
 
             user_repo
-                .set_user_tokens(
+                .set_tokens(
                     &request.username,
                     &new_jwt,
                     refresh_tokens,
@@ -151,7 +150,7 @@ pub async fn login(
 
                 let role = claims.extension_role.to_owned();
                 user_repo
-                    .set_user_role(request.username.to_owned(), role.clone())
+                    .set_role(request.username.to_owned(), role.clone())
                     .await?;
 
                 let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
@@ -166,7 +165,7 @@ pub async fn login(
                 let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
                 user_repo
-                    .set_user_tokens(
+                    .set_tokens(
                         &request.username,
                         &new_jwt,
                         vec![refresh_token.clone()],

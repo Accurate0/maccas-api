@@ -17,6 +17,6 @@ pub async fn get_locked_deals(
     offer_repo: &State<OfferRepository>,
     _admin: AdminOnlyRoute,
 ) -> Result<Json<AdminLockedDealsResponse>, ApiError> {
-    let locked_deals = offer_repo.get_all_locked_deals().await?;
+    let locked_deals = offer_repo.get_locked_offers().await?;
     Ok(Json(AdminLockedDealsResponse(locked_deals)))
 }

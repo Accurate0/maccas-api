@@ -20,7 +20,7 @@ pub async fn lock_deal(
     duration: Option<i64>,
 ) -> Result<Status, ApiError> {
     offer_repo
-        .lock_deal(
+        .lock_offer(
             deal_id,
             duration.map_or(Duration::hours(DEFAULT_LOCK_TTL_HOURS), |s| {
                 Duration::seconds(s)

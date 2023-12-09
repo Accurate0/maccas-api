@@ -62,7 +62,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
             let proxy = proxy::get_proxy(&config.proxy).await;
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
             match account_repository
-                .get_specific_client(
+                .get_api_client(
                     http_client,
                     &config.mcdonalds.client_id,
                     &config.mcdonalds.client_secret,
@@ -75,7 +75,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                 Ok(api_client) => {
                     log::info!("login fixed for {}, refreshing..", account.account_name);
                     if let Err(e) = offer_repository
-                        .refresh_offer_cache_for(
+                        .refresh_offer_cache(
                             &account,
                             &api_client,
                             &config.mcdonalds.ignored_offer_ids,
@@ -86,7 +86,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                     };
 
                     if let Err(e) = point_repository
-                        .refresh_point_cache_for(&account, &api_client)
+                        .refresh_point_cache(&account, &api_client)
                         .await
                     {
                         log::error!("point refresh failed {}", e);

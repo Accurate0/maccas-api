@@ -10,6 +10,7 @@ use foundation::hash::get_short_sha1;
 use libmaccas::ApiClient;
 use std::{collections::HashMap, time::SystemTime};
 
+#[derive(Clone)]
 pub struct PointRepository {
     client: aws_sdk_dynamodb::Client,
     points: String,
@@ -23,7 +24,7 @@ impl PointRepository {
         }
     }
 
-    pub async fn refresh_point_cache_for(
+    pub async fn refresh_point_cache(
         &self,
         account: &UserAccountDatabase,
         api_client: &ApiClient,
@@ -63,7 +64,7 @@ impl PointRepository {
         }
     }
 
-    pub async fn get_point_map(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error> {
+    pub async fn get_all_points(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error> {
         let mut point_map = HashMap::<String, PointsDatabase>::new();
 
         let table_resp: Result<Vec<_>, _> = self
@@ -89,7 +90,7 @@ impl PointRepository {
         Ok(point_map)
     }
 
-    pub async fn get_points_by_account_hash(
+    pub async fn get_points(
         &self,
         account_hash: &str,
     ) -> Result<(UserAccountDatabase, PointsDatabase), anyhow::Error> {

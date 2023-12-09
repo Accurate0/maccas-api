@@ -16,7 +16,7 @@ pub async fn unlock_deal(
     _admin: AdminOnlyRoute,
     deal_id: &str,
 ) -> Result<Status, ApiError> {
-    offer_repo.unlock_deal(deal_id).await?;
+    offer_repo.unlock_offer(deal_id).await?;
 
     Ok(Status::NoContent)
 }

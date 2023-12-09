@@ -26,10 +26,16 @@ use rand::{
 };
 use std::{collections::HashMap, time::SystemTime};
 
+#[derive(Clone)]
 pub struct AccountRepository {
     client: aws_sdk_dynamodb::Client,
     user_accounts: String,
     token_cache: String,
+}
+
+pub struct UserAccountsFilter<'a> {
+    pub region: &'a str,
+    pub group: &'a str,
 }
 
 impl AccountRepository {
@@ -43,11 +49,7 @@ impl AccountRepository {
 
     pub async fn add_user_account(
         &self,
-        account_name: &str,
-        login_username: &str,
-        login_password: &str,
-        region: &str,
-        group: &str,
+        account: &UserAccountDatabase,
     ) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -56,17 +58,20 @@ impl AccountRepository {
         self.client
             .put_item()
             .table_name(&self.user_accounts)
-            .item(ACCOUNT_NAME, AttributeValue::S(account_name.to_string()))
+            .item(
+                ACCOUNT_NAME,
+                AttributeValue::S(account.account_name.to_string()),
+            )
             .item(
                 LOGIN_USERNAME,
-                AttributeValue::S(login_username.to_string()),
+                AttributeValue::S(account.login_username.to_string()),
             )
             .item(
                 LOGIN_PASSWORD,
-                AttributeValue::S(login_password.to_string()),
+                AttributeValue::S(account.login_password.to_string()),
             )
-            .item(REGION, AttributeValue::S(region.to_string()))
-            .item(GROUP, AttributeValue::S(group.to_string()))
+            .item(REGION, AttributeValue::S(account.region.to_string()))
+            .item(GROUP, AttributeValue::S(account.group.to_string()))
             .item(TIMESTAMP, AttributeValue::S(now))
             .send()
             .await?;
@@ -74,7 +79,7 @@ impl AccountRepository {
         Ok(())
     }
 
-    pub async fn get_account(
+    pub async fn get_user_account(
         &self,
         account_name: &str,
     ) -> Result<UserAccountDatabase, anyhow::Error> {
@@ -102,10 +107,9 @@ impl AccountRepository {
         })
     }
 
-    pub async fn get_accounts_for_region_and_group(
+    pub async fn get_user_accounts(
         &self,
-        region: &str,
-        group: &str,
+        filter: &UserAccountsFilter<'_>,
     ) -> Result<Vec<UserAccountDatabase>, anyhow::Error> {
         let resp = self
             .client
@@ -114,8 +118,14 @@ impl AccountRepository {
             .filter_expression("#region = :selected_region and #group = :selected_group")
             .expression_attribute_names("#region", REGION)
             .expression_attribute_names("#group", GROUP)
-            .expression_attribute_values(":selected_region", AttributeValue::S(region.to_string()))
-            .expression_attribute_values(":selected_group", AttributeValue::S(group.to_string()))
+            .expression_attribute_values(
+                ":selected_region",
+                AttributeValue::S(filter.region.to_string()),
+            )
+            .expression_attribute_values(
+                ":selected_group",
+                AttributeValue::S(filter.group.to_string()),
+            )
             .send()
             .await?;
 
@@ -133,7 +143,7 @@ impl AccountRepository {
     }
 
     #[async_recursion]
-    pub async fn get_specific_client<'b>(
+    pub async fn get_api_client<'b>(
         &self,
         http_client: reqwest_middleware::ClientWithMiddleware,
         client_id: &'b str,
@@ -242,7 +252,7 @@ impl AccountRepository {
                         },
                         None => {
                             return self
-                                .get_specific_client(
+                                .get_api_client(
                                     http_client,
                                     client_id,
                                     client_secret,
@@ -262,7 +272,7 @@ impl AccountRepository {
                         },
                         None => {
                             return self
-                                .get_specific_client(
+                                .get_api_client(
                                     http_client,
                                     client_id,
                                     client_secret,
@@ -372,7 +382,7 @@ impl AccountRepository {
         Ok(api_client)
     }
 
-    pub async fn get_client_map<'b>(
+    pub async fn get_api_clients<'b>(
         &self,
         config: &GeneralConfig,
         client_id: &'b str,
@@ -395,7 +405,7 @@ impl AccountRepository {
             let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
             match self
-                .get_specific_client(
+                .get_api_client(
                     http_client,
                     client_id,
                     client_secret,

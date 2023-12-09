@@ -36,7 +36,7 @@ pub async fn register(
         return Err(ApiError::NotFound);
     }
 
-    if user_repo.is_user_exist(request.username.to_owned()).await? {
+    if user_repo.exists(request.username.to_owned()).await? {
         log::info!("user: {} already exists, can't register", request.username);
         return Err(ApiError::Conflict);
     }
@@ -58,7 +58,7 @@ pub async fn register(
         .await?;
 
     user_repo
-        .set_user_role(request.username.clone(), metadata.role.clone())
+        .set_role(request.username.clone(), metadata.role.clone())
         .await?;
 
     let new_jwt = generate_signed_jwt(
@@ -72,7 +72,7 @@ pub async fn register(
     let refresh_token = uuid::Uuid::new_v4().as_hyphenated().to_string();
 
     user_repo
-        .set_user_tokens(
+        .set_tokens(
             &request.username,
             &new_jwt,
             vec![refresh_token.clone()],

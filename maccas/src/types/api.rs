@@ -5,6 +5,7 @@ use crate::database::types::PointsDatabase;
 use crate::shared::validators::validate_password;
 use crate::shared::validators::validate_username;
 use itertools::Itertools;
+use juniper::GraphQLObject;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
@@ -12,11 +13,11 @@ use utoipa::ToSchema;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-#[derive(ToSchema)]
+#[derive(ToSchema, GraphQLObject)]
 pub struct GetDealsOffer {
     pub deal_uuid: String,
     pub offer_proposition_id: String,
-    pub count: u32,
+    pub count: i32,
     pub valid_from_utc: String,
     pub valid_to_utc: String,
     pub name: String,

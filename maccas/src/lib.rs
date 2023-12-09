@@ -3,6 +3,7 @@ pub mod constants;
 pub mod database;
 pub mod doc;
 pub mod extensions;
+pub mod graphql;
 pub mod guards;
 pub mod logging;
 pub mod proxy;

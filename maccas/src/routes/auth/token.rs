@@ -37,7 +37,7 @@ pub async fn get_token(
     let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
 
     let username = token.claims().username.to_owned();
-    let (_, mut refresh_tokens) = user_repo.get_user_tokens(username.to_owned()).await?;
+    let (_, mut refresh_tokens) = user_repo.get_tokens(username.to_owned()).await?;
     log::info!("refresh token for {username}");
 
     // the token is verified and the refresh token matches the last one created
@@ -49,8 +49,8 @@ pub async fn get_token(
 
     if refresh_tokens.iter().any(|x| *x == request.refresh_token) {
         log::info!("token matches last created refresh and access, generating new ones");
-        let user_id = user_repo.get_user_id(username.to_owned()).await?;
-        let role = user_repo.get_user_role(username.to_owned()).await?;
+        let user_id = user_repo.get_id(username.to_owned()).await?;
+        let role = user_repo.get_role(username.to_owned()).await?;
 
         let new_jwt = generate_signed_jwt(
             secret,
@@ -64,7 +64,7 @@ pub async fn get_token(
         rotate_refresh_tokens(&mut refresh_tokens, refresh_token.clone());
 
         user_repo
-            .set_user_tokens(
+            .set_tokens(
                 &username,
                 &new_jwt,
                 refresh_tokens,

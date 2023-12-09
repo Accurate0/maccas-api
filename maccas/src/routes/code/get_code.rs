@@ -22,11 +22,11 @@ pub async fn get_code(
     deal_id: &str,
     store: String,
 ) -> Result<Json<OfferResponse>, ApiError> {
-    if let Ok((account, _offer)) = offer_repository.get_offer_by_id(deal_id).await {
+    if let Ok((account, _offer)) = offer_repository.get_offer(deal_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = account_repository
-            .get_specific_client(
+            .get_api_client(
                 http_client,
                 &ctx.config.mcdonalds.client_id,
                 &ctx.config.mcdonalds.client_secret,

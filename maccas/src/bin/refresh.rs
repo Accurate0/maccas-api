@@ -5,7 +5,7 @@ use foundation::constants::{AWS_REGION, DEFAULT_AWS_REGION};
 use itertools::Itertools;
 use lambda_runtime::service_fn;
 use lambda_runtime::{Error, LambdaEvent};
-use maccas::database::account::AccountRepository;
+use maccas::database::account::{AccountRepository, UserAccountsFilter};
 use maccas::database::offer::OfferRepository;
 use maccas::database::point::PointRepository;
 use maccas::database::refresh::RefreshRepository;
@@ -51,14 +51,18 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
     let refresh_repository = RefreshRepository::new(client.clone(), &config.database.tables);
 
     let group = refresh_repository
-        .increment_refresh_tracking(&region, config.refresh.total_groups[&region])
+        .increment_refresh_key(&region, config.refresh.total_groups[&region])
         .await?;
 
     let account_list = account_repository
-        .get_accounts_for_region_and_group(&region, &group.to_string())
+        .get_user_accounts(&UserAccountsFilter {
+            region: &region,
+            group: &group.to_string(),
+        })
         .await?;
+
     let (client_map, login_failed_accounts) = account_repository
-        .get_client_map(
+        .get_api_clients(
             &config,
             &config.mcdonalds.client_id,
             &config.mcdonalds.client_secret,
@@ -74,14 +78,14 @@ async fn run(event: LambdaEvent<Value>) -> Result<(), anyhow::Error> {
 
     for (account, api_client) in &client_map {
         match offer_repository
-            .refresh_offer_cache_for(account, api_client, &config.mcdonalds.ignored_offer_ids)
+            .refresh_offer_cache(account, api_client, &config.mcdonalds.ignored_offer_ids)
             .await
         {
             Ok(mut o) => {
                 new_offers.append(&mut o);
                 // TODO: PointRepository
                 point_repository
-                    .refresh_point_cache_for(account, api_client)
+                    .refresh_point_cache(account, api_client)
                     .await?;
             }
             Err(e) => {

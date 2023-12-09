@@ -24,11 +24,11 @@ pub async fn get_points_by_id(
     account_id: &str,
     store: String,
 ) -> Result<Json<OfferPointsResponse>, ApiError> {
-    if let Ok((account, points)) = point_repo.get_points_by_account_hash(account_id).await {
+    if let Ok((account, points)) = point_repo.get_points(account_id).await {
         let proxy = proxy::get_proxy(&ctx.config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
         let api_client = account_repo
-            .get_specific_client(
+            .get_api_client(
                 http_client,
                 &ctx.config.mcdonalds.client_id,
                 &ctx.config.mcdonalds.client_secret,

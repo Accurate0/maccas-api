@@ -43,7 +43,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     );
     let account_repository = AccountRepository::new(client.clone(), &config.database.tables);
 
-    let locked_deals = offer_repository.get_all_locked_deals().await?;
+    let locked_deals = offer_repository.get_locked_offers().await?;
     let mut valid_records = event.payload.records;
     valid_records.retain(|msg| msg.body.is_some());
 
@@ -65,14 +65,14 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
     }
 
     let user_id = message.user_id.clone();
-    let (account, offer) = offer_repository.get_offer_by_id(&message.deal_uuid).await?;
+    let (account, offer) = offer_repository.get_offer(&message.deal_uuid).await?;
 
     for _ in 0..MAXIMUM_CLEANUP_RETRY {
         let proxy = proxy::get_proxy(&config.proxy).await;
         let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
 
         match account_repository
-            .get_specific_client(
+            .get_api_client(
                 http_client,
                 &config.mcdonalds.client_id,
                 &config.mcdonalds.client_secret,
@@ -120,7 +120,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
                             .await?;
 
                         audit_repository
-                            .add_to_audit(
+                            .add_entry(
                                 AuditActionType::Remove,
                                 user_id,
                                 "SA-Cleanup".to_owned(),
@@ -130,7 +130,7 @@ async fn run(event: LambdaEvent<SqsEvent>) -> Result<(), anyhow::Error> {
 
                         log::info!("removed from dealstack - {}", response.status);
 
-                        offer_repository.unlock_deal(&message.deal_uuid).await?;
+                        offer_repository.unlock_offer(&message.deal_uuid).await?;
                         log::info!("unlocked deal - {}", &message.deal_uuid);
                     }
                     None => {

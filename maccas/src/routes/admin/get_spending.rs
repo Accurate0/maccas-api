@@ -28,7 +28,7 @@ pub async fn get_all_user_spending(
 
     let spending_futures = user_list
         .iter()
-        .map(|u| audit_repo.get_audit_entries_for(u.id.to_string()))
+        .map(|u| audit_repo.get_entries(u.id.to_string()))
         .collect_vec();
 
     let spending_map: HashMap<_, _> = try_join_all(spending_futures)

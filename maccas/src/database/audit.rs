@@ -13,10 +13,12 @@ use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use std::{str::FromStr, time::SystemTime};
 
+#[derive(Clone)]
 struct Index {
     audit_user_id: String,
 }
 
+#[derive(Clone)]
 pub struct AuditRepository {
     client: aws_sdk_dynamodb::Client,
     audit: String,
@@ -34,7 +36,7 @@ impl AuditRepository {
         }
     }
 
-    pub async fn add_to_audit(
+    pub async fn add_entry(
         &self,
         action: AuditActionType,
         user_id: Option<String>,
@@ -78,10 +80,7 @@ impl AuditRepository {
         };
     }
 
-    pub async fn get_audit_entries_for(
-        &self,
-        user_id: String,
-    ) -> Result<Vec<AuditEntry>, anyhow::Error> {
+    pub async fn get_entries(&self, user_id: String) -> Result<Vec<AuditEntry>, anyhow::Error> {
         let resp = self
             .client
             .query()

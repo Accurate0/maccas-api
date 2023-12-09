@@ -9,7 +9,11 @@ use libmaccas::{
     },
     ApiClient,
 };
-use maccas::{constants, database::account::AccountRepository, types::config::GeneralConfig};
+use maccas::{
+    constants,
+    database::{account::AccountRepository, types::UserAccountDatabase},
+    types::config::GeneralConfig,
+};
 use mailparse::MailHeaderMap;
 use rand::{
     distributions::{Alphanumeric, DistString},
@@ -167,13 +171,13 @@ async fn main() -> Result<(), anyhow::Error> {
 
                 if real_run {
                     account_repository
-                        .add_user_account(
-                            &username,
-                            &username,
-                            "(UNUSED)",
-                            &region,
-                            &group.to_string(),
-                        )
+                        .add_user_account(&UserAccountDatabase {
+                            account_name: username.clone(),
+                            login_username: username.clone(),
+                            login_password: "(UNUSED)".to_string(),
+                            region: region.clone(),
+                            group: group.to_string(),
+                        })
                         .await?;
 
                     account_repository

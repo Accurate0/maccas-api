@@ -25,11 +25,11 @@ pub async fn get_locations(
     let proxy = proxy::get_proxy(&ctx.config.proxy).await;
     let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
     let account = &account_repo
-        .get_account(&ctx.config.mcdonalds.service_account_name)
+        .get_user_account(&ctx.config.mcdonalds.service_account_name)
         .await?;
 
     let api_client = account_repo
-        .get_specific_client(
+        .get_api_client(
             http_client,
             &ctx.config.mcdonalds.client_id,
             &ctx.config.mcdonalds.client_secret,
