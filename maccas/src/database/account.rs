@@ -26,13 +26,14 @@ use rand::{
 };
 use std::{collections::HashMap, time::SystemTime};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AccountRepository {
     client: aws_sdk_dynamodb::Client,
     user_accounts: String,
     token_cache: String,
 }
 
+#[derive(Debug)]
 pub struct UserAccountsFilter<'a> {
     pub region: &'a str,
     pub group: &'a str,
@@ -47,6 +48,7 @@ impl AccountRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn add_user_account(
         &self,
         account: &UserAccountDatabase,
@@ -79,6 +81,7 @@ impl AccountRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_user_account(
         &self,
         account_name: &str,
@@ -107,6 +110,7 @@ impl AccountRepository {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_user_accounts(
         &self,
         filter: &UserAccountsFilter<'_>,
@@ -143,6 +147,7 @@ impl AccountRepository {
     }
 
     #[async_recursion]
+    #[tracing::instrument(skip(self, http_client, client_id, client_secret, sensor_data))]
     pub async fn get_api_client<'b>(
         &self,
         http_client: reqwest_middleware::ClientWithMiddleware,
@@ -382,6 +387,7 @@ impl AccountRepository {
         Ok(api_client)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_api_clients<'b>(
         &self,
         config: &GeneralConfig,
@@ -428,6 +434,7 @@ impl AccountRepository {
         Ok((client_map, failed_accounts))
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_device_id_for(
         &self,
         account_name: &str,
@@ -451,6 +458,7 @@ impl AccountRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_device_id_for(
         &self,
         account_name: &str,
@@ -472,6 +480,7 @@ impl AccountRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_access_and_refresh_token_for(
         &self,
         account_name: &str,

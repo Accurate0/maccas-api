@@ -36,6 +36,7 @@ impl AuditRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn add_entry(
         &self,
         action: AuditActionType,
@@ -44,9 +45,6 @@ impl AuditRepository {
         offer: &OfferDatabase,
     ) {
         let user_id = user_id.unwrap_or_else(|| "unknown".to_owned());
-
-        log::info!("adding to audit table: {user_id}/{actor} {:?}", offer);
-
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
         let now = now.to_rfc3339();
@@ -80,6 +78,7 @@ impl AuditRepository {
         };
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_entries(&self, user_id: String) -> Result<Vec<AuditEntry>, anyhow::Error> {
         let resp = self
             .client

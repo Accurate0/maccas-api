@@ -36,6 +36,7 @@ impl UserRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_tokens(
         &self,
         username: &str,
@@ -58,6 +59,7 @@ impl UserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_tokens(
         &self,
         username: String,
@@ -88,6 +90,7 @@ impl UserRepository {
         Ok((access_token, refresh_token))
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_id(&self, username: String) -> Result<String, anyhow::Error> {
         let response = self
             .client
@@ -108,6 +111,7 @@ impl UserRepository {
         Ok(user_id)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_role(&self, username: String) -> Result<UserRole, anyhow::Error> {
         let response = self
             .client
@@ -128,6 +132,7 @@ impl UserRepository {
         Ok(serde_json::from_str::<UserRole>(&role)?)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_role(&self, username: String, role: UserRole) -> Result<(), anyhow::Error> {
         self.client
             .update_item()
@@ -145,6 +150,7 @@ impl UserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn exists(&self, username: String) -> Result<bool, anyhow::Error> {
         Ok(self
             .client
@@ -157,6 +163,7 @@ impl UserRepository {
             .is_some())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_all_users(&self) -> Result<Vec<User>, anyhow::Error> {
         let users = self
             .client
@@ -188,6 +195,7 @@ impl UserRepository {
         Ok(users)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn create_user(
         &self,
         user_id: String,
@@ -222,6 +230,7 @@ impl UserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_password_hash(&self, username: String) -> Result<String, anyhow::Error> {
         let response = self
             .client
@@ -242,6 +251,7 @@ impl UserRepository {
         Ok(password_hash)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn create_registration_token(
         &self,
         registration_token: &str,
@@ -264,6 +274,7 @@ impl UserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_registration_token(
         &self,
         registration_token: &str,
@@ -300,6 +311,7 @@ impl UserRepository {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_registration_token_use_count(
         &self,
         registration_token: &str,
@@ -321,6 +333,7 @@ impl UserRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_config_by_user_id(
         &self,
         user_id: &str,
@@ -347,6 +360,7 @@ impl UserRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_config_by_user_id(
         &self,
         user_id: &str,

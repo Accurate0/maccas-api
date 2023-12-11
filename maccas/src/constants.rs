@@ -34,6 +34,7 @@ pub mod config {
     pub const MAX_PROXY_COUNT: i8 = 10;
     pub const TOKEN_VALID_TIME: i64 = 86400;
     pub const TOKEN_ACCESS_ISS: &str = "Maccas API";
+    pub const TOKEN_COOKIE_NAME: &str = "token";
 }
 
 pub mod db {

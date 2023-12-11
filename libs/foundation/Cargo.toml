@@ -22,10 +22,11 @@ lazy_static = "1.4.0"
 uuid = { version = "1.5.0", features = ["v4"] }
 anyhow = "1.0.75"
 log = "0.4.20"
-fern = "0.6.2"
 serde = { workspace = true }
+tracing = { workspace = true }
 config = "0.13.3"
 async-trait = "0.1.74"
 rust-crypto = "0.2.36"
 utoipa = "4.1.0"
 rocket = { workspace = true }
+tracing-subscriber = { version = "0.3.18", features = ["json"] }

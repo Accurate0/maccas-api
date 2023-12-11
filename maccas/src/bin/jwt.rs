@@ -34,7 +34,7 @@ macro_rules! return_jwt_unauthorized {
 
 #[tokio::main]
 async fn main() -> Result<(), LambdaError> {
-    foundation::log::init_logger(log::LevelFilter::Info, &[]);
+    foundation::log::init_logger();
     logging::dump_build_details();
     lambda_runtime::run(service_fn(run)).await?;
     Ok(())

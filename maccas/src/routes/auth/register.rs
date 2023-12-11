@@ -2,7 +2,7 @@ use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
     database::user::UserRepository,
     routes::{self},
-    shared::jwt::generate_signed_jwt,
+    shared::{cookie::generate_token_cookie, jwt::generate_signed_jwt},
     types::{
         api::{RegistrationRequest, TokenResponse},
         error::ApiError,
@@ -10,7 +10,7 @@ use crate::{
 };
 use foundation::extensions::SecretsManagerExtensions;
 use rand::Rng;
-use rocket::{form::Form, serde::json::Json, State};
+use rocket::{form::Form, http::CookieJar, serde::json::Json, State};
 
 #[utoipa::path(
     responses(
@@ -26,6 +26,7 @@ pub async fn register(
     ctx: &State<routes::Context>,
     user_repo: &State<UserRepository>,
     request: Form<RegistrationRequest>,
+    jar: &CookieJar<'_>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
 
@@ -83,6 +84,8 @@ pub async fn register(
     user_repo
         .set_registration_token_use_count(registration_token, metadata.use_count + 1)
         .await?;
+
+    jar.add(generate_token_cookie(new_jwt.clone()));
 
     Ok(Json(TokenResponse {
         token: new_jwt,

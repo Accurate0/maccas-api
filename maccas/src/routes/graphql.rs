@@ -19,10 +19,12 @@ pub async fn graphql_query(schema: &State<MaccasSchema>, query: GraphQLQuery) ->
 }
 
 #[rocket::post("/graphql", data = "<request>", format = "application/json")]
+#[tracing::instrument(skip(schema, auth, request))]
 pub async fn graphql_request(
     schema: &State<MaccasSchema>,
     request: GraphQLRequest,
     auth: RequiredAuthorizationHeader,
 ) -> GraphQLResponse {
+    tracing::info!("query: {}", request.0.query);
     request.data(auth.claims).execute(schema.inner()).await
 }

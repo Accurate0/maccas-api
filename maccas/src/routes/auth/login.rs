@@ -2,7 +2,10 @@ use crate::{
     constants::config::CONFIG_SECRET_KEY_ID,
     database::user::UserRepository,
     routes,
-    shared::jwt::{generate_signed_jwt, rotate_refresh_tokens},
+    shared::{
+        cookie::generate_token_cookie,
+        jwt::{generate_signed_jwt, rotate_refresh_tokens},
+    },
     types::{
         adb2c::{Adb2cClaims, Adb2cTokenResponse},
         api::{LoginRequest, TokenResponse},
@@ -15,7 +18,7 @@ use jwt::{Header, Token};
 use rand::Rng;
 use reqwest::multipart::Part;
 use reqwest_tracing::TracingMiddleware;
-use rocket::{form::Form, serde::json::Json, State};
+use rocket::{form::Form, http::CookieJar, serde::json::Json, State};
 
 const ROPC_AUTH_PATH: &str = "https://apib2clogin.b2clogin.com/apib2clogin.onmicrosoft.com/B2C_1_ROPC_Auth/oauth2/v2.0/token";
 
@@ -33,6 +36,7 @@ pub async fn login(
     ctx: &State<routes::Context>,
     user_repo: &State<UserRepository>,
     request: Form<LoginRequest>,
+    jar: &CookieJar<'_>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     if user_repo.exists(request.username.to_owned()).await? {
         log::info!(
@@ -82,6 +86,8 @@ pub async fn login(
                     chrono::Duration::days(7),
                 )
                 .await?;
+
+            jar.add(generate_token_cookie(new_jwt.clone()));
 
             return Ok(Json(TokenResponse {
                 token: new_jwt,
@@ -172,6 +178,8 @@ pub async fn login(
                         chrono::Duration::days(7),
                     )
                     .await?;
+
+                jar.add(generate_token_cookie(new_jwt.clone()));
 
                 Ok(Json(TokenResponse {
                     token: new_jwt,

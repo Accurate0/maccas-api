@@ -27,6 +27,7 @@ use maccas::routes::deals::get_deal::get_deal;
 use maccas::routes::deals::get_deals::get_deals;
 use maccas::routes::deals::get_last_refresh::get_last_refresh;
 use maccas::routes::deals::remove_deal::remove_deal;
+use maccas::routes::docs::graphql::get_graphql;
 use maccas::routes::docs::openapi::get_openapi;
 use maccas::routes::graphql::graphiql;
 use maccas::routes::graphql::graphql_query;
@@ -54,7 +55,7 @@ extern crate rocket;
 
 #[rocket::main]
 async fn main() -> Result<(), LambdaError> {
-    foundation::log::init_logger(log::LevelFilter::Info, &[]);
+    foundation::log::init_logger();
     logging::dump_build_details();
     let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
     let shared_config = aws::config::get_shared_config().await;
@@ -150,7 +151,8 @@ async fn main() -> Result<(), LambdaError> {
                 registration_token,
                 graphiql,
                 graphql_query,
-                graphql_request
+                graphql_request,
+                get_graphql
             ],
         )
         .configure(config);

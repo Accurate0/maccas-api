@@ -1,8 +1,11 @@
 use crate::{
-    constants::config::CONFIG_SECRET_KEY_ID,
+    constants::config::{CONFIG_SECRET_KEY_ID},
     database::user::UserRepository,
     routes,
-    shared::jwt::{generate_signed_jwt, rotate_refresh_tokens},
+    shared::{
+        cookie::generate_token_cookie,
+        jwt::{generate_signed_jwt, rotate_refresh_tokens},
+    },
     types::{
         api::{TokenRequest, TokenResponse},
         error::ApiError,
@@ -12,7 +15,11 @@ use crate::{
 use foundation::extensions::SecretsManagerExtensions;
 use hmac::{digest::KeyInit, Hmac};
 use jwt::{Header, Token, VerifyWithKey};
-use rocket::{serde::json::Json, State};
+use rocket::{
+    http::{CookieJar},
+    serde::json::Json,
+    State,
+};
 use sha2::Sha256;
 
 #[utoipa::path(
@@ -27,6 +34,7 @@ pub async fn get_token(
     ctx: &State<routes::Context>,
     user_repo: &State<UserRepository>,
     request: Json<TokenRequest>,
+    jar: &CookieJar<'_>,
 ) -> Result<Json<TokenResponse>, ApiError> {
     let secret = ctx.secrets_client.get_secret(CONFIG_SECRET_KEY_ID).await?;
     let key: Hmac<Sha256> =
@@ -71,6 +79,8 @@ pub async fn get_token(
                 chrono::Duration::days(7),
             )
             .await?;
+
+        jar.add(generate_token_cookie(new_jwt.clone()));
 
         Ok(Json(TokenResponse {
             token: new_jwt,

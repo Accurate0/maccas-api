@@ -63,7 +63,7 @@ enum Commands {
 // TODO: use unseen lookup, smarter...
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    foundation::log::init_logger(log::LevelFilter::Info, &[]);
+    foundation::log::init_logger();
     maccas::logging::dump_build_details();
 
     let shared_config = aws::config::get_shared_config().await;

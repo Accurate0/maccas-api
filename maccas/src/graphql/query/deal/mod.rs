@@ -1,18 +1,33 @@
-use crate::{database::types::OfferDatabase, routes::Context, types::api::GetDealsOffer};
+use self::types::{Deal, DealCodeInput};
+use crate::{
+    constants::mc_donalds,
+    database::types::OfferDatabase,
+    proxy,
+    routes::Context,
+    types::api::{GetDealsOffer, OfferResponse},
+};
 use async_graphql::Object;
 use itertools::Itertools;
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use std::collections::HashMap;
+
+mod types;
 
 #[derive(Default)]
 pub struct DealsQuery;
 
 #[Object]
 impl DealsQuery {
-    async fn deals<'a>(
+    async fn deal(&self) -> Deal {
+        Deal {}
+    }
+}
+
+#[Object]
+impl Deal {
+    async fn current_deals<'a>(
         &self,
         gql_ctx: &'a async_graphql::Context<'a>,
-        // FIXME: use different type
     ) -> Result<Vec<GetDealsOffer>, anyhow::Error> {
         let ctx = gql_ctx.data_unchecked::<Context>();
         let locked_deals = ctx.database.offer_repository.get_locked_offers().await?;
@@ -50,5 +65,43 @@ impl DealsQuery {
             .collect();
 
         Ok(offer_list)
+    }
+
+    async fn last_refresh<'a>(
+        &self,
+        gql_ctx: &'a async_graphql::Context<'a>,
+    ) -> Result<String, anyhow::Error> {
+        let ctx = gql_ctx.data_unchecked::<Context>();
+        ctx.database.refresh_repository.get_last_refresh().await
+    }
+
+    async fn code<'a>(
+        &self,
+        gql_ctx: &'a async_graphql::Context<'a>,
+        input: DealCodeInput,
+    ) -> Result<OfferResponse, anyhow::Error> {
+        // TODO: proxies and retry middleware
+        let ctx = gql_ctx.data_unchecked::<Context>();
+        let (account, _offer) = ctx.database.offer_repository.get_offer(&input.uuid).await?;
+        let proxy = proxy::get_proxy(&ctx.config.proxy).await;
+        let http_client = foundation::http::get_default_http_client_with_proxy(proxy);
+        let api_client = ctx
+            .database
+            .account_repository
+            .get_api_client(
+                http_client,
+                &ctx.config.mcdonalds.client_id,
+                &ctx.config.mcdonalds.client_secret,
+                &ctx.config.mcdonalds.sensor_data,
+                &account,
+                false,
+            )
+            .await?;
+
+        let resp = api_client
+            .get_offers_dealstack(mc_donalds::default::OFFSET, &input.store_id)
+            .await?;
+
+        Ok(OfferResponse::from(resp.body))
     }
 }

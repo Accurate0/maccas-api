@@ -48,7 +48,7 @@ impl From<OfferDatabase> for GetDealsOffer {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct RestaurantAddress {
@@ -63,7 +63,7 @@ impl From<libmaccas::types::response::Address> for RestaurantAddress {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct RestaurantInformation {
@@ -100,12 +100,12 @@ impl From<libmaccas::types::response::RestaurantLocationList> for RestaurantInfo
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[derive(ToSchema)]
+#[derive(ToSchema, SimpleObject)]
 pub struct LastRefreshInformation {
     pub last_refresh: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 #[derive(ToSchema)]
 pub struct OfferResponse {
@@ -174,11 +174,12 @@ impl From<PointsDatabase> for PointsResponse {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountPointMap {
     pub name: String,
     pub total_points: i64,
+    pub life_time_points: i64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -191,6 +192,7 @@ impl From<HashMap<String, PointsDatabase>> for AccountPointResponse {
                 .map(|(key, value)| AccountPointMap {
                     name: key.to_string(),
                     total_points: value.total_points,
+                    life_time_points: value.life_time_points,
                 })
                 .sorted_by(|a, b| b.total_points.cmp(&a.total_points))
                 .collect(),

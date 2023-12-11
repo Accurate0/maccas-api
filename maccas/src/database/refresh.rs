@@ -23,6 +23,7 @@ impl RefreshRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_last_refresh(&self) -> Result<(), anyhow::Error> {
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -39,6 +40,7 @@ impl RefreshRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_last_refresh(&self) -> Result<String, anyhow::Error> {
         let item = self
             .client
@@ -63,6 +65,7 @@ impl RefreshRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn increment_refresh_key(
         &self,
         region: &str,

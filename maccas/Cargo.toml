@@ -70,6 +70,7 @@ async-recursion = "1.0.5"
 async-graphql = "6.0.11"
 async-graphql-rocket = "6.0.11"
 
+tracing = { workspace = true }
 
 [build-dependencies]
 vergen = { version = "8.2.6", features = ["build", "rustc", "git", "gitoxide"] }

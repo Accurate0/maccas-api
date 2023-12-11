@@ -24,6 +24,7 @@ impl PointRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn refresh_point_cache(
         &self,
         account: &UserAccountDatabase,
@@ -64,6 +65,7 @@ impl PointRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_all_points(&self) -> Result<HashMap<String, PointsDatabase>, anyhow::Error> {
         let mut point_map = HashMap::<String, PointsDatabase>::new();
 
@@ -90,6 +92,7 @@ impl PointRepository {
         Ok(point_map)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_points(
         &self,
         account_hash: &str,

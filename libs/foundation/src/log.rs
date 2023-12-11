@@ -1,39 +1,16 @@
-use anyhow::Context;
-use log::LevelFilter;
+use crate::constants::AWS_LAMBDA_FUNCTION_NAME;
+use tracing_subscriber::fmt::format::FmtSpan;
 
-pub fn init_logger(level: LevelFilter, warn_modules: &[&'static str]) {
-    let cfg = fern::Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{}][{}] {}",
-                record.level(),
-                record.target(),
-                message
-            ))
-        })
-        .level(level);
+pub fn init_logger() {
+    let is_aws = std::env::var(AWS_LAMBDA_FUNCTION_NAME).is_ok();
 
-    let cfg = {
-        let cfg = cfg
-            .level_for(
-                "aws_smithy_http_tower::parse_response",
-                log::LevelFilter::Warn,
-            )
-            .level_for(
-                "aws_config::default_provider::credentials",
-                log::LevelFilter::Warn,
-            );
+    let subscriber = tracing_subscriber::fmt()
+        .with_span_events(FmtSpan::CLOSE)
+        .with_ansi(!is_aws);
 
-        let mut cfg = cfg;
-        for module in warn_modules {
-            cfg = cfg.level_for(*module, log::LevelFilter::Warn);
-        }
-
-        cfg
+    if is_aws {
+        subscriber.json().init()
+    } else {
+        subscriber.init()
     };
-
-    cfg.chain(std::io::stdout())
-        .apply()
-        .context("failed to set up logger")
-        .unwrap();
 }

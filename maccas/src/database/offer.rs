@@ -19,13 +19,13 @@ use libmaccas::ApiClient;
 use std::iter::Iterator;
 use std::{collections::HashMap, time::SystemTime};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Index {
     current_deals_account_name: String,
     current_deals_proposition_id: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct OfferRepository {
     client: aws_sdk_dynamodb::Client,
     account_cache: String,
@@ -51,6 +51,7 @@ impl OfferRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_all_offers(
         &self,
     ) -> Result<HashMap<String, Vec<OfferDatabase>>, anyhow::Error> {
@@ -79,6 +80,7 @@ impl OfferRepository {
         Ok(offer_map)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_all_offers_vec(&self) -> Result<Vec<OfferDatabase>, anyhow::Error> {
         let mut offer_list = Vec::<OfferDatabase>::new();
 
@@ -105,6 +107,7 @@ impl OfferRepository {
         Ok(offer_list)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_offers(
         &self,
         account_name: &str,
@@ -130,6 +133,7 @@ impl OfferRepository {
         })
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn set_offers(
         &self,
         account: &UserAccountDatabase,
@@ -180,6 +184,7 @@ impl OfferRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn refresh_offer_cache(
         &self,
         account: &UserAccountDatabase,
@@ -337,6 +342,7 @@ impl OfferRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_offers_ids(&self, proposition_id: &str) -> Result<Vec<String>, anyhow::Error> {
         let resp = self
             .client
@@ -356,6 +362,7 @@ impl OfferRepository {
             .collect_vec())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_offer(
         &self,
         offer_id: &str,
@@ -385,6 +392,7 @@ impl OfferRepository {
         Ok((account, offer))
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn lock_offer(&self, deal_id: &str, duration: Duration) -> Result<(), anyhow::Error> {
         let utc: DateTime<Utc> = Utc::now().checked_add_signed(duration).unwrap();
 
@@ -399,6 +407,7 @@ impl OfferRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn unlock_offer(&self, deal_id: &str) -> Result<(), anyhow::Error> {
         self.client
             .delete_item()
@@ -410,6 +419,7 @@ impl OfferRepository {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_locked_offers(&self) -> Result<Vec<String>, anyhow::Error> {
         let mut locked_deal_list = Vec::<String>::new();
         let utc: DateTime<Utc> = Utc::now();
@@ -437,6 +447,7 @@ impl OfferRepository {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn clear_locked_offers(&self) -> Result<(), anyhow::Error> {
         log::info!("deleting all locked deals");
         let locked_deals = self.get_locked_offers().await?;
