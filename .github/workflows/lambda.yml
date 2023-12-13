@@ -2,7 +2,7 @@ name: lambda
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, v2.x]
     paths-ignore:
       - ".github/dependabot.yml"
       - ".vscode/**"
