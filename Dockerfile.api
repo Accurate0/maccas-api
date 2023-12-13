@@ -1,0 +1,36 @@
+ARG RUST_VERSION=1.74.1
+
+FROM rust:${RUST_VERSION}-slim-bookworm AS builder
+
+RUN apt-get update -y && apt-get install -y pkg-config libssl-dev
+
+WORKDIR /build
+RUN mkdir /app
+
+COPY . .
+RUN \
+    --mount=type=cache,target=/app/target/ \
+    --mount=type=cache,target=/usr/local/cargo/registry/ \
+    cargo build --locked --release --bin api && \
+    cp ./target/release/api /app
+
+FROM debian:bookworm-slim AS final
+
+RUN apt-get update -y && apt-get install -y libssl-dev
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "10001" \
+    appuser
+
+COPY --from=builder /app/api /usr/local/bin
+RUN chown appuser /usr/local/bin/api
+
+USER appuser
+
+WORKDIR /opt/api
+ENTRYPOINT ["api"]
+EXPOSE 8000/tcp
