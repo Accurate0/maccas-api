@@ -2,18 +2,18 @@
 version: '3'
 
 services:
-  api:
-    build:
-      dockerfile: Dockerfile.api
-    ports:
-      - "8000:8000"
-    links:
-      - "db:database"
-    depends_on:
-      - db
+  # api:
+  #   build:
+  #     dockerfile: Dockerfile.api
+  #   ports:
+  #     - "8000:8000"
+  #   links:
+  #     - "db:database"
+  #   depends_on:
+  #     - db
 
-    environment:
-      - DATABASE_URL=postgres://postgres:test@database/maccas
+  #   environment:
+  #     - DATABASE_URL=postgres://postgres:test@database/maccas
 
   db:
     image: postgres:16

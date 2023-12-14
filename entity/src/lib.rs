@@ -2,4 +2,7 @@
 
 pub mod prelude;
 
+pub mod accounts;
+pub mod current_jobs;
+pub mod jobs;
 pub mod offers;
