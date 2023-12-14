@@ -8,10 +8,35 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
+    pub offer_id: i64,
+    pub valid_from: DateTime,
+    pub valid_to: DateTime,
     pub name: String,
+    pub short_name: String,
+    pub description: String,
+    pub creation_date: DateTime,
+    pub image_base_name: String,
+    pub original_image_base_name: String,
+    pub offer_proposition_id: i64,
+    pub account_name: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::accounts::Entity",
+        from = "Column::AccountName",
+        to = "super::accounts::Column::Name",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    Accounts,
+}
+
+impl Related<super::accounts::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Accounts.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

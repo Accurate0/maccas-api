@@ -6,24 +6,17 @@ pub struct Migration;
 #[derive(DeriveIden)]
 enum Offers {
     Table,
-    Id,
-    Name,
+    OfferId,
 }
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .create_table(
-                Table::create()
+            .alter_table(
+                Table::alter()
                     .table(Offers::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new_with_type(Offers::Id, ColumnType::Uuid)
-                            .not_null()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(Offers::Name).string().not_null())
+                    .modify_column(ColumnDef::new(Offers::OfferId).big_integer())
                     .to_owned(),
             )
             .await
@@ -31,7 +24,12 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Offers::Table).to_owned())
+            .alter_table(
+                Table::alter()
+                    .table(Offers::Table)
+                    .modify_column(ColumnDef::new(Offers::OfferId).integer())
+                    .to_owned(),
+            )
             .await
     }
 }
