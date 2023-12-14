@@ -1,11 +1,12 @@
-use std::time::Duration;
-
 use crate::{
     config::Settings,
-    jobs::{refresh::RefreshJob, JobScheduler},
+    error::JobError,
+    jobs::{refresh::RefreshJob, JobScheduler, JobType},
 };
 use sea_orm::Database;
+use std::time::Duration;
 use tokio::signal;
+use tracing::{Instrument, Level};
 
 mod config;
 mod error;
@@ -20,16 +21,34 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let mut scheduler = JobScheduler::new(db);
 
-    scheduler.add(&RefreshJob {}, jobs::JobType::Continuous);
+    scheduler.add(RefreshJob, JobType::Continuous);
     scheduler.init().await?;
     scheduler.start().await?;
 
-    tokio::spawn(async move {
-        loop {
-            scheduler.tick().await;
-            tokio::time::sleep(Duration::from_secs(2)).await
+    let cloned_scheduler = scheduler.clone();
+    let span = tracing::span!(Level::INFO, "scheduler_tick");
+
+    tokio::spawn(
+        async move {
+            loop {
+                match cloned_scheduler.tick().await {
+                    Ok(_) => {}
+                    Err(e) => match e {
+                        JobError::SchedulerCancelled => {
+                            tracing::info!("scheduler cancelled");
+                            break;
+                        }
+                        e => tracing::error!("unexpected error while ticking scheduler: {}", e),
+                    },
+                }
+                tokio::time::sleep(Duration::from_secs(2)).await
+            }
         }
-    });
+        .instrument(span),
+    );
+
+    tokio::time::sleep(Duration::from_secs(10)).await;
+    scheduler.cancel().await;
 
     let ctrl_c = async {
         signal::ctrl_c()
@@ -47,6 +66,7 @@ async fn main() -> Result<(), anyhow::Error> {
     tokio::select! {
         _ = ctrl_c => {},
         _ = terminate => {},
+        _ = scheduler.wait_for_cancel() => {}
     }
 
     Ok(())
