@@ -28,6 +28,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let cloned_scheduler = scheduler.clone();
     let span = tracing::span!(Level::INFO, "scheduler_tick");
 
+    // FIXME: move into job scheduler
     tokio::spawn(
         async move {
             loop {
@@ -68,6 +69,8 @@ async fn main() -> Result<(), anyhow::Error> {
         _ = terminate => {},
         _ = scheduler.wait_for_cancel() => {}
     }
+
+    // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 
     Ok(())
 }
