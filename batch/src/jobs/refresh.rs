@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
-pub struct RefreshJob {}
+pub struct RefreshJob;
 
 #[async_trait::async_trait]
 impl Job for RefreshJob {
@@ -13,10 +13,19 @@ impl Job for RefreshJob {
 
     async fn prepare(&self) {}
 
-    async fn execute(&self, _cancellation_token: CancellationToken) {
-        loop {
-            tracing::info!("running");
-            tokio::time::sleep(Duration::from_secs(5)).await
+    async fn execute(&self, cancellation_token: CancellationToken) {
+        let future = async move {
+            loop {
+                tracing::info!("running");
+                tokio::time::sleep(Duration::from_secs(5)).await
+            }
+        };
+
+        tokio::select! {
+            _ = cancellation_token.cancelled() => {
+                tracing::warn!("cancellation requested");
+            }
+            _ = future => {}
         }
     }
 

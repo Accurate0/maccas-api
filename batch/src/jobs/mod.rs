@@ -7,7 +7,7 @@ use sea_orm::{
 use std::fmt::Debug;
 use std::sync::Arc;
 use tokio::{sync::RwLock, task::JoinHandle};
-use tokio_util::sync::CancellationToken;
+use tokio_util::sync::{CancellationToken, WaitForCancellationFuture};
 use tracing::{Instrument, Level};
 
 pub mod refresh;
@@ -38,13 +38,13 @@ pub enum JobState {
 
 #[derive(Debug)]
 struct JobDetails {
-    job: &'static dyn Job,
+    job: Box<dyn Job>,
     state: JobState,
     r#type: JobType,
 }
 
 impl JobDetails {
-    pub fn new(job: &'static dyn Job, r#type: JobType) -> Self {
+    pub fn new(job: Box<dyn Job>, r#type: JobType) -> Self {
         Self {
             job,
             r#type,
@@ -53,8 +53,10 @@ impl JobDetails {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct JobScheduler {
+    cancellation_token: CancellationToken,
+    // FIXME: swap Arc and Vec
     jobs: Vec<Arc<RwLock<JobDetails>>>,
     db: DatabaseConnection,
 }
@@ -67,9 +69,14 @@ impl JobScheduler {
         }
     }
 
-    pub fn add(&mut self, job: &'static dyn Job, r#type: JobType) -> &mut Self {
-        self.jobs
-            .push(Arc::new(RwLock::new(JobDetails::new(job, r#type))));
+    pub fn add<T>(&mut self, job: T, r#type: JobType) -> &mut Self
+    where
+        T: Job + 'static,
+    {
+        self.jobs.push(Arc::new(RwLock::new(JobDetails::new(
+            Box::new(job),
+            r#type,
+        ))));
 
         self
     }
@@ -153,26 +160,57 @@ impl JobScheduler {
         Ok(())
     }
 
-    pub async fn tick(&self) {
+    pub async fn cancel(&self) {
         for job_details in &self.jobs {
             let job_details = job_details.read().await;
-            match job_details.r#type {
-                JobType::Continuous => match &job_details.state {
-                    JobState::NotStarted => todo!(),
-                    JobState::Running {
-                        cancellation_token,
-                        handle,
-                    } => tracing::info!(
-                        "job: {} is_finished: {} is_cancelled: {}",
-                        job_details.job.name(),
-                        handle.is_finished(),
-                        cancellation_token.is_cancelled()
-                    ),
-                },
+            match &job_details.state {
+                JobState::NotStarted => todo!(),
+                JobState::Running {
+                    cancellation_token,
+                    handle: _,
+                } => cancellation_token.cancel(),
             }
+        }
 
-            // find and execute cron jobs
-            // check health on continuous jobs
+        self.cancellation_token.cancel()
+    }
+
+    pub async fn wait_for_cancel(&self) -> WaitForCancellationFuture {
+        self.cancellation_token.cancelled()
+    }
+
+    pub async fn tick(&self) -> Result<(), JobError> {
+        let future = async move {
+            for job_details in &self.jobs {
+                let job_details = job_details.read().await;
+                match job_details.r#type {
+                    JobType::Continuous => match &job_details.state {
+                        JobState::NotStarted => todo!(),
+                        JobState::Running {
+                            cancellation_token,
+                            handle,
+                        } => tracing::info!(
+                            "job: {} is_finished: {} is_cancelled: {}",
+                            job_details.job.name(),
+                            handle.is_finished(),
+                            cancellation_token.is_cancelled()
+                        ),
+                    },
+                }
+
+                // find and execute cron jobs
+                // check health on continuous jobs
+            }
+        };
+
+        tokio::select! {
+            _ = self.cancellation_token.cancelled() => {
+                tracing::warn!("cancellation requested for scheduler");
+                Err(JobError::SchedulerCancelled)
+            }
+            _ = future => {
+                Ok(())
+            }
         }
     }
 }
