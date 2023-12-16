@@ -57,13 +57,13 @@ async fn main() -> Result<(), anyhow::Error> {
 
                 let account_model = accounts::ActiveModel {
                     name: Set(account_name),
-                    login_username: Set(item
+                    username: Set(item
                         .get("login_username")
                         .unwrap()
                         .as_s()
                         .unwrap()
                         .to_owned()),
-                    login_password: Set(item
+                    password: Set(item
                         .get("login_password")
                         .unwrap()
                         .as_s()
@@ -81,6 +81,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         .as_s()
                         .unwrap()
                         .to_owned()),
+
+                    device_id: Set(details.get("device_id").unwrap().as_s().unwrap().to_owned()),
 
                     ..Default::default()
                 };
@@ -119,13 +121,13 @@ async fn main() -> Result<(), anyhow::Error> {
 
                     let account_model = accounts::ActiveModel {
                         name: Set(account_name),
-                        login_username: Set(item
+                        username: Set(item
                             .get("login_username")
                             .unwrap()
                             .as_s()
                             .unwrap()
                             .to_owned()),
-                        login_password: Set(item
+                        password: Set(item
                             .get("login_password")
                             .unwrap()
                             .as_s()
@@ -139,6 +141,12 @@ async fn main() -> Result<(), anyhow::Error> {
                             .to_owned()),
                         refresh_token: Set(details
                             .get("refresh_token")
+                            .unwrap()
+                            .as_s()
+                            .unwrap()
+                            .to_owned()),
+                        device_id: Set(details
+                            .get("device_id")
                             .unwrap()
                             .as_s()
                             .unwrap()

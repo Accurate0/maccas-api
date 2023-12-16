@@ -7,10 +7,11 @@ pub struct Migration;
 enum Accounts {
     Table,
     Name,
-    LoginPassword,
-    LoginUsername,
+    Password,
+    Username,
     AccessToken,
     RefreshToken,
+    DeviceId,
     CreatedAt,
     UpdatedAt,
 }
@@ -35,10 +36,11 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Accounts::LoginUsername).string().not_null())
-                    .col(ColumnDef::new(Accounts::LoginPassword).string().not_null())
+                    .col(ColumnDef::new(Accounts::Username).string().not_null())
+                    .col(ColumnDef::new(Accounts::Password).string().not_null())
                     .col(ColumnDef::new(Accounts::AccessToken).string().not_null())
                     .col(ColumnDef::new(Accounts::RefreshToken).string().not_null())
+                    .col(ColumnDef::new(Accounts::DeviceId).string().not_null())
                     .col(
                         ColumnDef::new(Accounts::CreatedAt)
                             .default(Expr::current_timestamp())
