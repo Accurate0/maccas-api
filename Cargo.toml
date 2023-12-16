@@ -16,7 +16,7 @@ strip = "symbols"
 [workspace.dependencies]
 async-graphql = "6.0.11"
 
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }
 serde_json = "1.0.108"
 
 chrono = "0.4.31"
@@ -37,5 +37,5 @@ config = "0.13.4"
 entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
 
-thiserror = "1.0.50"
+thiserror = "1.0.51"
 futures = "0.3.29"
