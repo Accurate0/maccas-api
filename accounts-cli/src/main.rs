@@ -44,6 +44,14 @@ enum Commands {
         #[arg(short, long)]
         count: u32,
     },
+    Login {
+        #[arg(short, long)]
+        account_name: Option<String>,
+        #[arg(short, long)]
+        username: String,
+        #[arg(short, long)]
+        password: String,
+    },
     ActivateAndLogin,
     ActivateAccount {
         #[arg(short, long)]
@@ -88,6 +96,38 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut rng = StdRng::from_entropy();
 
     match args.command {
+        Commands::Login {
+            account_name,
+            username,
+            password,
+        } => {
+            let account_name = account_name.unwrap_or(username.clone());
+            let device_id = account_repository
+                .get_device_id_for(&account_name)
+                .await?
+                .unwrap();
+
+            let response = client
+                .customer_login(
+                    &username,
+                    &password,
+                    &config.mcdonalds.sensor_data,
+                    &device_id,
+                )
+                .await?;
+
+            let access_token = &response.body.response.access_token;
+            let refresh_token = &response.body.response.refresh_token;
+
+            account_repository
+                .set_access_and_refresh_token_for(&account_name, access_token, refresh_token)
+                .await?;
+
+            log::info!("resp: {:?}", response);
+            log::info!("access: {:?}", access_token);
+            log::info!("refresh: {:?}", refresh_token);
+        }
+
         Commands::CreateAccounts {
             count,
             group,
