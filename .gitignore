@@ -7,3 +7,4 @@ sensor-data.json
 foundation/Cargo.lock
 hidden
 hidden/*
+prisma.rs

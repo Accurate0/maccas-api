@@ -17,13 +17,19 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "Entity",
+        belongs_to = "super::jobs::Entity",
         from = "Column::Id",
-        to = "Column::Id",
+        to = "super::jobs::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    SelfRef,
+    Jobs,
+}
+
+impl Related<super::jobs::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Jobs.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

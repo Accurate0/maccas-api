@@ -6,11 +6,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "jobs")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: Uuid,
     #[sea_orm(unique)]
     pub name: String,
-    pub last_run: Option<DateTime>,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub id: Uuid,
+    pub last_execution: Option<DateTime>,
+    #[sea_orm(column_type = "JsonBinary", nullable)]
+    pub resume_context: Option<Json>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

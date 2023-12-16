@@ -5,10 +5,10 @@ members = [
     "migration",
     "libmaccas",
     "places",
-    "entity",
-    "converters",
     "dynamodb-migration",
     "batch",
+    "prisma",
+    "prisma-cli",
 ]
 
 [profile.release-strip]
@@ -40,3 +40,13 @@ entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
 
 thiserror = "1.0.50"
+futures = "0.3.29"
+
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.10", default-features = false, features = [
+    "migrations",
+    "postgresql",
+] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.10", default-features = false, features = [
+    "migrations",
+    "postgresql",
+] }

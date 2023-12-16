@@ -19,9 +19,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let settings = Settings::new()?;
     let db = Database::connect(settings.database.url).await?;
 
-    let mut scheduler = JobScheduler::new(db);
+    let scheduler = JobScheduler::new(db);
 
-    scheduler.add(RefreshJob, JobType::Continuous);
+    scheduler.add(RefreshJob, JobType::Continuous).await;
     scheduler.init().await?;
     scheduler.start().await?;
 
@@ -36,7 +36,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     Ok(_) => {}
                     Err(e) => match e {
                         JobError::SchedulerCancelled => {
-                            tracing::info!("scheduler cancelled");
+                            tracing::warn!("scheduler cancelled");
                             break;
                         }
                         e => tracing::error!("unexpected error while ticking scheduler: {}", e),
@@ -49,26 +49,25 @@ async fn main() -> Result<(), anyhow::Error> {
     );
 
     tokio::time::sleep(Duration::from_secs(10)).await;
-    scheduler.cancel().await;
+    scheduler.shutdown().await;
 
-    let ctrl_c = async {
+    let _ctrl_c = async {
         signal::ctrl_c()
             .await
             .expect("failed to install Ctrl+C handler");
     };
 
-    let terminate = async {
+    let _terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
             .expect("failed to install signal handler")
             .recv()
             .await;
     };
 
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
-        _ = scheduler.wait_for_cancel() => {}
-    }
+    // tokio::select! {
+    //     _ = ctrl_c => {},
+    //     _ = terminate => {},
+    // }
 
     // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 
