@@ -4,10 +4,12 @@ use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, Set, Unchanged,
 };
-use std::fmt::Debug;
+
 use std::sync::Arc;
+
+use std::fmt::Debug;
 use tokio::{sync::RwLock, task::JoinHandle};
-use tokio_util::sync::{CancellationToken, WaitForCancellationFuture};
+use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
 pub mod refresh;
@@ -16,8 +18,8 @@ pub mod refresh;
 pub trait Job: Send + Sync + Debug {
     fn name(&self) -> String;
     async fn prepare(&self) {}
-    async fn execute(&self, _cancellation_token: CancellationToken) {}
-    async fn cleanup(&self) {}
+    async fn execute(&self, _context: &JobContext, _cancellation_token: CancellationToken) {}
+    async fn cleanup(&self, _context: &JobContext) {}
 }
 
 #[derive(Debug)]
@@ -26,25 +28,28 @@ pub enum JobType {
     // Scheduled,
 }
 
+#[derive(Debug)]
+pub struct RunningState {
+    cancellation_token: CancellationToken,
+    handle: JoinHandle<()>,
+}
+
 #[derive(Debug, Default)]
 pub enum JobState {
     #[default]
     NotStarted,
-    Running {
-        cancellation_token: CancellationToken,
-        handle: JoinHandle<()>,
-    },
+    Running(RunningState),
 }
 
 #[derive(Debug)]
 struct JobDetails {
-    job: Box<dyn Job>,
+    job: Arc<dyn Job>,
     state: JobState,
     r#type: JobType,
 }
 
 impl JobDetails {
-    pub fn new(job: Box<dyn Job>, r#type: JobType) -> Self {
+    pub fn new(job: Arc<dyn Job>, r#type: JobType) -> Self {
         Self {
             job,
             r#type,
@@ -53,11 +58,65 @@ impl JobDetails {
     }
 }
 
+pub struct JobContext {
+    database: DatabaseConnection,
+    id: Uuid,
+}
+
+impl JobContext {
+    pub fn new(database: DatabaseConnection, id: Uuid) -> Self {
+        Self { database, id }
+    }
+
+    pub async fn get<T>(&self) -> Option<T>
+    where
+        T: for<'de> serde::Deserialize<'de>,
+    {
+        serde_json::from_value::<T>(
+            jobs::Entity::find_by_id(self.id)
+                .one(&self.database)
+                .await
+                .map(|e| e.map(|m| m.resume_context))
+                .ok()
+                .unwrap_or(None)
+                .unwrap_or(None)
+                .into(),
+        )
+        .ok()
+    }
+
+    pub async fn set<T>(&self, context: T) -> Result<(), JobError>
+    where
+        T: serde::Serialize,
+    {
+        jobs::ActiveModel {
+            id: Set(self.id),
+            resume_context: Set(Some(serde_json::to_value(context)?)),
+            ..Default::default()
+        }
+        .update(&self.database)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn reset(&self) -> Result<(), JobError> {
+        jobs::ActiveModel {
+            id: Set(self.id),
+            resume_context: Set(None),
+            ..Default::default()
+        }
+        .update(&self.database)
+        .await?;
+
+        Ok(())
+    }
+}
+
 #[derive(Default, Clone)]
 pub struct JobScheduler {
     cancellation_token: CancellationToken,
-    // FIXME: swap Arc and Vec
-    jobs: Vec<Arc<RwLock<JobDetails>>>,
+    jobs: Arc<RwLock<Vec<JobDetails>>>,
     db: DatabaseConnection,
 }
 
@@ -69,27 +128,26 @@ impl JobScheduler {
         }
     }
 
-    pub fn add<T>(&mut self, job: T, r#type: JobType) -> &mut Self
+    pub async fn add<T>(&self, job: T, r#type: JobType) -> &Self
     where
         T: Job + 'static,
     {
-        self.jobs.push(Arc::new(RwLock::new(JobDetails::new(
-            Box::new(job),
-            r#type,
-        ))));
+        let mut jobs = self.jobs.write().await;
+        jobs.push(JobDetails::new(Arc::new(job), r#type));
 
         self
     }
 
     pub async fn init(&self) -> Result<(), JobError> {
-        for job_details in &self.jobs {
-            let name = job_details.read().await.job.name();
+        let jobs = self.jobs.read().await;
+        for job_details in jobs.iter() {
+            let name = job_details.job.name();
             let id = Uuid::new_v4();
 
             let job_model = jobs::ActiveModel {
                 id: Set(id),
                 name: Set(name),
-                last_run: Unchanged(None),
+                ..Default::default()
             };
 
             jobs::Entity::insert(job_model)
@@ -105,54 +163,48 @@ impl JobScheduler {
         Ok(())
     }
 
-    pub async fn start(&mut self) -> Result<(), JobError> {
-        for job_details in &self.jobs {
-            let mut job_details_lock = job_details.write().await;
-            match job_details_lock.r#type {
+    pub async fn start(&self) -> Result<(), JobError> {
+        let mut jobs = self.jobs.write().await;
+        for job_details in jobs.iter_mut() {
+            match job_details.r#type {
                 JobType::Continuous => {
-                    let name = job_details_lock.job.name();
+                    let name = job_details.job.name();
                     let span = tracing::span!(Level::INFO, "job", name);
 
                     let cancellation_token = CancellationToken::new();
                     let cancellation_token_cloned = cancellation_token.clone();
+                    let job = job_details.job.clone();
 
-                    let job_details_cloned = job_details.clone();
-
-                    let handle = tokio::spawn(
-                        async move {
-                            job_details_cloned.read().await.job.prepare().await;
-                            job_details_cloned
-                                .read()
-                                .await
-                                .job
-                                .execute(cancellation_token_cloned)
-                                .await;
-                            job_details_cloned.read().await.job.cleanup().await;
-                        }
-                        .instrument(span),
-                    );
-
-                    job_details_lock.state = JobState::Running {
-                        cancellation_token,
-                        handle,
-                    };
-
-                    let job = jobs::Entity::find()
+                    let job_model = jobs::Entity::find()
                         .filter(jobs::Column::Name.eq(name.clone()))
                         .one(&self.db)
                         .await?
                         .unwrap();
 
+                    let context = JobContext::new(self.db.clone(), job_model.id);
+
+                    let handle = tokio::spawn(
+                        async move {
+                            job.prepare().await;
+                            job.execute(&context, cancellation_token_cloned).await;
+                            job.cleanup(&context).await;
+                        }
+                        .instrument(span),
+                    );
+
+                    job_details.state = JobState::Running(RunningState {
+                        cancellation_token,
+                        handle,
+                    });
+
                     jobs::ActiveModel {
-                        id: Unchanged(job.id),
+                        id: Unchanged(job_model.id),
                         name: Set(name),
-                        last_run: Set(Some(chrono::offset::Utc::now().naive_utc())),
+                        last_execution: Set(Some(chrono::offset::Utc::now().naive_utc())),
+                        ..Default::default()
                     }
                     .update(&self.db)
                     .await?;
-
-                    // FIXME: can't ever regain the write lock after the task has started, it must be stopped
-                    // it holds a read lock forever while executing...
                 }
             }
         }
@@ -160,40 +212,37 @@ impl JobScheduler {
         Ok(())
     }
 
-    pub async fn cancel(&self) {
-        for job_details in &self.jobs {
-            let job_details = job_details.read().await;
-            match &job_details.state {
+    pub async fn shutdown(&self) {
+        let mut jobs = self.jobs.write().await;
+        let mut cancellation_futures = Vec::new();
+
+        for job_details in jobs.iter_mut() {
+            match job_details.state {
                 JobState::NotStarted => todo!(),
-                JobState::Running {
-                    cancellation_token,
-                    handle: _,
-                } => cancellation_token.cancel(),
+                JobState::Running(ref mut state) => {
+                    state.cancellation_token.cancel();
+                    cancellation_futures.push(&mut state.handle)
+                }
             }
         }
 
+        futures::future::join_all(cancellation_futures).await;
         self.cancellation_token.cancel()
-    }
-
-    pub async fn wait_for_cancel(&self) -> WaitForCancellationFuture {
-        self.cancellation_token.cancelled()
     }
 
     pub async fn tick(&self) -> Result<(), JobError> {
         let future = async move {
-            for job_details in &self.jobs {
-                let job_details = job_details.read().await;
+            let jobs = self.jobs.read().await;
+
+            for job_details in jobs.iter() {
                 match job_details.r#type {
                     JobType::Continuous => match &job_details.state {
                         JobState::NotStarted => todo!(),
-                        JobState::Running {
-                            cancellation_token,
-                            handle,
-                        } => tracing::info!(
+                        JobState::Running(state) => tracing::info!(
                             "job: {} is_finished: {} is_cancelled: {}",
                             job_details.job.name(),
-                            handle.is_finished(),
-                            cancellation_token.is_cancelled()
+                            state.handle.is_finished(),
+                            state.cancellation_token.is_cancelled()
                         ),
                     },
                 }

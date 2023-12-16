@@ -29,3 +29,4 @@ async-trait = "0.1.74"
 thiserror = { workspace = true }
 tokio-util = "0.7.10"
 chrono = { workspace = true }
+futures = { workspace = true }
