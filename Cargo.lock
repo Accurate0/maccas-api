@@ -148,6 +148,7 @@ dependencies = [
  "anyhow",
  "async-graphql",
  "async-graphql-axum",
+ "async-trait",
  "axum",
  "config",
  "entity",

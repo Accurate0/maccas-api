@@ -31,3 +31,4 @@ tower-http = { version = "0.4.4", features = ["trace"] }
 
 entity = { workspace = true }
 libmaccas = { workspace = true }
+async-trait = { workspace = true }

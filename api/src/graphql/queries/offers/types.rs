@@ -1,9 +1,8 @@
+use super::dataloader::OfferDetailsLoader;
+use async_graphql::dataloader::*;
 use async_graphql::Object;
-use entity::{offer_details, offers};
-use sea_orm::{
-    prelude::{DateTime, Uuid},
-    DatabaseConnection, EntityTrait,
-};
+use entity::offers;
+use sea_orm::prelude::{DateTime, Uuid};
 
 pub struct Offer(pub offers::Model);
 
@@ -45,10 +44,6 @@ impl Offer {
         &self.0.image_base_name
     }
 
-    pub async fn original_image_base_name(&self) -> &String {
-        &self.0.original_image_base_name
-    }
-
     pub async fn created_at(&self) -> &DateTime {
         &self.0.created_at
     }
@@ -61,21 +56,15 @@ impl Offer {
         &self.0.offer_proposition_id
     }
 
-    pub async fn account_name(&self) -> &String {
-        &self.0.account_name
-    }
-
     pub async fn price(
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<Option<f64>> {
-        let db = context.data::<DatabaseConnection>()?;
+        let loader = context.data::<DataLoader<OfferDetailsLoader>>()?;
 
-        Ok(
-            offer_details::Entity::find_by_id(self.0.offer_proposition_id)
-                .one(db)
-                .await?
-                .map(|o| o.price),
-        )
+        Ok(loader
+            .load_one(self.0.offer_proposition_id)
+            .await?
+            .map(|o| o.price))
     }
 }
