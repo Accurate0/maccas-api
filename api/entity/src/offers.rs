@@ -56,3 +56,11 @@ impl Related<super::offer_details::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
+pub enum RelatedEntity {
+    #[sea_orm(entity = "super::accounts::Entity")]
+    Accounts,
+    #[sea_orm(entity = "super::offer_details::Entity")]
+    OfferDetails,
+}
