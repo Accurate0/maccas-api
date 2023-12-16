@@ -1,8 +1,9 @@
 use crate::error::JobError;
+use chrono::Utc;
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
-    EntityTrait, QueryFilter, Set, Unchanged,
+    EntityTrait, QueryFilter, Set,
 };
 
 use std::sync::Arc;
@@ -17,15 +18,8 @@ pub mod refresh;
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {
     fn name(&self) -> String;
-    async fn prepare(&self) {}
     async fn execute(&self, _context: &JobContext, _cancellation_token: CancellationToken) {}
     async fn cleanup(&self, _context: &JobContext) {}
-}
-
-#[derive(Debug)]
-pub enum JobType {
-    Continuous,
-    // Scheduled,
 }
 
 #[derive(Debug)]
@@ -45,14 +39,14 @@ pub enum JobState {
 struct JobDetails {
     job: Arc<dyn Job>,
     state: JobState,
-    r#type: JobType,
+    schedule: cron::Schedule,
 }
 
 impl JobDetails {
-    pub fn new(job: Arc<dyn Job>, r#type: JobType) -> Self {
+    pub fn new(job: Arc<dyn Job>, schedule: cron::Schedule) -> Self {
         Self {
             job,
-            r#type,
+            schedule,
             state: Default::default(),
         }
     }
@@ -63,6 +57,7 @@ pub struct JobContext {
     id: Uuid,
 }
 
+#[allow(unused)]
 impl JobContext {
     pub fn new(database: DatabaseConnection, id: Uuid) -> Self {
         Self { database, id }
@@ -128,12 +123,12 @@ impl JobScheduler {
         }
     }
 
-    pub async fn add<T>(&self, job: T, r#type: JobType) -> &Self
+    pub async fn add<T>(&self, job: T, schedule: cron::Schedule) -> &Self
     where
         T: Job + 'static,
     {
         let mut jobs = self.jobs.write().await;
-        jobs.push(JobDetails::new(Arc::new(job), r#type));
+        jobs.push(JobDetails::new(Arc::new(job), schedule));
 
         self
     }
@@ -163,55 +158,7 @@ impl JobScheduler {
         Ok(())
     }
 
-    pub async fn start(&self) -> Result<(), JobError> {
-        let mut jobs = self.jobs.write().await;
-        for job_details in jobs.iter_mut() {
-            match job_details.r#type {
-                JobType::Continuous => {
-                    let name = job_details.job.name();
-                    let span = tracing::span!(Level::INFO, "job", name);
-
-                    let cancellation_token = CancellationToken::new();
-                    let cancellation_token_cloned = cancellation_token.clone();
-                    let job = job_details.job.clone();
-
-                    let job_model = jobs::Entity::find()
-                        .filter(jobs::Column::Name.eq(name.clone()))
-                        .one(&self.db)
-                        .await?
-                        .unwrap();
-
-                    let context = JobContext::new(self.db.clone(), job_model.id);
-
-                    let handle = tokio::spawn(
-                        async move {
-                            job.prepare().await;
-                            job.execute(&context, cancellation_token_cloned).await;
-                            job.cleanup(&context).await;
-                        }
-                        .instrument(span),
-                    );
-
-                    job_details.state = JobState::Running(RunningState {
-                        cancellation_token,
-                        handle,
-                    });
-
-                    jobs::ActiveModel {
-                        id: Unchanged(job_model.id),
-                        name: Set(name),
-                        last_execution: Set(Some(chrono::offset::Utc::now().naive_utc())),
-                        ..Default::default()
-                    }
-                    .update(&self.db)
-                    .await?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-
+    #[allow(unused)]
     pub async fn shutdown(&self) {
         let mut jobs = self.jobs.write().await;
         let mut cancellation_futures = Vec::new();
@@ -231,38 +178,76 @@ impl JobScheduler {
     }
 
     pub async fn tick(&self) -> Result<(), JobError> {
-        let future = async move {
-            let jobs = self.jobs.read().await;
+        let mut jobs = self.jobs.write().await;
 
-            for job_details in jobs.iter() {
-                match job_details.r#type {
-                    JobType::Continuous => match &job_details.state {
-                        JobState::NotStarted => todo!(),
-                        JobState::Running(state) => tracing::info!(
-                            "job: {} is_finished: {} is_cancelled: {}",
-                            job_details.job.name(),
-                            state.handle.is_finished(),
-                            state.cancellation_token.is_cancelled()
-                        ),
-                    },
+        for job_details in jobs.iter_mut() {
+            let name = job_details.job.name();
+
+            if let JobState::Running(state) = &job_details.state {
+                if state.handle.is_finished() {
+                    job_details.state = JobState::NotStarted;
+                    tracing::info!("[{name}] job finished, transitioning state");
                 }
+            };
 
-                // find and execute cron jobs
-                // check health on continuous jobs
-            }
-        };
+            let cancellation_token = CancellationToken::new();
+            let cancellation_token_cloned = cancellation_token.clone();
+            let job = job_details.job.clone();
 
-        tokio::select! {
-            _ = self.cancellation_token.cancelled() => {
-                tracing::warn!("cancellation requested for scheduler");
-                Err(JobError::SchedulerCancelled)
+            let job_model = jobs::Entity::find()
+                .filter(jobs::Column::Name.eq(name.clone()))
+                .one(&self.db)
+                .await?
+                .unwrap();
+
+            let last_execution = job_model.last_execution;
+            let schedule = &job_details.schedule;
+
+            let next = match last_execution {
+                Some(t) => schedule.after(&t.and_utc()).next(),
+                None => schedule.upcoming(Utc).next(),
             }
-            _ = future => {
-                Ok(())
-            }
+            .unwrap();
+
+            let time_now = chrono::offset::Utc::now();
+
+            tracing::trace!("[{name}] time now: {}", time_now);
+            tracing::trace!("[{name}] next scheduled run: {}", next);
+
+            let running = match job_details.state {
+                JobState::NotStarted => false,
+                JobState::Running(_) => true,
+            };
+
+            if next <= time_now && !running {
+                tracing::info!("[{name}] triggered job");
+                let context = JobContext::new(self.db.clone(), job_model.id);
+                let span = tracing::span!(Level::INFO, "job", name);
+
+                let handle = tokio::spawn(
+                    async move {
+                        job.execute(&context, cancellation_token_cloned).await;
+                        job.cleanup(&context).await;
+                    }
+                    .instrument(span),
+                );
+
+                job_details.state = JobState::Running(RunningState {
+                    cancellation_token,
+                    handle,
+                });
+
+                jobs::ActiveModel {
+                    id: Set(job_model.id),
+                    name: Set(name),
+                    last_execution: Set(Some(time_now.naive_utc())),
+                    ..Default::default()
+                }
+                .update(&self.db)
+                .await?;
+            };
         }
+
+        Ok(())
     }
 }
-
-// Tracing span with job uuid
-// Place into sql table with uuid, start, finish, error

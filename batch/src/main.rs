@@ -1,73 +1,81 @@
-use crate::{
-    config::Settings,
-    error::JobError,
-    jobs::{refresh::RefreshJob, JobScheduler, JobType},
-};
-use sea_orm::Database;
+use crate::jobs::{refresh::RefreshJob, JobScheduler};
+use base::settings::Settings;
+use log::LevelFilter;
+use sea_orm::{ConnectOptions, Database};
 use std::time::Duration;
 use tokio::signal;
-use tracing::{Instrument, Level};
+use tracing_subscriber::fmt::format::FmtSpan;
 
-mod config;
 mod error;
 mod jobs;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt()
+        .with_span_events(FmtSpan::CLOSE)
+        .init();
 
     let settings = Settings::new()?;
-    let db = Database::connect(settings.database.url).await?;
+
+    let mut opt = ConnectOptions::new(settings.database.url.to_owned());
+    opt.max_connections(100)
+        .min_connections(5)
+        .connect_timeout(Duration::from_secs(8))
+        .idle_timeout(Duration::from_secs(8))
+        .sqlx_logging(true)
+        .sqlx_logging_level(LevelFilter::Trace);
+
+    let db = Database::connect(opt).await?;
 
     let scheduler = JobScheduler::new(db);
 
-    scheduler.add(RefreshJob, JobType::Continuous).await;
+    let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
+        .basic_auth(&settings.proxy.username, &settings.proxy.password);
+
+    let http_client = base::http::get_http_client(proxy)?;
+
+    scheduler
+        .add(
+            RefreshJob {
+                http_client,
+                mcdonalds_config: settings.mcdonalds,
+            },
+            "0 */1 * * * *".parse()?,
+        )
+        .await;
+
     scheduler.init().await?;
-    scheduler.start().await?;
 
     let cloned_scheduler = scheduler.clone();
-    let span = tracing::span!(Level::INFO, "scheduler_tick");
 
     // FIXME: move into job scheduler
-    tokio::spawn(
-        async move {
-            loop {
-                match cloned_scheduler.tick().await {
-                    Ok(_) => {}
-                    Err(e) => match e {
-                        JobError::SchedulerCancelled => {
-                            tracing::warn!("scheduler cancelled");
-                            break;
-                        }
-                        e => tracing::error!("unexpected error while ticking scheduler: {}", e),
-                    },
-                }
-                tokio::time::sleep(Duration::from_secs(2)).await
-            }
+    tokio::spawn(async move {
+        loop {
+            if let Err(e) = cloned_scheduler.tick().await {
+                tracing::error!("error during tick: {}", e);
+            };
+
+            tokio::time::sleep(Duration::from_millis(500)).await
         }
-        .instrument(span),
-    );
+    });
 
-    tokio::time::sleep(Duration::from_secs(10)).await;
-    scheduler.shutdown().await;
-
-    let _ctrl_c = async {
+    let ctrl_c = async {
         signal::ctrl_c()
             .await
             .expect("failed to install Ctrl+C handler");
     };
 
-    let _terminate = async {
+    let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
             .expect("failed to install signal handler")
             .recv()
             .await;
     };
 
-    // tokio::select! {
-    //     _ = ctrl_c => {},
-    //     _ = terminate => {},
-    // }
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 
     // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 

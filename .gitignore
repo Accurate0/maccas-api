@@ -8,3 +8,6 @@ foundation/Cargo.lock
 hidden
 hidden/*
 prisma.rs
+.env.local
+backup.sql
+inserts.sql

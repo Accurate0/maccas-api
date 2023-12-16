@@ -15,6 +15,7 @@ use std::fmt::{Debug, Display};
 use tracing::instrument;
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct ApiClient {
     base_url: String,
     client: ClientWithMiddleware,

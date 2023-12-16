@@ -13,7 +13,7 @@ services:
   #     - db
 
   #   environment:
-  #     - DATABASE_URL=postgres://postgres:test@database/maccas
+  #     - DATABASE__URL=postgres://postgres:test@database/maccas
 
   db:
     image: postgres:16

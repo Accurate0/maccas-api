@@ -4,4 +4,5 @@ pub mod prelude;
 
 pub mod accounts;
 pub mod jobs;
+pub mod offer_details;
 pub mod offers;
