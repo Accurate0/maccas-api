@@ -3,6 +3,7 @@ use async_graphql::{Context, Object};
 use entity::offers;
 use sea_orm::{DatabaseConnection, EntityTrait};
 
+pub mod dataloader;
 mod types;
 
 #[derive(Default)]

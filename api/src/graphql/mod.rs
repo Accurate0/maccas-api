@@ -2,7 +2,7 @@ use self::queries::{health::HealthQuery, offers::OffersQuery};
 use async_graphql::{http::GraphiQLSource, MergedObject};
 use axum::response::IntoResponse;
 
-mod queries;
+pub mod queries;
 
 #[derive(Default, MergedObject)]
 pub struct QueryRoot(HealthQuery, OffersQuery);

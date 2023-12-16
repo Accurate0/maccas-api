@@ -1,8 +1,8 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_axum::GraphQL;
 use axum::{extract::MatchedPath, http::Request, routing::get, Router};
 use config::Settings;
-use graphql::{graphiql, QueryRoot};
+use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader, QueryRoot};
 use sea_orm::Database;
 use tower_http::{
     trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
@@ -20,8 +20,13 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let settings = Settings::new()?;
     let db = Database::connect(settings.database.url).await?;
+
     let schema = Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .data(db)
+        .data(db.clone())
+        .data(DataLoader::new(
+            OfferDetailsLoader { database: db },
+            tokio::spawn,
+        ))
         .finish();
 
     let app = Router::new()
