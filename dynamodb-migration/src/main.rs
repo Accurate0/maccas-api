@@ -1,6 +1,5 @@
 use aws_config::{retry::RetryConfig, BehaviorVersion};
 use aws_sdk_dynamodb::types::AttributeValue;
-use chrono::DateTime;
 use clap::{Parser, Subcommand};
 use entity::accounts::{self};
 use sea_orm::{ActiveModelTrait, Database, Set};
@@ -83,10 +82,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         .unwrap()
                         .to_owned()),
 
-                    last_accessed: Set(DateTime::parse_from_rfc3339(
-                        details.get("last_refresh").unwrap().as_s().unwrap(),
-                    )?
-                    .naive_utc()),
+                    ..Default::default()
                 };
 
                 if update {
@@ -148,10 +144,7 @@ async fn main() -> Result<(), anyhow::Error> {
                             .unwrap()
                             .to_owned()),
 
-                        last_accessed: Set(DateTime::parse_from_rfc3339(
-                            details.get("last_refresh").unwrap().as_s().unwrap(),
-                        )?
-                        .naive_utc()),
+                        ..Default::default()
                     };
 
                     if update {

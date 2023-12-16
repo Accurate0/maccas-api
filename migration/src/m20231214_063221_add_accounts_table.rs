@@ -11,7 +11,8 @@ enum Accounts {
     LoginUsername,
     AccessToken,
     RefreshToken,
-    LastAccessed,
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveIden)]
@@ -39,13 +40,36 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Accounts::AccessToken).string().not_null())
                     .col(ColumnDef::new(Accounts::RefreshToken).string().not_null())
                     .col(
-                        ColumnDef::new(Accounts::LastAccessed)
+                        ColumnDef::new(Accounts::CreatedAt)
+                            .default(Expr::current_timestamp())
                             .date_time()
                             .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(Accounts::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
                     )
                     .to_owned(),
             )
             .await?;
+
+        let db = manager.get_connection();
+        db.execute_unprepared(
+            r#"CREATE OR REPLACE FUNCTION update_accounts_updated_at_column()
+            RETURNS TRIGGER AS $$
+                BEGIN
+                    NEW.updated_at = now();
+                    RETURN NEW;
+                END;
+            $$ language 'plpgsql';"#,
+        )
+        .await?;
+
+        db.execute_unprepared(r#"
+        CREATE TRIGGER update_accounts_updated_at_column BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE update_accounts_updated_at_column();
+        "#).await?;
 
         manager
             .alter_table(
@@ -68,6 +92,16 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let db = manager.get_connection();
+
+        db.execute_unprepared(
+            "DROP TRIGGER IF EXISTS update_accounts_updated_at_column ON accounts",
+        )
+        .await?;
+
+        db.execute_unprepared("DROP FUNCTION IF EXISTS update_accounts_updated_at_column")
+            .await?;
+
         manager
             .alter_table(
                 Table::alter()
