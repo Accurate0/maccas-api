@@ -17,6 +17,8 @@ pub struct Model {
     pub creation_date: DateTime,
     pub image_base_name: String,
     pub original_image_base_name: String,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
     pub offer_proposition_id: i64,
     pub account_name: String,
 }

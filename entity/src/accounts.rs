@@ -12,7 +12,8 @@ pub struct Model {
     pub login_password: String,
     pub access_token: String,
     pub refresh_token: String,
-    pub last_accessed: DateTime,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
