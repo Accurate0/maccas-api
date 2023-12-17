@@ -56,6 +56,7 @@ impl Job for RefreshJob {
 
             update_model.access_token = Set(response.access_token);
             update_model.refresh_token = Set(response.refresh_token);
+            tracing::info!("new tokens fetched, updating database");
 
             update_model.update(&context.database).await?;
 

@@ -8,6 +8,8 @@ members = [
     "dynamodb-migration",
     "batch",
     "base",
+    "queue",
+    "jobs",
 ]
 
 [profile.release-strip]
@@ -43,6 +45,7 @@ entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
 base = { path = "./base" }
 converters = { path = "./converters" }
+jobs = { path = "./jobs" }
 
 thiserror = "1.0.51"
 futures = "0.3.29"
@@ -54,3 +57,11 @@ reqwest-tracing = "0.4.6"
 log = "0.4"
 
 async-trait = "0.1.74"
+
+tokio = { version = "1.35.0", features = [
+    "macros",
+    "rt-multi-thread",
+    "signal",
+] }
+tokio-util = "0.7.10"
+cron = "0.12.0"

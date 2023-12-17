@@ -1,13 +1,10 @@
-use crate::jobs::{refresh::RefreshJob, JobScheduler};
 use base::settings::Settings;
+use jobs::{job_scheduler::JobScheduler, refresh::RefreshJob};
 use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
 use std::time::Duration;
 use tokio::signal;
 use tracing_subscriber::fmt::format::FmtSpan;
-
-mod error;
-mod jobs;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -45,25 +42,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .await;
 
     scheduler.init().await?;
-
-    let cloned_scheduler = scheduler.clone();
-
-    // FIXME: move into job scheduler
-    tokio::spawn(async move {
-        loop {
-            if let Err(e) = cloned_scheduler.tick().await {
-                tracing::error!("error during tick: {}", e);
-            };
-
-            tokio::time::sleep(Duration::from_millis(500)).await
-        }
-    });
-
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
+    let handle = scheduler.run().await;
 
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -72,10 +51,23 @@ async fn main() -> Result<(), anyhow::Error> {
             .await;
     };
 
+    let ctrl_c = async {
+        signal::unix::signal(signal::unix::SignalKind::interrupt())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
     tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
+        _ = ctrl_c => {
+            scheduler.shutdown().await;
+        },
+        _ = terminate => {
+            scheduler.shutdown().await;
+        }
     }
+
+    handle.await?;
 
     // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 

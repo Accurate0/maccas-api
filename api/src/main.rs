@@ -1,16 +1,17 @@
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_axum::GraphQL;
 use axum::{extract::MatchedPath, http::Request, routing::get, Router};
-use config::Settings;
+use base::settings::Settings;
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader, QueryRoot};
-use sea_orm::Database;
+use log::LevelFilter;
+use sea_orm::{ConnectOptions, Database};
+use std::time::Duration;
 use tower_http::{
     trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
     LatencyUnit,
 };
 use tracing::Level;
 
-mod config;
 mod graphql;
 mod utils;
 
@@ -19,7 +20,15 @@ async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::fmt().init();
 
     let settings = Settings::new()?;
-    let db = Database::connect(settings.database.url).await?;
+    let mut opt = ConnectOptions::new(settings.database.url.to_owned());
+    opt.max_connections(100)
+        .min_connections(5)
+        .connect_timeout(Duration::from_secs(8))
+        .idle_timeout(Duration::from_secs(8))
+        .sqlx_logging(true)
+        .sqlx_logging_level(LevelFilter::Trace);
+
+    let db = Database::connect(opt).await?;
 
     let schema = Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .data(db.clone())

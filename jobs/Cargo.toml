@@ -1,5 +1,5 @@
 [package]
-name = "batch"
+name = "jobs"
 version = "0.1.0"
 edition = "2021"
 
@@ -31,4 +31,3 @@ reqwest-middleware = { workspace = true }
 reqwest = { workspace = true }
 log = { workspace = true }
 cron = { workspace = true }
-jobs = { workspace = true }
