@@ -1,5 +1,4 @@
 use crate::{error::JobError, Job, JobContext, JobDetails, JobState, RunningState};
-use chrono::Utc;
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
@@ -96,10 +95,12 @@ impl JobScheduler {
 
                 let last_execution = job_model.last_execution;
                 let schedule = &job_details.schedule;
+                let time_now = chrono::offset::Utc::now();
 
+                // if no last execution, execute immediately
                 let next = match last_execution {
                     Some(t) => schedule.after(&t.and_utc()).next(),
-                    None => schedule.upcoming(Utc).next(),
+                    None => Some(time_now),
                 }
                 .unwrap();
 
@@ -114,8 +115,6 @@ impl JobScheduler {
                 let cancellation_token = CancellationToken::new();
                 let cancellation_token_cloned = cancellation_token.clone();
                 let job = job_details.job.clone();
-
-                let time_now = chrono::offset::Utc::now();
 
                 tracing::trace!("time now: {}", time_now);
                 tracing::trace!("next scheduled run: {}", next);

@@ -7,7 +7,8 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "accounts")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub name: String,
+    pub id: Uuid,
+    #[sea_orm(unique)]
     pub username: String,
     pub password: String,
     pub access_token: String,
@@ -21,11 +22,19 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::offers::Entity")]
     Offers,
+    #[sea_orm(has_many = "super::points::Entity")]
+    Points,
 }
 
 impl Related<super::offers::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Offers.def()
+    }
+}
+
+impl Related<super::points::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Points.def()
     }
 }
 

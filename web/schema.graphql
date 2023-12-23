@@ -29,9 +29,16 @@ type Offer {
   validTo: NaiveDateTime!
 }
 
+type Points {
+  accountId: UUID!
+  currentPoints: Int!
+  lifetimePoints: Int!
+}
+
 type QueryRoot {
   health: HealthResponse!
   offers: [Offer!]!
+  points: [Points!]!
 }
 
 """

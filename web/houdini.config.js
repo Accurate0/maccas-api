@@ -8,7 +8,8 @@ const config = {
 			Authorization(env) {
 				return `Bearer ${env.AUTH_TOKEN}`;
 			}
-		}
+		},
+		interval: 0
 	},
 	scalars: {
 		UUID: {

@@ -56,7 +56,6 @@ async fn main() -> Result<(), anyhow::Error> {
                 let details = resp.item().unwrap();
 
                 let account_model = accounts::ActiveModel {
-                    name: Set(account_name),
                     username: Set(item
                         .get("login_username")
                         .unwrap()
@@ -120,7 +119,6 @@ async fn main() -> Result<(), anyhow::Error> {
                     let details = resp.item().unwrap();
 
                     let account_model = accounts::ActiveModel {
-                        name: Set(account_name),
                         username: Set(item
                             .get("login_username")
                             .unwrap()
