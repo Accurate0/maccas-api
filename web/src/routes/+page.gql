@@ -1,0 +1,11 @@
+query Index {
+	offers {
+		shortName
+		imageUrl
+		id
+		offerId
+		creationDate
+		price
+		count
+	}
+}
