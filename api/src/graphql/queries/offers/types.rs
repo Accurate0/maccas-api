@@ -1,15 +1,38 @@
 use super::dataloader::OfferDetailsLoader;
 use async_graphql::dataloader::*;
 use async_graphql::Object;
+use entity::offer_details;
 use entity::offers;
 use sea_orm::prelude::{DateTime, Uuid};
 
-pub struct Offer(pub offers::Model);
+pub struct Offer(pub offers::Model, pub Option<i64>);
+
+impl Offer {
+    async fn load_from_related_offer<T, F>(
+        &self,
+        context: &async_graphql::Context<'_>,
+        mapping: F,
+    ) -> async_graphql::Result<T>
+    where
+        F: Fn(offer_details::Model) -> T,
+    {
+        let loader = context.data::<DataLoader<OfferDetailsLoader>>()?;
+
+        loader
+            .load_one(self.0.offer_proposition_id)
+            .await?
+            .map(mapping)
+            .ok_or(anyhow::Error::msg("no name found for this offer").into())
+    }
+}
 
 #[Object]
 impl Offer {
-    pub async fn name(&self) -> &str {
-        &self.0.name
+    pub async fn name(
+        &self,
+        context: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<String> {
+        self.load_from_related_offer(context, |o| o.name).await
     }
 
     pub async fn id(&self) -> &Uuid {
@@ -28,43 +51,46 @@ impl Offer {
         &self.0.valid_to
     }
 
-    pub async fn short_name(&self) -> &String {
-        &self.0.short_name
+    pub async fn count(&self) -> i64 {
+        // this is safe because we look ahead to see if this field exists
+        self.1.unwrap()
     }
 
-    pub async fn description(&self) -> &String {
-        &self.0.description
+    pub async fn short_name(
+        &self,
+        context: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<String> {
+        self.load_from_related_offer(context, |o| o.short_name)
+            .await
+    }
+
+    pub async fn description(
+        &self,
+        context: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<String> {
+        self.load_from_related_offer(context, |o| o.description)
+            .await
     }
 
     pub async fn creation_date(&self) -> &DateTime {
         &self.0.creation_date
     }
 
-    pub async fn image_base_name(&self) -> &String {
-        &self.0.image_base_name
-    }
+    pub async fn image_url(
+        &self,
+        context: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<String> {
+        let base_name = self
+            .load_from_related_offer(context, |o| o.image_base_name)
+            .await?;
 
-    pub async fn created_at(&self) -> &DateTime {
-        &self.0.created_at
-    }
-
-    pub async fn updated_at(&self) -> &DateTime {
-        &self.0.updated_at
-    }
-
-    pub async fn offer_proposition_id(&self) -> &i64 {
-        &self.0.offer_proposition_id
+        Ok(format!("https://i.maccas.one/{base_name}"))
     }
 
     pub async fn price(
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<Option<f64>> {
-        let loader = context.data::<DataLoader<OfferDetailsLoader>>()?;
-
-        Ok(loader
-            .load_one(self.0.offer_proposition_id)
-            .await?
-            .map(|o| o.price))
+        self.load_from_related_offer(context, |o| o.price).await
     }
 }

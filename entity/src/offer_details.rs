@@ -10,8 +10,13 @@ pub struct Model {
     pub proposition_id: i64,
     pub name: String,
     pub description: String,
-    #[sea_orm(column_type = "Double")]
-    pub price: f64,
+    #[sea_orm(column_type = "Double", nullable)]
+    pub price: Option<f64>,
+    pub short_name: String,
+    pub image_base_name: String,
+    pub original_image_base_name: String,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
