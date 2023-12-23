@@ -6,3 +6,4 @@ pub mod accounts;
 pub mod jobs;
 pub mod offer_details;
 pub mod offers;
+pub mod points;

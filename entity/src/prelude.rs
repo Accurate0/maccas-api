@@ -4,3 +4,4 @@ pub use super::accounts::Entity as Accounts;
 pub use super::jobs::Entity as Jobs;
 pub use super::offer_details::Entity as OfferDetails;
 pub use super::offers::Entity as Offers;
+pub use super::points::Entity as Points;

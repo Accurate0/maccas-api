@@ -7,7 +7,7 @@ use sea_orm::prelude::{DateTime, Uuid};
 impl Database<Offers> {
     pub fn convert_offer(
         offer: &libmaccas::types::response::Offer,
-        account_name: String,
+        account_id: Uuid,
     ) -> Result<Self, ConversionError> {
         let datetime_format = "%FT%TZ";
         let now = chrono::offset::Utc::now().naive_utc();
@@ -19,7 +19,7 @@ impl Database<Offers> {
             valid_to: DateTime::parse_from_str(&offer.valid_to_utc, datetime_format)?,
             valid_from: DateTime::parse_from_str(&offer.valid_from_utc, datetime_format)?,
             creation_date: DateTime::parse_from_str(&offer.creation_date_utc, datetime_format)?,
-            account_name,
+            account_id,
             created_at: now,
             updated_at: now,
         }))

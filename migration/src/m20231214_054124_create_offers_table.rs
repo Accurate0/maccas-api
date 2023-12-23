@@ -23,6 +23,18 @@ enum Offers {
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let db = manager.get_connection();
+        db.execute_unprepared(
+            r#"CREATE OR REPLACE FUNCTION set_updated_at_column()
+                RETURNS TRIGGER AS $$
+                    BEGIN
+                        NEW.updated_at = now();
+                        RETURN NEW;
+                    END;
+                $$ language 'plpgsql';"#,
+        )
+        .await?;
+
         manager
             .create_table(
                 Table::create()
@@ -58,20 +70,8 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        let db = manager.get_connection();
-        db.execute_unprepared(
-            r#"CREATE OR REPLACE FUNCTION update_offers_updated_at_column()
-                RETURNS TRIGGER AS $$
-                    BEGIN
-                        NEW.updated_at = now();
-                        RETURN NEW;
-                    END;
-                $$ language 'plpgsql';"#,
-        )
-        .await?;
-
         db.execute_unprepared(r#"
-            CREATE TRIGGER update_offers_updated_at_column BEFORE UPDATE ON offers FOR EACH ROW EXECUTE PROCEDURE update_offers_updated_at_column();
+            CREATE TRIGGER update_offers_updated_at_column BEFORE UPDATE ON offers FOR EACH ROW EXECUTE PROCEDURE set_updated_at_column();
             "#).await?;
 
         Ok(())
@@ -83,7 +83,7 @@ impl MigrationTrait for Migration {
         db.execute_unprepared("DROP TRIGGER IF EXISTS update_offers_updated_at_column ON offers")
             .await?;
 
-        db.execute_unprepared("DROP FUNCTION IF EXISTS update_offers_updated_at_column")
+        db.execute_unprepared("DROP FUNCTION IF EXISTS set_updated_at_column")
             .await?;
 
         manager

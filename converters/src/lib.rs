@@ -2,6 +2,7 @@ use chrono::ParseError;
 use thiserror::Error;
 
 pub mod offers;
+pub mod points;
 mod utils;
 
 pub struct Database<T>(pub T);

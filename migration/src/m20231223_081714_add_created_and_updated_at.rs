@@ -34,19 +34,8 @@ impl MigrationTrait for Migration {
             .await?;
 
         let db = manager.get_connection();
-        db.execute_unprepared(
-            r#"CREATE OR REPLACE FUNCTION update_offer_details_updated_at_column()
-                    RETURNS TRIGGER AS $$
-                        BEGIN
-                            NEW.updated_at = now();
-                            RETURN NEW;
-                        END;
-                    $$ language 'plpgsql';"#,
-        )
-        .await?;
-
         db.execute_unprepared(r#"
-                CREATE TRIGGER update_offer_details_updated_at_column BEFORE UPDATE ON offer_details FOR EACH ROW EXECUTE PROCEDURE update_offer_details_updated_at_column();
+                CREATE TRIGGER update_offer_details_updated_at_column BEFORE UPDATE ON offer_details FOR EACH ROW EXECUTE PROCEDURE set_updated_at_column();
                 "#).await?;
 
         Ok(())
@@ -59,9 +48,6 @@ impl MigrationTrait for Migration {
             "DROP TRIGGER IF EXISTS update_offer_details_updated_at_column ON offer_details",
         )
         .await?;
-
-        db.execute_unprepared("DROP FUNCTION IF EXISTS update_offer_details_updated_at_column")
-            .await?;
 
         manager
             .alter_table(

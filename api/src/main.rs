@@ -19,6 +19,7 @@ use tower_http::{
 use tracing::Level;
 
 mod graphql;
+mod macros;
 mod utils;
 
 #[tokio::main]
@@ -32,7 +33,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .connect_timeout(Duration::from_secs(8))
         .idle_timeout(Duration::from_secs(8))
         .sqlx_logging(true)
-        .sqlx_logging_level(LevelFilter::Info);
+        .sqlx_logging_level(LevelFilter::Trace);
 
     let db = Database::connect(opt).await?;
 

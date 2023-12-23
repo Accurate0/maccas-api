@@ -1,10 +1,10 @@
 use super::{Job, JobContext};
 use base::{constants::mc_donalds, settings::McDonalds};
-use entity::{accounts, offer_details, offers};
+use entity::{accounts, offer_details, offers, points};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, QueryOrder, Set,
-    TransactionTrait,
+    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel,
+    QueryFilter, QueryOrder, Set, TransactionTrait,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -31,8 +31,8 @@ impl Job for RefreshJob {
                 .await?
                 .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
-            let account_name = account_to_refresh.name.to_owned();
-            tracing::info!("refreshing account: {:?}", &account_name);
+            let account_id = account_to_refresh.id.to_owned();
+            tracing::info!("refreshing account: {:?}", &account_id);
 
             let mut api_client = libmaccas::ApiClient::new(
                 base::constants::mc_donalds::BASE_URL.to_owned(),
@@ -69,8 +69,6 @@ impl Job for RefreshJob {
                     mc_donalds::OFFSET,
                 )
                 .await?;
-
-            let txn = context.database.begin().await?;
 
             let offer_list = offers.body.response.unwrap_or_default();
             let proposition_id_futures = offer_list
@@ -114,25 +112,49 @@ impl Job for RefreshJob {
                 }
             }
 
+            let txn = context.database.begin().await?;
+
             offer_details::Entity::insert_many(active_models)
                 .on_empty_do_nothing()
-                .exec(&context.database)
+                .exec(&txn)
                 .await?;
 
             let models = offer_list
                 .offers
                 .iter()
-                .flat_map(|o| converters::Database::convert_offer(o, account_name.clone()))
+                .flat_map(|o| converters::Database::convert_offer(o, account_id))
                 .map(|d| d.0.into_active_model())
                 .collect::<Vec<_>>();
 
             offers::Entity::delete_many()
-                .filter(offers::Column::AccountName.eq(account_name))
+                .filter(offers::Column::AccountId.eq(account_id))
                 .exec(&txn)
                 .await?;
 
             offers::Entity::insert_many(models)
                 .on_empty_do_nothing()
+                .exec(&txn)
+                .await?;
+
+            txn.commit().await?;
+
+            let txn = context.database.begin().await?;
+
+            let points = api_client.get_customer_points().await?;
+            let points_model =
+                converters::Database::convert_points_response(&points.body.response, account_id)?
+                    .0
+                    .into_active_model();
+
+            points::Entity::insert(points_model)
+                .on_conflict(
+                    OnConflict::column(points::Column::AccountId)
+                        .update_columns([
+                            points::Column::LifetimePoints,
+                            points::Column::CurrentPoints,
+                        ])
+                        .to_owned(),
+                )
                 .exec(&txn)
                 .await?;
 

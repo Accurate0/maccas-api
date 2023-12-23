@@ -1,4 +1,5 @@
 use self::types::Offer;
+use crate::name_of;
 use async_graphql::{Context, Object};
 use entity::offers;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QuerySelect};
@@ -28,7 +29,10 @@ impl OffersQuery {
                 offers::Entity::find()
                     .select_only()
                     .column(offers::Column::OfferPropositionId)
-                    .column_as(offers::Column::OfferPropositionId.count(), "count")
+                    .column_as(
+                        offers::Column::OfferPropositionId.count(),
+                        name_of!(count in OfferCount),
+                    )
                     .group_by(offers::Column::OfferPropositionId)
                     .into_model::<OfferCount>()
                     .all(db)
