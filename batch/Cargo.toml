@@ -31,4 +31,3 @@ reqwest-middleware = { workspace = true }
 reqwest = { workspace = true }
 log = { workspace = true }
 cron = { workspace = true }
-jobs = { workspace = true }

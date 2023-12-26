@@ -6,6 +6,8 @@ use std::time::Duration;
 use tokio::signal;
 use tracing_subscriber::fmt::format::FmtSpan;
 
+mod jobs;
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::fmt()
