@@ -22,3 +22,4 @@ entity = { workspace = true }
 chrono = { workspace = true }
 futures = { workspace = true }
 anyhow = { workspace = true }
+task-local-extensions = "0.1.4"

@@ -4,15 +4,12 @@ use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
 use std::time::Duration;
 use tokio::signal;
-use tracing_subscriber::fmt::format::FmtSpan;
 
 mod jobs;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt()
-        .with_span_events(FmtSpan::CLOSE)
-        .init();
+    tracing_subscriber::fmt().init();
 
     let settings = Settings::new()?;
 
@@ -43,8 +40,15 @@ async fn main() -> Result<(), anyhow::Error> {
         )
         .await;
 
+    tracing::info!("scheduler initializing");
     scheduler.init().await?;
+
+    tracing::info!("starting tick sending");
     let handle = scheduler.run().await;
+    let cloned_scheduler = scheduler.clone();
+
+    tracing::info!("launching tick thread");
+    tokio::spawn(async move { cloned_scheduler.tick().await });
 
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
