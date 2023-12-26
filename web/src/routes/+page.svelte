@@ -14,6 +14,7 @@
 		{#each $Index.data.offers as offer}
 			<div class="border rounded p-4 grid grid-flow-row gap-4">
 				{JSON.stringify(offer)}
+				<img src={offer.imageUrl} alt={offer.shortName} />
 			</div>
 		{/each}
 	</div>

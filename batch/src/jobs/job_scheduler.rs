@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobDetails, JobState, RunningState};
+use super::{error::JobError, Job, JobContext, JobDetails, JobState, JobType, RunningState};
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
@@ -53,12 +53,15 @@ impl JobScheduler {
         )
     }
 
-    pub async fn add<T>(&self, job: T, schedule: cron::Schedule) -> &Self
+    pub async fn add_scheduled<T>(&self, job: T, schedule: cron::Schedule) -> &Self
     where
         T: Job + 'static,
     {
         let mut jobs = self.0.jobs.write().await;
-        jobs.insert(job.name(), JobDetails::new(Arc::new(job), schedule));
+        jobs.insert(
+            job.name(),
+            JobDetails::new(Arc::new(job), JobType::Schedule(schedule)),
+        );
 
         self
     }
@@ -135,15 +138,17 @@ impl JobScheduler {
                                 .unwrap();
 
                             let last_execution = job_model.last_execution;
-                            let schedule = &job_details.schedule;
+                            let job_type = &job_details.job_type;
                             let time_now = chrono::offset::Utc::now();
 
                             // if no last execution, execute immediately
-                            let next = match last_execution {
-                                Some(t) => schedule.after(&t.and_utc()).next(),
-                                None => Some(time_now),
-                            }
-                            .unwrap();
+                            let next = match job_type {
+                                JobType::Schedule(schedule) => match last_execution {
+                                    Some(t) => schedule.after(&t.and_utc()).next(),
+                                    None => Some(time_now),
+                                }
+                                .unwrap(),
+                            };
 
                             let cancellation_token = CancellationToken::new();
                             let cancellation_token_cloned = cancellation_token.clone();

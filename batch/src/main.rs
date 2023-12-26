@@ -1,11 +1,12 @@
-use base::settings::Settings;
-use jobs::{job_scheduler::JobScheduler, refresh::RefreshJob};
+use crate::{jobs::refresh::RefreshJob, settings::Settings};
+use jobs::job_scheduler::JobScheduler;
 use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
 use std::time::Duration;
 use tokio::signal;
 
 mod jobs;
+mod settings;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -31,12 +32,12 @@ async fn main() -> Result<(), anyhow::Error> {
     let http_client = base::http::get_http_client(proxy)?;
 
     scheduler
-        .add(
+        .add_scheduled(
             RefreshJob {
                 http_client,
                 mcdonalds_config: settings.mcdonalds,
             },
-            "0 */1 * * * *".parse()?,
+            "0 */15 * * * *".parse()?,
         )
         .await;
 

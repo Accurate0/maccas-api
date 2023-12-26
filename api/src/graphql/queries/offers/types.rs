@@ -1,3 +1,5 @@
+use crate::settings::Settings;
+
 use super::dataloader::OfferDetailsLoader;
 use async_graphql::dataloader::*;
 use async_graphql::Object;
@@ -80,11 +82,12 @@ impl Offer {
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<String> {
+        let host = &context.data::<Settings>()?.image_host_prefix;
         let base_name = self
             .load_from_related_offer(context, |o| o.image_base_name)
             .await?;
 
-        Ok(format!("https://i.maccas.one/{base_name}"))
+        Ok(format!("{host}/{base_name}"))
     }
 
     pub async fn price(

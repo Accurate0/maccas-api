@@ -31,17 +31,22 @@ pub enum JobState {
 }
 
 #[derive(Debug)]
+pub enum JobType {
+    Schedule(cron::Schedule),
+}
+
+#[derive(Debug)]
 pub struct JobDetails {
     pub job: Arc<dyn Job>,
     pub state: JobState,
-    pub schedule: cron::Schedule,
+    pub job_type: JobType,
 }
 
 impl JobDetails {
-    pub fn new(job: Arc<dyn Job>, schedule: cron::Schedule) -> Self {
+    pub fn new(job: Arc<dyn Job>, job_type: JobType) -> Self {
         Self {
             job,
-            schedule,
+            job_type,
             state: Default::default(),
         }
     }

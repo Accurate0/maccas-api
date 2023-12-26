@@ -1,3 +1,4 @@
+use crate::settings::Settings;
 use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_axum::GraphQL;
 use axum::{
@@ -6,11 +7,10 @@ use axum::{
     routing::get,
     Router,
 };
-use base::settings::Settings;
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader, QueryRoot};
 use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tower_http::{
     cors::CorsLayer,
     trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
@@ -20,6 +20,7 @@ use tracing::Level;
 
 mod graphql;
 mod macros;
+mod settings;
 mod utils;
 
 #[tokio::main]
@@ -38,6 +39,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let db = Database::connect(opt).await?;
 
     let schema = Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
+        .data(settings)
         .data(db.clone())
         .data(DataLoader::new(
             OfferDetailsLoader { database: db },
@@ -46,9 +48,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .finish();
 
     let cors = CorsLayer::new()
-        // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
-        // allow requests from any origin
         .allow_origin(tower_http::cors::Any);
 
     let app = Router::new()
@@ -72,7 +72,9 @@ async fn main() -> Result<(), anyhow::Error> {
                 ),
         );
 
-    axum::Server::bind(&"0.0.0.0:8000".parse().unwrap())
+    let addr = "0.0.0.0:8000".parse::<SocketAddr>().unwrap();
+    tracing::info!("starting api server {addr}");
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .with_graceful_shutdown(utils::axum_shutdown_signal())
         .await?;

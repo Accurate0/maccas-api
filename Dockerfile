@@ -36,6 +36,7 @@ RUN chown appuser /usr/local/bin/${BINARY_NAME}
 USER appuser
 
 WORKDIR /opt/${BINARY_NAME}
+COPY ${BINARY_NAME}.config.toml ${BINARY_NAME}.config.toml
 
 RUN ln -s /usr/local/bin/${BINARY_NAME} executable
 ENTRYPOINT ["./executable"]
