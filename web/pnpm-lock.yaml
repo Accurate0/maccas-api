@@ -38,6 +38,9 @@ dependencies:
   clsx:
     specifier: ^2.0.0
     version: 2.0.0
+  graphql:
+    specifier: ^16.8.1
+    version: 16.8.1
   graphql-tag:
     specifier: ^2.12.6
     version: 2.12.6(graphql@16.8.1)
