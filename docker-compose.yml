@@ -9,10 +9,11 @@ services:
       - "3000:3000"
     links:
       - "api:api"
+      - "db:database"
     depends_on:
       - api
     environment:
-      - PUBLIC_API_BASE=http://api:8000
+      - API_BASE_URL=http://api:8000
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
 
   api:
