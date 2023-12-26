@@ -1,5 +1,6 @@
 use super::{Job, JobContext};
-use base::{constants::mc_donalds, settings::McDonalds};
+use crate::settings::McDonalds;
+use base::constants::mc_donalds;
 use entity::{accounts, offer_details, offers, points};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
@@ -13,9 +14,6 @@ pub struct RefreshJob {
     pub http_client: ClientWithMiddleware,
     pub mcdonalds_config: McDonalds,
 }
-
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct RefreshContext {}
 
 #[async_trait::async_trait]
 impl Job for RefreshJob {
@@ -94,6 +92,7 @@ impl Job for RefreshJob {
                             }
                         }
 
+                        // TODO: get image for each offer details
                         Ok::<Option<offer_details::ActiveModel>, anyhow::Error>(None)
                     }
                 })
