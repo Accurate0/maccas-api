@@ -1,2 +1,5 @@
 **/target/
 prisma.rs
+docker-compose.yml
+web/
+Dockerfile
