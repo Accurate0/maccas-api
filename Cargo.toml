@@ -9,7 +9,6 @@ members = [
     "batch",
     "base",
     "queue",
-    "jobs",
 ]
 
 [profile.release-strip]
@@ -45,7 +44,6 @@ entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
 base = { path = "./base" }
 converters = { path = "./converters" }
-jobs = { path = "./jobs" }
 
 thiserror = "1.0.51"
 futures = "0.3.29"

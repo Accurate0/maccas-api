@@ -16,22 +16,21 @@ services:
   #     - DATABASE__URL=postgres://postgres:test@database/maccas
 
   db:
-    network_mode: "host"
     image: postgres:16
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: maccas
 
-  # redis:
-  #   image: redis:alpine
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redisdata:/data
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
 
 
 volumes:

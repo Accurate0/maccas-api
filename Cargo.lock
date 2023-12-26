@@ -1276,7 +1276,6 @@ dependencies = [
  "cron",
  "entity",
  "futures",
- "jobs",
  "libmaccas",
  "log",
  "reqwest",
@@ -2546,33 +2545,6 @@ name = "itoa"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1a46d1a171d865aa5f83f92695765caa047a9b4cbae2cbf37dbd613a793fd4c"
-
-[[package]]
-name = "jobs"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "base",
- "chrono",
- "config",
- "converters",
- "cron",
- "entity",
- "futures",
- "libmaccas",
- "log",
- "reqwest",
- "reqwest-middleware",
- "sea-orm",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
-]
 
 [[package]]
 name = "jobserver"

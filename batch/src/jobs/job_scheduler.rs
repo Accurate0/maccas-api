@@ -1,4 +1,4 @@
-use crate::{error::JobError, Job, JobContext, JobDetails, JobState, RunningState};
+use super::{error::JobError, Job, JobContext, JobDetails, JobState, RunningState};
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
