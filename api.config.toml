@@ -1,2 +1,2 @@
 downstream_health_checks = { batch = "http://batch:8000", static = "http://static:8000" }
-image_host_prefix = ""
+image_host_prefix = "https://i.maccas.one"                                                # for now
