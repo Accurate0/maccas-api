@@ -1,0 +1,9 @@
+query GetOffers {
+  offers {
+    shortName
+    imageUrl
+    name
+    count
+    id
+  }
+}

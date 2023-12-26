@@ -19,5 +19,7 @@
     "vergen",
     "webp"
   ],
-  "rust-analyzer.linkedProjects": ["./Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["./Cargo.toml"],
+  "graphql-config.load.filePath": "./web/graphql.config.js",
+  "graphql-config.load.rootDir": "./web"
 }
