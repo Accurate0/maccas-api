@@ -38,10 +38,8 @@ impl ReqwestOtelSpanBackend for TimeTrace {
     fn on_request_start(req: &Request, extension: &mut Extensions) -> Span {
         extension.insert(Instant::now());
         let url = req.url().to_string();
-        let method = req.method().to_string();
-        let name = format!("{method} {url}");
 
-        tracing::info!("starting request for {name}");
+        tracing::info!("started request");
         reqwest_otel_span!(
             name = "http",
             req,
@@ -58,7 +56,7 @@ impl ReqwestOtelSpanBackend for TimeTrace {
         let time_elapsed = extension.get::<Instant>().unwrap().elapsed().as_millis() as i64;
         default_on_request_end(span, outcome);
         span.record("time_elapsed", format!("{time_elapsed}ms"));
-        tracing::info!("finished request for {:?}", span.field("name"));
+        tracing::info!("finished request");
     }
 }
 
