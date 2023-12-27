@@ -1,6 +1,9 @@
-use crate::settings::Settings;
-use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription, Schema};
-use async_graphql_axum::GraphQL;
+use crate::{
+    graphql::{graphql_handler, MaccasSchema},
+    settings::Settings,
+    types::ApiState,
+};
+use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription};
 use axum::{
     extract::MatchedPath,
     http::{Method, Request},
@@ -21,6 +24,7 @@ use tracing::Level;
 mod graphql;
 mod macros;
 mod settings;
+mod types;
 mod utils;
 
 #[tokio::main]
@@ -38,8 +42,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let db = Database::connect(opt).await?;
 
-    let schema = Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .data(settings)
+    let schema = MaccasSchema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
+        .data(settings.clone())
         .data(db.clone())
         .data(DataLoader::new(
             OfferDetailsLoader { database: db },
@@ -52,7 +56,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .allow_origin(tower_http::cors::Any);
 
     let app = Router::new()
-        .route("/graphql", get(graphiql).post_service(GraphQL::new(schema)))
+        .route("/graphql", get(graphiql).post(graphql_handler))
         .layer(cors)
         .layer(
             TraceLayer::new_for_http()
@@ -70,7 +74,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         .level(Level::INFO)
                         .latency_unit(LatencyUnit::Millis),
                 ),
-        );
+        )
+        .with_state(ApiState { schema, settings });
 
     let addr = "0.0.0.0:8000".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");
