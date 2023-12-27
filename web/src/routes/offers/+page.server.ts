@@ -5,5 +5,5 @@ export const load: PageServerLoad = async (event) => {
 	const getOffers = new GetOffersStore();
 	const { data } = await getOffers.fetch({ event });
 
-	return data;
+	return { offerList: data };
 };
