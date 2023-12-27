@@ -1,1 +1,1 @@
-module.exports = { schema: "http://localhost:8000/graphql" };
+module.exports = { schema: 'http://localhost:8000/graphql' };

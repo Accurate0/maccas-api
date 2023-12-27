@@ -1,36 +1,36 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String @id @default(uuid())
-  username     String @unique
-  passwordHash Bytes  @db.ByteA
-  role         Role   @default(USER)
+    id           String @id @default(uuid())
+    username     String @unique
+    passwordHash Bytes  @db.ByteA
+    role         Role   @default(USER)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Session   Session[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    Session   Session[]
 
-  @@map("users")
+    @@map("users")
 }
 
 model Session {
-  id        String   @id
-  expires   DateTime
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id        String   @id
+    expires   DateTime
+    createdAt DateTime @default(now())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
-  USER
-  ADMIN
-  PRIVILEGED
+    USER
+    ADMIN
+    PRIVILEGED
 }
