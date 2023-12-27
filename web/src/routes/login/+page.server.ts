@@ -98,9 +98,7 @@ export const actions = {
 			}
 
 			const { role, token } = result.data;
-
 			const existingUserId = JSON.parse(atob(token.split('.')[1] ?? ''))['oid'] as string;
-
 			const passwordHash = await bcrypt.hash(password, 10);
 			// TODO: fetch existing config
 			// https://api.maccas.one/v1/user/config
