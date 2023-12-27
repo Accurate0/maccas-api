@@ -68,6 +68,7 @@ export const actions = {
 
 			await createSession(existingUser.id);
 		} else {
+			// FIXME: will need to be old.api.maccas.one or something
 			const response = await fetch('https://api.maccas.one/v1/auth/login', {
 				method: 'POST',
 				body: formData
@@ -92,6 +93,8 @@ export const actions = {
 			const existingUserId = JSON.parse(atob(token.split('.')[1] ?? ''))['oid'] as string;
 
 			const passwordHash = await bcrypt.hash(password, 10);
+			// TODO: fetch existing config
+			// https://api.maccas.one/v1/user/config
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
