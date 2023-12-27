@@ -20,6 +20,6 @@
     "webp"
   ],
   "rust-analyzer.linkedProjects": ["./Cargo.toml"],
-  "graphql-config.load.filePath": "./web/graphql.config.js",
+  "graphql-config.load.filePath": "./web/graphql.config.cjs",
   "graphql-config.load.rootDir": "./web"
 }

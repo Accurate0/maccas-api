@@ -13,7 +13,7 @@
         "db:push": "prisma db push",
         "db:pull": "prisma db pull",
         "db:migrate": "prisma migrate dev",
-        "postinstall": "prisma generate"
+        "db:generate": "prisma generate"
     },
     "devDependencies": {
         "@sveltejs/adapter-auto": "^3.0.0",
