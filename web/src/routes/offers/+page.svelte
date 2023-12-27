@@ -1,21 +1,17 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-	import type { PageData } from './$houdini';
 
-	export let data: PageData;
-
-	$: ({ GetOffers } = data);
+	export let data;
 </script>
 
 <svelte:head>
 	<title>Offers | Maccas</title>
 </svelte:head>
 
-{#if $GetOffers.data}
+{#if data.offerList}
 	<div class="grid grid-flow-row gap-4">
-		{#each $GetOffers.data.offers as { shortName, name, count, imageUrl }}
+		{#each data.offerList.offers as { shortName, name, count, imageUrl }}
 			<Card.Root>
 				<div class="grid grid-flow-col justify-between">
 					<Card.Header class="grid justify-between">
