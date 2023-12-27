@@ -2,35 +2,35 @@
 version: '3'
 
 services:
-  web:
-    build:
-      context: web
-    ports:
-      - "3000:3000"
-    links:
-      - "api:api"
-      - "db:database"
-    depends_on:
-      - api
-    environment:
-      - API_BASE_URL=http://api:8000
-      - DATABASE_URL=postgres://postgres:test@database/maccas-web
+  # web:
+  #   build:
+  #     context: web
+  #   ports:
+  #     - "3000:3000"
+  #   links:
+  #     - "api:api"
+  #     - "db:database"
+  #   depends_on:
+  #     - api
+  #   environment:
+  #     - API_BASE_URL=http://api:8000
+  #     - DATABASE_URL=postgres://postgres:test@database/maccas-web
 
-  api:
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=api
-    ports:
-      - "8000:8000"
-    links:
-      - "db:database"
-    depends_on:
-      - db
-    environment:
-      - DATABASE__URL=postgres://postgres:test@database/maccas
-    env_file:
-      - .env.local
+  # api:
+  #   build:
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - BINARY_NAME=api
+  #   ports:
+  #     - "8000:8000"
+  #   links:
+  #     - "db:database"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE__URL=postgres://postgres:test@database/maccas
+  #   env_file:
+  #     - .env.local
 
   # batch:
   #   build:
