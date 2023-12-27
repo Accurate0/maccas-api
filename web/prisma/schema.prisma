@@ -14,11 +14,20 @@ model User {
     passwordHash Bytes  @db.ByteA
     role         Role   @default(USER)
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
     Session   Session[]
+    configId  String
+    config    Configuration @relation(fields: [configId], references: [id])
 
     @@map("users")
+}
+
+model Configuration {
+    id        String @id @default(uuid())
+    storeId   String
+    storeName String
+    User      User[]
 }
 
 model Session {
