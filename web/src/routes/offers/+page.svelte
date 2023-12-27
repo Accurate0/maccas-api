@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import type { PageData } from './$houdini';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import type { PageData } from './$houdini';
 
 	export let data: PageData;
 
