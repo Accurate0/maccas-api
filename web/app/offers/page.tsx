@@ -15,7 +15,6 @@ import { userSession } from "@/lib/session";
 
 export default async function Offers() {
   await userSession();
-
   const { data } = await getClient().query<GetOffersQuery>({
     query: GetOffersDocument,
   });
