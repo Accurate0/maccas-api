@@ -13,7 +13,7 @@ services:
     depends_on:
       - api
     environment:
-      - API_BASE_URL=http://api:8000
+      - PUBLIC_API_BASE_URL=http://api:8000
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
 
   api:
