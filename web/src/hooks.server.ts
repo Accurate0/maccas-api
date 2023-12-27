@@ -1,6 +1,7 @@
 import { SessionId } from '$lib';
 import { prisma } from '$lib/prisma';
 import type { Handle } from '@sveltejs/kit';
+import { setSession } from '$houdini';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname !== '/login') {
@@ -19,6 +20,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 				headers: { location: '/login' }
 			});
 		}
+		setSession(event, { ...session });
 	}
 
 	return await resolve(event);

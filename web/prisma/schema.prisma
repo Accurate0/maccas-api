@@ -22,11 +22,12 @@ model User {
 }
 
 model Session {
-    id        String   @id
-    expires   DateTime
-    createdAt DateTime @default(now())
-    userId    String
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id          String   @id
+    expires     DateTime
+    createdAt   DateTime @default(now())
+    accessToken String
+    userId      String
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

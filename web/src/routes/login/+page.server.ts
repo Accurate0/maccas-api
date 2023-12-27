@@ -6,6 +6,8 @@ import type { Role } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { SessionId } from '$lib';
 import { redirect } from '@sveltejs/kit';
+import jwt from 'jsonwebtoken';
+import { env } from '$env/dynamic/private';
 
 const schema = z.object({
 	username: z.string().min(1),
@@ -28,12 +30,19 @@ export const actions = {
 			const sessionId = randomBytes(30).toString('base64');
 			const sevenDaysInMs = 604800000;
 			const expires = new Date(Date.now() + sevenDaysInMs);
+			const accessToken = jwt.sign({ userId, sessionId }, env.AUTH_SECRET, {
+				expiresIn: sevenDaysInMs / 1000,
+				issuer: 'Maccas Web',
+				audience: 'Maccas API',
+				subject: 'Maccas API'
+			});
 
 			await prisma.session.create({
 				data: {
 					userId,
 					id: sessionId,
-					expires
+					expires,
+					accessToken
 				}
 			});
 
