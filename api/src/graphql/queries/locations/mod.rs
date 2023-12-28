@@ -25,6 +25,7 @@ impl LocationsQuery {
 // FIXME: move common logic for getting "activated" api client for specific account
 // FIXME: don't refresh accounts within 14 mins
 // FIXME: appoint service account
+// FIXME: dataloader?
 
 #[Object]
 impl QueriedLocation {
