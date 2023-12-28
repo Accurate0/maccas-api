@@ -115,6 +115,6 @@ export const actions = {
 			await createSession(existingUserId);
 		}
 
-		redirect(303, '/offers');
+		redirect(303, '/');
 	}
 } satisfies Actions;
