@@ -1,9 +1,13 @@
-query GetOffers {
+query Index($includePoints: Boolean!) {
 	offers {
 		shortName
 		imageUrl
 		name
 		count
 		id
+	}
+	points @include(if: $includePoints) {
+		currentPoints
+		accountId
 	}
 }

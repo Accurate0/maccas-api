@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
-
+	import { enhance } from '$app/forms';
 	import { ExclamationTriangle } from 'radix-icons-svelte';
 	import * as Card from '$lib/components/ui/card';
 	import { Label } from '$lib/components/ui/label';
@@ -19,7 +19,7 @@
 	<Card.Header>
 		<Card.Title>Login</Card.Title>
 	</Card.Header>
-	<form method="POST">
+	<form method="POST" use:enhance>
 		<Card.Content>
 			<div class="grid w-full items-center gap-4">
 				<Label for="username">Username</Label>

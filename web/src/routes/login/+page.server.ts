@@ -4,7 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import type { Role } from '@prisma/client';
 import { randomBytes } from 'crypto';
-import { SessionId } from '$lib';
+import { SessionId } from '$lib/session';
 import { redirect } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
