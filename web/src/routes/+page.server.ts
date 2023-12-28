@@ -1,10 +1,10 @@
 import { IndexStore } from '$houdini';
-import { getUser } from '$lib/session';
 import { Role } from '@prisma/client';
 import type { PageServerLoad } from './$houdini';
+import { prisma } from '$lib/prisma';
 
 export const load: PageServerLoad = async (event) => {
-	const user = await getUser(event.locals.session.id);
+	const user = await prisma.user.findUniqueOrThrow({ where: { id: event.locals.session.userId } });
 
 	const index = new IndexStore();
 	const { data } = await index.fetch({
