@@ -4,7 +4,9 @@ import { Session as DbSession } from '@prisma/client';
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			session: DbSession;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

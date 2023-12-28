@@ -2,8 +2,24 @@ schema {
   query: QueryRoot
 }
 
+input CoordinateSearchInput {
+  distance: Float!
+  lat: Float!
+  lng: Float!
+}
+
+input FilterInput {
+  minimumCurrentPoints: Int!
+}
+
 type HealthResponse {
   databaseHealthy: Boolean!
+}
+
+type Location {
+  address: String!
+  name: String!
+  storeNumber: Int!
 }
 
 """
@@ -35,10 +51,20 @@ type Points {
   lifetimePoints: Int!
 }
 
+type QueriedLocation {
+  coordinate(input: CoordinateSearchInput!): [Location!]!
+  text(input: TextSearchInput!): [Location!]!
+}
+
 type QueryRoot {
   health: HealthResponse!
+  location: QueriedLocation!
   offers: [Offer!]!
-  points: [Points!]!
+  points(filter: FilterInput): [Points!]!
+}
+
+input TextSearchInput {
+  query: String!
 }
 
 """
