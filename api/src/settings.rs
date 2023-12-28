@@ -29,6 +29,7 @@ pub struct Settings {
     pub downstream_health_checks: HashMap<String, String>,
     pub image_host_prefix: String,
     pub auth_secret: String,
+    pub places_api_key: String,
 }
 
 impl Settings {

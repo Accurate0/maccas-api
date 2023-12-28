@@ -7,4 +7,5 @@ pub mod mc_donalds {
     pub const LONGITUDE: &str = "-122.084";
     pub const IMAGE_CDN: &str =
         "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
+    pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
 }

@@ -1,4 +1,6 @@
-use self::queries::{health::HealthQuery, offers::OffersQuery, points::PointsQuery};
+use self::queries::{
+    health::HealthQuery, locations::LocationsQuery, offers::OffersQuery, points::PointsQuery,
+};
 use crate::types::{ApiState, AppError, JwtClaims};
 use async_graphql::{
     http::GraphiQLSource, EmptyMutation, EmptySubscription, MergedObject, Schema, ServerError,
@@ -12,7 +14,7 @@ use sha2::Sha256;
 pub mod queries;
 
 #[derive(Default, MergedObject)]
-pub struct QueryRoot(HealthQuery, OffersQuery, PointsQuery);
+pub struct QueryRoot(HealthQuery, OffersQuery, PointsQuery, LocationsQuery);
 
 pub type MaccasSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
 
