@@ -67,7 +67,7 @@ pub enum HttpCreationError {
 }
 
 pub fn get_http_client(proxy: Proxy) -> Result<ClientWithMiddleware, HttpCreationError> {
-    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(5);
 
     Ok(
         ClientBuilder::new(reqwest::ClientBuilder::new().proxy(proxy).build()?)
@@ -79,4 +79,14 @@ pub fn get_http_client(proxy: Proxy) -> Result<ClientWithMiddleware, HttpCreatio
             ))
             .build(),
     )
+}
+
+pub fn get_simple_http_client() -> Result<ClientWithMiddleware, HttpCreationError> {
+    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+
+    Ok(ClientBuilder::new(reqwest::ClientBuilder::new().build()?)
+        .with_init(Extension(DisableOtelPropagation))
+        .with(TracingMiddleware::<TimeTrace>::new())
+        .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .build())
 }

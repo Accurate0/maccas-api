@@ -454,6 +454,8 @@ dependencies = [
  "jwt",
  "libmaccas",
  "log",
+ "places",
+ "reqwest",
  "sea-orm",
  "serde",
  "serde_json",

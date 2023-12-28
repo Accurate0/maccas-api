@@ -42,6 +42,7 @@ config = "0.13.4"
 
 entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
+places = { path = "./places" }
 base = { path = "./base" }
 converters = { path = "./converters" }
 
