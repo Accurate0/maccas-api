@@ -1,13 +1,13 @@
 import type { Session, User } from '@prisma/client';
-import type { Cookies } from '@sveltejs/kit';
 import { prisma } from './prisma';
 
 export const SessionId = 'session-id';
 
-export const getSession = async (cookies: Cookies): Promise<Session> => {
-	return prisma.session.findUniqueOrThrow({ where: { id: cookies.get(SessionId) } });
+export const getSession = async (sessionId: string): Promise<Session> => {
+	return prisma.session.findUniqueOrThrow({ where: { id: sessionId } });
 };
 
-export const getUser = async (cookies: Cookies): Promise<User> => {
-	return prisma.user.findUniqueOrThrow({ where: { id: (await getSession(cookies)).userId } });
+export const getUser = async (sessionId: string): Promise<User> => {
+	const session = await getSession(sessionId);
+	return prisma.user.findUniqueOrThrow({ where: { id: session.userId } });
 };

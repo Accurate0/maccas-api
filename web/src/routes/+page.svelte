@@ -3,8 +3,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 
 	export let data;
 </script>
@@ -13,7 +12,7 @@
 	<title>Offers | Maccas</title>
 </svelte:head>
 
-<Tabs.Root value="location" class="w-[100%]">
+<Tabs.Root value="offers" class="w-[100%]">
 	<Tabs.List class="m-4 mb-0">
 		<Tabs.Trigger value="offers">Offers</Tabs.Trigger>
 		{#if data.pointsList}

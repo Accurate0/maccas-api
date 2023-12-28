@@ -1,6 +1,11 @@
-use async_graphql::Object;
+use async_graphql::{InputObject, Object};
 use entity::points;
 use sea_orm::prelude::Uuid;
+
+#[derive(InputObject)]
+pub struct FilterInput {
+    pub minimum_current_points: i64,
+}
 
 pub struct Points(pub points::Model);
 

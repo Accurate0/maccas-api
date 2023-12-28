@@ -4,13 +4,14 @@ import { Role } from '@prisma/client';
 import type { PageServerLoad } from './$houdini';
 
 export const load: PageServerLoad = async (event) => {
-	const user = await getUser(event.cookies);
+	const user = await getUser(event.locals.session.id);
 
 	const index = new IndexStore();
 	const { data } = await index.fetch({
 		event,
 		variables: {
-			includePoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED
+			includePoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
+			minimumCurrentPoints: 2500
 		}
 	});
 

@@ -1,0 +1,13 @@
+query Index($includePoints: Boolean!, $minimumCurrentPoints: Int!) {
+	offers {
+		shortName
+		imageUrl
+		name
+		count
+		id
+	}
+	points(filter: { minimumCurrentPoints: $minimumCurrentPoints }) @include(if: $includePoints) {
+		currentPoints
+		accountId
+	}
+}

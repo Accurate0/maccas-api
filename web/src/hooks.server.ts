@@ -20,6 +20,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 				headers: { location: '/login' }
 			});
 		}
+
+		event.locals.session = session;
 		setSession(event, { ...session });
 	}
 
