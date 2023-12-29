@@ -50,7 +50,7 @@
 
 <Toaster />
 
-<Tabs.Root value="location" class="w-[100%]">
+<Tabs.Root value="offers" class="w-[100%]">
 	<Tabs.List class="m-4 mb-0">
 		<Tabs.Trigger value="offers">Offers</Tabs.Trigger>
 		{#if data.pointsList}
