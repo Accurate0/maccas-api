@@ -27,8 +27,8 @@ dependencies:
     specifier: ^1.2.1
     version: 1.2.1
   svelte-sonner:
-    specifier: ^0.3.7
-    version: 0.3.7(svelte@4.2.8)
+    specifier: ^0.3.9
+    version: 0.3.9(svelte@4.2.8)
   tailwind-merge:
     specifier: ^2.2.0
     version: 2.2.0
@@ -3880,8 +3880,8 @@ packages:
       typescript: 5.3.3
     dev: true
 
-  /svelte-sonner@0.3.7(svelte@4.2.8):
-    resolution: {integrity: sha512-C83Dx3F4CIqytY8Bo4VDIf3zDL8go1LbzR/S7xDu0VSnjRR2a9AQ/oiQoprozYEyLscuNzN7AAEIjEy2Stg33w==}
+  /svelte-sonner@0.3.9(svelte@4.2.8):
+    resolution: {integrity: sha512-uwTidxYTZ5Sp8UjGu7N150gLG8EV2SS81rXd8deXpFDMTCKHGxE22UHV0WJxw64SdJHNfXRKorkR5wWZDkh/nA==}
     peerDependencies:
       svelte: '>=3 <5'
     dependencies:
