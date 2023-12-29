@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-	<title>Offers | Maccas</title>
+	<title>Maccas</title>
 </svelte:head>
 
 <Tabs.Root value="offers" class="w-[100%]">
@@ -23,7 +23,7 @@
 	<Tabs.Content value="offers" class="m-4">
 		{#if data.offersList}
 			<div class="grid grid-flow-row gap-4">
-				{#each data.offersList as { shortName, name, count, imageUrl }}
+				{#each data.offersList as { shortName, name, count, imageBasename }}
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
 							<Card.Header class="grid justify-between">
@@ -32,7 +32,7 @@
 								<Badge class="h-fit w-fit">{count} available</Badge>
 							</Card.Header>
 							<Card.Header>
-								<img src={imageUrl} alt={shortName} width={90} height={90} />
+								<img src={`api/images/${imageBasename}`} alt={shortName} width={90} height={90} />
 							</Card.Header>
 						</div>
 						<!-- <Card.Footer>

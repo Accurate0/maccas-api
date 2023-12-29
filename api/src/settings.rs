@@ -27,7 +27,6 @@ pub struct Settings {
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
     pub downstream_health_checks: HashMap<String, String>,
-    pub image_host_prefix: String,
     pub auth_secret: String,
     pub places_api_key: String,
 }

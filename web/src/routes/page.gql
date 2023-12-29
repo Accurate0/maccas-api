@@ -1,7 +1,7 @@
 query Index($includePoints: Boolean!, $minimumCurrentPoints: Int!) {
 	offers {
 		shortName
-		imageUrl
+		imageBasename
 		name
 		count
 		id
