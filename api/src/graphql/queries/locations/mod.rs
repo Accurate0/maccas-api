@@ -29,6 +29,7 @@ impl LocationsQuery {
 // FIXME: appoint service account
 // FIXME: dataloader?
 // FIXME: converter needed
+// TODO: store locations in db as cache
 
 #[Object]
 impl QueriedLocation {
