@@ -210,6 +210,7 @@ impl JobScheduler {
 
                 if !running {
                     tracing::info!("triggered job {}", name);
+                    let db: DatabaseConnection = self.0.db.clone();
                     let context = JobContext::new(self.0.db.clone(), job_model.id);
                     let span = tracing::span!(parent: None, Level::INFO, "job", name);
                     let tx_channel = self.0.task_queue.tx.clone();
@@ -219,6 +220,22 @@ impl JobScheduler {
                         async move {
                             job.execute(&context, cancellation_token_cloned).await;
                             job.cleanup(&context).await;
+
+                            let update_finish_time = jobs::ActiveModel {
+                                id: Set(job_model.id),
+                                name: Set(name.clone()),
+                                last_execution: Set(Some(time_now.naive_utc())),
+                                ..Default::default()
+                            }
+                            .update(&db)
+                            .await;
+
+                            if let Err(e) = update_finish_time {
+                                tracing::error!("error setting last execution: {}", e)
+                            }
+
+                            // must send after updating last execution or it can trigger twice
+                            // race condition
                             if let Err(e) =
                                 tx_channel.send(Message::JobFinished { name: task_name })
                             {
@@ -232,15 +249,6 @@ impl JobScheduler {
                         cancellation_token,
                         handle,
                     });
-
-                    jobs::ActiveModel {
-                        id: Set(job_model.id),
-                        name: Set(name.clone()),
-                        last_execution: Set(Some(time_now.naive_utc())),
-                        ..Default::default()
-                    }
-                    .update(&self.0.db)
-                    .await?;
                 };
             }
 
