@@ -5,13 +5,14 @@ import bcrypt from 'bcrypt';
 import type { Role } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { SessionId } from '$lib/session';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
+import { setError, superValidate } from 'sveltekit-superforms/server';
 
 const schema = z.object({
-	username: z.string().min(1),
-	password: z.string().min(1)
+	username: z.string().min(1, { message: 'Invalid username' }),
+	password: z.string().min(1, { message: 'Invalid password' })
 });
 
 export type LoginState = {
@@ -24,8 +25,23 @@ const legacyLoginResponseSchema = z.object({
 	role: z.union([z.literal('admin'), z.literal('privileged'), z.literal('none')])
 });
 
+const configSchema = z.object({
+	storeId: z.string().min(1),
+	storeName: z.string().min(1)
+});
+
+export const load = async () => {
+	const form = await superValidate(schema);
+	return { form };
+};
+
 export const actions = {
 	default: async ({ request, fetch, cookies }) => {
+		const form = await superValidate(request, schema);
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
 		const createSession = async (userId: string) => {
 			const sessionId = randomBytes(30).toString('base64');
 			const sevenDaysInMs = 604800000;
@@ -49,19 +65,7 @@ export const actions = {
 			cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 		};
 
-		const formData = await request.formData();
-		const validatedFields = schema.safeParse({
-			username: formData.get('username'),
-			password: formData.get('password')
-		});
-
-		if (!validatedFields.success) {
-			return {
-				error: 'Invalid details'
-			};
-		}
-
-		const { username, password } = validatedFields.data;
+		const { username, password } = form.data;
 		const existingUser = await prisma.user.findUnique({ where: { username } });
 		if (existingUser) {
 			const isPasswordCorrect = await bcrypt.compare(
@@ -70,31 +74,44 @@ export const actions = {
 			);
 
 			if (!isPasswordCorrect) {
-				return {
-					error: 'Invalid details'
-				};
+				return setError(form, 'password', 'Invalid details');
 			}
 
 			await createSession(existingUser.id);
 		} else {
 			// FIXME: will need to be old.api.maccas.one or something
+			const formData = new FormData();
+			formData.set('username', username);
+			formData.set('password', password);
+
 			const response = await fetch('https://api.maccas.one/v1/auth/login', {
 				method: 'POST',
 				body: formData
 			});
 
 			if (!response.ok) {
-				return {
-					error: 'Invalid details'
-				};
+				return setError(form, 'password', 'Invalid details');
 			}
 
 			const result = await legacyLoginResponseSchema.safeParseAsync(await response.json());
-
 			if (!result.success) {
-				return {
-					error: 'Invalid details'
-				};
+				return setError(form, 'password', 'Invalid details');
+			}
+
+			const configResponse = await fetch('https://api.maccas.one/v1/user/config', {
+				method: 'GET',
+				headers: { Authorization: `Bearer ${result.data.token}` }
+			});
+			const config = await configSchema.safeParseAsync(await configResponse.json());
+			let createdConfigId = undefined;
+			if (config.success) {
+				const createdConfig = await prisma.config.create({
+					data: {
+						...config.data
+					}
+				});
+
+				createdConfigId = createdConfig.id;
 			}
 
 			const { role, token } = result.data;
@@ -108,7 +125,8 @@ export const actions = {
 					username: username,
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
-					role: role.toUpperCase() as Role
+					role: role.toUpperCase() as Role,
+					configId: createdConfigId
 				}
 			});
 

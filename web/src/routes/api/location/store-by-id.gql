@@ -1,0 +1,7 @@
+query StoreById($storeId: String!) {
+	location {
+		storeId(input: { storeId: $storeId }) {
+			name
+		}
+	}
+}

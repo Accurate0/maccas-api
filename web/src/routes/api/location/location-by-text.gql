@@ -1,0 +1,9 @@
+query LocationByText($query: String!) {
+	location {
+		text(input: { query: $query }) {
+			name
+			storeNumber
+			address
+		}
+	}
+}

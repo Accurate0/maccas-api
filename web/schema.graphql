@@ -19,7 +19,7 @@ type HealthResponse {
 type Location {
   address: String!
   name: String!
-  storeNumber: Int!
+  storeNumber: String!
 }
 
 """
@@ -53,6 +53,7 @@ type Points {
 
 type QueriedLocation {
   coordinate(input: CoordinateSearchInput!): [Location!]!
+  storeId(input: StoreIdInput!): Location!
   text(input: TextSearchInput!): [Location!]!
 }
 
@@ -61,6 +62,10 @@ type QueryRoot {
   location: QueriedLocation!
   offers: [Offer!]!
   points(filter: FilterInput): [Points!]!
+}
+
+input StoreIdInput {
+  storeId: String!
 }
 
 input TextSearchInput {

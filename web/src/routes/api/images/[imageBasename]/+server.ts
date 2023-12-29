@@ -3,7 +3,8 @@ import { IMAGE_CDN } from '$lib/constants';
 export async function GET({ fetch, params: { imageBasename } }) {
 	const response = await fetch(`${IMAGE_CDN}/${imageBasename}`, {
 		credentials: 'omit',
-		method: 'GET'
+		method: 'GET',
+		referrer: ''
 	});
 
 	const imageResponse = new Response(response.body, {

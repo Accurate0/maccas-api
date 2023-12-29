@@ -14,9 +14,14 @@ pub struct CoordinateSearchInput {
     pub distance: f64,
 }
 
+#[derive(InputObject)]
+pub struct StoreIdInput {
+    pub store_id: String,
+}
+
 #[derive(SimpleObject)]
 pub struct Location {
     pub name: String,
-    pub store_number: i64,
+    pub store_number: String,
     pub address: String,
 }
