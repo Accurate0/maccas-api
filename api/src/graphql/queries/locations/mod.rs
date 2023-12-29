@@ -1,7 +1,9 @@
-use self::types::{CoordinateSearchInput, Location, QueriedLocation, TextSearchInput};
+use self::types::{
+    CoordinateSearchInput, Location, QueriedLocation, StoreIdInput, TextSearchInput,
+};
 use crate::settings::Settings;
 use async_graphql::{Context, Object};
-use base::constants::mc_donalds::{FILTER, LOCATION_SEARCH_DISTANCE};
+use base::constants::mc_donalds::{FILTER, LOCATION_SEARCH_DISTANCE, STORE_UNIQUE_ID_TYPE};
 use base::http::get_http_client;
 use entity::accounts;
 use places::types::Location as PlaceLocation;
@@ -26,6 +28,7 @@ impl LocationsQuery {
 // FIXME: don't refresh accounts within 14 mins
 // FIXME: appoint service account
 // FIXME: dataloader?
+// FIXME: converter needed
 
 #[Object]
 impl QueriedLocation {
@@ -117,7 +120,7 @@ impl QueriedLocation {
                         .into_iter()
                         .map(|r| Location {
                             name: r.name,
-                            store_number: r.national_store_number,
+                            store_number: r.national_store_number.to_string(),
                             address: r.address.address_line1,
                         })
                         .collect()),
@@ -185,11 +188,73 @@ impl QueriedLocation {
                 .into_iter()
                 .map(|r| Location {
                     name: r.name,
-                    store_number: r.national_store_number,
+                    store_number: r.national_store_number.to_string(),
                     address: r.address.address_line1,
                 })
                 .collect()),
             _ => Ok(vec![]),
+        }
+    }
+
+    async fn store_id<'a>(
+        &self,
+        ctx: &Context<'a>,
+        input: StoreIdInput,
+    ) -> async_graphql::Result<Location> {
+        let settings = ctx.data::<Settings>()?;
+        let db = ctx.data::<DatabaseConnection>()?;
+
+        let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
+            .basic_auth(&settings.proxy.username, &settings.proxy.password);
+
+        // pick more recently updated account
+        let account_to_use = accounts::Entity::find()
+            .order_by_desc(accounts::Column::UpdatedAt)
+            .one(db)
+            .await?
+            .ok_or_else(|| anyhow::Error::msg("no account found"))?;
+
+        let account_id = account_to_use.id.to_owned();
+        tracing::info!("picked account: {:?}", &account_id);
+
+        let mut api_client = libmaccas::ApiClient::new(
+            base::constants::mc_donalds::BASE_URL.to_owned(),
+            get_http_client(proxy)?,
+            settings.mcdonalds.client_id.clone(),
+        );
+
+        api_client.set_auth_token(&account_to_use.access_token);
+        let response = api_client
+            .customer_login_refresh(&account_to_use.refresh_token)
+            .await?;
+
+        let response = response
+            .body
+            .response
+            .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
+
+        api_client.set_auth_token(&response.access_token);
+
+        let mut update_model = account_to_use.into_active_model();
+
+        update_model.access_token = Set(response.access_token);
+        update_model.refresh_token = Set(response.refresh_token);
+        tracing::info!("new tokens fetched, updating database");
+
+        update_model.update(db).await?;
+
+        let response = api_client
+            .get_restaurant(&input.store_id, FILTER, STORE_UNIQUE_ID_TYPE)
+            .await?;
+
+        if let Some(resp) = response.body.response {
+            Ok(Location {
+                name: resp.restaurant.name,
+                store_number: resp.restaurant.national_store_number.to_string(),
+                address: resp.restaurant.address.address_line1,
+            })
+        } else {
+            Err(anyhow::Error::msg("no store found for that id").into())
         }
     }
 }

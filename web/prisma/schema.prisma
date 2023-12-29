@@ -14,11 +14,24 @@ model User {
     passwordHash Bytes  @db.ByteA
     role         Role   @default(USER)
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    Session   Session[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    configId String  @unique
+    config   Config? @relation(fields: [configId], references: [id])
+
+    Session Session[]
 
     @@map("users")
+}
+
+model Config {
+    id        String @id @default(uuid())
+    storeName String
+    storeId   String
+    User      User?
+
+    @@map("config")
 }
 
 model Session {
@@ -28,6 +41,8 @@ model Session {
     accessToken String
     userId      String
     user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("sessions")
 }
 
 enum Role {
