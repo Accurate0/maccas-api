@@ -1,4 +1,4 @@
-use crate::{utils, ConversionError, Database};
+use crate::{ConversionError, Database};
 use entity::offer_details::Model as OfferDetails;
 use entity::offers::Model as Offers;
 use libmaccas::types::response::OfferDetails as OfferDetailsResponse;
@@ -44,9 +44,6 @@ impl Database<OfferDetails> {
             .unwrap_or(&offer.name.as_str())
             .to_string();
 
-        let base_name_with_webp =
-            format!("{}.webp", utils::remove_extension(&offer.image_base_name));
-
         let now = chrono::offset::Utc::now().naive_utc();
 
         Ok(Database(OfferDetails {
@@ -59,8 +56,7 @@ impl Database<OfferDetails> {
             } else {
                 Some(total_price)
             },
-            image_base_name: base_name_with_webp,
-            original_image_base_name: offer.image_base_name.clone(),
+            image_base_name: offer.image_base_name.clone(),
             created_at: now,
             updated_at: now,
         }))

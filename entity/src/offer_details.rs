@@ -14,7 +14,6 @@ pub struct Model {
     pub price: Option<f64>,
     pub short_name: String,
     pub image_base_name: String,
-    pub original_image_base_name: String,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

@@ -80,7 +80,7 @@ impl Offer {
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<String> {
-        self.load_from_related_offer(context, |o| o.original_image_base_name)
+        self.load_from_related_offer(context, |o| o.image_base_name)
             .await
     }
 
