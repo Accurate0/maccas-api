@@ -21,6 +21,8 @@ impl Job for RefreshJob {
         "refresh".to_owned()
     }
 
+    // TODO: needs refreshed at datetime as well, since updated at is updated by updating tokens alone
+    // that can happen at any point really
     async fn execute(&self, context: &JobContext, _cancellation_token: CancellationToken) {
         let func = async {
             let account_to_refresh = accounts::Entity::find()
