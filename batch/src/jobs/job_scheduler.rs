@@ -4,7 +4,7 @@ use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, Set,
 };
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, fmt::Debug, ops::ControlFlow, sync::Arc, time::Duration};
 use tokio::{
     sync::{
         mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
@@ -15,9 +15,24 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
-enum Message {
+pub(crate) enum Message {
     JobFinished { name: String },
-    Tick,
+    Init,
+    RunPending(String),
+}
+
+impl Debug for Message {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::JobFinished { name } => {
+                write!(f, "JobFinished: {}", name)
+            }
+            Self::Init => write!(f, "Init"),
+            Self::RunPending(arg0) => {
+                write!(f, "RunPending: {}", arg0)
+            }
+        }
+    }
 }
 
 struct Queue {
@@ -87,6 +102,8 @@ impl JobScheduler {
                 .await?;
         }
 
+        self.0.task_queue.tx.send(Message::Init)?;
+
         Ok(())
     }
 
@@ -109,127 +126,187 @@ impl JobScheduler {
         self.0.cancellation_token.cancel()
     }
 
-    pub async fn tick(&self) -> Result<(), JobError> {
-        while let Some(message) = self.0.task_queue.rx.lock().await.recv().await {
-            match message {
-                Message::JobFinished { name } => {
-                    tracing::info!("received message for job finished: {}", name);
-                    let mut jobs = self.0.jobs.write().await;
-                    match jobs.get_mut(&name) {
-                        Some(job_details) => job_details.state = JobState::Stopped,
-                        None => tracing::error!(
-                            "could not find job by name for state to set state to finished: {}",
-                            name
-                        ),
+    pub async fn run(&self) -> JoinHandle<std::result::Result<(), JobError>> {
+        let cloned_self = self.clone();
+        tokio::spawn(async move {
+            while let ControlFlow::Continue(_) = cloned_self.tick().await? {}
+            Ok(())
+        })
+    }
+
+    async fn handle_message(&self, message: Message) -> Result<(), JobError> {
+        match message {
+            Message::JobFinished { name } => {
+                tracing::info!("received message for job finished: {}", name);
+                let mut jobs = self.0.jobs.write().await;
+                match jobs.get_mut(&name) {
+                    Some(job_details) => {
+                        job_details.state = JobState::Stopped;
+                        let job_model = jobs::Entity::find()
+                            .filter(jobs::Column::Name.eq(name.clone()))
+                            .one(&self.0.db)
+                            .await?
+                            .unwrap();
+
+                        let last_execution = job_model.last_execution;
+                        let job_type = &job_details.job_type;
+                        let time_now = chrono::offset::Utc::now();
+
+                        // if no last execution, execute immediately
+                        let next = match job_type {
+                            JobType::Schedule(schedule) => match last_execution {
+                                Some(t) => schedule.after(&t.and_utc()).next(),
+                                None => Some(time_now),
+                            }
+                            .unwrap(),
+                        };
+
+                        tracing::info!("time now: {}", time_now);
+                        tracing::info!("next scheduled run: {}", next);
+
+                        let time_until = if time_now > next {
+                            Duration::ZERO
+                        } else {
+                            (next - time_now).to_std()?
+                        };
+
+                        let tx_channel = self.0.task_queue.tx.clone();
+                        // setup next wake up for this job
+                        tokio::spawn(async move {
+                            tokio::time::sleep(time_until).await;
+                            tx_channel.send(Message::RunPending(job_model.name))
+                        });
                     }
+                    None => tracing::error!(
+                        "could not find job by name for state to set state to finished: {}",
+                        name
+                    ),
                 }
+            }
 
-                Message::Tick => {
-                    let mut jobs = self.0.jobs.write().await;
+            Message::RunPending(name) => {
+                tracing::info!("run pending task {}", name);
+                let mut jobs = self.0.jobs.write().await;
 
-                    for (name, job_details) in jobs.iter_mut() {
-                        let span = tracing::span!(Level::INFO, "tick", name);
+                let job_model = jobs::Entity::find()
+                    .filter(jobs::Column::Name.eq(name.clone()))
+                    .one(&self.0.db)
+                    .await?
+                    .unwrap();
 
-                        match async move {
-                            let job_model = jobs::Entity::find()
-                                .filter(jobs::Column::Name.eq(name.clone()))
-                                .one(&self.0.db)
-                                .await?
-                                .unwrap();
+                let job_details = jobs.get_mut(&name).unwrap();
+                let time_now = chrono::offset::Utc::now();
 
-                            let last_execution = job_model.last_execution;
-                            let job_type = &job_details.job_type;
-                            let time_now = chrono::offset::Utc::now();
+                let cancellation_token = CancellationToken::new();
+                let cancellation_token_cloned = cancellation_token.clone();
+                let job = job_details.job.clone();
 
-                            // if no last execution, execute immediately
-                            let next = match job_type {
-                                JobType::Schedule(schedule) => match last_execution {
-                                    Some(t) => schedule.after(&t.and_utc()).next(),
-                                    None => Some(time_now),
-                                }
-                                .unwrap(),
+                let running = match job_details.state {
+                    JobState::Stopped => false,
+                    JobState::Running(_) => true,
+                };
+
+                if !running {
+                    tracing::info!("triggered job {}", name);
+                    let context = JobContext::new(self.0.db.clone(), job_model.id);
+                    let span = tracing::span!(parent: None, Level::INFO, "job", name);
+                    let tx_channel = self.0.task_queue.tx.clone();
+                    let task_name = name.clone();
+
+                    let handle = tokio::spawn(
+                        async move {
+                            job.execute(&context, cancellation_token_cloned).await;
+                            job.cleanup(&context).await;
+                            if let Err(e) =
+                                tx_channel.send(Message::JobFinished { name: task_name })
+                            {
+                                tracing::error!("error sending finished message: {}", e)
                             };
-
-                            let cancellation_token = CancellationToken::new();
-                            let cancellation_token_cloned = cancellation_token.clone();
-                            let job = job_details.job.clone();
-
-                            tracing::trace!("time now: {}", time_now);
-                            tracing::trace!("next scheduled run: {}", next);
-
-                            let running = match job_details.state {
-                                JobState::Stopped => false,
-                                JobState::Running(_) => true,
-                            };
-
-                            if next <= time_now && !running {
-                                tracing::info!("triggered job");
-                                let context = JobContext::new(self.0.db.clone(), job_model.id);
-                                let span = tracing::span!(parent: None, Level::INFO, "job", name);
-                                let end_channel = self.0.task_queue.tx.clone();
-                                let task_name = name.clone();
-
-                                let handle = tokio::spawn(
-                                    async move {
-                                        job.execute(&context, cancellation_token_cloned).await;
-                                        job.cleanup(&context).await;
-                                        if let Err(e) = end_channel
-                                            .send(Message::JobFinished { name: task_name })
-                                        {
-                                            tracing::error!("error sending finished message: {}", e)
-                                        };
-                                    }
-                                    .instrument(span),
-                                );
-
-                                job_details.state = JobState::Running(RunningState {
-                                    cancellation_token,
-                                    handle,
-                                });
-
-                                jobs::ActiveModel {
-                                    id: Set(job_model.id),
-                                    name: Set(name.clone()),
-                                    last_execution: Set(Some(time_now.naive_utc())),
-                                    ..Default::default()
-                                }
-                                .update(&self.0.db)
-                                .await?;
-                            };
-
-                            Ok::<(), JobError>(())
                         }
-                        .instrument(span)
-                        .await
-                        {
-                            Ok(_) => {}
-                            Err(e) => tracing::error!("error with job: {}", e),
-                        }
+                        .instrument(span),
+                    );
+
+                    job_details.state = JobState::Running(RunningState {
+                        cancellation_token,
+                        handle,
+                    });
+
+                    jobs::ActiveModel {
+                        id: Set(job_model.id),
+                        name: Set(name.clone()),
+                        last_execution: Set(Some(time_now.naive_utc())),
+                        ..Default::default()
                     }
+                    .update(&self.0.db)
+                    .await?;
+                };
+            }
+
+            Message::Init => {
+                let jobs = self.0.jobs.read().await;
+                tracing::info!("initializing scheduler with required tasks");
+                for (name, job_details) in jobs.iter() {
+                    let job_model = jobs::Entity::find()
+                        .filter(jobs::Column::Name.eq(name.clone()))
+                        .one(&self.0.db)
+                        .await?
+                        .unwrap();
+
+                    let last_execution = job_model.last_execution;
+                    let job_type = &job_details.job_type;
+                    let time_now = chrono::offset::Utc::now();
+
+                    // if no last execution, execute immediately
+                    let next = match job_type {
+                        JobType::Schedule(schedule) => match last_execution {
+                            Some(t) => schedule.after(&t.and_utc()).next(),
+                            None => Some(time_now),
+                        }
+                        .unwrap(),
+                    };
+
+                    tracing::info!("time now: {}", time_now);
+                    tracing::info!("next scheduled run: {}", next);
+
+                    let time_until = if time_now > next {
+                        Duration::ZERO
+                    } else {
+                        (next - time_now).to_std()?
+                    };
+
+                    let tx_channel = self.0.task_queue.tx.clone();
+                    tracing::info!("task run in {:?}", time_until);
+                    // setup next wake up for jobs
+                    tokio::spawn(async move {
+                        if time_until.is_zero() {
+                            tx_channel.send(Message::RunPending(job_model.name))
+                        } else {
+                            tokio::time::sleep(time_until).await;
+                            tx_channel.send(Message::RunPending(job_model.name))
+                        }
+                    });
                 }
             }
         }
 
-        Ok(())
+        Ok::<(), JobError>(())
     }
 
-    pub async fn run(&self) -> JoinHandle<()> {
-        let cancellation_token = self.0.cancellation_token.clone();
-        let sender = self.0.task_queue.tx.clone();
+    async fn tick(&self) -> Result<ControlFlow<()>, JobError> {
+        let cancellation_token = &self.0.cancellation_token;
+        let mut task_queue = self.0.task_queue.rx.lock().await;
 
-        tokio::spawn(async move {
-            loop {
-                if let Err(e) = sender.send(Message::Tick) {
-                    tracing::error!("error during tick: {}", e);
-                };
-
-                if cancellation_token.is_cancelled() {
-                    tracing::warn!("scheduler cancellation received");
-                    break;
-                }
-
-                tokio::time::sleep(Duration::from_millis(500)).await
+        tokio::select! {
+            _ = cancellation_token.cancelled() => {
+                tracing::info!("ticking cancelled");
+                Ok(ControlFlow::Break(()))
+            },
+            Some(message) = task_queue.recv() => {
+                let msg = format!("{:?}", message);
+                let span = tracing::span!(Level::INFO, "job", msg);
+                self.handle_message(message).instrument(span).await?;
+                Ok(ControlFlow::Continue(()))
             }
-        })
+        }
     }
 }

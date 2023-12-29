@@ -37,19 +37,13 @@ async fn main() -> Result<(), anyhow::Error> {
                 http_client,
                 mcdonalds_config: settings.mcdonalds,
             },
-            "0 */15 * * * *".parse()?,
+            "0 */1 * * * *".parse()?,
         )
         .await;
 
     tracing::info!("scheduler initializing");
     scheduler.init().await?;
-
-    tracing::info!("starting tick sending");
     let handle = scheduler.run().await;
-    let cloned_scheduler = scheduler.clone();
-
-    tracing::info!("launching tick thread");
-    tokio::spawn(async move { cloned_scheduler.tick().await });
 
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -74,8 +68,7 @@ async fn main() -> Result<(), anyhow::Error> {
         }
     }
 
-    handle.await?;
-
+    handle.await??;
     // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 
     Ok(())
