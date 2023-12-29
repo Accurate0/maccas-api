@@ -36,7 +36,7 @@ type Offer {
   creationDate: NaiveDateTime!
   description: String!
   id: UUID!
-  imageUrl: String!
+  imageBasename: String!
   name: String!
   offerId: Int!
   price: Float
