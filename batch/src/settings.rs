@@ -30,6 +30,7 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
+            .add_source(File::with_name("base.config.toml").required(false))
             .add_source(File::with_name("batch.config.toml").required(false))
             .add_source(Environment::default().separator("__"))
             .build()?;
