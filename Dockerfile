@@ -36,6 +36,7 @@ USER appuser
 
 WORKDIR /opt/${BINARY_NAME}
 COPY ./config/${BINARY_NAME}.config.toml ${BINARY_NAME}.config.toml
+COPY ./config/base.config.toml .
 
 RUN ln -s /usr/local/bin/${BINARY_NAME} executable
 ENTRYPOINT ["./executable"]
