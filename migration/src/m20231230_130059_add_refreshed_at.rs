@@ -39,7 +39,7 @@ impl MigrationTrait for Migration {
         .await?;
         db.execute_unprepared(
             r#"CREATE TRIGGER tr_update_refreshed_at
-            AFTER UPDATE OF access_token, refresh_token ON accounts
+            BEFORE UPDATE OF access_token, refresh_token ON accounts
             FOR EACH ROW EXECUTE PROCEDURE accounts_update_refreshed_at_column();"#,
         )
         .await?;
