@@ -68,7 +68,11 @@ async fn main() -> Result<(), anyhow::Error> {
         }
     }
 
-    handle.await??;
+    handle.await.map(|r| {
+        if let Err(e) = r {
+            tracing::error!("error with job scheduler: {}", e)
+        }
+    })?;
     // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 
     Ok(())
