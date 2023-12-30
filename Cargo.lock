@@ -3255,11 +3255,16 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "anyhow",
+ "base",
  "chrono",
+ "config",
  "futures",
+ "sea-orm",
  "serde",
  "serde_json",
  "tokio",
+ "tokio-util",
+ "tracing",
  "tracing-subscriber",
 ]
 
