@@ -73,8 +73,7 @@ where
                     .await;
             }
 
-            let baton = baton.take();
-            if let Some(baton) = baton {
+            if let Some(baton) = baton.take() {
                 baton.dispose()
             };
         }
