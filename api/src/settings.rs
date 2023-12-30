@@ -33,9 +33,10 @@ pub struct Settings {
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
+        // TODO: envvar config path
         let s = Config::builder()
-            .add_source(File::with_name("base.config.toml").required(false))
-            .add_source(File::with_name("api.config.toml").required(true))
+            .add_source(File::with_name("config/base.config.toml").required(false))
+            .add_source(File::with_name("config/api.config.toml").required(true))
             .add_source(Environment::default().separator("__"))
             .build()?;
 
