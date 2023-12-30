@@ -1,15 +1,13 @@
 use self::queries::{
     health::HealthQuery, locations::LocationsQuery, offers::OffersQuery, points::PointsQuery,
 };
-use crate::types::{ApiState, AppError, JwtClaims};
+use crate::types::{ApiState, AppError};
 use async_graphql::{
     http::GraphiQLSource, EmptyMutation, EmptySubscription, MergedObject, Schema, ServerError,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::{debug_handler, extract::State, http::HeaderMap, response::IntoResponse};
-use hmac::{Hmac, Mac};
-use jwt::{Header, Token, VerifyWithKey};
-use sha2::Sha256;
+use axum::{extract::State, http::HeaderMap, response::IntoResponse};
+use base::jwt;
 
 pub mod queries;
 
@@ -22,7 +20,6 @@ pub async fn graphiql() -> impl IntoResponse {
     axum::response::Html(GraphiQLSource::build().endpoint("/graphql").finish())
 }
 
-#[debug_handler]
 pub async fn graphql_handler(
     State(ApiState { schema, settings }): State<ApiState>,
     headers: HeaderMap,
@@ -31,12 +28,11 @@ pub async fn graphql_handler(
     let auth_header = headers.get("Authorization");
     if cfg!(debug_assertions) {
         if let Some(auth_header) = auth_header {
-            let key: Hmac<Sha256> = Hmac::new_from_slice(settings.auth_secret.as_bytes())?;
-            let auth_header = auth_header.to_str()?.replace("Bearer ", "");
-            let unverified: Token<Header, JwtClaims, jwt::Unverified<'_>> =
-                Token::parse_unverified(&auth_header)?;
-            let token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
-            tracing::info!("verified token with claims: {:?}", token.claims());
+            let claims = jwt::verify_jwt(
+                settings.auth_secret.as_bytes(),
+                &auth_header.to_str()?.replace("Bearer ", ""),
+            )?;
+            tracing::info!("verified token with claims: {:?}", claims);
         }
 
         return Ok(schema.execute(req.into_inner()).await.into());
@@ -44,11 +40,10 @@ pub async fn graphql_handler(
 
     match auth_header {
         Some(auth_header) => {
-            let key: Hmac<Sha256> = Hmac::new_from_slice(settings.auth_secret.as_bytes())?;
-            let auth_header = auth_header.to_str()?.replace("Bearer ", "");
-            let unverified: Token<Header, JwtClaims, jwt::Unverified<'_>> =
-                Token::parse_unverified(&auth_header)?;
-            let _token: Token<_, _, jwt::Verified> = unverified.verify_with_key(&key)?;
+            jwt::verify_jwt(
+                settings.auth_secret.as_bytes(),
+                &auth_header.to_str()?.replace("Bearer ", ""),
+            )?;
 
             Ok(schema.execute(req.into_inner()).await.into())
         }

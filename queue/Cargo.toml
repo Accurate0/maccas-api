@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-apalis = { version = "0.4", features = ["redis", "extensions", "expose"] }
 anyhow = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
