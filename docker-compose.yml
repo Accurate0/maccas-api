@@ -47,6 +47,22 @@ services:
     env_file:
       - .env.local
 
+  queue:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=queue
+    ports:
+      - "8001:8000"
+    links:
+      - "db:database"
+    depends_on:
+      - db
+    environment:
+      - DATABASE__URL=postgres://postgres:test@database/maccas
+    env_file:
+      - .env.local
+
   db:
     image: postgres:16
     ports:
