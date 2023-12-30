@@ -15,7 +15,7 @@ where
     T: Send + Debug,
 {
     pub(crate) heap: Mutex<BinaryHeap<HeapEntry<T>>>,
-    pub(crate) cond_var: Notify,
+    pub(crate) notify: Notify,
 }
 
 pub struct DelayQueue<T>
@@ -33,7 +33,7 @@ where
         Self {
             inner: DelayQueueInner {
                 heap: Default::default(),
-                cond_var: Default::default(),
+                notify: Default::default(),
             }
             .into(),
         }
@@ -47,7 +47,7 @@ where
         };
 
         self.inner.heap.lock().await.push(entry);
-        self.inner.cond_var.notify_one();
+        self.inner.notify.notify_one();
     }
 
     pub async fn pop(&self) -> Option<T> {
@@ -61,12 +61,12 @@ where
                 } else {
                     // must release lock before going afk
                     drop(heap);
-                    let _ = timeout_at(peeked_instant.into(), self.inner.cond_var.notified()).await;
+                    let _ = timeout_at(peeked_instant.into(), self.inner.notify.notified()).await;
                 }
             } else {
                 // must release lock before going afk
                 drop(heap);
-                self.inner.cond_var.notified().await;
+                self.inner.notify.notified().await;
             }
         }
     }
