@@ -1,23 +1,8 @@
+use crate::graphql::MaccasSchema;
+use crate::settings::Settings;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use serde::Deserialize;
-use serde::Serialize;
-
-use crate::graphql::MaccasSchema;
-use crate::settings::Settings;
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct JwtClaims {
-    pub user_id: String,
-    pub session_id: String,
-    pub iat: i64,
-    pub exp: i64,
-    pub aud: String,
-    pub iss: String,
-    pub sub: String,
-}
 
 #[derive(Clone)]
 pub struct ApiState {
