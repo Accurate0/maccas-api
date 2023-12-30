@@ -43,7 +43,7 @@ export const actions = {
 		}
 
 		const createSession = async (userId: string) => {
-			const sessionId = randomBytes(30).toString('base64');
+			const sessionId = randomBytes(64).toString('base64');
 			const sevenDaysInMs = 604800000;
 			const expires = new Date(Date.now() + sevenDaysInMs);
 			const accessToken = jwt.sign({ userId, sessionId }, env.AUTH_SECRET, {
