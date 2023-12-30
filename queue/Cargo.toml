@@ -14,4 +14,17 @@ futures = { workspace = true }
 actix-cors = "0.6.1"
 serde_json = { workspace = true }
 chrono = { workspace = true }
+sea-orm = { workspace = true }
 tracing-subscriber = { workspace = true }
+tracing = { workspace = true }
+base = { workspace = true }
+config = { workspace = true }
+tokio-util = { workspace = true }
+
+[lib]
+name = "queue"
+path = "src/lib.rs"
+
+[[bin]]
+name = "queue"
+path = "src/main.rs"
