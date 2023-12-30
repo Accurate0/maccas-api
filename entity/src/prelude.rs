@@ -5,3 +5,4 @@ pub use super::jobs::Entity as Jobs;
 pub use super::offer_details::Entity as OfferDetails;
 pub use super::offers::Entity as Offers;
 pub use super::points::Entity as Points;
+pub use super::stores::Entity as Stores;
