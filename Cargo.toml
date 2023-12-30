@@ -3,8 +3,8 @@ resolver = "2"
 members = [
     "api",
     "migration",
-    "deps/libmaccas",
-    "deps/places",
+    "external/libmaccas",
+    "external/places",
     "dynamodb-migration",
     "batch",
     "base",
@@ -41,8 +41,8 @@ anyhow = "1.0.75"
 config = "0.13.4"
 
 entity = { path = "./entity" }
-libmaccas = { path = "./deps/libmaccas" }
-places = { path = "./deps/places" }
+libmaccas = { path = "./external/libmaccas" }
+places = { path = "./external/places" }
 base = { path = "./base" }
 converters = { path = "./converters" }
 
