@@ -1,9 +1,9 @@
 use crate::{jobs::refresh::RefreshJob, settings::Settings};
 use jobs::job_scheduler::JobScheduler;
-use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
 use std::time::Duration;
 use tokio::signal;
+use tracing::log::LevelFilter;
 
 mod jobs;
 mod settings;

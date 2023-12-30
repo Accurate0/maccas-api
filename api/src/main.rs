@@ -11,7 +11,6 @@ use axum::{
     Router,
 };
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader, QueryRoot};
-use log::LevelFilter;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tower_http::{
@@ -19,6 +18,7 @@ use tower_http::{
     trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
     LatencyUnit,
 };
+use tracing::log::LevelFilter;
 use tracing::Level;
 
 mod graphql;
