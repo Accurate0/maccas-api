@@ -29,5 +29,4 @@ base = { workspace = true }
 converters = { workspace = true }
 reqwest-middleware = { workspace = true }
 reqwest = { workspace = true }
-log = { workspace = true }
 cron = { workspace = true }
