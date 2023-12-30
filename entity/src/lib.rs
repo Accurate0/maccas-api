@@ -7,3 +7,4 @@ pub mod jobs;
 pub mod offer_details;
 pub mod offers;
 pub mod points;
+pub mod stores;

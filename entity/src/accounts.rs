@@ -16,6 +16,7 @@ pub struct Model {
     pub device_id: String,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    pub refreshed_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

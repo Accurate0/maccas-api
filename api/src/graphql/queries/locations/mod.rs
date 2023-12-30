@@ -5,7 +5,7 @@ use crate::settings::Settings;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::{FILTER, LOCATION_SEARCH_DISTANCE, STORE_UNIQUE_ID_TYPE};
 use base::http::get_http_client;
-use entity::accounts;
+use entity::{accounts, stores};
 use places::types::Location as PlaceLocation;
 use places::types::{Area, PlacesRequest, Rectangle};
 use sea_orm::{
@@ -30,6 +30,7 @@ impl LocationsQuery {
 // FIXME: dataloader?
 // FIXME: converter needed
 // TODO: store locations in db as cache
+// TODO: implement caching for locations (redis?)
 
 #[Object]
 impl QueriedLocation {
@@ -205,57 +206,75 @@ impl QueriedLocation {
         let settings = ctx.data::<Settings>()?;
         let db = ctx.data::<DatabaseConnection>()?;
 
-        let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
-            .basic_auth(&settings.proxy.username, &settings.proxy.password);
+        match stores::Entity::find_by_id(&input.store_id).one(db).await? {
+            Some(model) => Ok(Location {
+                name: model.name,
+                store_number: model.id,
+                address: model.address,
+            }),
+            None => {
+                let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
+                    .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
-        // pick more recently updated account
-        let account_to_use = accounts::Entity::find()
-            .order_by_desc(accounts::Column::UpdatedAt)
-            .one(db)
-            .await?
-            .ok_or_else(|| anyhow::Error::msg("no account found"))?;
+                // pick more recently updated account
+                let account_to_use = accounts::Entity::find()
+                    .order_by_desc(accounts::Column::UpdatedAt)
+                    .one(db)
+                    .await?
+                    .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
-        let account_id = account_to_use.id.to_owned();
-        tracing::info!("picked account: {:?}", &account_id);
+                let account_id = account_to_use.id.to_owned();
+                tracing::info!("picked account: {:?}", &account_id);
 
-        let mut api_client = libmaccas::ApiClient::new(
-            base::constants::mc_donalds::BASE_URL.to_owned(),
-            get_http_client(proxy)?,
-            settings.mcdonalds.client_id.clone(),
-        );
+                let mut api_client = libmaccas::ApiClient::new(
+                    base::constants::mc_donalds::BASE_URL.to_owned(),
+                    get_http_client(proxy)?,
+                    settings.mcdonalds.client_id.clone(),
+                );
 
-        api_client.set_auth_token(&account_to_use.access_token);
-        let response = api_client
-            .customer_login_refresh(&account_to_use.refresh_token)
-            .await?;
+                api_client.set_auth_token(&account_to_use.access_token);
+                let response = api_client
+                    .customer_login_refresh(&account_to_use.refresh_token)
+                    .await?;
 
-        let response = response
-            .body
-            .response
-            .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
+                let response = response
+                    .body
+                    .response
+                    .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
 
-        api_client.set_auth_token(&response.access_token);
+                api_client.set_auth_token(&response.access_token);
 
-        let mut update_model = account_to_use.into_active_model();
+                let mut update_model = account_to_use.into_active_model();
 
-        update_model.access_token = Set(response.access_token);
-        update_model.refresh_token = Set(response.refresh_token);
-        tracing::info!("new tokens fetched, updating database");
+                update_model.access_token = Set(response.access_token);
+                update_model.refresh_token = Set(response.refresh_token);
+                tracing::info!("new tokens fetched, updating database");
 
-        update_model.update(db).await?;
+                update_model.update(db).await?;
 
-        let response = api_client
-            .get_restaurant(&input.store_id, FILTER, STORE_UNIQUE_ID_TYPE)
-            .await?;
+                let response = api_client
+                    .get_restaurant(&input.store_id, FILTER, STORE_UNIQUE_ID_TYPE)
+                    .await?;
 
-        if let Some(resp) = response.body.response {
-            Ok(Location {
-                name: resp.restaurant.name,
-                store_number: resp.restaurant.national_store_number.to_string(),
-                address: resp.restaurant.address.address_line1,
-            })
-        } else {
-            Err(anyhow::Error::msg("no store found for that id").into())
+                if let Some(resp) = response.body.response {
+                    stores::ActiveModel {
+                        id: Set(input.store_id),
+                        name: Set(resp.restaurant.name.clone()),
+                        address: Set(resp.restaurant.address.address_line1.clone()),
+                        ..Default::default()
+                    }
+                    .insert(db)
+                    .await?;
+
+                    Ok(Location {
+                        name: resp.restaurant.name,
+                        store_number: resp.restaurant.national_store_number.to_string(),
+                        address: resp.restaurant.address.address_line1,
+                    })
+                } else {
+                    Err(anyhow::Error::msg("no store found for that id").into())
+                }
+            }
         }
     }
 }
