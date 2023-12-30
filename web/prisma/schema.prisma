@@ -18,7 +18,7 @@ model User {
     updatedAt DateTime @updatedAt
 
     configId String  @unique
-    config   Config? @relation(fields: [configId], references: [id])
+    config   Config? @relation(fields: [configId], references: [id], onDelete: Cascade)
 
     Session Session[]
 
@@ -26,9 +26,10 @@ model User {
 }
 
 model Config {
-    id        String @id @default(uuid())
-    storeName String
-    storeId   String
+    id        String  @id @default(uuid())
+    storeName String?
+    storeId   String?
+    userId    String  @unique
     User      User?
 
     @@map("config")

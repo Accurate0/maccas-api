@@ -98,27 +98,18 @@ export const actions = {
 				return setError(form, 'password', 'Invalid details');
 			}
 
+			const { role, token } = result.data;
+			const existingUserId = JSON.parse(atob(token.split('.')[1] ?? ''))['oid'] as string;
 			const configResponse = await fetch('https://api.maccas.one/v1/user/config', {
 				method: 'GET',
 				headers: { Authorization: `Bearer ${result.data.token}` }
 			});
+
 			const config = await configSchema.safeParseAsync(await configResponse.json());
-			let createdConfigId = undefined;
-			if (config.success) {
-				const createdConfig = await prisma.config.create({
-					data: {
-						...config.data
-					}
-				});
-
-				createdConfigId = createdConfig.id;
-			}
-
-			const { role, token } = result.data;
-			const existingUserId = JSON.parse(atob(token.split('.')[1] ?? ''))['oid'] as string;
 			const passwordHash = await bcrypt.hash(password, 10);
 			// TODO: fetch existing config
 			// https://api.maccas.one/v1/user/config
+
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
@@ -126,7 +117,12 @@ export const actions = {
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
 					role: role.toUpperCase() as Role,
-					configId: createdConfigId
+					config: {
+						create: {
+							userId: existingUserId,
+							...(config.success ? config.data : {})
+						}
+					}
 				}
 			});
 
