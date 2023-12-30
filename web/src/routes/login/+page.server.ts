@@ -2,7 +2,7 @@ import { prisma } from '$lib/prisma';
 import type { Actions } from './$types';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import type { Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { SessionId } from '$lib/session';
 import { fail, redirect } from '@sveltejs/kit';
@@ -116,7 +116,7 @@ export const actions = {
 					username: username,
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
-					role: role.toUpperCase() as Role,
+					role: role === 'none' ? Role.USER : (role.toUpperCase() as Role),
 					config: {
 						create: {
 							userId: existingUserId,
