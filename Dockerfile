@@ -6,12 +6,11 @@ ARG BINARY_NAME
 
 RUN apt-get update -y && apt-get install -y pkg-config libssl-dev
 
-WORKDIR /build
-RUN mkdir /app
+WORKDIR /app/${BINARY_NAME}-build
 
 COPY . .
 RUN \
-    --mount=type=cache,target=/app/target/ \
+    --mount=type=cache,target=/app/${BINARY_NAME}-build/target/ \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
     cargo build --locked --release --bin ${BINARY_NAME} && \
     cp ./target/release/${BINARY_NAME} /app
