@@ -434,6 +434,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-condvar-fair"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d71f29de8959d91697251c72022950702f9980f8aadace37deae754c536f3c21"
+dependencies = [
+ "dlv-list 0.4.0",
+ "parking_lot 0.12.1",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "async-executor"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1136,6 +1148,7 @@ name = "base"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-condvar-fair",
  "async-trait",
  "chrono",
  "config",
@@ -1720,6 +1733,12 @@ name = "dlv-list"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0688c2a7f92e427f44895cd63841bff7b29f8d7a1648b9e7e07a4a365b2e1257"
+
+[[package]]
+name = "dlv-list"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd1e4a14ee49d368aa9378b0d570c639179489b6b1f89ea558bce6a15ca5b96a"
 
 [[package]]
 name = "dotenvy"
@@ -2883,7 +2902,7 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccd746e37177e1711c20dd619a1620f34f5c8b569c53590a72dedd5344d8924a"
 dependencies = [
- "dlv-list",
+ "dlv-list 0.3.0",
  "hashbrown 0.12.3",
 ]
 
