@@ -12,6 +12,7 @@ mod m20231223_080257_move_fields;
 mod m20231223_081714_add_created_and_updated_at;
 mod m20231223_111033_add_points;
 mod m20231229_104821_remove_image_basename;
+mod m20231230_130059_add_refreshed_at;
 
 pub struct Migrator;
 
@@ -31,6 +32,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20231223_081714_add_created_and_updated_at::Migration),
             Box::new(m20231223_111033_add_points::Migration),
             Box::new(m20231229_104821_remove_image_basename::Migration),
+            Box::new(m20231230_130059_add_refreshed_at::Migration),
         ]
     }
 }
