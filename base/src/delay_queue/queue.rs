@@ -1,19 +1,21 @@
 use super::heap_entry::HeapEntry;
-use async_condvar_fair::Condvar;
 use std::{
     collections::BinaryHeap,
     fmt::Debug,
     sync::Arc,
     time::{Duration, Instant},
 };
-use tokio::{sync::Mutex, time::timeout_at};
+use tokio::{
+    sync::{Mutex, Notify},
+    time::timeout_at,
+};
 
 struct DelayQueueInner<T>
 where
     T: Send + Debug,
 {
     pub(crate) heap: Mutex<BinaryHeap<HeapEntry<T>>>,
-    pub(crate) cond_var: Condvar,
+    pub(crate) cond_var: Notify,
 }
 
 pub struct DelayQueue<T>
@@ -49,8 +51,6 @@ where
     }
 
     pub async fn pop(&self) -> Option<T> {
-        let mut baton = None;
-
         loop {
             let instant = Instant::now();
             let mut heap = self.inner.heap.lock().await;
@@ -59,23 +59,15 @@ where
                 if instant >= peeked_instant {
                     return Some(heap.pop().unwrap().value);
                 } else {
-                    let _ = timeout_at(
-                        peeked_instant.into(),
-                        self.inner.cond_var.wait_no_relock((heap, &self.inner.heap)),
-                    )
-                    .await;
+                    // must release lock before going afk
+                    drop(heap);
+                    let _ = timeout_at(peeked_instant.into(), self.inner.cond_var.notified()).await;
                 }
             } else {
-                baton = self
-                    .inner
-                    .cond_var
-                    .wait_no_relock((heap, &self.inner.heap))
-                    .await;
+                // must release lock before going afk
+                drop(heap);
+                self.inner.cond_var.notified().await;
             }
-
-            if let Some(baton) = baton.take() {
-                baton.dispose()
-            };
         }
     }
 }

@@ -26,4 +26,3 @@ task-local-extensions = "0.1.4"
 jwt = "0.16.0"
 hmac = "0.12.1"
 sha2 = "0.10.8"
-async-condvar-fair = { version = "1.0.0", features = ["tokio"] }
