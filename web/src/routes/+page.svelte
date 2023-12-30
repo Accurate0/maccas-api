@@ -33,7 +33,7 @@
 		const body: UpdateLocationBody = { storeId };
 		const response = await fetch(`/api/location`, { method: 'POST', body: JSON.stringify(body) });
 		// ID is not used here, and the types are playing funny
-		config.set({ storeName, storeId, id: '' });
+		config.set({ storeName, storeId, id: '', userId: '' });
 
 		if (response.ok) {
 			toast('Location updated');
@@ -48,7 +48,7 @@
 	<title>Maccas</title>
 </svelte:head>
 
-<Toaster />
+<Toaster richColors />
 
 <Tabs.Root value="offers" class="w-[100%]">
 	<Tabs.List class="m-4 mb-0">
