@@ -34,7 +34,7 @@ pub async fn handle(event_manager: EventManager) {
 
             match result {
                 RetryResult::Ok { attempts, .. } => {
-                    tracing::error!("success: with {} retries", attempts);
+                    tracing::info!("success: with {} retries", attempts);
                     match event_manager
                         .set_retry_attempts(event.id, attempts.try_into().unwrap())
                         .await
