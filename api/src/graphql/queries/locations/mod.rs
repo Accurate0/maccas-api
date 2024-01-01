@@ -1,15 +1,17 @@
 use self::types::{
     CoordinateSearchInput, Location, QueriedLocation, StoreIdInput, TextSearchInput,
 };
+use crate::graphql::queries::locations::dataloader::LocationLoader;
+use crate::graphql::queries::locations::types::DataloaderLocation;
 use crate::settings::Settings;
+use async_graphql::dataloader::DataLoader;
 use async_graphql::{Context, Object};
-use base::constants::mc_donalds::{FILTER, LOCATION_SEARCH_DISTANCE, STORE_UNIQUE_ID_TYPE};
-use base::maccas;
-use entity::{accounts, stores};
+use entity::stores;
 use places::types::Location as PlaceLocation;
 use places::types::{Area, PlacesRequest, Rectangle};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, QueryOrder, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 
+pub mod dataloader;
 mod types;
 
 #[derive(Default)]
@@ -23,11 +25,8 @@ impl LocationsQuery {
 }
 
 // FIXME: move common logic for getting "activated" api client for specific account
-// FIXME: don't refresh accounts within 14 mins
 // FIXME: appoint service account
-// FIXME: dataloader?
 // FIXME: converter needed
-// TODO: store locations in db as cache
 // TODO: implement caching for locations (redis?)
 
 #[Object]
@@ -38,8 +37,6 @@ impl QueriedLocation {
         input: TextSearchInput,
     ) -> async_graphql::Result<Vec<Location>> {
         let settings = ctx.data::<Settings>()?;
-        let db = ctx.data::<DatabaseConnection>()?;
-
         let http_client = base::http::get_simple_http_client()?;
         let api_client = places::ApiClient::new(settings.places_api_key.clone(), http_client);
 
@@ -67,45 +64,18 @@ impl QueriedLocation {
 
         tracing::info!("locations found: {:?}", places_response.body);
 
-        let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
-            .basic_auth(&settings.proxy.username, &settings.proxy.password);
-
-        // pick more recently updated account
-        let account_to_use = accounts::Entity::find()
-            .order_by_desc(accounts::Column::UpdatedAt)
-            .one(db)
-            .await?
-            .ok_or_else(|| anyhow::Error::msg("no account found"))?;
-
-        let account_id = account_to_use.id.to_owned();
-        tracing::info!("picked account: {:?}", &account_id);
-        let api_client = maccas::get_activated_maccas_api_client(
-            account_to_use,
-            proxy,
-            &settings.mcdonalds.client_id,
-            db,
-        )
-        .await?;
-
         match places_response.body.places.first() {
             Some(response) => {
-                let lat = response.location.latitude;
-                let lng = response.location.longitude;
-                let response = api_client
-                    .restaurant_location(&LOCATION_SEARCH_DISTANCE, &lat, &lng, FILTER)
-                    .await?;
-
-                match response.body.response {
-                    Some(response) if !response.restaurants.is_empty() => Ok(response
-                        .restaurants
-                        .into_iter()
-                        .map(|r| Location {
-                            name: r.name,
-                            store_number: r.national_store_number.to_string(),
-                            address: r.address.address_line1,
-                        })
-                        .collect()),
-                    _ => Ok(vec![]),
+                let loader = ctx.data::<DataLoader<LocationLoader>>()?;
+                match loader
+                    .load_one(DataloaderLocation {
+                        lat: response.location.latitude,
+                        long: response.location.longitude,
+                    })
+                    .await?
+                {
+                    Some(v) => Ok(v),
+                    None => Ok(vec![]),
                 }
             }
             None => Ok(vec![]),
@@ -117,45 +87,16 @@ impl QueriedLocation {
         ctx: &Context<'a>,
         input: CoordinateSearchInput,
     ) -> async_graphql::Result<Vec<Location>> {
-        let settings = ctx.data::<Settings>()?;
-        let db = ctx.data::<DatabaseConnection>()?;
-
-        let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
-            .basic_auth(&settings.proxy.username, &settings.proxy.password);
-
-        // pick more recently updated account
-        let account_to_use = accounts::Entity::find()
-            .order_by_desc(accounts::Column::UpdatedAt)
-            .one(db)
+        let loader = ctx.data::<DataLoader<LocationLoader>>()?;
+        match loader
+            .load_one(DataloaderLocation {
+                lat: input.lat,
+                long: input.lng,
+            })
             .await?
-            .ok_or_else(|| anyhow::Error::msg("no account found"))?;
-
-        let account_id = account_to_use.id.to_owned();
-        tracing::info!("picked account: {:?}", &account_id);
-
-        let api_client = maccas::get_activated_maccas_api_client(
-            account_to_use,
-            proxy,
-            &settings.mcdonalds.client_id,
-            db,
-        )
-        .await?;
-
-        let response = api_client
-            .restaurant_location(&input.distance, &input.lat, &input.lng, FILTER)
-            .await?;
-
-        match response.body.response {
-            Some(response) if !response.restaurants.is_empty() => Ok(response
-                .restaurants
-                .into_iter()
-                .map(|r| Location {
-                    name: r.name,
-                    store_number: r.national_store_number.to_string(),
-                    address: r.address.address_line1,
-                })
-                .collect()),
-            _ => Ok(vec![]),
+        {
+            Some(v) => Ok(v),
+            None => Ok(vec![]),
         }
     }
 
@@ -164,7 +105,6 @@ impl QueriedLocation {
         ctx: &Context<'a>,
         input: StoreIdInput,
     ) -> async_graphql::Result<Location> {
-        let settings = ctx.data::<Settings>()?;
         let db = ctx.data::<DatabaseConnection>()?;
 
         match stores::Entity::find_by_id(&input.store_id).one(db).await? {
@@ -174,48 +114,21 @@ impl QueriedLocation {
                 address: model.address,
             }),
             None => {
-                let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
-                    .basic_auth(&settings.proxy.username, &settings.proxy.password);
+                let loader = ctx.data::<DataLoader<LocationLoader>>()?;
+                match loader.load_one(input.store_id).await? {
+                    Some(l) => {
+                        stores::ActiveModel {
+                            id: Set(l.store_number.clone()),
+                            name: Set(l.name.clone()),
+                            address: Set(l.address.clone()),
+                            ..Default::default()
+                        }
+                        .insert(db)
+                        .await?;
 
-                // pick more recently updated account
-                let account_to_use = accounts::Entity::find()
-                    .order_by_desc(accounts::Column::UpdatedAt)
-                    .one(db)
-                    .await?
-                    .ok_or_else(|| anyhow::Error::msg("no account found"))?;
-
-                let account_id = account_to_use.id.to_owned();
-                tracing::info!("picked account: {:?}", &account_id);
-
-                let api_client = maccas::get_activated_maccas_api_client(
-                    account_to_use,
-                    proxy,
-                    &settings.mcdonalds.client_id,
-                    db,
-                )
-                .await?;
-
-                let response = api_client
-                    .get_restaurant(&input.store_id, FILTER, STORE_UNIQUE_ID_TYPE)
-                    .await?;
-
-                if let Some(resp) = response.body.response {
-                    stores::ActiveModel {
-                        id: Set(input.store_id),
-                        name: Set(resp.restaurant.name.clone()),
-                        address: Set(resp.restaurant.address.address_line1.clone()),
-                        ..Default::default()
+                        Ok(l)
                     }
-                    .insert(db)
-                    .await?;
-
-                    Ok(Location {
-                        name: resp.restaurant.name,
-                        store_number: resp.restaurant.national_store_number.to_string(),
-                        address: resp.restaurant.address.address_line1,
-                    })
-                } else {
-                    Err(anyhow::Error::msg("no store found for that id").into())
+                    None => Err(anyhow::Error::msg("No store found for specified id").into()),
                 }
             }
         }

@@ -31,3 +31,4 @@ libmaccas = { workspace = true }
 places = { workspace = true }
 async-trait = { workspace = true }
 base = { workspace = true }
+futures = { workspace = true }
