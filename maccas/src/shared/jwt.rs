@@ -41,7 +41,7 @@ pub fn generate_signed_jwt(
 
 pub fn rotate_refresh_tokens(refresh_tokens: &mut Vec<String>, new_refresh_token: String) {
     if refresh_tokens.len() > 5 {
-        refresh_tokens.remove(0);
+        refresh_tokens.pop();
     };
 
     refresh_tokens.push(new_refresh_token);
