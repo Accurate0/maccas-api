@@ -1,5 +1,8 @@
 use crate::{
-    graphql::{graphql_handler, FinalSchema, MutationRoot, QueryRoot},
+    graphql::{
+        graphql_handler, queries::locations::dataloader::LocationLoader, FinalSchema, MutationRoot,
+        QueryRoot,
+    },
     settings::Settings,
     types::ApiState,
 };
@@ -50,7 +53,16 @@ async fn main() -> Result<(), anyhow::Error> {
     .data(settings.clone())
     .data(db.clone())
     .data(DataLoader::new(
-        OfferDetailsLoader { database: db },
+        OfferDetailsLoader {
+            database: db.clone(),
+        },
+        tokio::spawn,
+    ))
+    .data(DataLoader::new(
+        LocationLoader {
+            database: db,
+            settings: settings.clone(),
+        },
         tokio::spawn,
     ))
     .finish();

@@ -362,6 +362,7 @@ dependencies = [
  "base",
  "config",
  "entity",
+ "futures",
  "libmaccas",
  "places",
  "reqwest",
