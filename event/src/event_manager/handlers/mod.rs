@@ -1,9 +1,11 @@
+use std::time::Duration;
+
 use super::EventManager;
 use crate::event_manager::handlers::cleanup::cleanup;
+use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use event::Event;
 use sea_orm::DbErr;
 use thiserror::Error;
-use tokio_util::sync::CancellationToken;
 
 mod cleanup;
 
@@ -17,43 +19,53 @@ pub enum HandlerError {
     OutOfRangeError(#[from] chrono::OutOfRangeError),
 }
 
-pub async fn handle(event_manager: EventManager, cancellation_token: CancellationToken) {
-    // TODO: cancellation token
-    // TODO: persistence
+pub async fn handle(event_manager: EventManager) {
+    if let Some(event) = event_manager.inner.event_queue.pop().await {
+        let db = event_manager.inner.db.clone();
+        let event_manager = event_manager.clone();
+        let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
 
-    loop {
-        tokio::select! {
-            _ = cancellation_token.cancelled() => {
-                tracing::info!("handle cancelled");
-                break;
-            },
-            Some(event) = event_manager.inner.event_queue.pop() => {
-                let db = event_manager.inner.db.clone();
-                let event_manager = event_manager.clone();
+        tokio::spawn(async move {
+            let result = match event.evt {
+                Event::Cleanup { offer_id } => {
+                    retry_async(backoff, || cleanup(offer_id.clone(), db.clone())).await
+                }
+            };
 
-                tokio::spawn(async move {
-                    match event_manager.increment_event_attempt(event.id).await {
-                        Ok(_) => {},
+            match result {
+                RetryResult::Ok { attempts, .. } => {
+                    tracing::error!("success: with {} retries", attempts);
+                    match event_manager
+                        .set_retry_attempts(event.id, attempts.try_into().unwrap())
+                        .await
+                    {
+                        Ok(_) => {}
+                        Err(e) => tracing::error!("error incrementing attempt: {}", e),
+                    };
+                }
+                RetryResult::Err { attempts, value } => {
+                    tracing::error!("error: {} with {} retries", value, attempts);
+                    match event_manager
+                        .set_retry_attempts(event.id, attempts.try_into().unwrap())
+                        .await
+                    {
+                        Ok(_) => {}
                         Err(e) => tracing::error!("error incrementing attempt: {}", e),
                     };
 
-                    // RETRY IF ANY OF THIS FAILS
-                    if let Err(e) = match event.evt {
-                        Event::Cleanup { offer_id } =>  {
-                            cleanup(offer_id, db).await
-                        }
-                    } {
-                        if let Err(e) = event_manager.set_event_error(event.id, &e.to_string()).await {
-                            tracing::error!("error marking event as error: {}", e)
-                        }
+                    match event_manager
+                        .set_event_error(event.id, &value.to_string())
+                        .await
+                    {
+                        Ok(_) => {}
+                        Err(e) => tracing::error!("error setting error: {}", e),
                     };
-
-
-                    if let Err(e) = event_manager.complete_event(event.id).await {
-                        tracing::error!("error marking event as completed: {}", e)
-                    };
-                });
+                }
             }
-        }
+
+            if let Err(e) = event_manager.complete_event(event.id).await {
+                tracing::error!("error marking event as completed: {}", e)
+            };
+        });
     }
 }
