@@ -47,11 +47,11 @@ services:
     env_file:
       - .env.local
 
-  queue:
+  event:
     build:
       dockerfile: Dockerfile
       args:
-        - BINARY_NAME=queue
+        - BINARY_NAME=event
     ports:
       - "8001:8000"
     links:

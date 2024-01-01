@@ -1,14 +1,14 @@
 use crate::{
-    handlers::handle, routes::create_task::create_task, settings::Settings, state::AppState,
+    event_manager::EventManager, routes::create_event::create_event, settings::Settings,
+    state::AppState,
 };
 use actix_web::{middleware::Logger, web, App, HttpServer};
-use base::delay_queue::DelayQueue;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
-use tokio_util::sync::CancellationToken;
 use tracing::log::LevelFilter;
 
-mod handlers;
+mod error;
+mod event_manager;
 mod routes;
 mod settings;
 mod state;
@@ -33,14 +33,7 @@ async fn main() -> Result<(), anyhow::Error> {
     // might need throttling etc, semaphore?
 
     let db = Database::connect(opt).await?;
-    let task_queue = DelayQueue::new();
-    let cancellation_token = CancellationToken::new();
-
-    let handle = tokio::spawn(handle(
-        task_queue.clone(),
-        db.clone(),
-        cancellation_token.clone(),
-    ));
+    let event_manager = EventManager::new(db);
 
     let addr = "0.0.0.0:8000".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");
@@ -49,18 +42,13 @@ async fn main() -> Result<(), anyhow::Error> {
         App::new()
             .wrap(Logger::default())
             .app_data(web::Data::new(AppState {
-                db: db.clone(),
-                task_queue: task_queue.clone(),
+                event_manager: event_manager.clone(),
             }))
-            .service(create_task)
+            .service(create_event)
     })
     .bind(addr)?
     .run()
     .await?;
-
-    cancellation_token.cancel();
-
-    handle.await?;
 
     Ok(())
 }

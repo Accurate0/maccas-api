@@ -1,5 +1,5 @@
 [package]
-name = "queue"
+name = "event"
 version = "0.1.0"
 edition = "2021"
 
@@ -20,11 +20,14 @@ tracing = { workspace = true }
 base = { workspace = true }
 config = { workspace = true }
 tokio-util = { workspace = true }
+entity = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
 
 [lib]
-name = "queue"
+name = "event"
 path = "src/lib.rs"
 
 [[bin]]
-name = "queue"
+name = "event"
 path = "src/main.rs"
