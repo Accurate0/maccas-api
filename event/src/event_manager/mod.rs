@@ -90,6 +90,8 @@ impl EventManager {
                 let delay = event.should_be_completed_at - now;
                 tracing::info!("delay for this event is: {}", delay);
 
+                // FIXME: throttle events if too many to avoid overload / ratelimit
+
                 self.inner
                     .event_queue
                     .push(
