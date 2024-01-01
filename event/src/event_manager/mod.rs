@@ -85,9 +85,11 @@ impl EventManager {
         let now = chrono::offset::Utc::now().naive_utc();
 
         for event in &incomplete_events {
-            tracing::info!("reloading incomplete event: {:?}", event);
+            tracing::info!("reloading incomplete event: {}", event.event_id);
             let reload_event = async move {
                 let delay = event.should_be_completed_at - now;
+                tracing::info!("delay for this event is: {}", delay);
+
                 self.inner
                     .event_queue
                     .push(
