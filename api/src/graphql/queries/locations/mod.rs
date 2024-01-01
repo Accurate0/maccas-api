@@ -4,13 +4,11 @@ use self::types::{
 use crate::settings::Settings;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::{FILTER, LOCATION_SEARCH_DISTANCE, STORE_UNIQUE_ID_TYPE};
-use base::http::get_http_client;
+use base::maccas;
 use entity::{accounts, stores};
 use places::types::Location as PlaceLocation;
 use places::types::{Area, PlacesRequest, Rectangle};
-use sea_orm::{
-    ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryOrder, Set,
-};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, QueryOrder, Set};
 
 mod types;
 
@@ -81,32 +79,13 @@ impl QueriedLocation {
 
         let account_id = account_to_use.id.to_owned();
         tracing::info!("picked account: {:?}", &account_id);
-
-        let mut api_client = libmaccas::ApiClient::new(
-            base::constants::mc_donalds::BASE_URL.to_owned(),
-            get_http_client(proxy)?,
-            settings.mcdonalds.client_id.clone(),
-        );
-
-        api_client.set_auth_token(&account_to_use.access_token);
-        let response = api_client
-            .customer_login_refresh(&account_to_use.refresh_token)
-            .await?;
-
-        let response = response
-            .body
-            .response
-            .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
-
-        api_client.set_auth_token(&response.access_token);
-
-        let mut update_model = account_to_use.into_active_model();
-
-        update_model.access_token = Set(response.access_token);
-        update_model.refresh_token = Set(response.refresh_token);
-        tracing::info!("new tokens fetched, updating database");
-
-        update_model.update(db).await?;
+        let api_client = maccas::get_activated_maccas_api_client(
+            account_to_use,
+            proxy,
+            &settings.mcdonalds.client_id,
+            db,
+        )
+        .await?;
 
         match places_response.body.places.first() {
             Some(response) => {
@@ -154,31 +133,13 @@ impl QueriedLocation {
         let account_id = account_to_use.id.to_owned();
         tracing::info!("picked account: {:?}", &account_id);
 
-        let mut api_client = libmaccas::ApiClient::new(
-            base::constants::mc_donalds::BASE_URL.to_owned(),
-            get_http_client(proxy)?,
-            settings.mcdonalds.client_id.clone(),
-        );
-
-        api_client.set_auth_token(&account_to_use.access_token);
-        let response = api_client
-            .customer_login_refresh(&account_to_use.refresh_token)
-            .await?;
-
-        let response = response
-            .body
-            .response
-            .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
-
-        api_client.set_auth_token(&response.access_token);
-
-        let mut update_model = account_to_use.into_active_model();
-
-        update_model.access_token = Set(response.access_token);
-        update_model.refresh_token = Set(response.refresh_token);
-        tracing::info!("new tokens fetched, updating database");
-
-        update_model.update(db).await?;
+        let api_client = maccas::get_activated_maccas_api_client(
+            account_to_use,
+            proxy,
+            &settings.mcdonalds.client_id,
+            db,
+        )
+        .await?;
 
         let response = api_client
             .restaurant_location(&input.distance, &input.lat, &input.lng, FILTER)
@@ -226,31 +187,13 @@ impl QueriedLocation {
                 let account_id = account_to_use.id.to_owned();
                 tracing::info!("picked account: {:?}", &account_id);
 
-                let mut api_client = libmaccas::ApiClient::new(
-                    base::constants::mc_donalds::BASE_URL.to_owned(),
-                    get_http_client(proxy)?,
-                    settings.mcdonalds.client_id.clone(),
-                );
-
-                api_client.set_auth_token(&account_to_use.access_token);
-                let response = api_client
-                    .customer_login_refresh(&account_to_use.refresh_token)
-                    .await?;
-
-                let response = response
-                    .body
-                    .response
-                    .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
-
-                api_client.set_auth_token(&response.access_token);
-
-                let mut update_model = account_to_use.into_active_model();
-
-                update_model.access_token = Set(response.access_token);
-                update_model.refresh_token = Set(response.refresh_token);
-                tracing::info!("new tokens fetched, updating database");
-
-                update_model.update(db).await?;
+                let api_client = maccas::get_activated_maccas_api_client(
+                    account_to_use,
+                    proxy,
+                    &settings.mcdonalds.client_id,
+                    db,
+                )
+                .await?;
 
                 let response = api_client
                     .get_restaurant(&input.store_id, FILTER, STORE_UNIQUE_ID_TYPE)

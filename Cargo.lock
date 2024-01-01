@@ -1144,6 +1144,7 @@ dependencies = [
  "futures",
  "hmac",
  "jwt",
+ "libmaccas",
  "reqwest",
  "reqwest-middleware",
  "reqwest-retry",
