@@ -35,6 +35,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let db = Database::connect(opt).await?;
     let event_manager = EventManager::new(db);
 
+    event_manager.reload_incomplete_events().await?;
+    let (handle, cancellation_token) = event_manager.process_events();
+
     let addr = "0.0.0.0:8000".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");
 
@@ -49,6 +52,9 @@ async fn main() -> Result<(), anyhow::Error> {
     .bind(addr)?
     .run()
     .await?;
+
+    cancellation_token.cancel();
+    handle.await?;
 
     Ok(())
 }
