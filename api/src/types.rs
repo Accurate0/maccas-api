@@ -1,4 +1,4 @@
-use crate::graphql::MaccasSchema;
+use crate::graphql::FinalSchema;
 use crate::settings::Settings;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -6,7 +6,7 @@ use axum::response::Response;
 
 #[derive(Clone)]
 pub struct ApiState {
-    pub schema: MaccasSchema,
+    pub schema: FinalSchema,
     pub settings: Settings,
 }
 

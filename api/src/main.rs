@@ -1,16 +1,16 @@
 use crate::{
-    graphql::{graphql_handler, MaccasSchema},
+    graphql::{graphql_handler, FinalSchema, MutationRoot, QueryRoot},
     settings::Settings,
     types::ApiState,
 };
-use async_graphql::{dataloader::DataLoader, EmptyMutation, EmptySubscription};
+use async_graphql::{dataloader::DataLoader, EmptySubscription};
 use axum::{
     extract::MatchedPath,
     http::{Method, Request},
     routing::get,
     Router,
 };
-use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader, QueryRoot};
+use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tower_http::{
@@ -42,14 +42,18 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let db = Database::connect(opt).await?;
 
-    let schema = MaccasSchema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .data(settings.clone())
-        .data(db.clone())
-        .data(DataLoader::new(
-            OfferDetailsLoader { database: db },
-            tokio::spawn,
-        ))
-        .finish();
+    let schema = FinalSchema::build(
+        QueryRoot::default(),
+        MutationRoot::default(),
+        EmptySubscription,
+    )
+    .data(settings.clone())
+    .data(db.clone())
+    .data(DataLoader::new(
+        OfferDetailsLoader { database: db },
+        tokio::spawn,
+    ))
+    .finish();
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
