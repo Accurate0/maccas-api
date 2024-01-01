@@ -87,7 +87,7 @@ export const actions = {
 			formData.set('username', username);
 			formData.set('password', password);
 
-			const response = await fetch('https://api.maccas.one/v1/auth/login', {
+			const response = await fetch(`${env.OLD_API_BASE_URL}/auth/login`, {
 				method: 'POST',
 				body: formData
 			});
@@ -103,7 +103,7 @@ export const actions = {
 
 			const { role, token } = result.data;
 			const existingUserId = JSON.parse(atob(token.split('.')[1] ?? ''))['oid'] as string;
-			const configResponse = await fetch('https://api.maccas.one/v1/user/config', {
+			const configResponse = await fetch(`${env.OLD_API_BASE_URL}/user/config`, {
 				method: 'GET',
 				headers: { Authorization: `Bearer ${result.data.token}` }
 			});
