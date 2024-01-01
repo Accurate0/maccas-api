@@ -123,17 +123,13 @@ impl EventManager {
 
         (
             tokio::spawn(async move {
-                #[allow(clippy::never_loop)]
                 loop {
                     tokio::select! {
                         _ = cancellation_token.cancelled() => {
                             tracing::info!("handle cancelled");
                             break;
                         },
-                        _ =  handlers::handle(em.clone()) => {
-                            tracing::info!("handle cancelled");
-                            break;
-                        }
+                        _ =  handlers::handle(em.clone()) => {}
                     }
                 }
             }),
