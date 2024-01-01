@@ -24,9 +24,6 @@ impl LocationsQuery {
     }
 }
 
-// FIXME: move common logic for getting "activated" api client for specific account
-// FIXME: appoint service account
-// FIXME: converter needed
 // TODO: implement caching for locations (redis?)
 
 #[Object]
