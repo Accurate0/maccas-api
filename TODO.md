@@ -1,0 +1,4 @@
+- batch and event need apis to allow visibility and control over jobs
+    - manual triggers etc
+- frontend to show this through /admin
+- use access token auth etc etc
