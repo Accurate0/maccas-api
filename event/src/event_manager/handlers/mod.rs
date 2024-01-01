@@ -23,6 +23,7 @@ pub async fn handle(event_manager: EventManager) {
     if let Some(event) = event_manager.inner.event_queue.pop().await {
         let db = event_manager.inner.db.clone();
         let event_manager = event_manager.clone();
+        // 1st attempt + 5 retries
         let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
 
         tokio::spawn(async move {
@@ -34,7 +35,7 @@ pub async fn handle(event_manager: EventManager) {
 
             match result {
                 RetryResult::Ok { attempts, .. } => {
-                    tracing::info!("success: with {} retries", attempts);
+                    tracing::info!("success: with {} attempts", attempts);
                     match event_manager
                         .set_retry_attempts(event.id, attempts.try_into().unwrap())
                         .await
@@ -44,7 +45,7 @@ pub async fn handle(event_manager: EventManager) {
                     };
                 }
                 RetryResult::Err { attempts, value } => {
-                    tracing::error!("error: {} with {} retries", value, attempts);
+                    tracing::error!("error: {} with {} attempts", value, attempts);
                     match event_manager
                         .set_retry_attempts(event.id, attempts.try_into().unwrap())
                         .await

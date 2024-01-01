@@ -67,7 +67,7 @@ where
     I: Iterator<Item = Duration>,
 {
     iterator: I,
-    pub current_try: u64,
+    pub attempts: u64,
 }
 
 impl<I> RetryContext<I>
@@ -77,7 +77,7 @@ where
     pub fn new(it: I) -> Self {
         Self {
             iterator: it,
-            current_try: 1,
+            attempts: 1,
         }
     }
 
@@ -87,7 +87,7 @@ where
             OperationResult::Err(e) => RetryDecision::Err(e),
             OperationResult::Retry(e) => {
                 if let Some(delay) = self.iterator.next() {
-                    self.current_try += 1;
+                    self.attempts += 1;
                     RetryDecision::Retry(delay, e)
                 } else {
                     RetryDecision::RetryExhausted(e)
@@ -115,19 +115,19 @@ where
             }
             RetryDecision::Ok(v) => {
                 return RetryResult::Ok {
-                    attempts: ctx.current_try,
+                    attempts: ctx.attempts,
                     value: v,
                 }
             }
             RetryDecision::RetryExhausted(e) => {
                 return RetryResult::Err {
-                    attempts: ctx.current_try,
+                    attempts: ctx.attempts,
                     value: e,
                 }
             }
             RetryDecision::Err(e) => {
                 return RetryResult::Err {
-                    attempts: ctx.current_try,
+                    attempts: ctx.attempts,
                     value: e,
                 }
             }
