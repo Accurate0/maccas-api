@@ -66,7 +66,10 @@ export const actions = {
 		};
 
 		const { username, password } = form.data;
-		const existingUser = await prisma.user.findUnique({ where: { username } });
+		const existingUser = await prisma.user.findFirst({
+			where: { username: { equals: username, mode: 'insensitive' } }
+		});
+
 		if (existingUser) {
 			const isPasswordCorrect = await bcrypt.compare(
 				password,
@@ -113,7 +116,7 @@ export const actions = {
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
-					username: username,
+					username: username.toLowerCase(),
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
 					role: role === 'none' ? Role.USER : (role.toUpperCase() as Role),
