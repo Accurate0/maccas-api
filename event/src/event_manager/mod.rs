@@ -2,7 +2,7 @@ use base::delay_queue::DelayQueue;
 use entity::events;
 use event::Event;
 use sea_orm::prelude::Uuid;
-use sea_orm::sea_query::{IntoColumnRef, SimpleExpr};
+use sea_orm::sea_query::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
     Set,
@@ -120,17 +120,32 @@ impl EventManager {
         let cancellation_token_cloned = cancellation_token.clone();
 
         (
-            tokio::spawn(async move { handlers::handle(em, cancellation_token_cloned).await }),
-            cancellation_token,
+            tokio::spawn(async move {
+                #[allow(clippy::never_loop)]
+                loop {
+                    tokio::select! {
+                        _ = cancellation_token.cancelled() => {
+                            tracing::info!("handle cancelled");
+                            break;
+                        },
+                        _ =  handlers::handle(em.clone()) => {
+                            tracing::info!("handle cancelled");
+                            break;
+                        }
+                    }
+                }
+            }),
+            cancellation_token_cloned,
         )
     }
 
-    pub async fn increment_event_attempt(&self, id: i32) -> Result<(), EventManagerError> {
+    pub async fn set_retry_attempts(
+        &self,
+        id: i32,
+        attempts: i32,
+    ) -> Result<(), EventManagerError> {
         events::Entity::update_many()
-            .col_expr(
-                events::Column::Attempts,
-                SimpleExpr::Column(events::Column::Attempts.into_column_ref()).add(1),
-            )
+            .col_expr(events::Column::Attempts, Expr::value(attempts))
             .filter(events::Column::Id.eq(id))
             .exec(&self.inner.db)
             .await?;
