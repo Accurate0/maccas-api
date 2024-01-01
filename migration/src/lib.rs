@@ -14,6 +14,8 @@ mod m20231223_111033_add_points;
 mod m20231229_104821_remove_image_basename;
 mod m20231230_130059_add_refreshed_at;
 mod m20231230_133157_add_stores_table;
+mod m20240101_063753_rename_field_jobs;
+mod m20240101_063943_add_events_table;
 
 pub struct Migrator;
 
@@ -35,6 +37,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20231229_104821_remove_image_basename::Migration),
             Box::new(m20231230_130059_add_refreshed_at::Migration),
             Box::new(m20231230_133157_add_stores_table::Migration),
+            Box::new(m20240101_063753_rename_field_jobs::Migration),
+            Box::new(m20240101_063943_add_events_table::Migration),
         ]
     }
 }

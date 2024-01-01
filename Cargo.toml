@@ -8,7 +8,7 @@ members = [
     "dynamodb-migration",
     "batch",
     "base",
-    "queue",
+    "event",
 ]
 
 [profile.release-strip]
@@ -64,3 +64,4 @@ tokio = { version = "1.35.0", features = [
 ] }
 tokio-util = "0.7.10"
 cron = "0.12.0"
+uuid = { version = "1.6", features = ["v4"] }

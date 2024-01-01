@@ -71,7 +71,7 @@ impl JobContext {
             jobs::Entity::find_by_id(self.id)
                 .one(&self.database)
                 .await
-                .map(|e| e.map(|m| m.resume_context))
+                .map(|e| e.map(|m| m.context))
                 .ok()
                 .unwrap_or(None)
                 .unwrap_or(None)
@@ -86,7 +86,7 @@ impl JobContext {
     {
         jobs::ActiveModel {
             id: Set(self.id),
-            resume_context: Set(Some(serde_json::to_value(context)?)),
+            context: Set(Some(serde_json::to_value(context)?)),
             ..Default::default()
         }
         .update(&self.database)
@@ -98,7 +98,7 @@ impl JobContext {
     pub async fn reset(&self) -> Result<(), JobError> {
         jobs::ActiveModel {
             id: Set(self.id),
-            resume_context: Set(None),
+            context: Set(None),
             ..Default::default()
         }
         .update(&self.database)

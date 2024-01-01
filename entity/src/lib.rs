@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod accounts;
+pub mod events;
 pub mod jobs;
 pub mod offer_details;
 pub mod offers;

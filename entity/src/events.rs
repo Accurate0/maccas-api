@@ -4,15 +4,20 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "jobs")]
+#[sea_orm(table_name = "events")]
 pub struct Model {
-    #[sea_orm(unique)]
     pub name: String,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: Uuid,
-    pub last_execution: Option<DateTime>,
-    #[sea_orm(column_type = "JsonBinary", nullable)]
-    pub context: Option<Json>,
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    #[sea_orm(unique)]
+    pub event_id: Uuid,
+    #[sea_orm(column_type = "JsonBinary")]
+    pub data: Json,
+    pub is_completed: bool,
+    pub should_be_completed_at: DateTime,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
+    pub completed_at: Option<DateTime>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
