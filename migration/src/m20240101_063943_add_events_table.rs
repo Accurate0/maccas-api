@@ -14,6 +14,9 @@ enum Events {
     ShouldBeCompletedAt,
     IsCompleted,
     CompletedAt,
+    Attempts,
+    Error,
+    ErrorMessage,
     Data,
 }
 
@@ -57,6 +60,19 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
+                    .col(
+                        ColumnDef::new(Events::Attempts)
+                            .integer()
+                            .not_null()
+                            .default(0),
+                    )
+                    .col(
+                        ColumnDef::new(Events::Error)
+                            .boolean()
+                            .not_null()
+                            .default(false),
+                    )
+                    .col(ColumnDef::new(Events::ErrorMessage).string())
                     .col(ColumnDef::new(Events::CompletedAt).date_time().null())
                     .to_owned(),
             )

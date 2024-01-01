@@ -17,6 +17,9 @@ pub struct Model {
     pub should_be_completed_at: DateTime,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    pub attempts: i32,
+    pub error: bool,
+    pub error_message: Option<String>,
     pub completed_at: Option<DateTime>,
 }
 

@@ -12,7 +12,7 @@ pub(crate) async fn create_event(
 ) -> Result<Json<CreateEventResponse>, EventError> {
     let id = state
         .event_manager
-        .create(request.event.clone(), request.delay)
+        .create_event(request.event.clone(), request.delay)
         .await?;
 
     Ok(Json(CreateEventResponse { id }))
