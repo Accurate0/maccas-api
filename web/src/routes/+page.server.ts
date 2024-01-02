@@ -10,7 +10,7 @@ export const load: PageServerLoad = async (event) => {
 	});
 
 	const index = new IndexStore();
-	const { data } = await index.fetch({
+	const data = index.fetch({
 		event,
 		variables: {
 			includePoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
@@ -18,5 +18,9 @@ export const load: PageServerLoad = async (event) => {
 		}
 	});
 
-	return { offersList: data?.offers, pointsList: data?.points, config: user.config };
+	return {
+		offersList: data.then((c) => c.data?.offers),
+		pointsList: data.then((c) => c.data?.points),
+		config: user.config
+	};
 };

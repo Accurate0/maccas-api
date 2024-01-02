@@ -3,7 +3,8 @@ use crate::name_of;
 use async_graphql::{Context, Object};
 use entity::offers;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QuerySelect};
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
+use tokio::time::sleep;
 
 pub mod dataloader;
 mod types;
@@ -45,6 +46,7 @@ impl OffersQuery {
             None
         };
 
+        sleep(Duration::from_secs(3)).await;
         Ok(offers::Entity::find()
             .distinct_on([offers::Column::OfferPropositionId])
             .all(db)
