@@ -1,9 +1,9 @@
 schema {
   query: QueryRoot
+  mutation: MutationRoot
 }
 
 input CoordinateSearchInput {
-  distance: Float!
   lat: Float!
   lng: Float!
 }
@@ -20,6 +20,10 @@ type Location {
   address: String!
   name: String!
   storeNumber: String!
+}
+
+type MutationRoot {
+  addOffer: Boolean!
 }
 
 """
