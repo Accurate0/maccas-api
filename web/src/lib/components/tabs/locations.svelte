@@ -5,7 +5,7 @@
 	import type { LocationByText$result } from '$houdini';
 	import { toast } from 'svelte-sonner';
 	import { writable } from 'svelte/store';
-	import type { UpdateLocationBody } from '../../routes/api/location/schema';
+	import type { UpdateLocationBody } from '../../../routes/api/location/schema';
 
 	type Config = { storeName: string | null; storeId: string | null } | null;
 	export let config: Config;
