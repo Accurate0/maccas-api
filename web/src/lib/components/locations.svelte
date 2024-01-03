@@ -11,7 +11,7 @@
 	export let config: Config;
 
 	const configStore = writable<Config>(config);
-	export let storeName = $configStore?.storeName;
+	export let storeName = config?.storeName;
 
 	let disabled = false;
 	let optionsDisabled = false;
