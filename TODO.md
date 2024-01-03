@@ -3,3 +3,4 @@
 - frontend to show this through /admin
 - use access token auth etc etc
 - nginx or some sort of api gateway to allow each to sit behind a single api.domain/event api.domain/batch
+- add versioning to events / jobs
