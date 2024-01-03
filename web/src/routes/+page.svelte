@@ -3,9 +3,9 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Toaster } from 'svelte-sonner';
 	import type { PageData } from './$types';
-	import Offers from '$lib/components/offers.svelte';
-	import Points from '$lib/components/points.svelte';
-	import Locations from '$lib/components/locations.svelte';
+	import Offers from '$lib/components/tabs/offers.svelte';
+	import Points from '$lib/components/tabs/points.svelte';
+	import Locations from '$lib/components/tabs/locations.svelte';
 
 	export let data: PageData;
 	let storeName = data.config?.storeName;
