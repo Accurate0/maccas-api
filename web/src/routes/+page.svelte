@@ -1,17 +1,14 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
-	import type { LocationByText$result } from '$houdini';
-	import { Toaster, toast } from 'svelte-sonner';
-	import type { UpdateLocationBody } from './api/location/schema';
-	import { writable } from 'svelte/store';
+	import { Toaster } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import Offers from '$lib/components/offers.svelte';
 	import Points from '$lib/components/points.svelte';
 	import Locations from '$lib/components/locations.svelte';
 
 	export let data: PageData;
-	let storeName = 'Loading...';
+	let storeName = data.config?.storeName;
 </script>
 
 <svelte:head>
