@@ -53,7 +53,7 @@
 		<div>
 			<Button
 				class="material-symbols-outlined cursor-pointer"
-				disabled={$refreshOffer.isLoading}
+				disabled={$refreshOffer.isLoading || $removeOffer.isLoading}
 				on:click={async (e) => {
 					e.stopPropagation();
 					await $refreshOffer.mutateAsync();
@@ -61,7 +61,7 @@
 			>
 			<Button
 				class="material-symbols-outlined cursor-pointer"
-				disabled={$removeOffer.isLoading}
+				disabled={$removeOffer.isLoading || $refreshOffer.isLoading}
 				on:click={async (e) => {
 					e.stopPropagation();
 					await $removeOffer.mutateAsync({ id: $addOffer.data?.id ?? "this can't be null" });
