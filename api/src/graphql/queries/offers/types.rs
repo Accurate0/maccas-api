@@ -1,9 +1,21 @@
 use super::dataloader::OfferDetailsLoader;
 use async_graphql::dataloader::*;
+use async_graphql::InputObject;
 use async_graphql::Object;
+use async_graphql::SimpleObject;
 use entity::offer_details;
 use entity::offers;
 use sea_orm::prelude::{DateTime, Uuid};
+
+#[derive(InputObject)]
+pub struct OfferByIdInput {
+    pub id: Uuid,
+}
+
+#[derive(SimpleObject)]
+pub struct OfferByIdResponse {
+    pub code: String,
+}
 
 pub struct Offer(pub offers::Model, pub Option<i64>);
 

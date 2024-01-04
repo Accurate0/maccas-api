@@ -50,6 +50,7 @@
     "type": "module",
     "dependencies": {
         "@prisma/client": "5.7.1",
+        "@sveltestack/svelte-query": "^1.6.0",
         "bcrypt": "^5.1.1",
         "bits-ui": "^0.11.8",
         "clsx": "^2.0.0",
