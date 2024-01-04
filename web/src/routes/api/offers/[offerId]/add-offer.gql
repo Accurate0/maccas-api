@@ -1,0 +1,6 @@
+mutation AddOffer($offerPropositionId: Int!) {
+	addOffer(input: { offerPropositionId: $offerPropositionId }) {
+		id
+		code
+	}
+}

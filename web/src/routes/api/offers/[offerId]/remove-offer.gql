@@ -1,0 +1,3 @@
+mutation RemoveOffer($id: UUID!) {
+	removeOffer(input: { id: $id })
+}

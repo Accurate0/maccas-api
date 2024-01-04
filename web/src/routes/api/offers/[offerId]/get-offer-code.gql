@@ -1,0 +1,5 @@
+query GetOfferCode($id: UUID!) {
+	offerById(input: { id: $id }) {
+		code
+	}
+}

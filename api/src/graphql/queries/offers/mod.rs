@@ -1,4 +1,4 @@
-use self::types::Offer;
+use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
 use crate::name_of;
 use async_graphql::{Context, Object};
 use entity::offers;
@@ -19,6 +19,15 @@ pub struct OffersQuery;
 
 #[Object]
 impl OffersQuery {
+    async fn offer_by_id<'a>(
+        &self,
+        _ctx: &Context<'a>,
+        _input: OfferByIdInput,
+    ) -> async_graphql::Result<OfferByIdResponse> {
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        Ok(OfferByIdResponse { code: "rm".into() })
+    }
+
     async fn offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
 

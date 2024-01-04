@@ -3,6 +3,15 @@ schema {
   mutation: MutationRoot
 }
 
+input AddOfferInput {
+  offerPropositionId: Int!
+}
+
+type AddOfferResponse {
+  code: String!
+  id: UUID!
+}
+
 input CoordinateSearchInput {
   lat: Float!
   lng: Float!
@@ -23,7 +32,8 @@ type Location {
 }
 
 type MutationRoot {
-  addOffer: Boolean!
+  addOffer(input: AddOfferInput!): AddOfferResponse!
+  removeOffer(input: RemoveOfferInput!): UUID!
 }
 
 """
@@ -49,6 +59,14 @@ type Offer {
   validTo: NaiveDateTime!
 }
 
+input OfferByIdInput {
+  id: UUID!
+}
+
+type OfferByIdResponse {
+  code: String!
+}
+
 type Points {
   accountId: UUID!
   currentPoints: Int!
@@ -64,8 +82,13 @@ type QueriedLocation {
 type QueryRoot {
   health: HealthResponse!
   location: QueriedLocation!
+  offerById(input: OfferByIdInput!): OfferByIdResponse!
   offers: [Offer!]!
   points(filter: FilterInput): [Points!]!
+}
+
+input RemoveOfferInput {
+  id: UUID!
 }
 
 input StoreIdInput {
