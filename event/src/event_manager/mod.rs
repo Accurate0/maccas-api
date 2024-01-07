@@ -2,10 +2,9 @@ use base::delay_queue::DelayQueue;
 use entity::events;
 use event::Event;
 use sea_orm::prelude::Uuid;
-use sea_orm::sea_query::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    Set,
+    Set, Unchanged,
 };
 use std::{sync::Arc, time::Duration};
 use thiserror::Error;
@@ -144,11 +143,13 @@ impl EventManager {
         id: i32,
         attempts: i32,
     ) -> Result<(), EventManagerError> {
-        events::Entity::update_many()
-            .col_expr(events::Column::Attempts, Expr::value(attempts))
-            .filter(events::Column::Id.eq(id))
-            .exec(&self.inner.db)
-            .await?;
+        events::ActiveModel {
+            id: Unchanged(id),
+            attempts: Set(attempts),
+            ..Default::default()
+        }
+        .update(&self.inner.db)
+        .await?;
 
         Ok(())
     }
@@ -156,7 +157,7 @@ impl EventManager {
     pub async fn complete_event(&self, id: i32) -> Result<(), EventManagerError> {
         let completed_at = chrono::offset::Utc::now().naive_utc();
         events::ActiveModel {
-            id: Set(id),
+            id: Unchanged(id),
             is_completed: Set(true),
             completed_at: Set(Some(completed_at)),
             ..Default::default()
@@ -169,7 +170,7 @@ impl EventManager {
 
     pub async fn set_event_error(&self, id: i32, msg: &str) -> Result<(), EventManagerError> {
         events::ActiveModel {
-            id: Set(id),
+            id: Unchanged(id),
             error: Set(true),
             error_message: Set(Some(msg.to_owned())),
             ..Default::default()
