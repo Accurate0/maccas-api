@@ -22,7 +22,6 @@
 
 	const removeOffer = async (offerId: number, id: string) => {
 		state.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
-		console.log($state);
 	};
 </script>
 
@@ -68,7 +67,7 @@
 				{#if $state[offerId] && $state[offerId].length > 0}
 					<Card.Footer>
 						<div in:slide out:slide class="grid h-full w-full grid-flow-row gap-2">
-							{#each $state[offerId].sort((a, b) => a.id.localeCompare(b.id)) as { id }}
+							{#each $state[offerId] as { id }}
 								<span in:slide out:slide>
 									<DealCode {offerId} {id} removeSelf={() => removeOffer(offerId, id)} />
 								</span>

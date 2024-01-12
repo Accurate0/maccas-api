@@ -1,7 +1,7 @@
 use self::types::{FilterInput, Points};
 use async_graphql::{Context, Object};
 use entity::points;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{prelude::Uuid, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
 mod types;
 
@@ -25,7 +25,27 @@ impl PointsQuery {
             .all(db)
             .await?
             .into_iter()
-            .map(Points)
+            .map(|p| Points {
+                model: p,
+                store_id: None,
+            })
             .collect())
+    }
+
+    async fn points_by_account_id<'a>(
+        &self,
+        ctx: &Context<'a>,
+        account_id: Uuid,
+        store_id: Option<String>,
+    ) -> async_graphql::Result<Points> {
+        let db = ctx.data::<DatabaseConnection>()?;
+
+        Ok(Points {
+            model: points::Entity::find_by_id(account_id)
+                .one(db)
+                .await?
+                .ok_or(anyhow::Error::msg("no account found for that id"))?,
+            store_id,
+        })
     }
 }
