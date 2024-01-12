@@ -7,7 +7,9 @@ pub struct Migration;
 enum Points {
     Table,
     AccountId,
+    #[allow(clippy::enum_variant_names)]
     CurrentPoints,
+    #[allow(clippy::enum_variant_names)]
     LifetimePoints,
     CreatedAt,
     UpdatedAt,
