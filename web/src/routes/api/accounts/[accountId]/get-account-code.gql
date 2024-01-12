@@ -1,0 +1,5 @@
+query GetAccountCode($accountId: UUID!, $storeId: String!) {
+	pointsByAccountId(accountId: $accountId, storeId: $storeId) {
+		code
+	}
+}
