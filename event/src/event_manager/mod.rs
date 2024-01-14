@@ -49,6 +49,10 @@ impl EventManager {
         }
     }
 
+    pub fn db(&self) -> &DatabaseConnection {
+        &self.inner.db
+    }
+
     pub async fn create_event(
         &self,
         evt: Event,
