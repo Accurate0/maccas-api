@@ -25,7 +25,7 @@
 </script>
 
 {#if $getAccountCode.isLoading}
-	<Skeleton class="bg-primary/50 h-[54px] w-full rounded-sm" />
+	<Skeleton class="h-[54px] w-full rounded-sm bg-primary/50" />
 {:else}
 	<div
 		class="flex flex-grow flex-row items-center justify-between rounded-sm bg-slate-700/10 p-3 text-center"
