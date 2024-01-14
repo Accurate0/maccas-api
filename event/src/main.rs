@@ -1,16 +1,19 @@
 use crate::{
     event_manager::EventManager,
+    jwt::validator,
     routes::{create_event::create_event, health::health},
     settings::Settings,
     state::AppState,
 };
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web_lab::middleware::from_fn;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
 
 mod error;
 mod event_manager;
+mod jwt;
 mod routes;
 mod settings;
 mod state;
@@ -45,12 +48,16 @@ async fn main() -> Result<(), anyhow::Error> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(Logger::default())
             .app_data(web::Data::new(AppState {
                 event_manager: event_manager.clone(),
+                settings: settings.clone(),
             }))
-            .service(create_event)
-            .service(health)
+            .wrap(Logger::default())
+            .route("/health", web::get().to(health))
+            .route(
+                "/event",
+                web::post().to(create_event).wrap(from_fn(validator)),
+            )
     })
     .bind(addr)?
     .run()

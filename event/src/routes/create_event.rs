@@ -1,11 +1,7 @@
 use crate::{error::EventError, state::AppState};
-use actix_web::{
-    post,
-    web::{self},
-};
+use actix_web::web::{self};
 use event::{CreateEvent, CreateEventResponse};
 
-#[post("/event")]
 pub(crate) async fn create_event(
     state: web::Data<AppState>,
     request: web::Json<CreateEvent>,
