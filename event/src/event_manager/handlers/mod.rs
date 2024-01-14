@@ -30,7 +30,7 @@ pub async fn handle(event_manager: EventManager) {
         tokio::spawn(async move {
             let result = match event.evt {
                 Event::Cleanup { offer_id } => {
-                    retry_async(backoff, || cleanup(offer_id.clone(), db.clone())).await
+                    retry_async(backoff, || cleanup(offer_id, db.clone())).await
                 }
             };
 

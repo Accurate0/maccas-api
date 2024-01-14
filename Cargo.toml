@@ -45,6 +45,7 @@ libmaccas = { path = "./external/libmaccas" }
 places = { path = "./external/places" }
 base = { path = "./base" }
 converters = { path = "./converters" }
+event = { path = "./event" }
 
 thiserror = "1.0.51"
 futures = "0.3.29"

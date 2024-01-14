@@ -9,6 +9,7 @@ use async_graphql::{Context, Object};
 use entity::stores;
 use places::types::Location as PlaceLocation;
 use places::types::{Area, PlacesRequest, Rectangle};
+use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 
 pub mod dataloader;
@@ -34,7 +35,7 @@ impl QueriedLocation {
         input: TextSearchInput,
     ) -> async_graphql::Result<Vec<Location>> {
         let settings = ctx.data::<Settings>()?;
-        let http_client = base::http::get_simple_http_client()?;
+        let http_client = ctx.data::<ClientWithMiddleware>()?.clone();
         let api_client = places::ApiClient::new(settings.places_api_key.clone(), http_client);
 
         // Australia square, low -> high

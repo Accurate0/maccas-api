@@ -1,1 +1,0 @@
-downstream_health_checks = { batch = "http://batch:8000", queue = "http://queue:8000" }

@@ -1,6 +1,5 @@
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
-use std::collections::HashMap;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Database {
@@ -26,7 +25,7 @@ pub struct Settings {
     pub database: Database,
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
-    pub downstream_health_checks: HashMap<String, String>,
+    pub event_api_base: String,
     pub auth_secret: String,
     pub places_api_key: String,
 }
