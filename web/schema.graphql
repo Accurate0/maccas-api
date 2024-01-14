@@ -22,7 +22,8 @@ input FilterInput {
 }
 
 type HealthResponse {
-  databaseHealthy: Boolean!
+  database: Boolean!
+  event: Boolean!
 }
 
 type Location {
