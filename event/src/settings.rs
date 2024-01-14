@@ -32,7 +32,7 @@ impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
             .add_source(File::with_name("config/base.config.toml").required(false))
-            .add_source(File::with_name("config/event.config.toml").required(false))
+            .add_source(File::with_name("config/event.config.toml").required(true))
             .add_source(Environment::default().separator("__"))
             .build()?;
 
