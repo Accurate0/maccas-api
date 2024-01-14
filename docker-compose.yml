@@ -13,7 +13,8 @@ services:
     depends_on:
       - api
     environment:
-      - PUBLIC_API_BASE_URL=http://api:8000
+      - OLD_API_BASE_URL=https://api.maccas.one/v1
+      - API_BASE_URL=http://api:8000
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
       - AUTH_SECRET=111
 
@@ -26,10 +27,13 @@ services:
       - "8000:8000"
     links:
       - "db:database"
+      - "event:event"
     depends_on:
       - db
+      - event
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
+      - EVENT_API_BASE=http://event:8001
     env_file:
       - .env.local
 
@@ -79,7 +83,6 @@ services:
       - "6379:6379"
     volumes:
       - redisdata:/data
-
 
 volumes:
   pgdata:

@@ -55,11 +55,11 @@
 				{#if $state[accountId]}
 					<Card.Footer>
 						<div in:slide out:slide class="grid h-full w-full grid-flow-row gap-2">
-							<span in:slide out:slide>
-								{#if $state[accountId]}
+							{#if $state[accountId]}
+								<span in:slide out:slide>
 									<PointCode {accountId} removeSelf={() => removeAccount(accountId)} />
-								{/if}
-							</span>
+								</span>
+							{/if}
 						</div>
 					</Card.Footer>
 				{/if}
