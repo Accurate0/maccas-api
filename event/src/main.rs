@@ -1,5 +1,7 @@
 use crate::{
-    event_manager::EventManager, routes::create_event::create_event, settings::Settings,
+    event_manager::EventManager,
+    routes::{create_event::create_event, health::health},
+    settings::Settings,
     state::AppState,
 };
 use actix_web::{middleware::Logger, web, App, HttpServer};
@@ -48,6 +50,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 event_manager: event_manager.clone(),
             }))
             .service(create_event)
+            .service(health)
     })
     .bind(addr)?
     .run()
