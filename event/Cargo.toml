@@ -23,6 +23,7 @@ tokio-util = { workspace = true }
 entity = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
+actix-web-lab = "0.20.1"
 
 [lib]
 name = "event"

@@ -1,8 +1,8 @@
 use self::types::{AddOfferInput, AddOfferResponse, RemoveOfferInput};
-use crate::settings::Settings;
+use crate::{graphql::ValidatedToken, settings::Settings};
 use async_graphql::{Context, Object};
 use event::{CreateEvent, CreateEventResponse, Event};
-use reqwest::StatusCode;
+use reqwest::{header::AUTHORIZATION, StatusCode};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::prelude::Uuid;
 use std::time::Duration;
@@ -22,6 +22,7 @@ impl OffersMutation {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
         let offer_id = Uuid::new_v4();
+        let token = ctx.data_opt::<ValidatedToken>().map(|v| &v.0);
 
         let http_client = ctx.data::<ClientWithMiddleware>()?;
         let settings = ctx.data::<Settings>()?;
@@ -32,11 +33,15 @@ impl OffersMutation {
         };
 
         let request_url = format!("{}/{}", settings.event_api_base, CreateEvent::path());
-        let response = http_client
-            .post(request_url)
-            .json(&cleanup_event)
-            .send()
-            .await;
+        let request = http_client.post(request_url).json(&cleanup_event);
+
+        let request = if let Some(token) = token {
+            request.header(AUTHORIZATION, format!("Bearer {token}"))
+        } else {
+            request
+        };
+
+        let response = request.send().await;
 
         match response {
             Ok(response) => match response.status() {
