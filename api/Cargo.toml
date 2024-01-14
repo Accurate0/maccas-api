@@ -27,8 +27,10 @@ serde_json = { workspace = true }
 tower-http = { version = "0.4.4", features = ["trace", "cors"] }
 
 entity = { workspace = true }
+event = { workspace = true }
 libmaccas = { workspace = true }
 places = { workspace = true }
 async-trait = { workspace = true }
 base = { workspace = true }
 futures = { workspace = true }
+reqwest-middleware = { workspace = true }

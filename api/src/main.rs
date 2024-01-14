@@ -44,12 +44,14 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging_level(LevelFilter::Trace);
 
     let db = Database::connect(opt).await?;
+    let http_client = base::http::get_simple_http_client()?;
 
     let schema = FinalSchema::build(
         QueryRoot::default(),
         MutationRoot::default(),
         EmptySubscription,
     )
+    .data(http_client)
     .data(settings.clone())
     .data(db.clone())
     .data(DataLoader::new(
