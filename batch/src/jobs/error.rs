@@ -14,4 +14,10 @@ pub enum JobError {
     Chrono(#[from] chrono::OutOfRangeError),
     #[error("Send error has occurred: `{0}`")]
     Send(#[from] SendError<job_scheduler::Message>),
+    #[error("An unknown error ocurred: `{0}`")]
+    UnknownError(#[from] anyhow::Error),
+    #[error("McDonald's client error occurred: `{0}`")]
+    McDonaldsClientError(#[from] libmaccas::ClientError),
+    #[error("A conversion error ocurred: `{0}`")]
+    ConversionError(#[from] converters::ConversionError),
 }

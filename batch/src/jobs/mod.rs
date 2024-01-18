@@ -13,7 +13,13 @@ pub mod refresh;
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {
     fn name(&self) -> String;
-    async fn execute(&self, _context: &JobContext, _cancellation_token: CancellationToken) {}
+    async fn execute(
+        &self,
+        _context: &JobContext,
+        _cancellation_token: CancellationToken,
+    ) -> Result<(), JobError> {
+        Ok(())
+    }
     async fn cleanup(&self, _context: &JobContext) {}
 }
 

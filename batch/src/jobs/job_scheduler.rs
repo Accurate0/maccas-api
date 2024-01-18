@@ -3,8 +3,9 @@ use base::delay_queue::DelayQueue;
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
-    EntityTrait, QueryFilter, Set,
+    EntityTrait, QueryFilter, Set, Unchanged,
 };
+use serde_json::Value;
 use std::{collections::HashMap, fmt::Debug, ops::ControlFlow, sync::Arc, time::Duration};
 use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
@@ -15,7 +16,7 @@ use tracing::{Instrument, Level};
 pub(crate) enum Message {
     JobFinished { name: String },
     Init,
-    RunPending(String),
+    RunJob(String),
 }
 
 impl Debug for Message {
@@ -25,7 +26,7 @@ impl Debug for Message {
                 write!(f, "JobFinished: {}", name)
             }
             Self::Init => write!(f, "Init"),
-            Self::RunPending(arg0) => {
+            Self::RunJob(arg0) => {
                 write!(f, "RunPending: {}", arg0)
             }
         }
@@ -160,7 +161,7 @@ impl JobScheduler {
                         // setup next wake up for this job
                         self.0
                             .task_queue
-                            .push(Message::RunPending(job_model.name), time_until)
+                            .push(Message::RunJob(job_model.name), time_until)
                             .await;
                     }
                     None => tracing::error!(
@@ -170,7 +171,7 @@ impl JobScheduler {
                 }
             }
 
-            Message::RunPending(name) => {
+            Message::RunJob(name) => {
                 tracing::info!("run pending task {}", name);
                 let mut jobs = self.0.jobs.write().await;
 
@@ -181,7 +182,6 @@ impl JobScheduler {
                     .unwrap();
 
                 let job_details = jobs.get_mut(&name).unwrap();
-                let time_now = chrono::offset::Utc::now();
 
                 let cancellation_token = CancellationToken::new();
                 let cancellation_token_cloned = cancellation_token.clone();
@@ -200,9 +200,36 @@ impl JobScheduler {
                     let queue = self.0.task_queue.clone();
                     let task_name = name.clone();
 
+                    let execution_id = entity::job_history::ActiveModel {
+                        context: Set(context.get::<Value>().await),
+                        job_id: Set(job_model.id),
+                        ..Default::default()
+                    }
+                    .insert(&db)
+                    .await?
+                    .id;
+
                     let handle = tokio::spawn(
                         async move {
-                            job.execute(&context, cancellation_token_cloned).await;
+                            let result = job.execute(&context, cancellation_token_cloned).await;
+                            let error = result.map_err(|e| e.to_string()).err();
+
+                            let time_now = chrono::offset::Utc::now();
+
+                            if let Err(e) = {
+                                entity::job_history::ActiveModel {
+                                    id: Unchanged(execution_id),
+                                    error: Set(error.is_some()),
+                                    error_message: Set(error.clone()),
+                                    completed_at: Set(Some(time_now.naive_utc())),
+                                    ..Default::default()
+                                }
+                                .update(&db)
+                                .await
+                            } {
+                                tracing::error!("error setting job error: {}, {:?}", e, error)
+                            }
+
                             job.cleanup(&context).await;
 
                             let update_finish_time = jobs::ActiveModel {
@@ -269,7 +296,7 @@ impl JobScheduler {
 
                     self.0
                         .task_queue
-                        .push(Message::RunPending(job_model.name), time_until)
+                        .push(Message::RunJob(job_model.name), time_until)
                         .await;
                 }
             }

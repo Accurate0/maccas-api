@@ -16,6 +16,7 @@ mod m20231230_130059_add_refreshed_at;
 mod m20231230_133157_add_stores_table;
 mod m20240101_063753_rename_field_jobs;
 mod m20240101_063943_add_events_table;
+mod m20240118_091942_add_job_history;
 
 pub struct Migrator;
 
@@ -39,6 +40,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20231230_133157_add_stores_table::Migration),
             Box::new(m20240101_063753_rename_field_jobs::Migration),
             Box::new(m20240101_063943_add_events_table::Migration),
+            Box::new(m20240118_091942_add_job_history::Migration),
         ]
     }
 }
