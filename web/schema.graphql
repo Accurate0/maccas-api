@@ -1,40 +1,40 @@
 schema {
-	query: QueryRoot
-	mutation: MutationRoot
+  query: QueryRoot
+  mutation: MutationRoot
 }
 
 input AddOfferInput {
-	offerPropositionId: Int!
+  offerPropositionId: Int!
 }
 
 type AddOfferResponse {
-	code: String!
-	id: UUID!
+  code: String!
+  id: UUID!
 }
 
 input CoordinateSearchInput {
-	lat: Float!
-	lng: Float!
+  lat: Float!
+  lng: Float!
 }
 
 input FilterInput {
-	minimumCurrentPoints: Int!
+  minimumCurrentPoints: Int!
 }
 
 type HealthResponse {
-	database: Boolean!
-	event: Boolean!
+  database: Boolean!
+  event: Boolean!
 }
 
 type Location {
-	address: String!
-	name: String!
-	storeNumber: String!
+  address: String!
+  name: String!
+  storeNumber: String!
 }
 
 type MutationRoot {
-	addOffer(input: AddOfferInput!): AddOfferResponse!
-	removeOffer(input: RemoveOfferInput!): UUID!
+  addOffer(input: AddOfferInput!): AddOfferResponse!
+  removeOffer(input: RemoveOfferInput!): UUID!
 }
 
 """
@@ -47,59 +47,59 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Offer {
-	count: Int!
-	creationDate: NaiveDateTime!
-	description: String!
-	id: UUID!
-	imageBasename: String!
-	name: String!
-	offerId: Int!
-	price: Float
-	shortName: String!
-	validFrom: NaiveDateTime!
-	validTo: NaiveDateTime!
+  count: Int!
+  creationDate: NaiveDateTime!
+  description: String!
+  id: UUID!
+  imageBasename: String!
+  name: String!
+  offerPropositionId: Int!
+  price: Float
+  shortName: String!
+  validFrom: NaiveDateTime!
+  validTo: NaiveDateTime!
 }
 
 input OfferByIdInput {
-	id: UUID!
+  id: UUID!
 }
 
 type OfferByIdResponse {
-	code: String!
+  code: String!
 }
 
 type Points {
-	accountId: UUID!
-	code: String
-	currentPoints: Int!
-	lifetimePoints: Int!
+  accountId: UUID!
+  code: String
+  currentPoints: Int!
+  lifetimePoints: Int!
 }
 
 type QueriedLocation {
-	coordinate(input: CoordinateSearchInput!): [Location!]!
-	storeId(input: StoreIdInput!): Location!
-	text(input: TextSearchInput!): [Location!]!
+  coordinate(input: CoordinateSearchInput!): [Location!]!
+  storeId(input: StoreIdInput!): Location!
+  text(input: TextSearchInput!): [Location!]!
 }
 
 type QueryRoot {
-	health: HealthResponse!
-	location: QueriedLocation!
-	offerById(input: OfferByIdInput!): OfferByIdResponse!
-	offers: [Offer!]!
-	points(filter: FilterInput): [Points!]!
-	pointsByAccountId(accountId: UUID!, storeId: String): Points!
+  health: HealthResponse!
+  location: QueriedLocation!
+  offerById(input: OfferByIdInput!): OfferByIdResponse!
+  offers: [Offer!]!
+  points(filter: FilterInput): [Points!]!
+  pointsByAccountId(accountId: UUID!, storeId: String): Points!
 }
 
 input RemoveOfferInput {
-	id: UUID!
+  id: UUID!
 }
 
 input StoreIdInput {
-	storeId: String!
+  storeId: String!
 }
 
 input TextSearchInput {
-	query: String!
+  query: String!
 }
 
 """

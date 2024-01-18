@@ -3,13 +3,14 @@ use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, ServerError};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::State, http::HeaderMap, response::IntoResponse, Json};
-use base::jwt;
+use base::jwt::{self, JwtClaims};
 
 pub async fn graphiql() -> impl IntoResponse {
     axum::response::Html(GraphiQLSource::build().endpoint("/graphql").finish())
 }
 
 pub struct ValidatedToken(pub String);
+pub struct ValidatedClaims(pub JwtClaims);
 
 pub async fn graphql_handler(
     State(ApiState { schema, settings }): State<ApiState>,
@@ -17,22 +18,32 @@ pub async fn graphql_handler(
     req: GraphQLRequest,
 ) -> Result<GraphQLResponse, AppError> {
     let auth_header = headers.get("Authorization");
+    let mut claims = None;
+
     if cfg!(debug_assertions) {
         let token = if let Some(auth_header) = auth_header {
             let token = &auth_header.to_str()?.replace("Bearer ", "");
 
-            let claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
+            let validated_claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
             tracing::info!("verified token with claims: {:?}", claims);
 
+            claims = Some(validated_claims);
             Some(token.clone())
         } else {
             None
         };
 
-        let req = if let Some(token) = token {
-            req.into_inner().data(ValidatedToken(token))
+        let req_inner = req.into_inner();
+        let req = if let Some(claims) = claims {
+            req_inner.data(ValidatedClaims(claims))
         } else {
-            req.into_inner()
+            req_inner
+        };
+
+        let req = if let Some(token) = token {
+            req.data(ValidatedToken(token))
+        } else {
+            req
         };
 
         return Ok(schema.execute(req).await.into());
@@ -42,10 +53,14 @@ pub async fn graphql_handler(
         Some(auth_header) => {
             let token = &auth_header.to_str()?.replace("Bearer ", "");
 
-            jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
+            let claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
 
             Ok(schema
-                .execute(req.into_inner().data(ValidatedToken(token.to_string())))
+                .execute(
+                    req.into_inner()
+                        .data(ValidatedToken(token.to_string()))
+                        .data(ValidatedClaims(claims)),
+                )
                 .await
                 .into())
         }

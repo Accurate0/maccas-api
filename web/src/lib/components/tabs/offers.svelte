@@ -42,10 +42,12 @@
 			</Card.Root>
 		{/each}
 	{:then offersList}
-		{#each offersList ?? [] as { shortName, name, count, imageBasename, offerId }}
+		{#each offersList ?? [] as { shortName, name, count, imageBasename, offerPropositionId }}
 			<Card.Root
 				on:click={() => {
-					addOffer(offerId, crypto.randomUUID());
+					if (($state[offerPropositionId]?.length ?? 0) < count) {
+						addOffer(offerPropositionId, crypto.randomUUID());
+					}
 				}}
 			>
 				<div class="grid grid-flow-col justify-between">
@@ -64,12 +66,16 @@
 						/>
 					</Card.Header>
 				</div>
-				{#if $state[offerId] && $state[offerId].length > 0}
+				{#if $state[offerPropositionId] && $state[offerPropositionId].length > 0}
 					<Card.Footer>
 						<div in:slide out:slide class="grid h-full w-full grid-flow-row gap-2">
-							{#each $state[offerId] as { id }}
+							{#each $state[offerPropositionId] as { id }}
 								<span in:slide out:slide>
-									<DealCode {offerId} {id} removeSelf={() => removeOffer(offerId, id)} />
+									<DealCode
+										offerId={offerPropositionId}
+										{id}
+										removeSelf={() => removeOffer(offerPropositionId, id)}
+									/>
 								</span>
 							{/each}
 						</div>

@@ -51,8 +51,8 @@ impl Offer {
         &self.0.id
     }
 
-    pub async fn offer_id(&self) -> &i64 {
-        &self.0.offer_id
+    pub async fn offer_proposition_id(&self) -> &i64 {
+        &self.0.offer_proposition_id
     }
 
     pub async fn valid_from(&self) -> &DateTime {
