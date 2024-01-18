@@ -29,8 +29,32 @@ impl Database<Offers> {
 impl Database<OfferDetails> {
     pub fn convert_offer_details(offer: &OfferDetailsResponse) -> Result<Self, ConversionError> {
         let total_price = offer.product_sets.iter().fold(0f64, |accumulator, item| {
+            // hash browns are 2 for $2, so quantity is 2, and each product is valued at $1
+            // product_sets: [
+            //     ProductSet {
+            //         alias: Some(
+            //             "Item to discount",
+            //         ),
+            //         quantity: 2,
+            //         min_quantity: Some(
+            //             2,
+            //         ),
+            //         products: [
+            //             "202",
+            //         ],
+            //         action: Some(
+            //             Action {
+            //                 type_field: 3,
+            //                 discount_type: 2,
+            //                 value: 1.0,
+            //             },
+            //         ),
+            //         swap_mapping: [],
+            //     },
+            // ],
+
             if let Some(action) = &item.action {
-                action.value + accumulator
+                (action.value * item.quantity as f64) + accumulator
             } else {
                 accumulator
             }

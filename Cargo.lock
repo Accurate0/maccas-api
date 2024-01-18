@@ -1575,6 +1575,7 @@ dependencies = [
  "libmaccas",
  "sea-orm",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]
