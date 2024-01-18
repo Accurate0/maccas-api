@@ -1,10 +1,14 @@
 use self::types::{AddOfferInput, AddOfferResponse, RemoveOfferInput};
-use crate::{graphql::ValidatedToken, settings::Settings};
+use crate::{
+    graphql::{ValidatedClaims, ValidatedToken},
+    settings::Settings,
+};
 use async_graphql::{Context, Object};
+use entity::sea_orm_active_enums::Action;
 use event::{CreateEvent, CreateEventResponse, Event};
 use reqwest::{header::AUTHORIZATION, StatusCode};
 use reqwest_middleware::ClientWithMiddleware;
-use sea_orm::prelude::Uuid;
+use sea_orm::{prelude::Uuid, ActiveModelTrait, DatabaseConnection, Set};
 use std::time::Duration;
 
 mod types;
@@ -17,18 +21,37 @@ impl OffersMutation {
     async fn add_offer<'a>(
         &self,
         ctx: &Context<'a>,
-        _input: AddOfferInput,
+        input: AddOfferInput,
     ) -> async_graphql::Result<AddOfferResponse> {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
-        let offer_id = Uuid::new_v4();
+        let db = ctx.data::<DatabaseConnection>()?;
+        let claims = ctx.data_opt::<ValidatedClaims>();
+        let fake_offer_id = Uuid::new_v4();
+        let validated_proposition_id = input.offer_proposition_id;
         let token = ctx.data_opt::<ValidatedToken>().map(|v| &v.0);
 
         let http_client = ctx.data::<ClientWithMiddleware>()?;
         let settings = ctx.data::<Settings>()?;
 
+        let transaction_id = Uuid::new_v4();
+        if let Some(claims) = claims {
+            entity::offer_audit::ActiveModel {
+                action: Set(Action::Add),
+                proposition_id: Set(validated_proposition_id),
+                user_id: Set(claims.0.user_id.parse()?),
+                transaction_id: Set(transaction_id),
+                ..Default::default()
+            }
+            .insert(db)
+            .await?;
+        }
+
         let cleanup_event = CreateEvent {
-            event: Event::Cleanup { offer_id },
+            event: Event::Cleanup {
+                offer_id: fake_offer_id,
+                transaction_id,
+            },
             delay: Duration::from_secs(900),
         };
 
@@ -57,7 +80,7 @@ impl OffersMutation {
         }
 
         Ok(AddOfferResponse {
-            id: offer_id,
+            id: fake_offer_id,
             code: "1111".into(),
         })
     }

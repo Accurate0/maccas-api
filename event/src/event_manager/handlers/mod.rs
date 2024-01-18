@@ -1,10 +1,9 @@
-use std::time::Duration;
-
 use super::EventManager;
 use crate::event_manager::handlers::cleanup::cleanup;
 use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use event::Event;
 use sea_orm::DbErr;
+use std::time::Duration;
 use thiserror::Error;
 
 mod cleanup;
@@ -29,9 +28,10 @@ pub async fn handle(event_manager: EventManager) {
 
         tokio::spawn(async move {
             let result = match event.evt {
-                Event::Cleanup { offer_id } => {
-                    retry_async(backoff, || cleanup(offer_id, db.clone())).await
-                }
+                Event::Cleanup {
+                    offer_id,
+                    transaction_id,
+                } => retry_async(backoff, || cleanup(offer_id, transaction_id, db.clone())).await,
             };
 
             match result {

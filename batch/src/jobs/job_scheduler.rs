@@ -11,8 +11,6 @@ use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
-// TODO: audit every job run
-
 pub(crate) enum Message {
     JobFinished { name: String },
     Init,

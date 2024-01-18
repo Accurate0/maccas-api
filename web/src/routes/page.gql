@@ -4,8 +4,7 @@ query Index($includePoints: Boolean!, $minimumCurrentPoints: Int!) {
 		imageBasename
 		name
 		count
-		offerId
-		id
+		offerPropositionId
 	}
 	points(filter: { minimumCurrentPoints: $minimumCurrentPoints }) @include(if: $includePoints) {
 		currentPoints

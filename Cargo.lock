@@ -543,6 +543,7 @@ dependencies = [
  "handlebars",
  "http",
  "indexmap",
+ "log",
  "lru",
  "mime",
  "multer",

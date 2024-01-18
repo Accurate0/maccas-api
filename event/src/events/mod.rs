@@ -5,7 +5,10 @@ use std::time::Duration;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub enum Event {
-    Cleanup { offer_id: Uuid },
+    Cleanup {
+        offer_id: Uuid,
+        transaction_id: Uuid,
+    },
 }
 
 impl fmt::Display for Event {
