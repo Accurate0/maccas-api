@@ -9,7 +9,14 @@ use libmaccas::{
     },
     ApiClient,
 };
-use maccas::{constants, database::account::AccountRepository, types::config::GeneralConfig};
+use maccas::{
+    constants::{
+        self,
+        mc_donalds::{self},
+    },
+    database::account::AccountRepository,
+    types::config::GeneralConfig,
+};
 use mailparse::MailHeaderMap;
 use rand::{
     distributions::{Alphanumeric, DistString},
@@ -61,6 +68,12 @@ enum Commands {
         #[arg(short, long)]
         activation_code: String,
     },
+    FetchOffersJson {
+        #[arg(short, long)]
+        account_name: String,
+        #[arg(short, long)]
+        offer_proposition_id: Option<String>,
+    },
 }
 
 // TODO: upgrade cli to use mailparse too
@@ -85,7 +98,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut client = ApiClient::new(
         constants::mc_donalds::default::BASE_URL.to_string(),
         http_client,
-        config.mcdonalds.client_id,
+        config.mcdonalds.client_id.clone(),
     );
 
     let response = client
@@ -96,6 +109,41 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut rng = StdRng::from_entropy();
 
     match args.command {
+        Commands::FetchOffersJson {
+            account_name,
+            offer_proposition_id,
+        } => {
+            let account = account_repository.get_account(&account_name).await?;
+            let proxy = maccas::proxy::get_proxy(&config.proxy).await;
+            let api_client = account_repository
+                .get_specific_client(
+                    foundation::http::get_default_http_client_with_proxy(proxy),
+                    &config.mcdonalds.client_id,
+                    &config.mcdonalds.client_secret,
+                    &config.mcdonalds.sensor_data,
+                    &account,
+                    false,
+                )
+                .await?;
+
+            let offers = api_client
+                .get_offers(
+                    mc_donalds::default::DISTANCE,
+                    mc_donalds::default::LATITUDE,
+                    mc_donalds::default::LONGITUDE,
+                    "",
+                    mc_donalds::default::OFFSET,
+                )
+                .await?;
+
+            log::info!("offers: {:#?}", offers);
+
+            if let Some(offer_proposition_id) = offer_proposition_id {
+                let offer_details = api_client.offer_details(&offer_proposition_id).await?;
+                log::info!("details: {:#?}", offer_details);
+            }
+        }
+
         Commands::Login {
             account_name,
             username,
