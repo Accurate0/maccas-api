@@ -77,7 +77,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
-                    .col(ColumnDef::new(OfferAudit::UserId).uuid().not_null())
+                    .col(ColumnDef::new(OfferAudit::UserId).uuid().null())
                     .foreign_key(
                         ForeignKeyCreateStatement::new()
                             .name("offer_proposition_id_fk")

@@ -6,6 +6,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
     Set, Unchanged,
 };
+use state::TypeMap;
 use std::{sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::task::JoinHandle;
@@ -121,7 +122,10 @@ impl EventManager {
         Ok(())
     }
 
-    pub fn process_events(&self) -> (JoinHandle<()>, CancellationToken) {
+    pub fn process_events(
+        &self,
+        type_map: Arc<TypeMap![Sync + Send]>,
+    ) -> (JoinHandle<()>, CancellationToken) {
         let em = self.clone();
         let cancellation_token = CancellationToken::new();
         let cancellation_token_cloned = cancellation_token.clone();
@@ -134,7 +138,7 @@ impl EventManager {
                             tracing::info!("handle cancelled");
                             break;
                         },
-                        _ =  handlers::handle(em.clone()) => {}
+                        _ =  handlers::handle(em.clone(), type_map.clone()) => {}
                     }
                 }
             }),

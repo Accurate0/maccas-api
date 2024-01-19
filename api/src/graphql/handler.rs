@@ -25,7 +25,7 @@ pub async fn graphql_handler(
             let token = &auth_header.to_str()?.replace("Bearer ", "");
 
             let validated_claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
-            tracing::info!("verified token with claims: {:?}", claims);
+            tracing::info!("verified token with claims: {:?}", validated_claims);
 
             claims = Some(validated_claims);
             Some(token.clone())

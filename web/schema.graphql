@@ -5,6 +5,7 @@ schema {
 
 input AddOfferInput {
   offerPropositionId: Int!
+  storeId: String!
 }
 
 type AddOfferResponse {
@@ -92,6 +93,7 @@ type QueryRoot {
 
 input RemoveOfferInput {
   id: UUID!
+  storeId: String!
 }
 
 input StoreIdInput {

@@ -5,10 +5,12 @@ use crate::{
     settings::Settings,
     state::AppState,
 };
+use ::state::TypeMap;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
+use base::account_manager::AccountManager;
 use sea_orm::{ConnectOptions, Database};
-use std::{net::SocketAddr, time::Duration};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tracing::log::LevelFilter;
 
 mod error;
@@ -37,11 +39,16 @@ async fn main() -> Result<(), anyhow::Error> {
     // most likely immediately
     // might need throttling etc, semaphore?
 
+    let account_manager = AccountManager::new(&settings.cache_connection_string).await?;
     let db = Database::connect(opt).await?;
+    let type_map = Arc::new(<TypeMap![Sync + Send]>::new());
+    type_map.set(settings.clone());
+    type_map.set(account_manager);
+
     let event_manager = EventManager::new(db);
 
     event_manager.reload_incomplete_events().await?;
-    let (handle, cancellation_token) = event_manager.process_events();
+    let (handle, cancellation_token) = event_manager.process_events(type_map);
 
     let addr = "0.0.0.0:8001".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");

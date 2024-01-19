@@ -8,6 +8,7 @@ pub enum Event {
     Cleanup {
         offer_id: Uuid,
         transaction_id: Uuid,
+        store_id: String,
     },
 }
 

@@ -1,5 +1,5 @@
-mutation AddOffer($offerPropositionId: Int!) {
-	addOffer(input: { offerPropositionId: $offerPropositionId }) {
+mutation AddOffer($offerPropositionId: Int!, $storeId: String!) {
+	addOffer(input: { offerPropositionId: $offerPropositionId, storeId: $storeId }) {
 		id
 		code
 	}

@@ -1,4 +1,5 @@
 import { AddOfferStore, GetOfferCodeStore, RemoveOfferStore } from '$houdini';
+import { prisma } from '$lib/prisma';
 import { json } from '@sveltejs/kit';
 
 export type AddOfferResponse = {
@@ -23,17 +24,23 @@ export async function GET(event) {
 
 export async function POST(event) {
 	const {
-		params: { offerId }
+		params: { offerId },
+		locals
 	} = event;
 
 	if (Number.isNaN(Number(offerId))) {
 		return new Response('Invalid body', { status: 400 });
 	}
 
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: locals.session.userId },
+		include: { config: true }
+	});
 	const store = new AddOfferStore();
 	const { data } = await store.mutate(
 		{
-			offerPropositionId: Number(offerId)
+			offerPropositionId: Number(offerId),
+			storeId: user.config?.storeId ?? 'must be set'
 		},
 		{ event }
 	);
@@ -47,13 +54,19 @@ export async function POST(event) {
 
 export async function DELETE(event) {
 	const {
-		params: { offerId }
+		params: { offerId },
+		locals
 	} = event;
 
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: locals.session.userId },
+		include: { config: true }
+	});
 	const store = new RemoveOfferStore();
 	const { data } = await store.mutate(
 		{
-			id: offerId
+			id: offerId,
+			storeId: user.config?.storeId ?? 'must be set'
 		},
 		{ event }
 	);

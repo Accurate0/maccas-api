@@ -13,6 +13,7 @@ use axum::{
     routing::get,
     Router,
 };
+use base::account_manager::AccountManager;
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
@@ -43,6 +44,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging(true)
         .sqlx_logging_level(LevelFilter::Trace);
 
+    let account_manager = AccountManager::new(&settings.cache_connection_string).await?;
     let db = Database::connect(opt).await?;
     let http_client = base::http::get_simple_http_client()?;
 
@@ -67,6 +69,7 @@ async fn main() -> Result<(), anyhow::Error> {
         },
         tokio::spawn,
     ))
+    .data(account_manager)
     // FIXME: make own logger extension, this one uses info for errors lol
     .extension(async_graphql::extensions::Logger)
     .finish();

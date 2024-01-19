@@ -44,12 +44,12 @@
 </script>
 
 {#if $addOffer.isLoading}
-	<Skeleton class="h-[54px] w-full rounded-sm bg-primary/50" />
+	<Skeleton class="bg-primary/50 h-[54px] w-full rounded-sm" />
 {:else}
 	<div
 		class="flex flex-grow flex-row items-center justify-between rounded-sm bg-slate-700/10 p-3 text-center"
 	>
-		<div class="font-mono">{$offerCode} {id}</div>
+		<div class="font-mono">{$offerCode}</div>
 		<div>
 			<Button
 				class="material-symbols-outlined cursor-pointer"
