@@ -4,3 +4,5 @@
 - use access token auth etc etc
 - nginx or some sort of api gateway to allow each to sit behind a single api.domain/event api.domain/batch
 - add versioning to events / jobs
+- add offer history for long term tracking, like a replica of offers but isn't ever deleted
+- add offer rating table for rating each proposition id
