@@ -28,6 +28,7 @@ pub struct Settings {
     pub event_api_base: String,
     pub auth_secret: String,
     pub places_api_key: String,
+    pub cache_connection_string: String,
 }
 
 impl Settings {

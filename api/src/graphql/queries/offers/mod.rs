@@ -1,8 +1,12 @@
 use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
 use crate::name_of;
 use async_graphql::{Context, Object};
+use base::account_manager::AccountManager;
 use entity::offers;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QuerySelect};
+use sea_orm::{
+    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect,
+};
 use std::collections::HashMap;
 
 pub mod dataloader;
@@ -30,13 +34,20 @@ impl OffersQuery {
 
     async fn offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
+        let account_manager = ctx.data::<AccountManager>()?;
+        let all_locked_accounts = account_manager.get_all_locked().await?;
 
-        let fetch_count = ctx.look_ahead().field("count").exists();
+        tracing::info!("locked accounts: {:?}", all_locked_accounts);
+        let mut conditions = Condition::all();
+        for locked_account in all_locked_accounts {
+            conditions = conditions.add(offers::Column::AccountId.ne(locked_account));
+        }
 
-        let count_map = if fetch_count {
+        let count_map = if ctx.look_ahead().field("count").exists() {
             Some(
                 offers::Entity::find()
                     .select_only()
+                    .filter(conditions.clone())
                     .column(offers::Column::OfferPropositionId)
                     .column_as(
                         offers::Column::OfferPropositionId.count(),
@@ -56,6 +67,7 @@ impl OffersQuery {
 
         Ok(offers::Entity::find()
             .distinct_on([offers::Column::OfferPropositionId])
+            .filter(conditions)
             .all(db)
             .await?
             .into_iter()

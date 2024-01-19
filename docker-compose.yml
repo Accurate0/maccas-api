@@ -28,12 +28,15 @@ services:
     links:
       - "db:database"
       - "event:event"
+      - "cache:cache"
     depends_on:
       - db
+      - cache
       - event
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
+      - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
 
@@ -60,10 +63,13 @@ services:
       - "8001:8000"
     links:
       - "db:database"
+      - "cache:cache"
     depends_on:
       - db
+      - cache
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
+      - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
 
@@ -77,13 +83,15 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: maccas
 
-  redis:
-    image: redis:alpine
+  cache:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    ulimits:
+      memlock: -1
     ports:
       - "6379:6379"
     volumes:
-      - redisdata:/data
+      - dragonflydata:/data
 
 volumes:
   pgdata:
-  redisdata:
+  dragonflydata:

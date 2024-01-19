@@ -1,9 +1,13 @@
 use super::EventManager;
 use crate::event_manager::handlers::cleanup::cleanup;
-use base::retry::{retry_async, ExponentialBackoff, RetryResult};
+use base::{
+    account_manager::AccountManagerError,
+    retry::{retry_async, ExponentialBackoff, RetryResult},
+};
 use event::Event;
 use sea_orm::DbErr;
-use std::time::Duration;
+use state::TypeMap;
+use std::{sync::Arc, time::Duration};
 use thiserror::Error;
 
 mod cleanup;
@@ -16,12 +20,19 @@ pub enum HandlerError {
     Database(#[from] DbErr),
     #[error("Chrono out of range error has ocurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
+    #[error("An unknown error ocurred: `{0}`")]
+    UnknownError(#[from] anyhow::Error),
+    #[error("An reqwest ocurred: `{0}`")]
+    ReqwestError(#[from] reqwest::Error),
+    #[error("McDonald's client error occurred: `{0}`")]
+    McDonaldsClientError(#[from] libmaccas::ClientError),
+    #[error("Account manager error occurred: `{0}`")]
+    AccountManagerError(#[from] AccountManagerError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)
-pub async fn handle(event_manager: EventManager) {
+pub async fn handle(event_manager: EventManager, type_map: Arc<TypeMap![Sync + Send]>) {
     if let Some(event) = event_manager.inner.event_queue.pop().await {
-        let db = event_manager.db().clone();
         let event_manager = event_manager.clone();
         // 1st attempt + 5 retries
         let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
@@ -31,7 +42,19 @@ pub async fn handle(event_manager: EventManager) {
                 Event::Cleanup {
                     offer_id,
                     transaction_id,
-                } => retry_async(backoff, || cleanup(offer_id, transaction_id, db.clone())).await,
+                    store_id,
+                } => {
+                    retry_async(backoff, || {
+                        cleanup(
+                            offer_id,
+                            transaction_id,
+                            store_id.clone(),
+                            event_manager.clone(),
+                            type_map.clone(),
+                        )
+                    })
+                    .await
+                }
             };
 
             match result {

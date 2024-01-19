@@ -23,6 +23,7 @@ chrono = { workspace = true }
 futures = { workspace = true }
 anyhow = { workspace = true }
 libmaccas = { workspace = true }
+redis = { workspace = true }
 task-local-extensions = "0.1.4"
 jwt = "0.16.0"
 hmac = "0.12.1"

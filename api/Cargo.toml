@@ -34,3 +34,5 @@ async-trait = { workspace = true }
 base = { workspace = true }
 futures = { workspace = true }
 reqwest-middleware = { workspace = true }
+redis = { workspace = true }
+thiserror = { workspace = true }

@@ -14,7 +14,7 @@ pub struct Model {
     pub proposition_id: i64,
     pub created_at: DateTime,
     pub updated_at: DateTime,
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
