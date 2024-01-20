@@ -119,7 +119,7 @@ impl OffersMutation {
             Ok(response) => match response.status() {
                 StatusCode::CREATED => {
                     let id = response.json::<CreateEventResponse>().await?.id;
-                    tracing::info!("created cleanup event with id {} created", id);
+                    tracing::info!("created cleanup event with id {}", id);
                 }
                 status => {
                     tracing::warn!("event failed with {} - {}", status, response.text().await?);
