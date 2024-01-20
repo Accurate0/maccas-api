@@ -18,6 +18,14 @@
 				.then((j) => j as GetAccountCode$result['pointsByAccountId'])
 	);
 
+	const refreshAccountCode = useMutation(
+		`add-${accountId}`,
+		async () =>
+			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
+				.then((r) => r.json())
+				.then((j) => j as GetAccountCode$result['pointsByAccountId'])
+	);
+
 	onMount(async () => {
 		const response = await $getAccountCode.mutateAsync();
 		code.update(() => response.code);
@@ -25,24 +33,24 @@
 </script>
 
 {#if $getAccountCode.isLoading}
-	<Skeleton class="h-[54px] w-full rounded-sm bg-primary/50" />
+	<Skeleton class="bg-primary/50 h-[54px] w-full rounded-sm" />
 {:else}
 	<div
 		class="flex flex-grow flex-row items-center justify-between rounded-sm bg-slate-700/10 p-3 text-center"
 	>
-		<div class="font-mono">{$code}</div>
+		<div class="font-mono">{$refreshAccountCode.data?.code ?? $code}</div>
 		<div>
 			<Button
 				class="material-symbols-outlined cursor-pointer"
-				disabled={$getAccountCode.isLoading}
+				disabled={$getAccountCode.isLoading || $refreshAccountCode.isLoading}
 				on:click={async (e) => {
 					e.stopPropagation();
-					await $getAccountCode.mutateAsync();
+					await $refreshAccountCode.mutateAsync();
 				}}>refresh</Button
 			>
 			<Button
 				class="material-symbols-outlined cursor-pointer"
-				disabled={$getAccountCode.isLoading}
+				disabled={$getAccountCode.isLoading || $refreshAccountCode.isLoading}
 				on:click={async (e) => {
 					e.stopPropagation();
 					removeSelf();
