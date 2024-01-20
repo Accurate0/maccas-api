@@ -46,7 +46,6 @@ pub struct ExponentialBackoff {
 }
 
 impl ExponentialBackoff {
-    /// Create a new `ExponentialBackoff` with an initial delay.
     pub fn new(initial_delay: Duration, max_attempts: u64) -> Self {
         Self {
             delay: initial_delay,
