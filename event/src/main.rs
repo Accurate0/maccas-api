@@ -1,7 +1,7 @@
 use crate::{
     event_manager::EventManager,
-    jwt::validator,
-    routes::{create_event::create_event, health::health},
+    jwt::{validator, validator_admin_only},
+    routes::{create_event::create_event, get_events::get_events, health::health},
     settings::Settings,
     state::AppState,
 };
@@ -62,6 +62,12 @@ async fn main() -> Result<(), anyhow::Error> {
             .route(
                 "/event",
                 web::post().to(create_event).wrap(from_fn(validator)),
+            )
+            .route(
+                "/event",
+                web::get()
+                    .to(get_events)
+                    .wrap(from_fn(validator_admin_only)),
             )
     })
     .bind(addr)?

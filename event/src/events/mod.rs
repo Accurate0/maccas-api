@@ -33,6 +33,18 @@ impl CreateEvent {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct ExistingEvent {
+    pub event: Event,
+    pub remaining: Duration,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct GetEventsResponse {
+    pub active_events: Vec<entity::events::Model>,
+    pub historical_events: Vec<entity::events::Model>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Health;
 
 impl Health {

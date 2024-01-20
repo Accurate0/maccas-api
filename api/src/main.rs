@@ -13,7 +13,7 @@ use axum::{
     routing::get,
     Router,
 };
-use base::account_manager::AccountManager;
+use base::{account_manager::AccountManager, shutdown::axum_shutdown_signal};
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
@@ -29,7 +29,6 @@ mod graphql;
 mod macros;
 mod settings;
 mod types;
-mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -105,7 +104,7 @@ async fn main() -> Result<(), anyhow::Error> {
     tracing::info!("starting api server {addr}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        .with_graceful_shutdown(utils::axum_shutdown_signal())
+        .with_graceful_shutdown(axum_shutdown_signal())
         .await?;
 
     Ok(())

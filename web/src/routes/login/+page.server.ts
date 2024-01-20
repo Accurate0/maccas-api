@@ -42,11 +42,11 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const createSession = async (userId: string) => {
+		const createSession = async (userId: string, role: Role) => {
 			const sessionId = randomBytes(64).toString('base64');
 			const sevenDaysInMs = 604800000;
 			const expires = new Date(Date.now() + sevenDaysInMs);
-			const accessToken = jwt.sign({ userId, sessionId }, env.AUTH_SECRET, {
+			const accessToken = jwt.sign({ userId, sessionId, role }, env.AUTH_SECRET, {
 				expiresIn: sevenDaysInMs / 1000,
 				issuer: 'Maccas Web',
 				audience: 'Maccas API',
@@ -80,7 +80,7 @@ export const actions = {
 				return setError(form, 'password', 'Invalid details');
 			}
 
-			await createSession(existingUser.id);
+			await createSession(existingUser.id, existingUser.role);
 		} else {
 			// FIXME: will need to be old.api.maccas.one or something
 			const formData = new FormData();
@@ -129,7 +129,10 @@ export const actions = {
 				}
 			});
 
-			await createSession(existingUserId);
+			await createSession(
+				existingUserId,
+				role === 'none' ? Role.USER : (role.toUpperCase() as Role)
+			);
 		}
 
 		redirect(303, '/');

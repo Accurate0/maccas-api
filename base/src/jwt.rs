@@ -10,6 +10,15 @@ use sha2::Sha256;
 use thiserror::Error;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum Role {
+    Admin,
+    Privileged,
+    #[default]
+    User,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JwtClaims {
     pub user_id: String,
@@ -19,6 +28,8 @@ pub struct JwtClaims {
     pub aud: String,
     pub iss: String,
     pub sub: String,
+    #[serde(default)]
+    pub role: Role,
 }
 
 #[derive(Error, Debug)]

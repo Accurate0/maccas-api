@@ -1,12 +1,35 @@
-use crate::{jobs::refresh::RefreshJob, settings::Settings};
+use crate::{
+    jobs::refresh::RefreshJob,
+    routes::{
+        health::health,
+        jobs::{get_jobs, run_job},
+    },
+    settings::Settings,
+    types::ApiState,
+};
+use axum::{
+    extract::MatchedPath,
+    http::Request,
+    routing::{get, post},
+    Router,
+};
+use base::shutdown::axum_shutdown_signal;
 use jobs::job_scheduler::JobScheduler;
+use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tokio::signal;
-use tracing::log::LevelFilter;
+use tower_http::{
+    cors::CorsLayer,
+    trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
+    LatencyUnit,
+};
+use tracing::{log::LevelFilter, Level};
 
 mod jobs;
+mod routes;
 mod settings;
+mod types;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -59,11 +82,50 @@ async fn main() -> Result<(), anyhow::Error> {
             .await;
     };
 
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(tower_http::cors::Any);
+
+    let app = Router::new()
+        .route("/health", get(health))
+        .route("/job", get(get_jobs))
+        .route("/job/:job_name", post(run_job))
+        .layer(cors)
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(|request: &Request<_>| {
+                    let matched_path = request
+                        .extensions()
+                        .get::<MatchedPath>()
+                        .map(MatchedPath::as_str);
+
+                    tracing::info_span!("request", uri = matched_path)
+                })
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
+                .on_response(
+                    DefaultOnResponse::new()
+                        .level(Level::INFO)
+                        .latency_unit(LatencyUnit::Millis),
+                ),
+        )
+        .with_state(ApiState {
+            job_scheduler: scheduler.clone(),
+        });
+
+    let addr = "0.0.0.0:8002".parse::<SocketAddr>().unwrap();
+    tracing::info!("starting batch server {addr}");
+    let server = axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .with_graceful_shutdown(axum_shutdown_signal());
+
     tokio::select! {
         _ = ctrl_c => {
             scheduler.shutdown().await;
         },
         _ = terminate => {
+            scheduler.shutdown().await;
+        },
+        _ = server => {
             scheduler.shutdown().await;
         }
     }

@@ -48,6 +48,18 @@ pub struct JobDetails {
     pub job_type: JobType,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub enum IntrospectedJobState {
+    Stopped,
+    Running,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct IntrospectedJobDetails {
+    pub name: String,
+    pub state: IntrospectedJobState,
+}
+
 impl JobDetails {
     pub fn new(job: Arc<dyn Job>, job_type: JobType) -> Self {
         Self {

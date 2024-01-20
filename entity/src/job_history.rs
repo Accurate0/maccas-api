@@ -15,15 +15,15 @@ pub struct Model {
     #[sea_orm(column_type = "JsonBinary", nullable)]
     pub context: Option<Json>,
     pub error_message: Option<String>,
-    pub job_id: Uuid,
+    pub job_name: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::jobs::Entity",
-        from = "Column::JobId",
-        to = "super::jobs::Column::Id",
+        from = "Column::JobName",
+        to = "super::jobs::Column::Name",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]

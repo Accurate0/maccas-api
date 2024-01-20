@@ -18,6 +18,26 @@ services:
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
       - AUTH_SECRET=111
 
+  dashboard:
+    build:
+      context: dashboard
+    ports:
+      - "3001:3000"
+    links:
+      - "api:api"
+      - "batch:batch"
+      - "event:event"
+    depends_on:
+      - api
+      - batch
+      - event
+    environment:
+      - DATABASE_URL=postgres://postgres:test@database/maccas-dashboard
+      - API_BASE_URL=http://api:8000
+      - EVENT_API_BASE=http://event:8001
+      - BATCH_API_BASE=http://batch:8002
+      - AUTH_SECRET=111
+
   api:
     build:
       dockerfile: Dockerfile

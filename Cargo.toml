@@ -72,3 +72,5 @@ redis = { version = "0.24.0", features = [
     "aio",
     "connection-manager",
 ] }
+axum = { version = "0.6.20", features = ["macros"] }
+tower-http = { version = "0.4.4", features = ["trace", "cors"] }

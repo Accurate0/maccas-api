@@ -1,31 +1,37 @@
-use super::{error::JobError, Job, JobContext, JobDetails, JobState, JobType, RunningState};
-use base::delay_queue::DelayQueue;
+use super::{
+    error::JobError, IntrospectedJobDetails, Job, JobContext, JobDetails, JobState, JobType,
+    RunningState,
+};
+use anyhow::Context;
+use base::delay_queue::{DelayQueue, IntrospectionResult};
 use entity::jobs;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, Set, Unchanged,
 };
+use serde::Serialize;
 use serde_json::Value;
 use std::{collections::HashMap, fmt::Debug, ops::ControlFlow, sync::Arc, time::Duration};
 use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
+#[derive(Clone, Serialize)]
 pub(crate) enum Message {
-    JobFinished { name: String },
+    JobFinished { name: String, queue_next: bool },
     Init,
-    RunJob(String),
+    RunJob { name: String, queue_next: bool },
 }
 
 impl Debug for Message {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::JobFinished { name } => {
+            Self::JobFinished { name, .. } => {
                 write!(f, "JobFinished: {}", name)
             }
             Self::Init => write!(f, "Init"),
-            Self::RunJob(arg0) => {
-                write!(f, "RunPending: {}", arg0)
+            Self::RunJob { name, .. } => {
+                write!(f, "RunPending: {}", name)
             }
         }
     }
@@ -52,6 +58,34 @@ impl JobScheduler {
             }
             .into(),
         )
+    }
+
+    pub async fn introspect(
+        &self,
+    ) -> (
+        Vec<IntrospectedJobDetails>,
+        Vec<IntrospectionResult<Message>>,
+    ) {
+        (
+            self.0
+                .jobs
+                .read()
+                .await
+                .values()
+                .map(|j| IntrospectedJobDetails {
+                    name: j.job.name(),
+                    state: match j.state {
+                        JobState::Stopped => super::IntrospectedJobState::Stopped,
+                        JobState::Running(_) => super::IntrospectedJobState::Running,
+                    },
+                })
+                .collect(),
+            self.0.task_queue.introspect().await,
+        )
+    }
+
+    pub fn db(&self) -> &DatabaseConnection {
+        &self.0.db
     }
 
     pub async fn add_scheduled<T>(&self, job: T, schedule: cron::Schedule) -> &Self
@@ -93,6 +127,24 @@ impl JobScheduler {
         Ok(())
     }
 
+    pub async fn run_job(&self, name: &str) -> Result<(), JobError> {
+        let jobs = self.0.jobs.read().await;
+        let job_to_run = jobs.get(name).context("can't find job with name")?;
+
+        self.0
+            .task_queue
+            .push(
+                Message::RunJob {
+                    name: job_to_run.job.name(),
+                    queue_next: true,
+                },
+                Duration::ZERO,
+            )
+            .await;
+
+        Ok(())
+    }
+
     pub async fn shutdown(&self) {
         let mut jobs = self.0.jobs.write().await;
         let mut cancellation_futures = Vec::new();
@@ -120,7 +172,7 @@ impl JobScheduler {
         })
     }
 
-    async fn handle_job_finish(&self, name: &str) -> Result<(), JobError> {
+    async fn handle_job_finish(&self, name: &str, queue_next: bool) -> Result<(), JobError> {
         let mut jobs = self.0.jobs.write().await;
         match jobs.get_mut(name) {
             Some(job_details) => {
@@ -135,29 +187,37 @@ impl JobScheduler {
                 let job_type = &job_details.job_type;
                 let time_now = chrono::offset::Utc::now();
 
-                // if no last execution, execute immediately
-                let next = match job_type {
-                    JobType::Schedule(schedule) => match last_execution {
-                        Some(t) => schedule.after(&t.and_utc()).next(),
-                        None => Some(time_now),
-                    }
-                    .unwrap(),
-                };
+                if queue_next {
+                    // if no last execution, execute immediately
+                    let next = match job_type {
+                        JobType::Schedule(schedule) => match last_execution {
+                            Some(t) => schedule.after(&t.and_utc()).next(),
+                            None => Some(time_now),
+                        }
+                        .unwrap(),
+                    };
 
-                tracing::info!("time now: {}", time_now);
-                tracing::info!("next scheduled run: {}", next);
+                    tracing::info!("time now: {}", time_now);
+                    tracing::info!("next scheduled run: {}", next);
 
-                let time_until = if time_now >= next {
-                    Duration::ZERO
-                } else {
-                    (next - time_now).to_std()?
-                };
+                    let time_until = if time_now >= next {
+                        Duration::ZERO
+                    } else {
+                        (next - time_now).to_std()?
+                    };
 
-                // setup next wake up for this job
-                self.0
-                    .task_queue
-                    .push(Message::RunJob(job_model.name), time_until)
-                    .await;
+                    // setup next wake up for this job
+                    self.0
+                        .task_queue
+                        .push(
+                            Message::RunJob {
+                                name: job_model.name,
+                                queue_next: false,
+                            },
+                            time_until,
+                        )
+                        .await;
+                }
             }
             None => tracing::error!(
                 "could not find job by name for state to set state to finished: {}",
@@ -168,7 +228,7 @@ impl JobScheduler {
         Ok(())
     }
 
-    async fn handle_run_job(&self, name: &str) -> Result<(), JobError> {
+    async fn handle_run_job(&self, name: &str, queue_next: bool) -> Result<(), JobError> {
         let mut jobs = self.0.jobs.write().await;
 
         let job_model = jobs::Entity::find()
@@ -198,7 +258,7 @@ impl JobScheduler {
 
             let execution_id = entity::job_history::ActiveModel {
                 context: Set(context.get::<Value>().await),
-                job_id: Set(job_model.id),
+                job_name: Set(job_model.name),
                 ..Default::default()
             }
             .insert(&db)
@@ -244,7 +304,13 @@ impl JobScheduler {
                     // must send after updating last execution or it can trigger twice
                     // race condition
                     queue
-                        .push(Message::JobFinished { name: task_name }, Duration::ZERO)
+                        .push(
+                            Message::JobFinished {
+                                name: task_name,
+                                queue_next,
+                            },
+                            Duration::ZERO,
+                        )
                         .await;
                 }
                 .instrument(span),
@@ -260,14 +326,17 @@ impl JobScheduler {
 
     async fn handle_message(&self, message: Message) -> Result<(), JobError> {
         match message {
-            Message::JobFinished { name } => {
+            Message::JobFinished { name, queue_next } => {
                 tracing::info!("received message for job finished: {}", name);
-                self.handle_job_finish(&name).await?;
+                self.handle_job_finish(&name, queue_next).await?;
             }
 
-            Message::RunJob(name) => {
+            Message::RunJob {
+                name,
+                queue_next: once,
+            } => {
                 tracing::info!("run pending task {}", name);
-                self.handle_run_job(&name).await?;
+                self.handle_run_job(&name, !once).await?;
             }
 
             Message::Init => {
@@ -305,7 +374,13 @@ impl JobScheduler {
 
                     self.0
                         .task_queue
-                        .push(Message::RunJob(job_model.name), time_until)
+                        .push(
+                            Message::RunJob {
+                                name: job_model.name,
+                                queue_next: false,
+                            },
+                            time_until,
+                        )
                         .await;
                 }
             }

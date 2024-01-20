@@ -8,24 +8,17 @@ edition = "2021"
 [dependencies]
 async-graphql = { workspace = true }
 async-graphql-axum = "6.0.11"
-
-axum = { version = "0.6.20", features = ["macros"] }
-
+axum = { workspace = true }
 tokio = { workspace = true }
-
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-
 sea-orm = { workspace = true }
 anyhow = { workspace = true }
-
 config = { workspace = true }
-
 serde = { workspace = true }
 reqwest = { workspace = true }
 serde_json = { workspace = true }
-tower-http = { version = "0.4.4", features = ["trace", "cors"] }
-
+tower-http = { workspace = true }
 entity = { workspace = true }
 event = { workspace = true }
 libmaccas = { workspace = true }

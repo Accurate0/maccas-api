@@ -1,6 +1,7 @@
 mod heap_entry;
 
 use heap_entry::HeapEntry;
+use serde::Serialize;
 use std::{
     collections::BinaryHeap,
     fmt::Debug,
@@ -8,7 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::{
-    sync::{Mutex, Notify},
+    sync::{Notify, RwLock},
     time::timeout_at,
 };
 
@@ -16,7 +17,7 @@ struct DelayQueueInner<T>
 where
     T: Send + Debug,
 {
-    pub(crate) heap: Mutex<BinaryHeap<HeapEntry<T>>>,
+    pub(crate) heap: RwLock<BinaryHeap<HeapEntry<T>>>,
     pub(crate) notify: Notify,
 }
 
@@ -27,9 +28,18 @@ where
     inner: Arc<DelayQueueInner<T>>,
 }
 
+#[derive(Serialize)]
+pub struct IntrospectionResult<T>
+where
+    T: Serialize,
+{
+    pub delay_util: Duration,
+    pub value: T,
+}
+
 impl<T> DelayQueue<T>
 where
-    T: Send + Debug,
+    T: Send + Debug + Clone + Serialize,
 {
     pub fn new() -> Self {
         Self {
@@ -41,6 +51,19 @@ where
         }
     }
 
+    pub async fn introspect(&self) -> Vec<IntrospectionResult<T>> {
+        self.inner
+            .heap
+            .read()
+            .await
+            .iter()
+            .map(|e| IntrospectionResult {
+                delay_util: e.delay_util - Instant::now(),
+                value: e.value.clone(),
+            })
+            .collect::<Vec<_>>()
+    }
+
     pub async fn push(&self, item: T, delay: Duration) {
         let instant = Instant::now();
         let entry = HeapEntry {
@@ -48,14 +71,14 @@ where
             value: item,
         };
 
-        self.inner.heap.lock().await.push(entry);
+        self.inner.heap.write().await.push(entry);
         self.inner.notify.notify_one();
     }
 
     pub async fn pop(&self) -> Option<T> {
         loop {
             let instant = Instant::now();
-            let mut heap = self.inner.heap.lock().await;
+            let mut heap = self.inner.heap.write().await;
             if let Some(peeked_item) = heap.peek() {
                 let peeked_instant = peeked_item.delay_util;
                 if instant >= peeked_instant {
@@ -87,7 +110,7 @@ where
 
 impl<T> Default for DelayQueue<T>
 where
-    T: Send + Debug,
+    T: Send + Debug + Clone + Serialize,
 {
     fn default() -> Self {
         Self::new()
