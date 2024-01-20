@@ -60,7 +60,7 @@ services:
       args:
         - BINARY_NAME=event
     ports:
-      - "8001:8000"
+      - "8001:8001"
     links:
       - "db:database"
       - "cache:cache"

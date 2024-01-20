@@ -6,8 +6,7 @@ use base::{
 };
 use event::Event;
 use sea_orm::DbErr;
-use state::TypeMap;
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 use thiserror::Error;
 
 mod cleanup;
@@ -31,7 +30,7 @@ pub enum HandlerError {
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)
-pub async fn handle(event_manager: EventManager, type_map: Arc<TypeMap![Sync + Send]>) {
+pub async fn handle(event_manager: EventManager) {
     if let Some(event) = event_manager.inner.event_queue.pop().await {
         let event_manager = event_manager.clone();
         // 1st attempt + 5 retries
@@ -50,7 +49,6 @@ pub async fn handle(event_manager: EventManager, type_map: Arc<TypeMap![Sync + S
                             transaction_id,
                             store_id.clone(),
                             event_manager.clone(),
-                            type_map.clone(),
                         )
                     })
                     .await

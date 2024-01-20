@@ -33,6 +33,7 @@ struct QueuedEvent {
 struct EventManagerInner {
     db: DatabaseConnection,
     event_queue: DelayQueue<QueuedEvent>,
+    state: TypeMap![Sync + Send],
 }
 
 pub struct EventManager {
@@ -45,6 +46,7 @@ impl EventManager {
             inner: EventManagerInner {
                 db,
                 event_queue: Default::default(),
+                state: Default::default(),
             }
             .into(),
         }
@@ -52,6 +54,20 @@ impl EventManager {
 
     pub fn db(&self) -> &DatabaseConnection {
         &self.inner.db
+    }
+
+    pub fn set_state<T>(&self, state: T)
+    where
+        T: Send + Sync + 'static,
+    {
+        self.inner.state.set(state);
+    }
+
+    pub fn get_state<T>(&self) -> &T
+    where
+        T: Send + Sync + 'static,
+    {
+        self.inner.state.get::<T>()
     }
 
     pub async fn create_event(
@@ -122,10 +138,7 @@ impl EventManager {
         Ok(())
     }
 
-    pub fn process_events(
-        &self,
-        type_map: Arc<TypeMap![Sync + Send]>,
-    ) -> (JoinHandle<()>, CancellationToken) {
+    pub fn process_events(&self) -> (JoinHandle<()>, CancellationToken) {
         let em = self.clone();
         let cancellation_token = CancellationToken::new();
         let cancellation_token_cloned = cancellation_token.clone();
@@ -138,7 +151,7 @@ impl EventManager {
                             tracing::info!("handle cancelled");
                             break;
                         },
-                        _ =  handlers::handle(em.clone(), type_map.clone()) => {}
+                        _ =  handlers::handle(em.clone()) => {}
                     }
                 }
             }),
