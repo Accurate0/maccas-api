@@ -18,6 +18,8 @@ pub enum AccountManagerError {
 
 impl AccountManager {
     const PREFIX: &'static str = "account-manager";
+    const ATTEMPTS: u64 = 5;
+    const DELAY: Duration = Duration::from_millis(100);
 
     pub async fn new(connection_string: &str) -> Result<Self, AccountManagerError> {
         Ok(Self {
@@ -37,7 +39,7 @@ impl AccountManager {
         account_id: Uuid,
         expiry: Duration,
     ) -> Result<(), AccountManagerError> {
-        let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
+        let backoff = ExponentialBackoff::new(Self::DELAY, Self::ATTEMPTS);
         retry_async(backoff, || async move {
             self.db
                 .lock()
@@ -56,7 +58,7 @@ impl AccountManager {
 
     // FIXME: GROSS
     pub async fn get_all_locked(&self) -> Result<Vec<Uuid>, AccountManagerError> {
-        let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
+        let backoff = ExponentialBackoff::new(Self::DELAY, Self::ATTEMPTS);
         retry_async(backoff, || async move {
             Ok(self
                 .db
@@ -76,7 +78,7 @@ impl AccountManager {
     }
 
     pub async fn unlock(&self, account_id: Uuid) -> Result<bool, AccountManagerError> {
-        let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
+        let backoff = ExponentialBackoff::new(Self::DELAY, Self::ATTEMPTS);
         retry_async(backoff, || async move {
             Ok(self
                 .db
