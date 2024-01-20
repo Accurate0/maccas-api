@@ -4,8 +4,6 @@ use anyhow::Context as _;
 use base::{account_manager::AccountManager, constants::mc_donalds::OFFSET};
 use entity::{accounts, offers, sea_orm_active_enums::Action};
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
-use state::TypeMap;
-use std::sync::Arc;
 use uuid::Uuid;
 
 pub async fn cleanup(
@@ -13,11 +11,10 @@ pub async fn cleanup(
     transaction_id: Uuid,
     store_id: String,
     em: EventManager,
-    type_map: Arc<TypeMap![Sync + Send]>,
 ) -> Result<(), HandlerError> {
     tracing::info!("cleanup for {}", offer_id);
 
-    let settings = type_map.get::<Settings>();
+    let settings = em.get_state::<Settings>();
     let db = em.db();
     let offer = offers::Entity::find_by_id(offer_id)
         .one(db)
@@ -67,7 +64,7 @@ pub async fn cleanup(
 
         match response {
             Ok(r) => {
-                let account_manager = type_map.get::<AccountManager>();
+                let account_manager = em.get_state::<AccountManager>();
                 account_manager.unlock(offer.account_id).await?;
 
                 tracing::info!("deal stack response: {r:?}");

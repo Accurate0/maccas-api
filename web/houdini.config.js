@@ -4,7 +4,7 @@
 const config = {
 	watchSchema: {
 		url: 'http://localhost:8000/graphql',
-		interval: 2000
+		interval: 0
 	},
 	plugins: {
 		'houdini-svelte': {}

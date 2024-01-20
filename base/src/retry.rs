@@ -20,6 +20,15 @@ pub enum RetryResult<V, E> {
     Err { attempts: u64, value: E },
 }
 
+impl<R, E> From<RetryResult<R, E>> for Result<R, E> {
+    fn from(value: RetryResult<R, E>) -> Self {
+        match value {
+            RetryResult::Ok { attempts: _, value } => Ok(value),
+            RetryResult::Err { attempts: _, value } => Err(value),
+        }
+    }
+}
+
 impl<R, E> From<Result<R, E>> for OperationResult<R, E> {
     fn from(val: Result<R, E>) -> Self {
         match val {
