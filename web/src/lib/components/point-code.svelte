@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useMutation, useQuery } from '@sveltestack/svelte-query';
+	import { useMutation } from '@sveltestack/svelte-query';
 	import { Skeleton } from './ui/skeleton';
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
