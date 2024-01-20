@@ -1256,6 +1256,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "axum",
  "base",
  "chrono",
  "config",
@@ -1272,6 +1273,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
 ]

@@ -7,7 +7,7 @@ pub struct Migration;
 enum JobHistory {
     Table,
     Id,
-    JobId,
+    JobName,
     CreatedAt,
     UpdatedAt,
     CompletedAt,
@@ -19,7 +19,7 @@ enum JobHistory {
 #[derive(DeriveIden)]
 enum Jobs {
     Table,
-    Id,
+    Name,
 }
 
 #[async_trait::async_trait]
@@ -58,14 +58,14 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(JobHistory::Context).json_binary().null())
                     .col(ColumnDef::new(JobHistory::ErrorMessage).string())
-                    .col(ColumnDef::new(JobHistory::JobId).uuid().not_null())
+                    .col(ColumnDef::new(JobHistory::JobName).string().not_null())
                     .foreign_key(
                         ForeignKeyCreateStatement::new()
                             .name("job_id_fk")
                             .to_tbl(Jobs::Table)
-                            .to_col(Jobs::Id)
+                            .to_col(Jobs::Name)
                             .from_tbl(JobHistory::Table)
-                            .from_col(JobHistory::JobId)
+                            .from_col(JobHistory::JobName)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )

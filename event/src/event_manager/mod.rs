@@ -6,6 +6,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
     Set, Unchanged,
 };
+use serde::Serialize;
 use state::TypeMap;
 use std::{sync::Arc, time::Duration};
 use thiserror::Error;
@@ -24,10 +25,10 @@ pub enum EventManagerError {
     OutOfRangeError(#[from] chrono::OutOfRangeError),
 }
 
-#[derive(Debug)]
-struct QueuedEvent {
-    evt: Event,
-    id: i32,
+#[derive(Debug, Clone, Serialize)]
+pub(crate) struct QueuedEvent {
+    pub(crate) evt: Event,
+    pub(crate) id: i32,
 }
 
 struct EventManagerInner {
