@@ -18,7 +18,7 @@ import { TimeSecondsInFuture } from "../../components/time-in-seconds-future";
 import { env } from "@/env";
 import { GetJobsResponse } from "@/types/batch";
 
-export const BatchDashboard = async () => {
+const Page = async () => {
   const session = await getSession();
 
   const response = await fetch(`${env.BATCH_API_BASE}/job`, {
@@ -155,4 +155,4 @@ export const BatchDashboard = async () => {
   );
 };
 
-export default BatchDashboard;
+export default Page;
