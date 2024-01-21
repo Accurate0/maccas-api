@@ -67,23 +67,12 @@ services:
       - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
-
-  batch:
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=batch
-    ports:
-      - "8002:8002"
-    links:
-      - "db:database"
-    depends_on:
-      - db
-    environment:
-      - DATABASE__URL=postgres://postgres:test@database/maccas
-      - AUTH_SECRET=111
-    env_file:
-      - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
 
   event:
     build:
@@ -103,6 +92,35 @@ services:
       - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  batch:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=batch
+    ports:
+      - "8002:8002"
+    links:
+      - "db:database"
+    depends_on:
+      - db
+    environment:
+      - DATABASE__URL=postgres://postgres:test@database/maccas
+      - AUTH_SECRET=111
+    env_file:
+      - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
 
   db:
     image: postgres:16
@@ -113,6 +131,11 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: maccas
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 90s
+      timeout: 5s
+      retries: 5
 
   cache:
     image: docker.dragonflydb.io/dragonflydb/dragonfly
