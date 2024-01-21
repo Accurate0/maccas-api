@@ -68,7 +68,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .await;
 
     tracing::info!("scheduler initializing");
-    // scheduler.init().await?;
+    scheduler.init().await?;
     let handle = scheduler.run().await;
 
     let terminate = async {
