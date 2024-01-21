@@ -16,7 +16,7 @@ import {
   Title,
 } from "@tremor/react";
 
-export const EventsDashboard = async () => {
+const Page = async () => {
   const session = await getSession();
 
   const response = await fetch(`${env.EVENT_API_BASE}/event`, {
@@ -137,4 +137,4 @@ export const EventsDashboard = async () => {
   );
 };
 
-export default EventsDashboard;
+export default Page;

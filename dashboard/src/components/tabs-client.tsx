@@ -7,6 +7,10 @@ import { usePathname } from "next/navigation";
 export const TabsClient = () => {
   const pathname = usePathname();
 
+  if (!["/event", "/batch"].includes(pathname)) {
+    return null;
+  }
+
   return (
     <Tabs defaultValue={pathname.replace("/", "")} className="mt-6">
       <TabsList>

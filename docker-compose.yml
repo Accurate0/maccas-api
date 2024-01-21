@@ -18,6 +18,8 @@ services:
       - API_BASE_URL=http://api:8000
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
       - AUTH_SECRET=111
+      # svelte needs orgin for csrf
+      - ORIGIN=http://localhost:3000
 
   dashboard:
     build:
