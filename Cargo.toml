@@ -47,6 +47,7 @@ places = { path = "./external/places" }
 base = { path = "./base" }
 converters = { path = "./converters" }
 event = { path = "./event" }
+batch = { path = "./batch" }
 
 thiserror = "1.0.51"
 futures = "0.3.29"

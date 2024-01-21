@@ -409,6 +409,7 @@ dependencies = [
  "async-trait",
  "axum",
  "base",
+ "batch",
  "config",
  "entity",
  "event",

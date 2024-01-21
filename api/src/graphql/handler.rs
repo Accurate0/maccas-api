@@ -79,6 +79,7 @@ pub async fn graphql_handler(
 pub struct HealthResponse {
     database: bool,
     event: bool,
+    batch: bool,
 }
 
 pub async fn health(
@@ -90,6 +91,7 @@ pub async fn health(
         health {
           database
           event
+          batch
         }
       }
       "#,
