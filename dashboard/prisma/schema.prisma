@@ -9,28 +9,30 @@ datasource db {
 }
 
 model User {
-  id       String @id @unique
-  username String @unique
+  id           String @id @default(uuid())
+  username     String @unique
+  passwordHash Bytes  @db.ByteA
+  role         Role   @default(ADMIN)
 
-  auth_session Session[]
-  key          Key[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Session Session[]
+
+  @@map("users")
 }
 
 model Session {
-  id             String @id @unique
-  user_id        String
-  active_expires BigInt
-  idle_expires   BigInt
-  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  id          String   @id
+  expires     DateTime
+  createdAt   DateTime @default(now())
+  accessToken String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([user_id])
+  @@map("sessions")
 }
 
-model Key {
-  id              String  @id @unique
-  hashed_password String?
-  user_id         String
-  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
+enum Role {
+  ADMIN
 }

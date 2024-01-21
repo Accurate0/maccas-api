@@ -1,5 +1,6 @@
 use crate::{
     jobs::refresh::RefreshJob,
+    jwt::validate,
     routes::{
         health::health,
         jobs::{get_jobs, run_job},
@@ -10,6 +11,7 @@ use crate::{
 use axum::{
     extract::MatchedPath,
     http::Request,
+    middleware,
     routing::{get, post},
     Router,
 };
@@ -27,6 +29,7 @@ use tower_http::{
 use tracing::{log::LevelFilter, Level};
 
 mod jobs;
+mod jwt;
 mod routes;
 mod settings;
 mod types;
@@ -58,7 +61,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .add_scheduled(
             RefreshJob {
                 http_client,
-                mcdonalds_config: settings.mcdonalds,
+                mcdonalds_config: settings.mcdonalds.clone(),
             },
             "0 */1 * * * *".parse()?,
         )
@@ -82,14 +85,21 @@ async fn main() -> Result<(), anyhow::Error> {
             .await;
     };
 
+    let api_state = ApiState {
+        job_scheduler: scheduler.clone(),
+        settings,
+    };
+
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(tower_http::cors::Any);
 
+    let health = Router::new().route("/health", get(health));
+
     let app = Router::new()
-        .route("/health", get(health))
         .route("/job", get(get_jobs))
         .route("/job/:job_name", post(run_job))
+        .layer(middleware::from_fn_with_state(api_state.clone(), validate))
         .layer(cors)
         .layer(
             TraceLayer::new_for_http()
@@ -108,9 +118,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         .latency_unit(LatencyUnit::Millis),
                 ),
         )
-        .with_state(ApiState {
-            job_scheduler: scheduler.clone(),
-        });
+        .merge(health)
+        .with_state(api_state);
 
     let addr = "0.0.0.0:8002".parse::<SocketAddr>().unwrap();
     tracing::info!("starting batch server {addr}");

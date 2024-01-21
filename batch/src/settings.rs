@@ -25,6 +25,7 @@ pub struct Settings {
     pub database: Database,
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
+    pub auth_secret: String,
 }
 
 impl Settings {

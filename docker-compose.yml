@@ -12,6 +12,7 @@ services:
       - "db:database"
     depends_on:
       - api
+      - db
     environment:
       - OLD_API_BASE_URL=https://api.maccas.one/v1
       - API_BASE_URL=http://api:8000
@@ -22,13 +23,15 @@ services:
     build:
       context: dashboard
     ports:
-      - "3001:3000"
+      - "3001:3001"
     links:
       - "api:api"
+      - "db:database"
       - "batch:batch"
       - "event:event"
     depends_on:
       - api
+      - db
       - batch
       - event
     environment:
@@ -65,12 +68,15 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=batch
+    ports:
+      - "8002:8002"
     links:
       - "db:database"
     depends_on:
       - db
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
+      - AUTH_SECRET=111
     env_file:
       - .env.local
 
