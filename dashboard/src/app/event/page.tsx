@@ -1,4 +1,5 @@
 import { getSession } from "@/auth";
+import { Time } from "@/components/time";
 import { env } from "@/env";
 import { GetEventsResponse } from "@/types/event";
 import {
@@ -14,7 +15,6 @@ import {
   TableRow,
   Title,
 } from "@tremor/react";
-import { Time } from "./time";
 
 export const EventsDashboard = async () => {
   const session = await getSession();
@@ -136,3 +136,5 @@ export const EventsDashboard = async () => {
     </>
   );
 };
+
+export default EventsDashboard;
