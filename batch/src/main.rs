@@ -63,7 +63,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 http_client,
                 mcdonalds_config: settings.mcdonalds.clone(),
             },
-            "0 */1 * * * *".parse()?,
+            "0 */10 * * * *".parse()?,
         )
         .await;
 
