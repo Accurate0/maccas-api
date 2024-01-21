@@ -1,5 +1,3 @@
-import { env } from "@/env";
-import { GetJobsResponse } from "@/types/batch";
 import {
   Grid,
   Card,
@@ -13,11 +11,12 @@ import {
   TableRow,
   Title,
 } from "@tremor/react";
-import { StartJobButton } from "./start-job-button";
+import { StartJobButton } from "../../components/start-job-button";
 import { getSession } from "@/auth";
-import { intlFormatDistance } from "date-fns";
-import { Time } from "./time";
-import { TimeSecondsInFuture } from "./time-in-seconds-future";
+import { Time } from "../../components/time";
+import { TimeSecondsInFuture } from "../../components/time-in-seconds-future";
+import { env } from "@/env";
+import { GetJobsResponse } from "@/types/batch";
 
 export const BatchDashboard = async () => {
   const session = await getSession();
@@ -155,3 +154,5 @@ export const BatchDashboard = async () => {
     </Grid>
   );
 };
+
+export default BatchDashboard;
