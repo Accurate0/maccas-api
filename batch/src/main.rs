@@ -69,6 +69,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     tracing::info!("scheduler initializing");
     scheduler.init().await?;
+
     let handle = scheduler.run().await;
 
     let terminate = async {
@@ -94,30 +95,32 @@ async fn main() -> Result<(), anyhow::Error> {
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(tower_http::cors::Any);
 
-    let health = Router::new().route("/health", get(health));
+    let trace_layer = TraceLayer::new_for_http()
+        .make_span_with(|request: &Request<_>| {
+            let matched_path = request
+                .extensions()
+                .get::<MatchedPath>()
+                .map(MatchedPath::as_str);
+
+            tracing::info_span!("request", uri = matched_path)
+        })
+        .on_request(DefaultOnRequest::new().level(Level::INFO))
+        .on_response(
+            DefaultOnResponse::new()
+                .level(Level::INFO)
+                .latency_unit(LatencyUnit::Millis),
+        );
+
+    let health = Router::new()
+        .route("/health", get(health))
+        .layer(trace_layer.clone());
 
     let app = Router::new()
         .route("/job", get(get_jobs))
         .route("/job/:job_name", post(run_job))
         .layer(middleware::from_fn_with_state(api_state.clone(), validate))
         .layer(cors)
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(|request: &Request<_>| {
-                    let matched_path = request
-                        .extensions()
-                        .get::<MatchedPath>()
-                        .map(MatchedPath::as_str);
-
-                    tracing::info_span!("request", uri = matched_path)
-                })
-                .on_request(DefaultOnRequest::new().level(Level::INFO))
-                .on_response(
-                    DefaultOnResponse::new()
-                        .level(Level::INFO)
-                        .latency_unit(LatencyUnit::Millis),
-                ),
-        )
+        .layer(trace_layer)
         .merge(health)
         .with_state(api_state);
 

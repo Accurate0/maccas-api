@@ -21,6 +21,7 @@ serde_json = { workspace = true }
 tower-http = { workspace = true }
 entity = { workspace = true }
 event = { workspace = true }
+batch = { workspace = true }
 libmaccas = { workspace = true }
 places = { workspace = true }
 async-trait = { workspace = true }

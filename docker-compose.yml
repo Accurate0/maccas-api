@@ -53,14 +53,17 @@ services:
     links:
       - "db:database"
       - "event:event"
+      - "batch:batch"
       - "cache:cache"
     depends_on:
       - db
       - cache
       - event
+      - batch
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
+      - BATCH_API_BASE=http://batch:8002
       - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
