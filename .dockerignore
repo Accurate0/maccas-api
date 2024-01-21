@@ -2,4 +2,5 @@
 prisma.rs
 docker-compose.yml
 web/
+dashboard/
 Dockerfile

@@ -1,3 +1,4 @@
+import { getSession } from "@/auth";
 import { BatchDashboard } from "@/components/batch-dashboard";
 import { EventsDashboard } from "@/components/events-dashboard";
 import {
@@ -9,8 +10,14 @@ import {
   Text,
   Title,
 } from "@tremor/react";
+import { redirect } from "next/navigation";
 
-export default function DashboardExample() {
+export default async function DashboardExample() {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+
   return (
     <main className="p-12">
       <Title>Maccas Dashboard</Title>

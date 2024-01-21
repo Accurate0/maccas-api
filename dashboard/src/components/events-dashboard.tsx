@@ -1,3 +1,4 @@
+import { getSession } from "@/auth";
 import { env } from "@/env";
 import { GetEventsResponse } from "@/types/event";
 import {
@@ -13,11 +14,16 @@ import {
   TableRow,
   Title,
 } from "@tremor/react";
-import { formatRelative } from "date-fns";
+import { Time } from "./time";
 
 export const EventsDashboard = async () => {
+  const session = await getSession();
+
   const response = await fetch(`${env.EVENT_API_BASE}/event`, {
     cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${session?.accessToken}`,
+    },
   }).then((r) => r.json() as Promise<GetEventsResponse>);
 
   return (
@@ -47,12 +53,10 @@ export const EventsDashboard = async () => {
                       <pre>{item.event_id}</pre>
                     </TableCell>
                     <TableCell>
-                      {new Date(item.created_at).toLocaleString("en-AU")}
+                      <Time datetime={item.created_at} />
                     </TableCell>
                     <TableCell>
-                      {new Date(item.should_be_completed_at).toLocaleString(
-                        "en-AU"
-                      )}
+                      <Time datetime={item.should_be_completed_at} />
                     </TableCell>
                     <TableCell>
                       <pre className="whitespace-pre">
@@ -104,12 +108,14 @@ export const EventsDashboard = async () => {
                       <pre>{item.event_id}</pre>
                     </TableCell>
                     <TableCell>
-                      {new Date(item.created_at).toLocaleString("en-AU")}
+                      <Time datetime={item.created_at} />
                     </TableCell>
                     <TableCell>
-                      {item.completed_at
-                        ? new Date(item.completed_at).toLocaleString("en-AU")
-                        : "Not finished"}
+                      {item.completed_at ? (
+                        <Time datetime={item.completed_at} />
+                      ) : (
+                        "Not finished"
+                      )}
                     </TableCell>
                     <TableCell>{item.attempts}</TableCell>
                     <TableCell className="whitespace-pre-line">

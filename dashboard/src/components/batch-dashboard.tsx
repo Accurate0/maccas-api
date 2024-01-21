@@ -14,10 +14,19 @@ import {
   Title,
 } from "@tremor/react";
 import { StartJobButton } from "./start-job-button";
+import { getSession } from "@/auth";
+import { intlFormatDistance } from "date-fns";
+import { Time } from "./time";
+import { TimeSecondsInFuture } from "./time-in-seconds-future";
 
 export const BatchDashboard = async () => {
+  const session = await getSession();
+
   const response = await fetch(`${env.BATCH_API_BASE}/job`, {
     cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${session?.accessToken}`,
+    },
   }).then((r) => r.json() as Promise<GetJobsResponse>);
 
   return (
@@ -40,9 +49,9 @@ export const BatchDashboard = async () => {
                 <TableRow key={item.name}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>
-                    {new Date(
-                      Date.now() + item.seconds_until_next * 1000
-                    ).toLocaleString("en-AU")}
+                    <TimeSecondsInFuture
+                      secondsInFuture={item.seconds_until_next}
+                    />
                   </TableCell>
                 </TableRow>
               );
@@ -120,12 +129,14 @@ export const BatchDashboard = async () => {
                 <TableRow key={item.completed_at}>
                   <TableCell>{item.job_name}</TableCell>
                   <TableCell>
-                    {new Date(item.created_at).toLocaleString("en-AU")}
+                    <Time datetime={item.created_at} />
                   </TableCell>
                   <TableCell>
-                    {item.completed_at
-                      ? new Date(item.completed_at).toLocaleString("en-AU")
-                      : "Not finished"}
+                    {item.completed_at ? (
+                      <Time datetime={item.completed_at} />
+                    ) : (
+                      "Not finished"
+                    )}
                   </TableCell>
                   <TableCell className="whitespace-pre-line">
                     {item.error_message ?? "Completed"}
