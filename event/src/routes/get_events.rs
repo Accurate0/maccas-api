@@ -15,7 +15,7 @@ pub async fn get_events(
 ) -> Result<Json<GetEventsResponse>, EventError> {
     let events = events::Entity::find()
         .order_by_desc(events::Column::CreatedAt)
-        .limit(query.limit)
+        .limit(Some(query.limit.unwrap_or(50)))
         .all(state.event_manager.db())
         .await?;
 
