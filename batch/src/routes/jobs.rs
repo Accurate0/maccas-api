@@ -35,7 +35,7 @@ pub async fn get_jobs(
 ) -> Result<Json<GetJobsResponse>, AppError> {
     let current_jobs = state.job_scheduler.introspect();
     let history = job_history::Entity::find()
-        .limit(query.limit)
+        .limit(Some(query.limit.unwrap_or(50)))
         .order_by_desc(job_history::Column::CreatedAt)
         .all(state.job_scheduler.db());
 
