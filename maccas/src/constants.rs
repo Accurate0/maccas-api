@@ -32,7 +32,7 @@ pub mod config {
     pub const MAXIMUM_FAILURE_HANDLER_RETRY: i8 = 5;
     pub const MAXIMUM_CLEANUP_RETRY: i8 = 5;
     pub const MAX_PROXY_COUNT: i8 = 10;
-    pub const TOKEN_VALID_TIME: i64 = 86400;
+    pub const TOKEN_VALID_TIME: i64 = 604800;
     pub const TOKEN_ACCESS_ISS: &str = "Maccas API";
 }
 
