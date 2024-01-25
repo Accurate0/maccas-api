@@ -11,7 +11,7 @@ serde = { workspace = true }
 tokio = { workspace = true }
 actix-web = "4"
 futures = { workspace = true }
-actix-cors = "0.6.1"
+actix-cors = "0.7.0"
 serde_json = { workspace = true }
 chrono = { workspace = true }
 sea-orm = { workspace = true }
