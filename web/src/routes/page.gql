@@ -5,6 +5,8 @@ query Index($includePoints: Boolean!, $minimumCurrentPoints: Int!) {
 		name
 		count
 		offerPropositionId
+		validFrom
+		validTo
 	}
 	points(filter: { minimumCurrentPoints: $minimumCurrentPoints }) @include(if: $includePoints) {
 		currentPoints

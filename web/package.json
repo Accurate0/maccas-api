@@ -54,6 +54,7 @@
 		"bcrypt": "^5.1.1",
 		"bits-ui": "^0.11.8",
 		"clsx": "^2.0.0",
+		"date-fns": "^3.3.1",
 		"jsonwebtoken": "^9.0.2",
 		"material-symbols": "^0.14.3",
 		"radix-icons-svelte": "^1.2.1",

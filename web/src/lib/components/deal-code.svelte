@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useMutation, useQuery } from '@sveltestack/svelte-query';
+	import { useMutation } from '@sveltestack/svelte-query';
 	import { Skeleton } from './ui/skeleton';
 	import type { AddOfferResponse } from '../../routes/api/offers/[offerId]/+server';
 	import { onMount } from 'svelte';
@@ -14,9 +14,17 @@
 	const addOffer = useMutation(
 		`add-${id}`,
 		async () =>
-			await fetch(`/api/offers/${offerId}`, { method: 'POST' })
-				.then((r) => r.json())
-				.then((j) => j as AddOfferResponse)
+			await fetch(`/api/offers/${offerId}`, { method: 'POST' }).then(
+				(r) => r.json() as Promise<AddOfferResponse>
+			),
+		{
+			onError: (data) => {
+				offerCode.update(() => 'Something went wrong');
+			},
+			onSuccess: (data) => {
+				offerCode.update(() => data.code);
+			}
+		}
 	);
 
 	const removeOffer = useMutation(
@@ -27,10 +35,13 @@
 	const refreshOffer = useMutation(
 		`code-${id}`,
 		async () =>
-			await fetch(`/api/offers/${$addOffer.data?.id}`, { method: 'GET' })
-				.then((r) => r.json())
-				.then((j) => j as Omit<AddOfferResponse, 'id'>),
+			await fetch(`/api/offers/${$addOffer.data?.id}`, { method: 'GET' }).then(
+				(r) => r.json() as Promise<Omit<AddOfferResponse, 'id'>>
+			),
 		{
+			onError: () => {
+				offerCode.update(() => 'Something went wrong');
+			},
 			onSuccess: (data) => {
 				offerCode.update(() => data.code);
 			}
@@ -38,8 +49,7 @@
 	);
 
 	onMount(async () => {
-		const response = await $addOffer.mutateAsync();
-		offerCode.update(() => response.code);
+		await $addOffer.mutateAsync();
 	});
 </script>
 
