@@ -34,6 +34,15 @@ impl AccountManager {
         format!("{}-{id}", Self::PREFIX)
     }
 
+    pub async fn ping(&self) -> bool {
+        self.db
+            .lock()
+            .await
+            .send_packed_command(&redis::cmd("PING"))
+            .await
+            .is_ok()
+    }
+
     pub async fn lock(
         &self,
         account_id: Uuid,

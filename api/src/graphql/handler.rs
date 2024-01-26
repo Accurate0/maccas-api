@@ -81,6 +81,7 @@ pub struct HealthResponse {
     database: bool,
     event: bool,
     batch: bool,
+    cache: bool,
 }
 
 pub async fn health(
@@ -93,6 +94,7 @@ pub async fn health(
           database
           event
           batch
+          cache
         }
       }
       "#,
@@ -108,7 +110,11 @@ pub async fn health(
             .clone(),
     )?;
 
-    if health_response.database && health_response.event && health_response.batch {
+    if health_response.database
+        && health_response.event
+        && health_response.batch
+        && health_response.cache
+    {
         Ok(Json(health_response))
     } else {
         Err(AppError::StatusCode(StatusCode::SERVICE_UNAVAILABLE))
