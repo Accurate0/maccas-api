@@ -5,6 +5,7 @@
 	import { writable, type Writable } from 'svelte/store';
 	import DealCode from '../deal-code.svelte';
 	import { slide } from 'svelte/transition';
+	import { isFuture, isPast, parseJSON } from 'date-fns';
 
 	export let offersList: Promise<import('$houdini').Index$result['offers'] | undefined>;
 	let state: Writable<Record<number, Array<{ id: string }>>> = writable({});
@@ -22,6 +23,13 @@
 
 	const removeOffer = async (offerId: number, id: string) => {
 		state.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
+	};
+
+	const isOfferValid = (offer: { validTo: string; validFrom: string }) => {
+		const from = parseJSON(offer.validFrom);
+		const to = parseJSON(offer.validTo);
+
+		return isPast(from) && isFuture(to);
 	};
 </script>
 
@@ -42,13 +50,15 @@
 			</Card.Root>
 		{/each}
 	{:then offersList}
-		{#each offersList ?? [] as { shortName, name, count, imageBasename, offerPropositionId }}
+		{#each offersList ?? [] as { shortName, name, count, imageBasename, offerPropositionId, validFrom, validTo }}
+			{@const isValid = isOfferValid({ validFrom, validTo })}
 			<Card.Root
 				on:click={() => {
 					if (($state[offerPropositionId]?.length ?? 0) < count) {
 						addOffer(offerPropositionId, crypto.randomUUID());
 					}
 				}}
+				class={isValid ? undefined : 'opacity-30'}
 			>
 				<div class="grid grid-flow-col justify-between">
 					<Card.Header class="grid justify-between">

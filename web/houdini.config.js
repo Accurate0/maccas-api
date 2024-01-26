@@ -12,6 +12,9 @@ const config = {
 	scalars: {
 		UUID: {
 			type: 'string'
+		},
+		NaiveDateTime: {
+			type: 'string'
 		}
 	}
 };
