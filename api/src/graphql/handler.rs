@@ -4,6 +4,7 @@ use async_graphql::{http::GraphiQLSource, ServerError};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::State, http::HeaderMap, response::IntoResponse, Json};
 use base::jwt::{self, JwtClaims};
+use reqwest::StatusCode;
 
 pub async fn graphiql() -> impl IntoResponse {
     axum::response::Html(GraphiQLSource::build().endpoint("/graphql").finish())
@@ -98,13 +99,18 @@ pub async fn health(
     );
 
     let response = schema.execute(request).await;
-
-    Ok(Json(serde_json::from_value(
+    let health_response = serde_json::from_value::<HealthResponse>(
         response
             .data
             .into_json()?
             .get("health")
             .context("can't find health in response")?
             .clone(),
-    )?))
+    )?;
+
+    if health_response.database && health_response.event && health_response.batch {
+        Ok(Json(health_response))
+    } else {
+        Err(AppError::StatusCode(StatusCode::SERVICE_UNAVAILABLE))
+    }
 }
