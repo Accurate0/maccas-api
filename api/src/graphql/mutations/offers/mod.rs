@@ -28,8 +28,6 @@ impl OffersMutation {
         ctx: &Context<'a>,
         input: AddOfferInput,
     ) -> async_graphql::Result<AddOfferResponse> {
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-
         let db = ctx.data::<DatabaseConnection>()?;
         let account_manager = ctx.data::<AccountManager>()?;
 
@@ -176,6 +174,16 @@ impl OffersMutation {
 
         if response.status.is_success() {
             account_manager.unlock(offer.account_id).await?;
+
+            entity::offer_audit::ActiveModel {
+                action: Set(Action::Remove),
+                proposition_id: Set(offer.offer_proposition_id),
+                // FIXME: find old one ?
+                transaction_id: Set(Uuid::new_v4()),
+                ..Default::default()
+            }
+            .insert(db)
+            .await?;
         }
 
         Ok(input.id)
