@@ -1,0 +1,33 @@
+# fly.toml app configuration file generated for maccas-batch on 2024-01-26T16:15:47+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'maccas-batch'
+primary_region = 'syd'
+
+[build]
+image = 'maccas-api-batch'
+
+[http_service]
+internal_port = 8002
+force_https = true
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 1
+max_machines_running = 1
+
+[checks]
+[checks.healthcheck]
+port = 8002
+type = 'http'
+interval = '15s'
+timeout = '10s'
+grace_period = '10s'
+method = 'get'
+path = '/health'
+
+[[vm]]
+cpu_kind = 'shared'
+cpus = 1
+memory_mb = 1024

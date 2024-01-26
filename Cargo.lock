@@ -1266,6 +1266,7 @@ dependencies = [
  "entity",
  "futures",
  "libmaccas",
+ "migration",
  "reqwest",
  "reqwest-middleware",
  "sea-orm",

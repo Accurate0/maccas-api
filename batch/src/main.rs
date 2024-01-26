@@ -17,6 +17,7 @@ use axum::{
 };
 use base::shutdown::axum_shutdown_signal;
 use jobs::job_scheduler::JobScheduler;
+use migration::MigratorTrait;
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
@@ -49,6 +50,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging_level(LevelFilter::Trace);
 
     let db = Database::connect(opt).await?;
+    migration::Migrator::up(&db, None).await?;
 
     let scheduler = JobScheduler::new(db);
 
@@ -63,7 +65,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 http_client,
                 mcdonalds_config: settings.mcdonalds.clone(),
             },
-            "0 */10 * * * *".parse()?,
+            "0 * */4 * * *".parse()?,
         )
         .await;
 
@@ -124,7 +126,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .merge(health)
         .with_state(api_state);
 
-    let addr = "0.0.0.0:8002".parse::<SocketAddr>().unwrap();
+    let addr = "[::]:8002".parse::<SocketAddr>().unwrap();
     tracing::info!("starting batch server {addr}");
     let server = axum::Server::bind(&addr)
         .serve(app.into_make_service())

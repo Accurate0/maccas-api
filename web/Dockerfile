@@ -13,11 +13,15 @@ RUN pnpm run db:generate
 RUN pnpm run build
 
 FROM node:20-alpine
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 WORKDIR /app
 COPY --from=build /app/build build/
 COPY --from=build /app/node_modules node_modules/
 COPY --from=build /app/docker-entry.js .
+COPY --from=build /app/prisma prisma
 
 COPY package.json .
 EXPOSE 3000

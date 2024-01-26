@@ -100,7 +100,7 @@ async fn main() -> Result<(), anyhow::Error> {
         )
         .with_state(ApiState { schema, settings });
 
-    let addr = "0.0.0.0:8000".parse::<SocketAddr>().unwrap();
+    let addr = "[::]:8000".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
