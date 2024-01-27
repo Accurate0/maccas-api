@@ -6,6 +6,7 @@ use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
+pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
 pub mod refresh;
@@ -39,6 +40,7 @@ pub enum JobState {
 #[derive(Debug)]
 pub enum JobType {
     Schedule(cron::Schedule),
+    Manual,
 }
 
 #[derive(Debug)]

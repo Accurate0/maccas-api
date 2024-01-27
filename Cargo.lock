@@ -1267,6 +1267,7 @@ dependencies = [
  "futures",
  "libmaccas",
  "migration",
+ "rand",
  "reqwest",
  "reqwest-middleware",
  "sea-orm",

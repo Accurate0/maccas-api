@@ -26,6 +26,7 @@ pub struct Settings {
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
     pub auth_secret: String,
+    pub email_domain_name: String,
 }
 
 impl Settings {

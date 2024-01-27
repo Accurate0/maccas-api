@@ -29,6 +29,7 @@ cron = { workspace = true }
 tower-http = { workspace = true }
 axum = { workspace = true }
 migration = { workspace = true }
+rand = { workspace = true }
 
 
 [lib]
