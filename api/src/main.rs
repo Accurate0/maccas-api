@@ -77,7 +77,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(tower_http::cors::Any);
 
-    let app = Router::new()
+    let api_routes = Router::new()
         .route("/graphql", get(graphiql).post(graphql_handler))
         .route("/health", get(health))
         .layer(cors)
@@ -99,6 +99,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 ),
         )
         .with_state(ApiState { schema, settings });
+
+    let app = Router::new().nest("/v1", api_routes);
 
     let addr = "[::]:8000".parse::<SocketAddr>().unwrap();
     tracing::info!("starting api server {addr}");
