@@ -13,7 +13,7 @@ max_machines_running = 1
 [[vm]]
 cpu_kind = 'shared'
 cpus = 1
-memory_mb = 1024
+memory_mb = 512
 
 [env]
 OLD_API_BASE_URL = "https://api.maccas.one/v1"

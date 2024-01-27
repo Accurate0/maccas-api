@@ -9,7 +9,7 @@ min_machines_running = 1
 [[vm]]
 cpu_kind = 'shared'
 cpus = 1
-memory_mb = 1024
+memory_mb = 512
 
 [build]
 image = "maccas-api-api"

@@ -69,3 +69,8 @@ path = '/flycheck/vm'
 [[metrics]]
 port = 9187
 path = '/metrics'
+
+[[vm]]
+cpu_kind = 'shared'
+cpus = 1
+memory_mb = 1024
