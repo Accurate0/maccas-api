@@ -21,7 +21,7 @@ processes = ['app']
 [[vm]]
 cpu_kind = 'shared'
 cpus = 1
-memory_mb = 1024
+memory_mb = 512
 
 [env]
 API_BASE_URL = "http://maccas-api.internal:8000"
