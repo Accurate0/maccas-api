@@ -22,4 +22,15 @@ API_BASE_URL = "http://maccas-api.internal:8000/v1"
 ORIGIN = "https://next.maccas.one"
 
 [deploy]
+strategy = "canary"
 release_command = "pnpm prisma migrate deploy"
+
+[checks]
+[checks.healthcheck]
+grace_period = "10s"
+interval = "15s"
+method = "get"
+path = "/health"
+port = 3000
+timeout = "10s"
+type = "http"

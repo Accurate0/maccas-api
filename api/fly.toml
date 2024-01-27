@@ -8,6 +8,9 @@ min_machines_running = 1
 auto_stop_machines = true
 auto_start_machines = true
 
+[deploy]
+strategy = "canary"
+
 [[vm]]
 cpu_kind = 'shared'
 cpus = 1
