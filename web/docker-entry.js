@@ -1,9 +1,14 @@
-import { server as app } from './build/index.js';
+import { handler } from './build/handler.js';
+import express from 'express';
 
-function shutdownGracefully() {
-	console.log('Server doing graceful shutdown');
-	app.server.close();
-}
+const app = express();
 
-process.on('SIGINT', shutdownGracefully);
-process.on('SIGTERM', shutdownGracefully);
+app.get('/health', (req, res) => {
+	res.end('ok');
+});
+
+app.use(handler);
+
+app.listen(3000, () => {
+	console.log('listening on port 3000');
+});
