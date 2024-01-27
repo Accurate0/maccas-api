@@ -101,6 +101,16 @@ impl JobScheduler {
         self
     }
 
+    pub async fn add_manual<T>(&self, job: T) -> &Self
+    where
+        T: Job + 'static,
+    {
+        let mut jobs = self.0.jobs.write().await;
+        jobs.insert(job.name(), JobDetails::new(Arc::new(job), JobType::Manual));
+
+        self
+    }
+
     pub async fn init(&self) -> Result<(), JobError> {
         let jobs = self.0.jobs.read().await;
         for (name, _) in jobs.iter() {
@@ -195,6 +205,9 @@ impl JobScheduler {
                             None => Some(time_now),
                         }
                         .unwrap(),
+                        JobType::Manual => {
+                            return Ok(());
+                        }
                     };
 
                     tracing::info!("time now: {}", time_now);
@@ -361,6 +374,10 @@ impl JobScheduler {
                             None => Some(time_now),
                         }
                         .unwrap(),
+                        JobType::Manual => {
+                            tracing::info!("job is manual, skipping");
+                            continue;
+                        }
                     };
 
                     tracing::info!("time now: {}", time_now);

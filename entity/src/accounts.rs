@@ -10,7 +10,7 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(unique)]
     pub username: String,
-    pub password: String,
+    pub password: Option<String>,
     pub access_token: String,
     pub refresh_token: String,
     pub device_id: String,

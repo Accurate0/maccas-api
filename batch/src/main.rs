@@ -1,5 +1,5 @@
 use crate::{
-    jobs::refresh::RefreshJob,
+    jobs::{create_account::CreateAccountJob, refresh::RefreshJob},
     jwt::validate,
     routes::{
         health::health,
@@ -62,11 +62,19 @@ async fn main() -> Result<(), anyhow::Error> {
     scheduler
         .add_scheduled(
             RefreshJob {
-                http_client,
+                http_client: http_client.clone(),
                 mcdonalds_config: settings.mcdonalds.clone(),
             },
             "0 * */4 * * *".parse()?,
         )
+        .await;
+
+    scheduler
+        .add_manual(CreateAccountJob {
+            http_client: http_client.clone(),
+            mcdonalds_config: settings.mcdonalds.clone(),
+            domain_name: settings.email_domain_name.clone(),
+        })
         .await;
 
     tracing::info!("scheduler initializing");

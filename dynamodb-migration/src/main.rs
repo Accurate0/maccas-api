@@ -54,6 +54,12 @@ async fn main() -> Result<(), anyhow::Error> {
                     .send()
                     .await?;
                 let details = resp.item().unwrap();
+                let password = item
+                    .get("login_password")
+                    .unwrap()
+                    .as_s()
+                    .unwrap()
+                    .to_owned();
 
                 let account_model = accounts::ActiveModel {
                     username: Set(item
@@ -62,12 +68,11 @@ async fn main() -> Result<(), anyhow::Error> {
                         .as_s()
                         .unwrap()
                         .to_owned()),
-                    password: Set(item
-                        .get("login_password")
-                        .unwrap()
-                        .as_s()
-                        .unwrap()
-                        .to_owned()),
+                    password: Set(if password == "(UNUSED)" {
+                        None
+                    } else {
+                        Some(password)
+                    }),
                     access_token: Set(details
                         .get("access_token")
                         .unwrap()
@@ -117,6 +122,12 @@ async fn main() -> Result<(), anyhow::Error> {
                         .send()
                         .await?;
                     let details = resp.item().unwrap();
+                    let password = item
+                        .get("login_password")
+                        .unwrap()
+                        .as_s()
+                        .unwrap()
+                        .to_owned();
 
                     let account_model = accounts::ActiveModel {
                         username: Set(item
@@ -125,12 +136,11 @@ async fn main() -> Result<(), anyhow::Error> {
                             .as_s()
                             .unwrap()
                             .to_owned()),
-                        password: Set(item
-                            .get("login_password")
-                            .unwrap()
-                            .as_s()
-                            .unwrap()
-                            .to_owned()),
+                        password: Set(if password == "(UNUSED)" {
+                            None
+                        } else {
+                            Some(password)
+                        }),
                         access_token: Set(details
                             .get("access_token")
                             .unwrap()
