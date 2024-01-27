@@ -71,6 +71,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   deploy:
+    environment: production
     strategy:
       matrix:
         apps: [api, batch, dashboard, database, event, web]
