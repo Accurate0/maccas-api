@@ -31,7 +31,7 @@ jobs:
           cache-source: app-target
           cache-target: /app/${{ matrix.apps }}-build/target/
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: cargo-registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.apps }}
