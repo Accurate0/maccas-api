@@ -87,7 +87,7 @@ jobs:
         if: ${{ matrix.apps  != 'database' }}
         uses: superfly/flyctl-actions@v1
         with:
-          args: "deploy ${{ matrix.apps }} --image registry.fly.io/maccas-api-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}"
+          args: "deploy ${{ matrix.apps }} --image registry.fly.io/maccas-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
