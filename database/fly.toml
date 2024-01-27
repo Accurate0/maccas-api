@@ -6,6 +6,9 @@
 app = 'maccas-db'
 primary_region = 'syd'
 
+[build]
+image = "flyio/postgres-flex:15.3"
+
 [env]
 PRIMARY_REGION = 'syd'
 

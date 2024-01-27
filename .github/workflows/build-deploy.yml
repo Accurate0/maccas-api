@@ -86,6 +86,7 @@ jobs:
   deploy:
     environment: production
     strategy:
+      fail-fast: false
       matrix:
         apps: [api, batch, dashboard, database, event, web]
 
