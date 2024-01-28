@@ -172,6 +172,8 @@ impl OffersMutation {
             )
             .await?;
 
+        let claims = ctx.data_opt::<ValidatedClaims>();
+
         if response.status.is_success() {
             account_manager.unlock(offer.account_id).await?;
 
@@ -179,6 +181,7 @@ impl OffersMutation {
                 action: Set(Action::Remove),
                 proposition_id: Set(offer.offer_proposition_id),
                 // FIXME: find old one ?
+                user_id: Set(claims.and_then(|c| c.0.user_id.parse().ok())),
                 transaction_id: Set(Uuid::new_v4()),
                 ..Default::default()
             }
