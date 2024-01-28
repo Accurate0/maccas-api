@@ -90,7 +90,10 @@ const Page = async () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <StartJobButton name={item.name} />
+                    <StartJobButton
+                      disabled={item.state === "Running"}
+                      name={item.name}
+                    />
                   </TableCell>
                 </TableRow>
               );
@@ -142,7 +145,9 @@ const Page = async () => {
                     )}
                   </TableCell>
                   <TableCell className="whitespace-pre-line">
-                    {item.error_message ?? item.completed_at
+                    {item.error
+                      ? item.error_message
+                      : item.completed_at
                       ? "Completed"
                       : "In progress"}
                   </TableCell>

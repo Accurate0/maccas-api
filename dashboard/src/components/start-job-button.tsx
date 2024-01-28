@@ -3,6 +3,18 @@
 import { runJob } from "@/app/action";
 import { Button } from "@tremor/react";
 
-export const StartJobButton = ({ name }: { name: string }) => (
-  <Button onClick={(e) => runJob({ name: name })}>Start new</Button>
+export const StartJobButton = ({
+  name,
+  disabled,
+}: {
+  name: string;
+  disabled: boolean;
+}) => (
+  <Button
+    disabled={disabled}
+    aria-disabled={disabled}
+    onClick={() => runJob({ name: name })}
+  >
+    Start new
+  </Button>
 );
