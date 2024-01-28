@@ -8,7 +8,7 @@
 	import type { UpdateLocationBody } from '../../../routes/api/location/schema';
 
 	type Config = { storeName: string | null; storeId: string | null } | null;
-	export let config: Config;
+	let config: Config;
 
 	const configStore = writable<Config>(config);
 	export let storeName = config?.storeName;
