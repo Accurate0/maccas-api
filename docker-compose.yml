@@ -127,14 +127,12 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=migration
-    ports:
-      - "8002:8002"
     links:
       - "db:database"
     depends_on:
       - db
     environment:
-      - DATABASE__URL=postgres://postgres:test@database/maccas
+      - DATABASE_URL=postgres://postgres:test@database/maccas
     env_file:
       - .env.local
 
