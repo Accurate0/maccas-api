@@ -6,6 +6,7 @@ use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
+pub mod activate_account;
 pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
