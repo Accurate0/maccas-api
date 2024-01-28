@@ -1,5 +1,7 @@
 use crate::{
-    jobs::{create_account::CreateAccountJob, refresh::RefreshJob},
+    jobs::{
+        activate_account::ActivateAccountJob, create_account::CreateAccountJob, refresh::RefreshJob,
+    },
     jwt::validate,
     routes::{
         health::health,
@@ -70,7 +72,15 @@ async fn main() -> Result<(), anyhow::Error> {
         .add_manual(CreateAccountJob {
             http_client: http_client.clone(),
             mcdonalds_config: settings.mcdonalds.clone(),
-            domain_name: settings.email_domain_name.clone(),
+            email_config: settings.email.clone(),
+        })
+        .await;
+
+    scheduler
+        .add_manual(ActivateAccountJob {
+            http_client: http_client.clone(),
+            mcdonalds_config: settings.mcdonalds.clone(),
+            email_config: settings.email.clone(),
         })
         .await;
 

@@ -21,12 +21,20 @@ pub struct McDonalds {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Email {
+    pub address: String,
+    pub password: String,
+    pub server_address: String,
+    pub domain_name: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub database: Database,
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
     pub auth_secret: String,
-    pub email_domain_name: String,
+    pub email: Email,
 }
 
 impl Settings {

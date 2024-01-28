@@ -20,4 +20,8 @@ pub enum JobError {
     McDonaldsClientError(#[from] libmaccas::ClientError),
     #[error("A conversion error ocurred: `{0}`")]
     ConversionError(#[from] converters::ConversionError),
+    #[error("A imap error ocurred: `{0}`")]
+    ImapError(#[from] imap::Error),
+    #[error("A mail parse error ocurred: `{0}`")]
+    MailParseError(#[from] mailparse::MailParseError),
 }

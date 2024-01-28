@@ -1,5 +1,5 @@
 use super::{error::JobError, Job, JobContext};
-use crate::settings::McDonalds;
+use crate::settings::{Email, McDonalds};
 use base::constants::mc_donalds;
 use entity::accounts;
 use libmaccas::{
@@ -15,14 +15,14 @@ use rand::{
     SeedableRng,
 };
 use reqwest_middleware::ClientWithMiddleware;
-use sea_orm::{ActiveModelTrait, Set};
+use sea_orm::{prelude::Uuid, ActiveModelTrait, Set};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct CreateAccountJob {
     pub http_client: ClientWithMiddleware,
     pub mcdonalds_config: McDonalds,
-    pub domain_name: String,
+    pub email_config: Email,
 }
 
 #[async_trait::async_trait]
@@ -56,7 +56,7 @@ impl Job for CreateAccountJob {
 
         let device_id = Alphanumeric.sample_string(&mut rng, 16);
         let username_prefix = Alphanumeric.sample_string(&mut rng, 24);
-        let username = format!("{}@{}", username_prefix, self.domain_name);
+        let username = format!("{}@{}", username_prefix, self.email_config.domain_name);
 
         let request = RegistrationRequest {
             address: Address {
@@ -77,8 +77,8 @@ impl Job for CreateAccountJob {
                 device_id_type: "AndroidId".to_string(),
                 is_active: "Y".to_string(),
                 os: "android".to_string(),
-                os_version: "13".to_string(),
-                timezone: "Australia/West".to_string(),
+                os_version: "14".to_string(),
+                timezone: "Australia/Perth".to_string(),
             },
             email_address: username.to_string(),
             first_name: first_name.clone(),
@@ -109,6 +109,7 @@ impl Job for CreateAccountJob {
         );
 
         accounts::ActiveModel {
+            id: Set(Uuid::new_v4()),
             username: Set(username),
             password: Set(None),
             access_token: Set(response.body.response.access_token),
