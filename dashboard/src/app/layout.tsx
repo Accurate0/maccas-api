@@ -3,9 +3,8 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Title, TabGroup, TabList, Text, Tab } from "@tremor/react";
+import { Title, Text } from "@tremor/react";
 import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabsClient } from "@/components/tabs-client";
 
 const inter = Inter({ subsets: ["latin"] });

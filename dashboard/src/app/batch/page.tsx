@@ -17,9 +17,13 @@ import { Time } from "../../components/time";
 import { TimeSecondsInFuture } from "../../components/time-in-seconds-future";
 import { env } from "@/env";
 import { GetJobsResponse } from "@/types/batch";
+import { redirect } from "next/navigation";
 
 const Page = async () => {
   const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
 
   const response = await fetch(`${env.BATCH_API_BASE}/job`, {
     cache: "no-store",
@@ -138,7 +142,9 @@ const Page = async () => {
                     )}
                   </TableCell>
                   <TableCell className="whitespace-pre-line">
-                    {item.error_message ?? "Completed"}
+                    {item.error_message ?? item.completed_at
+                      ? "Completed"
+                      : "In progress"}
                   </TableCell>
                   <TableCell className="w-24">
                     <Badge className="w-24" color={colour} size="xl">

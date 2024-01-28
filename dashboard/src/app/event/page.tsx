@@ -15,10 +15,13 @@ import {
   TableRow,
   Title,
 } from "@tremor/react";
+import { redirect } from "next/navigation";
 
 const Page = async () => {
   const session = await getSession();
-
+  if (!session) {
+    redirect("/login");
+  }
   const response = await fetch(`${env.EVENT_API_BASE}/event`, {
     cache: "no-store",
     headers: {
@@ -119,7 +122,9 @@ const Page = async () => {
                     </TableCell>
                     <TableCell>{item.attempts}</TableCell>
                     <TableCell className="whitespace-pre-line">
-                      {item.error_message ?? "Completed"}
+                      {item.error_message ?? item.completed_at
+                        ? "Completed"
+                        : "In progress"}
                     </TableCell>
                     <TableCell className="w-24">
                       <Badge className="w-24" color={colour} size="xl">

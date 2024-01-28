@@ -7,6 +7,8 @@ export const Time = ({ datetime }: { datetime: string | number }) => {
   const dateTime = parseISO(datetime + "Z");
 
   return (
-    <time dateTime={dateTime.toISOString()}>{dateTime.toLocaleString()}</time>
+    <time dateTime={dateTime.toISOString()}>
+      {dateTime.toLocaleString("en-AU")}
+    </time>
   );
 };
