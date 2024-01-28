@@ -7,7 +7,7 @@ export const Time = ({ datetime }: { datetime: string | number }) => {
   const dateTime = parseISO(datetime + "Z");
 
   return (
-    <time dateTime={dateTime.toISOString()}>
+    <time dateTime={dateTime.toISOString()} suppressHydrationWarning>
       {dateTime.toLocaleString("en-AU")}
     </time>
   );
