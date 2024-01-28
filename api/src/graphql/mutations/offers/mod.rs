@@ -54,6 +54,7 @@ impl OffersMutation {
         let validated_proposition_id = input.offer_proposition_id;
         let settings = ctx.data::<Settings>()?;
 
+        // FIXME: use join to get both at same time
         let account = accounts::Entity::find_by_id(offer.account_id)
             .one(db)
             .await?

@@ -10,6 +10,7 @@ use sea_orm::prelude::{DateTime, Uuid};
 #[derive(InputObject)]
 pub struct OfferByIdInput {
     pub id: Uuid,
+    pub store_id: String,
 }
 
 #[derive(SimpleObject)]

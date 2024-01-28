@@ -1,5 +1,5 @@
-query GetOfferCode($id: UUID!) {
-	offerById(input: { id: $id }) {
+query GetOfferCode($id: UUID!, $storeId: String!) {
+	offerById(input: { id: $id, storeId: $storeId }) {
 		code
 	}
 }
