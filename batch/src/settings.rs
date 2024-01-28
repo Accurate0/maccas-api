@@ -1,4 +1,4 @@
-use config::{Config, ConfigError, Environment, File};
+use config::{Config, ConfigError, Environment};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -32,8 +32,6 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
-            .add_source(File::with_name("config/base.config.toml").required(false))
-            .add_source(File::with_name("config/batch.config.toml").required(false))
             .add_source(Environment::default().separator("__"))
             .build()?;
 
