@@ -9,11 +9,19 @@ export type AddOfferResponse = {
 
 export async function GET(event) {
 	const {
-		params: { offerId }
+		params: { offerId },
+		locals
 	} = event;
 
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: locals.session.userId },
+		include: { config: true }
+	});
 	const store = new GetOfferCodeStore();
-	const { data } = await store.fetch({ event, variables: { id: offerId } });
+	const { data } = await store.fetch({
+		event,
+		variables: { id: offerId, storeId: user.config?.storeId ?? 'must be set' }
+	});
 
 	if (!data?.offerById.code) {
 		return new Response(null, { status: 500 });
