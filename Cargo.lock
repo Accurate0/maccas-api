@@ -1266,7 +1266,6 @@ dependencies = [
  "entity",
  "futures",
  "libmaccas",
- "migration",
  "rand",
  "reqwest",
  "reqwest-middleware",
