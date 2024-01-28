@@ -1,8 +1,27 @@
 use crate::{ConversionError, Database};
 use entity::offer_details::Model as OfferDetails;
+use entity::offer_history::Model as OfferHistory;
 use entity::offers::Model as Offers;
 use libmaccas::types::response::OfferDetails as OfferDetailsResponse;
 use sea_orm::prelude::{DateTime, Uuid};
+
+impl From<Database<Offers>> for Database<OfferHistory> {
+    fn from(offer: Database<Offers>) -> Self {
+        let offer = offer.0;
+
+        Database(OfferHistory {
+            id: Uuid::new_v4(),
+            offer_id: offer.offer_id,
+            offer_proposition_id: offer.offer_proposition_id,
+            valid_to: offer.valid_to,
+            valid_from: offer.valid_from,
+            creation_date: offer.creation_date,
+            account_id: offer.account_id,
+            created_at: offer.created_at,
+            updated_at: offer.updated_at,
+        })
+    }
+}
 
 impl Database<Offers> {
     pub fn convert_offer(

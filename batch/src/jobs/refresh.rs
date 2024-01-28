@@ -1,11 +1,12 @@
 use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
 use base::constants::mc_donalds;
-use entity::{accounts, offer_details, offers, points};
+use converters::Database;
+use entity::{accounts, offer_details, offer_history, offers, points};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel,
-    QueryFilter, QueryOrder, Set, TransactionTrait,
+    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
+    QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -132,6 +133,22 @@ impl Job for RefreshJob {
 
         offers::Entity::delete_many()
             .filter(offers::Column::AccountId.eq(account_id))
+            .exec(&txn)
+            .await?;
+
+        let offer_history_models: Vec<offer_history::ActiveModel> = models
+            .iter()
+            .cloned()
+            .map(|m| -> Result<Database<offer_history::Model>, DbErr> {
+                Ok(std::convert::Into::<Database<offer_history::Model>>::into(
+                    Database::<offers::Model>(m.try_into_model()?),
+                ))
+            })
+            .flat_map(|m| m.map(|r| r.0.into_active_model()))
+            .collect();
+
+        offer_history::Entity::insert_many(offer_history_models)
+            .on_empty_do_nothing()
             .exec(&txn)
             .await?;
 

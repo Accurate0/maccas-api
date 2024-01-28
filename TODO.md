@@ -6,4 +6,4 @@
 - add versioning to events / jobs
 - add offer history for long term tracking, like a replica of offers but isn't ever deleted
 - add offer rating table for rating each proposition id
-- versioning of api
+- configuration management
