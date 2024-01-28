@@ -1,0 +1,11 @@
+query GetOffers {
+	offers {
+		shortName
+		imageBasename
+		name
+		count
+		offerPropositionId
+		validFrom
+		validTo
+	}
+}

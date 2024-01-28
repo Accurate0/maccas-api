@@ -1,0 +1,6 @@
+query GetPoints($minimumCurrentPoints: Int!) {
+	points(filter: { minimumCurrentPoints: $minimumCurrentPoints }) {
+		currentPoints
+		accountId
+	}
+}
