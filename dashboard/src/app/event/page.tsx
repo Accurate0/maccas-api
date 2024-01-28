@@ -122,7 +122,9 @@ const Page = async () => {
                     </TableCell>
                     <TableCell>{item.attempts}</TableCell>
                     <TableCell className="whitespace-pre-line">
-                      {item.error_message ?? item.completed_at
+                      {item.error
+                        ? item.error_message
+                        : item.completed_at
                         ? "Completed"
                         : "In progress"}
                     </TableCell>
