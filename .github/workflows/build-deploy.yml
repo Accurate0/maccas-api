@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Docker build
-        if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' }}
+        if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
         uses: docker/build-push-action@v5
         with:
           context: .
