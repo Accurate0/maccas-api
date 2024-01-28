@@ -91,7 +91,7 @@ impl Database<OfferDetails> {
 
         Ok(Database(OfferDetails {
             proposition_id: offer.offer_proposition_id,
-            name: offer.name.clone(),
+            name: offer.name.clone().replace(&short_name, ""),
             short_name,
             description: offer.long_description.clone(),
             price: if total_price == 0.0 {
