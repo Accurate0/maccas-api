@@ -1,7 +1,7 @@
 use crate::{
     graphql::{
-        graphql_handler, health, queries::locations::dataloader::LocationLoader, FinalSchema,
-        MutationRoot, QueryRoot,
+        graphql_handler, health, queries::locations::dataloader::LocationLoader, self_health,
+        FinalSchema, MutationRoot, QueryRoot,
     },
     settings::Settings,
     types::ApiState,
@@ -80,6 +80,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let api_routes = Router::new()
         .route("/graphql", get(graphiql).post(graphql_handler))
         .route("/health", get(health))
+        .route("/health/self", get(self_health))
         .layer(cors)
         .layer(
             TraceLayer::new_for_http()

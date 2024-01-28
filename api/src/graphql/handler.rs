@@ -120,3 +120,38 @@ pub async fn health(
         Err(AppError::StatusCode(StatusCode::SERVICE_UNAVAILABLE))
     }
 }
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct SelfHealthResponse {
+    database: bool,
+}
+
+pub async fn self_health(
+    State(ApiState { schema, .. }): State<ApiState>,
+) -> Result<Json<SelfHealthResponse>, AppError> {
+    let request = async_graphql::Request::new(
+        r#"
+      {
+        health {
+          database
+        }
+      }
+      "#,
+    );
+
+    let response = schema.execute(request).await;
+    let health_response = serde_json::from_value::<SelfHealthResponse>(
+        response
+            .data
+            .into_json()?
+            .get("health")
+            .context("can't find health in response")?
+            .clone(),
+    )?;
+
+    if health_response.database {
+        Ok(Json(health_response))
+    } else {
+        Err(AppError::StatusCode(StatusCode::SERVICE_UNAVAILABLE))
+    }
+}
