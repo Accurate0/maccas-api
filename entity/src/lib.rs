@@ -8,6 +8,7 @@ pub mod job_history;
 pub mod jobs;
 pub mod offer_audit;
 pub mod offer_details;
+pub mod offer_history;
 pub mod offers;
 pub mod points;
 pub mod sea_orm_active_enums;
