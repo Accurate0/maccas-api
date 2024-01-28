@@ -109,7 +109,7 @@ impl Job for ActivateAccountJob {
                                 device: ActivationDevice {
                                     device_unique_id: device_id.to_owned(),
                                     os: "android".to_owned(),
-                                    os_version: "13".to_owned(),
+                                    os_version: "14".to_owned(),
                                 },
                             },
                         },
