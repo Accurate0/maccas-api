@@ -78,7 +78,7 @@ const Page = async () => {
           </TableHead>
           <TableBody>
             {response.current_jobs.map((item) => {
-              const colour = item.state === "Stopped" ? "gray" : "emerald";
+              const colour = item.state === "Stopped" ? "gray" : "blue";
               const text = item.state;
 
               return (
