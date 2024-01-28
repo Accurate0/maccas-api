@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [api, batch, dashboard, event, web]
+        apps: [api, batch, dashboard, event, web, migration]
 
     name: Build
     runs-on: ubuntu-latest
@@ -83,6 +83,22 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  deploy-migrations:
+    environment: production
+    name: Deploy Migrations
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy Production
+        uses: superfly/flyctl-actions@v1
+        with:
+          args: "deploy migration --update-only --detach --image registry.fly.io/maccas-migration:${{ github.ref_name }}-${{ github.sha }}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
   deploy:
     environment: production
     strategy:
@@ -92,7 +108,7 @@ jobs:
 
     name: Deploy
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, deploy-migrations]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

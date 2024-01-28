@@ -17,7 +17,6 @@ use axum::{
 };
 use base::shutdown::axum_shutdown_signal;
 use jobs::job_scheduler::JobScheduler;
-use migration::MigratorTrait;
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
@@ -50,8 +49,6 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging_level(LevelFilter::Trace);
 
     let db = Database::connect(opt).await?;
-    migration::Migrator::up(&db, None).await?;
-
     let scheduler = JobScheduler::new(db);
 
     let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?

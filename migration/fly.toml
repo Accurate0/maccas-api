@@ -1,0 +1,13 @@
+app = 'maccas-migration'
+primary_region = 'syd'
+
+[[vm]]
+cpu_kind = 'shared'
+cpus = 1
+memory_mb = 256
+
+[build]
+image = 'maccas-api-migration'
+
+[deploy]
+release_command = "up"
