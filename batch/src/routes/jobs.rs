@@ -61,6 +61,6 @@ pub async fn run_job(
     State(state): State<ApiState>,
     Path(job_name): Path<String>,
 ) -> Result<StatusCode, AppError> {
-    state.job_scheduler.run_job(&job_name).await?;
+    state.job_scheduler.run_job_one_shot(&job_name).await?;
     Ok(StatusCode::NO_CONTENT)
 }
