@@ -20,7 +20,7 @@ use tracing::{Instrument, Level};
 pub(crate) enum Message {
     JobFinished { name: String, queue_next: bool },
     Init,
-    RunJob { name: String, queue_next: bool },
+    RunJob { name: String, one_shot: bool },
 }
 
 impl Debug for Message {
@@ -137,7 +137,7 @@ impl JobScheduler {
         Ok(())
     }
 
-    pub async fn run_job(&self, name: &str) -> Result<(), JobError> {
+    pub async fn run_job_one_shot(&self, name: &str) -> Result<(), JobError> {
         let jobs = self.0.jobs.read().await;
         let job_to_run = jobs.get(name).context("can't find job with name")?;
 
@@ -146,7 +146,7 @@ impl JobScheduler {
             .push(
                 Message::RunJob {
                     name: job_to_run.job.name(),
-                    queue_next: true,
+                    one_shot: true,
                 },
                 Duration::ZERO,
             )
@@ -225,7 +225,7 @@ impl JobScheduler {
                         .push(
                             Message::RunJob {
                                 name: job_model.name,
-                                queue_next: false,
+                                one_shot: false,
                             },
                             time_until,
                         )
@@ -344,12 +344,9 @@ impl JobScheduler {
                 self.handle_job_finish(&name, queue_next).await?;
             }
 
-            Message::RunJob {
-                name,
-                queue_next: once,
-            } => {
+            Message::RunJob { name, one_shot } => {
                 tracing::info!("run pending task {}", name);
-                self.handle_run_job(&name, !once).await?;
+                self.handle_run_job(&name, !one_shot).await?;
             }
 
             Message::Init => {
@@ -394,7 +391,7 @@ impl JobScheduler {
                         .push(
                             Message::RunJob {
                                 name: job_model.name,
-                                queue_next: false,
+                                one_shot: false,
                             },
                             time_until,
                         )
