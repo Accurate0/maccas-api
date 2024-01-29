@@ -4,14 +4,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import type { LocationByText$result } from '$houdini';
 	import { toast } from 'svelte-sonner';
-	import { writable } from 'svelte/store';
 	import type { UpdateLocationBody } from '../../../routes/api/location/schema';
-
-	type Config = { storeName: string | null; storeId: string | null } | null;
-	let config: Config;
-
-	const configStore = writable<Config>(config);
-	export let storeName = config?.storeName;
+	import { scale, slide } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import { configStore } from '$lib/config';
+	import { page } from '$app/stores';
 
 	let disabled = false;
 	let optionsDisabled = false;
@@ -21,7 +18,9 @@
 	const searchLocations = async () => {
 		if (query) {
 			disabled = true;
-			const response = await fetch(`/api/location?query=${query}`, { method: 'GET' });
+			const response = await fetch(`/api/location?query=${encodeURIComponent(query)}`, {
+				method: 'GET'
+			});
 			options = (await response.json()) as LocationByText$result['location']['text'];
 			disabled = false;
 		} else {
@@ -32,9 +31,8 @@
 	const setLocation = async (storeId: string, newStoreName: string) => {
 		optionsDisabled = true;
 		const body: UpdateLocationBody = { storeId };
-		const response = await fetch(`/api/location`, { method: 'POST', body: JSON.stringify(body) });
+		const response = await fetch('/api/location', { method: 'POST', body: JSON.stringify(body) });
 		configStore.set({ storeName: newStoreName, storeId });
-		storeName = newStoreName;
 
 		if (response.ok) {
 			toast('Location updated');
@@ -61,17 +59,22 @@
 			/>
 		</div>
 		{#if options.length > 0}
-			<div class="grid w-full items-center gap-4 pt-4">
-				{#each options as location}
-					<Button
-						variant="outline"
-						disabled={optionsDisabled}
-						aria-disabled={optionsDisabled}
-						on:click={() => setLocation(location.storeNumber, location.name)}
-					>
-						{location.name}
-					</Button>
-				{/each}
+			<div transition:slide>
+				<div class="grid w-full items-center gap-4 pt-4">
+					{#each options as location (location)}
+						<div animate:flip transition:scale>
+							<Button
+								class="w-full"
+								variant="outline"
+								disabled={optionsDisabled}
+								aria-disabled={optionsDisabled}
+								on:click={() => setLocation(location.storeNumber, location.name)}
+							>
+								{location.name}
+							</Button>
+						</div>
+					{/each}
+				</div>
 			</div>
 		{/if}
 	</Card.Content>
