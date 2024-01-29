@@ -55,7 +55,7 @@
 				</Tabs.List>
 			{/if}
 
-			{#if data.config && !data.hideAll}
+			{#if $storeName && !data.hideAll}
 				<div class="m-4 grid grid-flow-row gap-4">
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
