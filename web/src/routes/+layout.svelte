@@ -8,6 +8,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import { QueryClient, QueryClientProvider } from '@sveltestack/svelte-query';
 	import type { LayoutData } from './$types';
+	import { derived } from 'svelte/store';
+	import { configStore } from '$lib/config';
 
 	const queryClient = new QueryClient();
 	export let data: LayoutData;
@@ -26,6 +28,9 @@
 			});
 		});
 	});
+
+	configStore.set(data.config);
+	const storeName = derived(configStore, (c) => c?.storeName);
 </script>
 
 <svelte:head>
@@ -50,13 +55,13 @@
 				</Tabs.List>
 			{/if}
 
-			{#if data.storeName && !data.hideAll}
+			{#if data.config && !data.hideAll}
 				<div class="m-4 grid grid-flow-row gap-4">
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
 							<Card.Header class="grid justify-between">
 								<Card.Title>Store</Card.Title>
-								<Card.Description>{data.storeName}</Card.Description>
+								<Card.Description>{$storeName}</Card.Description>
 							</Card.Header>
 						</div>
 					</Card.Root>

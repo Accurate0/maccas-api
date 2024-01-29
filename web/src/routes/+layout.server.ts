@@ -13,7 +13,7 @@ export const load: LayoutServerLoad = async (event) => {
 
 		return {
 			showPoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
-			storeName: user.config?.storeName
+			config: user.config
 		};
 	}
 
