@@ -16,6 +16,7 @@ use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
+// FIXME: confusing to have 2 params that mean opposite
 #[derive(Clone, Serialize)]
 pub(crate) enum Message {
     JobFinished { name: String, queue_next: bool },
