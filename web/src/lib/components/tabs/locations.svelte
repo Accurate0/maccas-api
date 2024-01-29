@@ -55,6 +55,11 @@
 				placeholder="e.g. Armadale"
 				name="query"
 				bind:value={query}
+				on:keyup={async (e) => {
+					if (e.key === 'Enter' || e.keyCode === 13) {
+						await searchLocations();
+					}
+				}}
 				required
 			/>
 		</div>
