@@ -17,3 +17,4 @@ aws-config = "1.1.1"
 sea-orm = { workspace = true }
 entity = { workspace = true }
 chrono = { workspace = true }
+uuid = { workspace = true }

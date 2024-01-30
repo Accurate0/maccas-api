@@ -8,7 +8,10 @@ export const load = async (event) => {
 
 	const index = new GetPointsStore();
 	const data = index.fetch({
-		event
+		event,
+		variables: {
+			minimumCurrentPoints: 2500
+		}
 	});
 
 	return {

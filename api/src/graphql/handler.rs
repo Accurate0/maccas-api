@@ -7,7 +7,7 @@ use base::jwt::{self, JwtClaims};
 use reqwest::StatusCode;
 
 pub async fn graphiql() -> impl IntoResponse {
-    axum::response::Html(GraphiQLSource::build().endpoint("/graphql").finish())
+    axum::response::Html(GraphiQLSource::build().endpoint("/v1/graphql").finish())
 }
 
 pub struct ValidatedToken(pub String);
