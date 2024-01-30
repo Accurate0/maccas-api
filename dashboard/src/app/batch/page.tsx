@@ -13,11 +13,24 @@ import {
 } from "@tremor/react";
 import { StartJobButton } from "../../components/start-job-button";
 import { getSession } from "@/auth";
-import { Time } from "../../components/time";
-import { TimeSecondsInFuture } from "../../components/time-in-seconds-future";
 import { env } from "@/env";
 import { GetJobsResponse } from "@/types/batch";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const Time = dynamic(() => import("@/components/time").then((c) => c.Time), {
+  ssr: false,
+});
+
+const TimeSecondsInFuture = dynamic(
+  () =>
+    import("@/components/time-in-seconds-future").then(
+      (c) => c.TimeSecondsInFuture
+    ),
+  {
+    ssr: false,
+  }
+);
 
 const Page = async () => {
   const session = await getSession();
