@@ -32,6 +32,9 @@ dependencies:
   material-symbols:
     specifier: ^0.14.3
     version: 0.14.3
+  mode-watcher:
+    specifier: ^0.2.0
+    version: 0.2.0(svelte@4.2.8)
   radix-icons-svelte:
     specifier: ^1.2.1
     version: 1.2.1
@@ -3243,6 +3246,14 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+    dev: false
+
+  /mode-watcher@0.2.0(svelte@4.2.8):
+    resolution: {integrity: sha512-NCo72EColWhNjMWXr+U9hjJS6ixCFEADfvj44XFLUWEkR/dsbJxnOX6bkxM+i1DWmP/nRhKI+rr2Z2nt+TZSGA==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      svelte: 4.2.8
     dev: false
 
   /mri@1.2.0:
