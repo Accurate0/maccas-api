@@ -58,6 +58,7 @@
 		"express": "^4.18.2",
 		"jsonwebtoken": "^9.0.2",
 		"material-symbols": "^0.14.3",
+		"mode-watcher": "^0.2.0",
 		"radix-icons-svelte": "^1.2.1",
 		"svelte-sonner": "^0.3.7",
 		"tailwind-merge": "^2.2.0",
