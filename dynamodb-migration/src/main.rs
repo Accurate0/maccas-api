@@ -94,6 +94,13 @@ async fn get_and_insert_new(
         .send()
         .await?;
 
+    dynamodb_client
+        .delete_item()
+        .table_name("MaccasApi-Accounts")
+        .key("account_name", AttributeValue::S(account_name.to_owned()))
+        .send()
+        .await?;
+
     Ok(())
 }
 
