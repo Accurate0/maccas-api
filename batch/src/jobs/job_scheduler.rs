@@ -286,6 +286,10 @@ impl JobScheduler {
 
                     let time_now = chrono::offset::Utc::now();
 
+                    if error.is_some() {
+                        tracing::error!("error with job completion: {:?}", &error)
+                    }
+
                     if let Err(e) = {
                         entity::job_history::ActiveModel {
                             id: Unchanged(execution_id),

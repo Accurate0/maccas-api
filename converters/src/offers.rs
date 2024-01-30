@@ -102,6 +102,7 @@ impl Database<OfferDetails> {
             image_base_name: offer.image_base_name.clone(),
             created_at: now,
             updated_at: now,
+            raw_data: Some(serde_json::to_value(offer)?),
         }))
     }
 }

@@ -75,6 +75,8 @@ impl Job for RefreshJob {
             .await?;
 
         let offer_list = offers.body.response.unwrap_or_default();
+        tracing::info!("{} offers found", offer_list.offers.len());
+
         let proposition_id_futures = offer_list
             .offers
             .iter()
@@ -87,7 +89,8 @@ impl Job for RefreshJob {
                         .one(&context.database)
                         .await?;
 
-                    if details.is_none() {
+                    tracing::info!("details: {:?}", details);
+                    if details.is_none() || details.and_then(|d| d.raw_data).is_none() {
                         let offer_details = api_client_cloned.offer_details(&id).await?;
                         if let Some(offer_details) = offer_details.body.response {
                             return Ok(Some(
@@ -120,6 +123,11 @@ impl Job for RefreshJob {
         let txn = context.database.begin().await?;
 
         offer_details::Entity::insert_many(active_models)
+            .on_conflict(
+                OnConflict::column(offer_details::Column::PropositionId)
+                    .update_column(offer_details::Column::RawData)
+                    .to_owned(),
+            )
             .on_empty_do_nothing()
             .exec(&txn)
             .await?;

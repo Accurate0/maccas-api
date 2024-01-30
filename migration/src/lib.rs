@@ -20,6 +20,7 @@ mod m20240118_091942_add_job_history;
 mod m20240118_105246_add_offer_audit;
 mod m20240127_073308_password_is_optional;
 mod m20240128_092046_offer_history_table;
+mod m20240130_110830_add_json_blob;
 
 pub struct Migrator;
 
@@ -47,6 +48,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240118_105246_add_offer_audit::Migration),
             Box::new(m20240127_073308_password_is_optional::Migration),
             Box::new(m20240128_092046_offer_history_table::Migration),
+            Box::new(m20240130_110830_add_json_blob::Migration),
         ]
     }
 }

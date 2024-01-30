@@ -1621,6 +1621,7 @@ dependencies = [
  "entity",
  "libmaccas",
  "sea-orm",
+ "serde_json",
  "thiserror",
  "tracing",
 ]
