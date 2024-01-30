@@ -39,6 +39,20 @@
 
 <svelte:head>
 	<title>Maccas</title>
+	<meta name="description" content="Maccas" />
+
+	<meta property="og:url" content="https://maccas.one" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Maccas" />
+	<meta property="og:description" content="" />
+	<meta property="og:image" content="/og.png" />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta property="twitter:domain" content="maccas.one" />
+	<meta property="twitter:url" content="https://maccas.one" />
+	<meta name="twitter:title" content="Maccas" />
+	<meta name="twitter:description" content="" />
+	<meta name="twitter:image" content="/og.png" />
 </svelte:head>
 
 <Toaster richColors theme={$mode} />
