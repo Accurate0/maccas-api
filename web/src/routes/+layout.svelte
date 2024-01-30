@@ -10,7 +10,7 @@
 	import type { LayoutData } from './$types';
 	import { derived } from 'svelte/store';
 	import { configStore } from '$lib/config';
-	import { ModeWatcher } from 'mode-watcher';
+	import { ModeWatcher, mode } from 'mode-watcher';
 	import { Sun, Moon } from 'radix-icons-svelte';
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
@@ -41,7 +41,7 @@
 	<title>Maccas</title>
 </svelte:head>
 
-<Toaster richColors />
+<Toaster richColors theme={$mode} />
 <ModeWatcher />
 
 <h2 class="m-4 mb-1 p-1 text-3xl font-bold tracking-tight">
