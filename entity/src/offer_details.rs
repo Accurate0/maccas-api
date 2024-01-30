@@ -16,6 +16,8 @@ pub struct Model {
     pub image_base_name: String,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    #[sea_orm(column_type = "JsonBinary", nullable)]
+    pub raw_data: Option<Json>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
