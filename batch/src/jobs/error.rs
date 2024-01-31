@@ -24,4 +24,6 @@ pub enum JobError {
     ImapError(#[from] imap::Error),
     #[error("A mail parse error ocurred: `{0}`")]
     MailParseError(#[from] mailparse::MailParseError),
+    #[error("A reqwest error ocurred: `{0}`")]
+    ReqwestError(#[from] reqwest::Error),
 }

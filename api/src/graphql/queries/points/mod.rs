@@ -1,7 +1,9 @@
 use self::types::{FilterInput, Points};
 use async_graphql::{Context, Object};
 use entity::points;
-use sea_orm::{prelude::Uuid, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{
+    prelude::Uuid, ColumnTrait, DatabaseConnection, EntityTrait, Order, QueryFilter, QueryOrder,
+};
 
 mod types;
 
@@ -18,6 +20,7 @@ impl PointsQuery {
         let db = ctx.data::<DatabaseConnection>()?;
 
         Ok(points::Entity::find()
+            .order_by(points::Column::CurrentPoints, Order::Asc)
             .filter(
                 points::Column::CurrentPoints
                     .gte(filter.map(|f| f.minimum_current_points).unwrap_or(0)),

@@ -10,6 +10,7 @@ pub mod activate_account;
 pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
+pub mod preload_products;
 pub mod refresh;
 
 #[async_trait::async_trait]

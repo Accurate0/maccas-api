@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod accounts;
+pub mod categories;
 pub mod events;
 pub mod job_history;
 pub mod jobs;
@@ -11,5 +12,6 @@ pub mod offer_details;
 pub mod offer_history;
 pub mod offers;
 pub mod points;
+pub mod products;
 pub mod sea_orm_active_enums;
 pub mod stores;

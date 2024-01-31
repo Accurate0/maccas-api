@@ -384,6 +384,45 @@ pub struct PointInformationResponse {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CategoriesResponse {
+    pub status: Status,
+    pub response: CategoriesInnerResponse,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CategoriesInnerResponse {
+    pub categories_version: String,
+    pub categories: Vec<Category>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Category {
+    pub id: i32,
+    pub image_name: String,
+    pub parent_id: Value,
+    pub color_code: Value,
+    pub is_valid: bool,
+    pub display_order: i64,
+    pub from_time: Value,
+    pub to_time: Value,
+    pub menu_type_id: i64,
+    pub names: Vec<CategoryName>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CategoryName {
+    pub locale: String,
+    pub longname: String,
+    pub shortname: String,
+    pub long_name: String,
+    pub short_name: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CatalogResponse {
     #[serde(rename = "Market")]
     pub market: Market,
@@ -487,21 +526,21 @@ pub struct Store {
     pub availability: Vec<Availability>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {
     #[serde(rename = "Nutrition")]
     pub nutrition: Option<Nutrition>,
     #[serde(rename = "Categories")]
     #[serde(default)]
-    pub categories: Vec<Category>,
+    pub categories: Option<Vec<ProductCategory>>,
     #[serde(rename = "Dimensions")]
     pub dimensions: Vec<Dimension>,
     #[serde(rename = "StaticData")]
     pub static_data: Vec<Value>,
     #[serde(rename = "TimeRestriction")]
     #[serde(default)]
-    pub time_restriction: Vec<TimeRestriction>,
+    pub time_restriction: Option<Vec<TimeRestriction>>,
     #[serde(rename = "IsPromotional")]
     pub is_promotional: bool,
     #[serde(rename = "DisplayImageName")]
@@ -544,14 +583,14 @@ pub struct Product {
     pub max_qtty_allowed_per_order: Option<i64>,
     #[serde(rename = "POD")]
     #[serde(default)]
-    pub pod: Vec<Pod>,
+    pub pod: Option<Vec<Pod>>,
     #[serde(rename = "ExtendedMenuTypeID")]
     #[serde(default)]
-    pub extended_menu_type_id: Vec<i64>,
+    pub extended_menu_type_id: Option<Vec<i64>>,
     #[serde(rename = "Recipe")]
     pub recipe: Recipe,
     #[serde(rename = "Names")]
-    pub names: Names,
+    pub names: ProductNames,
     #[serde(rename = "NutritionPrimaryProductCode")]
     pub nutrition_primary_product_code: Value,
     #[serde(rename = "SmartRouting")]
@@ -562,18 +601,18 @@ pub struct Product {
     pub volume_prices: Value,
     #[serde(rename = "Tags")]
     #[serde(default)]
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
     #[serde(rename = "DepositCode")]
     pub deposit_code: Value,
     #[serde(rename = "SugarLevyAmount")]
     pub sugar_levy_amount: Value,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Nutrition {
     #[serde(rename = "Energy")]
-    pub energy: i64,
+    pub energy: f64,
     #[serde(rename = "Name")]
     pub name: Value,
     #[serde(rename = "Serving")]
@@ -662,9 +701,9 @@ pub struct Nutrition {
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Category {
+pub struct ProductCategory {
     #[serde(rename = "DisplayCategoryID")]
-    pub display_category_id: i64,
+    pub display_category_id: i32,
     #[serde(rename = "DisplayOrder")]
     pub display_order: i64,
     #[serde(rename = "DisplaySizeSelection")]
@@ -839,18 +878,18 @@ pub struct Comment {
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Names {
+pub struct ProductNames {
     #[serde(rename = "ProductCode")]
     pub product_code: i64,
     #[serde(rename = "IsValid")]
     pub is_valid: bool,
     #[serde(rename = "Names")]
-    pub names: Vec<Name>,
+    pub names: Vec<ProductName>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Name {
+pub struct ProductName {
     #[serde(rename = "LanguageID")]
     pub language_id: String,
     #[serde(rename = "ShortName")]

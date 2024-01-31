@@ -18,6 +18,7 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(column_type = "JsonBinary", nullable)]
     pub raw_data: Option<Json>,
+    pub products: Option<Vec<i64>>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

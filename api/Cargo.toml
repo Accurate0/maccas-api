@@ -30,3 +30,4 @@ futures = { workspace = true }
 reqwest-middleware = { workspace = true }
 redis = { workspace = true }
 thiserror = { workspace = true }
+itertools = { workspace = true }

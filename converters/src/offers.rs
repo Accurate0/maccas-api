@@ -89,6 +89,13 @@ impl Database<OfferDetails> {
 
         let now = chrono::offset::Utc::now().naive_utc();
 
+        let product_ids = offer
+            .product_sets
+            .iter()
+            .flat_map(|ps| ps.products.clone())
+            .flat_map(|id| id.parse::<i64>())
+            .collect::<Vec<_>>();
+
         Ok(Database(OfferDetails {
             proposition_id: offer.offer_proposition_id,
             name: offer.name.clone().replace(&short_name, ""),
@@ -103,6 +110,7 @@ impl Database<OfferDetails> {
             created_at: now,
             updated_at: now,
             raw_data: Some(serde_json::to_value(offer)?),
+            products: Some(product_ids),
         }))
     }
 }
