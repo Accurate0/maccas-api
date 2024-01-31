@@ -1,4 +1,5 @@
 import { getSession } from "@/auth";
+import { Time } from "@/components/time";
 import { env } from "@/env";
 import { GetEventsResponse } from "@/types/event";
 import {
@@ -15,11 +16,6 @@ import {
   Title,
 } from "@tremor/react";
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
-
-const Time = dynamic(() => import("@/components/time").then((c) => c.Time), {
-  ssr: false,
-});
 
 const Page = async () => {
   const session = await getSession();

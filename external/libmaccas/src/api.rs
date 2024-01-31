@@ -2,8 +2,8 @@ use crate::types::request::{
     ActivateAndSignInRequest, ActivationRequest, EmailRequest, RegistrationRequest,
 };
 use crate::types::response::{
-    ActivateAndSignInResponse, ActivationResponse, CatalogResponse, ClientResponse,
-    CustomerPointResponse, EmailResponse, LoginRefreshResponse, LoginResponse,
+    ActivateAndSignInResponse, ActivationResponse, CatalogResponse, CategoriesResponse,
+    ClientResponse, CustomerPointResponse, EmailResponse, LoginRefreshResponse, LoginResponse,
     OfferDealStackResponse, OfferDetailsResponse, OfferResponse, RegistrationResponse,
     RestaurantLocationResponse, RestaurantResponse, TokenResponse,
 };
@@ -464,6 +464,20 @@ impl ApiClient {
         ClientResponse::from_response(response).await
     }
 
+    // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack
+    #[instrument(skip(self))]
+    pub async fn clear_dealstack(&self) -> ClientResult<ClientResponse<OfferDealStackResponse>> {
+        let token = self.auth_token.as_ref().context("no auth token set")?;
+        let request = self
+            .get_default_request("exp/v1/offers/dealstack/offer", Method::DELETE)
+            .bearer_auth(token);
+
+        let response = request.send().await?;
+        tracing::debug!("raw response: {:?}", response);
+
+        ClientResponse::from_response(response).await
+    }
+
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/login/refresh
     #[instrument(skip(self))]
     pub async fn customer_login_refresh<S>(
@@ -522,6 +536,26 @@ impl ApiClient {
                 Method::GET,
             )
             .query(&params)
+            .bearer_auth(token);
+
+        let response = request.send().await?;
+        tracing::debug!("raw response: {:?}", response);
+
+        ClientResponse::from_response(response).await
+    }
+
+    // GET https://ap-prod.api.mcd.com/exp/v1/menu/1/category
+    #[instrument(skip(self))]
+    pub async fn get_menu_categories<A>(
+        &self,
+        id: &A,
+    ) -> ClientResult<ClientResponse<CategoriesResponse>>
+    where
+        A: Display + ?Sized + Debug,
+    {
+        let token = self.auth_token.as_ref().context("no auth token set")?;
+        let request = self
+            .get_default_request(format!("exp/v1/menu/{}/category", id).as_str(), Method::GET)
             .bearer_auth(token);
 
         let response = request.send().await?;

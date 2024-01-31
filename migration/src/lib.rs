@@ -21,6 +21,9 @@ mod m20240118_105246_add_offer_audit;
 mod m20240127_073308_password_is_optional;
 mod m20240128_092046_offer_history_table;
 mod m20240130_110830_add_json_blob;
+mod m20240131_150456_add_products_table;
+mod m20240131_153145_add_categories_table;
+mod m20240131_160651_add_products_list_to_details;
 
 pub struct Migrator;
 
@@ -49,6 +52,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20240127_073308_password_is_optional::Migration),
             Box::new(m20240128_092046_offer_history_table::Migration),
             Box::new(m20240130_110830_add_json_blob::Migration),
+            Box::new(m20240131_150456_add_products_table::Migration),
+            Box::new(m20240131_153145_add_categories_table::Migration),
+            Box::new(m20240131_160651_add_products_list_to_details::Migration),
         ]
     }
 }

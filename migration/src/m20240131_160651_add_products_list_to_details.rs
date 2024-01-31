@@ -6,7 +6,7 @@ pub struct Migration;
 #[derive(DeriveIden)]
 enum OfferDetails {
     Table,
-    RawData,
+    Products,
 }
 
 #[async_trait::async_trait]
@@ -16,7 +16,9 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(OfferDetails::Table)
-                    .add_column(ColumnDef::new(OfferDetails::RawData).json_binary().null())
+                    .add_column(
+                        ColumnDef::new(OfferDetails::Products).array(ColumnType::BigInteger),
+                    )
                     .to_owned(),
             )
             .await
@@ -27,7 +29,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(OfferDetails::Table)
-                    .drop_column(OfferDetails::RawData)
+                    .drop_column(OfferDetails::Products)
                     .to_owned(),
             )
             .await
