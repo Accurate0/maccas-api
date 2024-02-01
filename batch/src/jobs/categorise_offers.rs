@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use super::{error::JobError, Job, JobContext};
 use anyhow::Context;
 use itertools::Itertools;
@@ -7,6 +5,7 @@ use openai::types::{
     ChatMessage, OpenAIChatCompletionRequest, ResponseFormat, ResponseFormatOptions,
 };
 use sea_orm::{sea_query::Expr, ColumnTrait, Condition, EntityTrait, QueryFilter};
+use std::collections::HashMap;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
