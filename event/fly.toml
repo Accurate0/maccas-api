@@ -12,8 +12,9 @@ image = 'maccas-api-event'
 [http_service]
 internal_port = 8001
 force_https = true
+auto_stop_machines = false
+auto_start_machines = false
 min_machines_running = 1
-max_machines_running = 1
 
 [checks]
 [checks.healthcheck]
