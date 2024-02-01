@@ -48,24 +48,29 @@ impl Job for CategoriseOffersJob {
 
         let offer_details = offer_details.join(",");
 
+        let prompt = [ChatMessage {
+            role: "system".to_string(),
+            content: "You are to categorise strings based on a preexisting category list, you must always response with valid JSON".to_string(),
+        },
+        ChatMessage {
+            role: "user".to_string(),
+            content: format!(r#"Give the following categories as comma separated: {available_categories}
+            Categorise the following names which are also comma separated, you can select multiple categories per name, as it fits:
+            {offer_details}
+
+            You must respond with a JSON dictionary that maps the name to an array of the categories selected."#,)
+        }]
+        .to_vec();
+
         let response = self
             .api_client
             .chat_completions(&OpenAIChatCompletionRequest {
                 model: "gpt-4-turbo-preview".to_string(),
-                messages: [ChatMessage {
-                    role: "system".to_string(),
-                    content: "You are to categorise strings based on a preexisting category list, you must always response with valid JSON".to_string(),
-                },ChatMessage {
-                    role: "user".to_string(),
-                    content: format!(r#"Give the following categories as comma separated: {available_categories}
-                    Categorise the following names which are also comma separated, you can select multiple categories per name, as it fits:
-                    {offer_details}
-
-                    You must respond with a JSON dictionary that maps the name to an array of the categories selected."#,)
-                }]
-                .to_vec(),
+                messages: prompt,
                 max_tokens: None,
-                response_format: Some(ResponseFormat { type_field: ResponseFormatOptions::JsonObject })
+                response_format: Some(ResponseFormat {
+                    type_field: ResponseFormatOptions::JsonObject,
+                }),
             })
             .await?;
 
