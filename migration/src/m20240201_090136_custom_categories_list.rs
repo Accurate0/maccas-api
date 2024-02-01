@@ -18,7 +18,7 @@ enum Categories {
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
-        let categories = ["Breakfast", "Drinks", "Desserts", "Meal", "Burger"];
+        let categories = ["Breakfast", "Drinks", "Desserts", "Meals", "Burgers"];
 
         manager
             .truncate_table(Table::truncate().table(Categories::Table).to_owned())
