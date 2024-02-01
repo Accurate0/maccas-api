@@ -1,0 +1,17 @@
+[package]
+name = "openai"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+
+reqwest = { workspace = true }
+uuid = { version = "1.5.0", features = ["v4"] }
+http = "0.2"
+reqwest-middleware = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }

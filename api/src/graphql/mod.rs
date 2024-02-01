@@ -1,7 +1,8 @@
 use self::{
     mutations::offers::OffersMutation,
     queries::{
-        health::HealthQuery, locations::LocationsQuery, offers::OffersQuery, points::PointsQuery,
+        categories::CategoryQuery, health::HealthQuery, locations::LocationsQuery,
+        offers::OffersQuery, points::PointsQuery,
     },
 };
 use async_graphql::{EmptySubscription, MergedObject, Schema};
@@ -12,7 +13,13 @@ pub mod queries;
 pub use handler::*;
 
 #[derive(Default, MergedObject)]
-pub struct QueryRoot(HealthQuery, OffersQuery, PointsQuery, LocationsQuery);
+pub struct QueryRoot(
+    HealthQuery,
+    OffersQuery,
+    PointsQuery,
+    LocationsQuery,
+    CategoryQuery,
+);
 
 #[derive(Default, MergedObject)]
 pub struct MutationRoot(OffersMutation);

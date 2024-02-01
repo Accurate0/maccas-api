@@ -1,12 +1,10 @@
 use super::dataloader::OfferDetailsLoader;
-use super::dataloader::ProductLoader;
 use async_graphql::dataloader::*;
 use async_graphql::InputObject;
 use async_graphql::Object;
 use async_graphql::SimpleObject;
 use entity::offer_details;
 use entity::offers;
-use itertools::Itertools;
 use sea_orm::prelude::{DateTime, Uuid};
 
 #[derive(InputObject)]
@@ -47,22 +45,10 @@ impl Offer {
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<Vec<String>> {
-        let loader = context.data::<DataLoader<ProductLoader>>()?;
-
-        let product_ids = self
-            .load_from_related_offer(context, |o| o.products)
+        Ok(self
+            .load_from_related_offer(context, |o| o.categories)
             .await?
-            .unwrap_or_default();
-
-        let categories = loader
-            .load_many(product_ids)
-            .await?
-            .into_values()
-            .flat_map(|v| v.categories)
-            .unique()
-            .collect();
-
-        Ok(categories)
+            .unwrap_or_default())
     }
 
     pub async fn name(

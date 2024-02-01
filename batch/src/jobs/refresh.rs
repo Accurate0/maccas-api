@@ -92,7 +92,6 @@ impl Job for RefreshJob {
                     tracing::info!("details: {:?}", details);
                     if details.is_none()
                         || details.as_ref().and_then(|d| d.raw_data.as_ref()).is_none()
-                        || details.and_then(|d| d.products).is_none()
                     {
                         let offer_details = api_client_cloned.offer_details(&id).await?;
                         if let Some(offer_details) = offer_details.body.response {
@@ -128,7 +127,6 @@ impl Job for RefreshJob {
             .on_conflict(
                 OnConflict::column(offer_details::Column::PropositionId)
                     .update_column(offer_details::Column::RawData)
-                    .update_column(offer_details::Column::Products)
                     .to_owned(),
             )
             .on_empty_do_nothing()

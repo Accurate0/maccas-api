@@ -24,6 +24,9 @@ mod m20240130_110830_add_json_blob;
 mod m20240131_150456_add_products_table;
 mod m20240131_153145_add_categories_table;
 mod m20240131_160651_add_products_list_to_details;
+mod m20240201_090136_custom_categories_list;
+mod m20240201_095751_remove_products;
+mod m20240201_095903_remove_product_ids_and_add_categories;
 
 pub struct Migrator;
 
@@ -55,6 +58,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20240131_150456_add_products_table::Migration),
             Box::new(m20240131_153145_add_categories_table::Migration),
             Box::new(m20240131_160651_add_products_list_to_details::Migration),
+            Box::new(m20240201_090136_custom_categories_list::Migration),
+            Box::new(m20240201_095751_remove_products::Migration),
+            Box::new(m20240201_095903_remove_product_ids_and_add_categories::Migration),
         ]
     }
 }

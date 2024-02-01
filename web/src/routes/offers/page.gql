@@ -6,5 +6,8 @@ query GetOffers {
 		offerPropositionId
 		validFrom
 		validTo
+		categories
 	}
+
+	categories
 }
