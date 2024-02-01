@@ -5,4 +5,4 @@
 	export let data: PageData;
 </script>
 
-<Offers offersList={data.offers} />
+<Offers offersList={data.offers} categories={data.categories} />

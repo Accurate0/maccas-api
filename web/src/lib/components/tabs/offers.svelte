@@ -6,7 +6,9 @@
 	import DealCode from '../deal-code.svelte';
 	import { slide } from 'svelte/transition';
 	import { isFuture, isPast, parseJSON, formatDistanceToNow } from 'date-fns';
+	import { Check } from 'radix-icons-svelte';
 
+	export let categories: Promise<Array<string> | undefined>;
 	export let offersList: Promise<import('$houdini').GetOffers$result['offers'] | undefined>;
 	let state: Writable<Record<number, Array<{ id: string }>>> = writable({});
 
@@ -39,8 +41,8 @@
 			<Card.Root>
 				<div class="flex">
 					<Card.Header class="grid w-full">
-						<Skeleton class="h-[22px] w-[20%] rounded-xl" />
-						<Skeleton class="h-[24px] w-[7%] self-end rounded-xl" />
+						<Skeleton class="h-[22px] w-[50%] rounded-xl" />
+						<Skeleton class="h-[24px] w-[30%] self-end rounded-xl" />
 					</Card.Header>
 					<Card.Header>
 						<Skeleton class="h-[90px] w-[90px] rounded-xl" />
@@ -49,7 +51,7 @@
 			</Card.Root>
 		{/each}
 	{:then offersList}
-		{#each offersList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo }}
+		{#each offersList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
 			<Card.Root
 				on:click={() => {
@@ -62,10 +64,12 @@
 				<div class="grid grid-flow-col justify-between">
 					<Card.Header class="grid justify-between">
 						<Card.Title>{shortName}</Card.Title>
+						<Card.Description
+							>Expiry: {formatDistanceToNow(new Date(validTo + 'Z'), {
+								addSuffix: true
+							})}</Card.Description
+						>
 						<div class="self-end">
-							<Badge class="h-fit w-fit"
-								>Expiry: {formatDistanceToNow(new Date(validTo + 'Z'), { addSuffix: true })}</Badge
-							>
 							<Badge class="h-fit w-fit">{count} available</Badge>
 						</div>
 					</Card.Header>

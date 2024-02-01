@@ -18,6 +18,8 @@ pub enum JobError {
     UnknownError(#[from] anyhow::Error),
     #[error("McDonald's client error occurred: `{0}`")]
     McDonaldsClientError(#[from] libmaccas::ClientError),
+    #[error("OpenAI client error occurred: `{0}`")]
+    OpenAIClientError(#[from] openai::types::ClientError),
     #[error("A conversion error ocurred: `{0}`")]
     ConversionError(#[from] converters::ConversionError),
     #[error("A imap error ocurred: `{0}`")]

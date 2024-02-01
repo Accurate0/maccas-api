@@ -12,6 +12,5 @@ pub mod offer_details;
 pub mod offer_history;
 pub mod offers;
 pub mod points;
-pub mod products;
 pub mod sea_orm_active_enums;
 pub mod stores;

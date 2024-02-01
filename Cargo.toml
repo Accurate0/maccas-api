@@ -5,6 +5,7 @@ members = [
     "migration",
     "external/libmaccas",
     "external/places",
+    "external/openai",
     "dynamodb-migration",
     "batch",
     "base",
@@ -44,6 +45,7 @@ config = "0.13.4"
 entity = { path = "./entity" }
 libmaccas = { path = "./external/libmaccas" }
 places = { path = "./external/places" }
+openai = { path = "./external/openai" }
 base = { path = "./base" }
 converters = { path = "./converters" }
 event = { path = "./event" }

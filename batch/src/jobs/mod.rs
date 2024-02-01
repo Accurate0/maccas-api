@@ -7,10 +7,10 @@ use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
 pub mod activate_account;
+pub mod categorise_offers;
 pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
-pub mod preload_products;
 pub mod refresh;
 
 #[async_trait::async_trait]

@@ -50,6 +50,7 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Offer {
+  categories: [String!]!
   count: Int!
   creationDate: NaiveDateTime!
   description: String!
@@ -86,6 +87,7 @@ type QueriedLocation {
 }
 
 type QueryRoot {
+  categories: [String!]!
   health: HealthResponse!
   location: QueriedLocation!
   offerById(input: OfferByIdInput!): OfferByIdResponse!

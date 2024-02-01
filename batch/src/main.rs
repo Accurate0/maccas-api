@@ -1,7 +1,7 @@
 use crate::{
     jobs::{
-        activate_account::ActivateAccountJob, create_account::CreateAccountJob,
-        preload_products::PreloadProductsJob, refresh::RefreshJob,
+        activate_account::ActivateAccountJob, categorise_offers::CategoriseOffersJob,
+        create_account::CreateAccountJob, refresh::RefreshJob,
     },
     jwt::validate,
     routes::{
@@ -86,9 +86,11 @@ async fn main() -> Result<(), anyhow::Error> {
         .await;
 
     scheduler
-        .add_manual(PreloadProductsJob {
-            mcdonalds_config: settings.mcdonalds.clone(),
-            proxy_config: settings.proxy.clone(),
+        .add_manual(CategoriseOffersJob {
+            api_client: openai::ApiClient::new(
+                settings.openai_api_key.clone(),
+                http_client.clone(),
+            ),
         })
         .await;
 

@@ -35,6 +35,7 @@ pub struct Settings {
     pub mcdonalds: McDonalds,
     pub auth_secret: String,
     pub email: Email,
+    pub openai_api_key: String,
 }
 
 impl Settings {

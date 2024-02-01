@@ -10,5 +10,4 @@ pub use super::offer_details::Entity as OfferDetails;
 pub use super::offer_history::Entity as OfferHistory;
 pub use super::offers::Entity as Offers;
 pub use super::points::Entity as Points;
-pub use super::products::Entity as Products;
 pub use super::stores::Entity as Stores;

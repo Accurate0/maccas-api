@@ -7,6 +7,7 @@ export const load = async (event) => {
 	});
 
 	return {
-		offers: data.then((c) => c.data?.offers)
+		offers: data.then((c) => c.data?.offers),
+		categories: data.then((c) => c.data?.categories)
 	};
 };
