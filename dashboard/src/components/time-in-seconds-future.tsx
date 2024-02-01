@@ -7,23 +7,16 @@ export const TimeSecondsInFuture = ({
 }: {
   secondsInFuture: number;
 }) => {
-  const [currentTime, setCurrentTime] = useState(
-    new Date(Date.now() + secondsInFuture * 1000).toLocaleString()
-  );
-
-  useEffect(() => {
-    setCurrentTime(
-      new Date(Date.now() + secondsInFuture * 1000).toLocaleString()
-    );
-  }, [secondsInFuture]);
-
-  const style: CSSProperties = {
-    visibility: typeof window === "undefined" ? "hidden" : "visible",
-  };
+  const date = new Date(Date.now() + secondsInFuture * 1000);
+  const adjustedDateTime = new Intl.DateTimeFormat("en-AU", {
+    timeZone: "Australia/Perth",
+    timeStyle: "medium",
+    dateStyle: "long",
+  }).format(date);
 
   return (
-    <time style={style} dateTime={currentTime} suppressHydrationWarning>
-      {currentTime}
+    <time dateTime={adjustedDateTime} suppressHydrationWarning>
+      {adjustedDateTime}
     </time>
   );
 };
