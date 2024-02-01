@@ -64,11 +64,12 @@
 				<div class="grid grid-flow-col justify-between">
 					<Card.Header class="grid justify-between">
 						<Card.Title>{shortName}</Card.Title>
-						<Card.Description
-							>Expiry: {formatDistanceToNow(new Date(validTo + 'Z'), {
+						<Card.Description>
+							{isFuture(parseJSON(validTo)) ? 'Expires' : 'Expired'}
+							{formatDistanceToNow(new Date(validTo + 'Z'), {
 								addSuffix: true
-							})}</Card.Description
-						>
+							})}
+						</Card.Description>
 						<div class="self-end">
 							<Badge class="h-fit w-fit">{count} available</Badge>
 						</div>
