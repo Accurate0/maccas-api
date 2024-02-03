@@ -68,7 +68,7 @@
 
 <div class="grid grid-flow-row gap-4">
 	{#await offersList}
-		<Skeleton class="h-[34px] w-full rounded-sm" />
+		<Skeleton class="h-[46px] w-full rounded-sm" />
 		{#each Array(30) as _}
 			<Card.Root>
 				<div class="flex">
@@ -91,8 +91,8 @@
 				closeOnEscape
 				onSelectedChange={(e) => modifyFilter(e)}
 			>
-				<Select.Trigger class="w-full">
-					<Select.Value placeholder="Filter" />
+				<Select.Trigger class="h-12">
+					<Select.Value placeholder="Filter by type" />
 				</Select.Trigger>
 				<Select.Content>
 					{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
