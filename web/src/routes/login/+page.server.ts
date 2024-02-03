@@ -65,7 +65,10 @@ export const actions = {
 			cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 		};
 
-		const { username, password } = form.data;
+		const { username: usernameUntrimmed, password: passwordUntrimmed } = form.data;
+		const username = usernameUntrimmed.trim();
+		const password = passwordUntrimmed.trim();
+
 		const existingUser = await prisma.user.findFirst({
 			where: { username: { equals: username, mode: 'insensitive' } }
 		});
