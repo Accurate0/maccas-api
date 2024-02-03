@@ -1,3 +1,5 @@
-<div class="flex h-screen items-center justify-center">
-	<slot />
+<div class="flex items-center justify-center">
+	<div class="absolute top-[40%]">
+		<slot />
+	</div>
 </div>
