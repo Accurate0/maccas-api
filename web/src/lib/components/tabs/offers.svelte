@@ -91,7 +91,7 @@
 				closeOnEscape
 				onSelectedChange={(e) => modifyFilter(e)}
 			>
-				<Select.Trigger class="h-12">
+				<Select.Trigger class="grid h-12 grid-flow-col">
 					<Select.Value placeholder="Filter by type" />
 				</Select.Trigger>
 				<Select.Content>
