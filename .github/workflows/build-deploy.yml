@@ -116,6 +116,6 @@ jobs:
       - name: Deploy Production
         uses: superfly/flyctl-actions@v2
         with:
-          args: "deploy ${{ matrix.apps }} --image registry.fly.io/maccas-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}"
+          args: "deploy ${{ matrix.apps }} --update-only --image registry.fly.io/maccas-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
