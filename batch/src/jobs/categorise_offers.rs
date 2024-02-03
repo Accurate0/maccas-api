@@ -97,6 +97,4 @@ impl Job for CategoriseOffersJob {
 
         Ok(())
     }
-
-    async fn cleanup(&self, _context: &JobContext) {}
 }
