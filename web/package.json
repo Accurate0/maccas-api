@@ -49,6 +49,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@fontsource-variable/open-sans": "^5.0.23",
 		"@prisma/client": "5.7.1",
 		"@sveltestack/svelte-query": "^1.6.0",
 		"bcrypt": "^5.1.1",

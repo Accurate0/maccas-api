@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '@fontsource-variable/open-sans';
 	import '../app.pcss';
 
 	import { goto, onNavigate } from '$app/navigation';
