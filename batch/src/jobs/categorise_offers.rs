@@ -54,10 +54,11 @@ impl Job for CategoriseOffersJob {
         ChatMessage {
             role: "user".to_string(),
             content: format!(r#"Give the following categories as comma separated: {available_categories}
-            Categorise the following names which are also comma separated, you can select multiple categories per name, as it fits:
+            Categorise the following names which are also comma separated, you must select the category that fits the best:
             {offer_details}
 
-            You must respond with a JSON dictionary that maps the name to an array of the categories selected."#,)
+            If a name does not match any category, return a null value in the json instead.
+            You must respond with a JSON dictionary that maps the name to the category selected."#,)
         }]
         .to_vec();
 
@@ -81,18 +82,23 @@ impl Job for CategoriseOffersJob {
             .context("must have one choice")?;
 
         let response =
-            serde_json::from_str::<HashMap<String, Vec<String>>>(&response.message.content)?;
+            serde_json::from_str::<HashMap<String, Option<String>>>(&response.message.content)?;
 
         // FIXME: bad...
         for (key, value) in response {
-            entity::offer_details::Entity::update_many()
-                .filter(entity::offer_details::Column::ShortName.eq(key))
-                .col_expr(
-                    entity::offer_details::Column::Categories,
-                    Expr::value(value),
-                )
-                .exec(&context.database)
-                .await?;
+            match value {
+                Some(value) => {
+                    entity::offer_details::Entity::update_many()
+                        .filter(entity::offer_details::Column::ShortName.eq(key))
+                        .col_expr(
+                            entity::offer_details::Column::Categories,
+                            Expr::value(vec![value]),
+                        )
+                        .exec(&context.database)
+                        .await?
+                }
+                None => continue,
+            };
         }
 
         Ok(())

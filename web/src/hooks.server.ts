@@ -4,6 +4,11 @@ import { setSession } from '$houdini';
 import { SessionId } from '$lib/session';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// don't query db for this... public images...
+	if (event.url.pathname.startsWith('/api/images')) {
+		return await resolve(event);
+	}
+
 	if (event.url.pathname !== '/login') {
 		const sessionId = event.cookies.get(SessionId);
 		if (!sessionId) {
