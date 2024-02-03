@@ -6,36 +6,13 @@
 	import DealCode from '../deal-code.svelte';
 	import { slide } from 'svelte/transition';
 	import { isFuture, isPast, parseJSON, formatDistanceToNow } from 'date-fns';
-	import { Check } from 'radix-icons-svelte';
-	import Separator from '../ui/separator/separator.svelte';
-
-	type OfferList = import('$houdini').GetOffers$result['offers'] | undefined;
+	import * as Select from '$lib/components/ui/select';
+	import type { Selected } from 'bits-ui';
 	export let categories: Promise<Array<string> | undefined>;
-	export let offersList: Promise<OfferList>;
+	export let offersList: Promise<import('$houdini').GetOffers$result['offers'] | undefined>;
+
+	let filters = writable<Array<string> | undefined>();
 	let state: Writable<Record<number, Array<{ id: string }>>> = writable({});
-
-	const categoriseOffers = (list: OfferList, categories: Array<string> | undefined) => {
-		const categorised = categories
-			?.sort((a, b) => a.localeCompare(b))
-			?.reduce(
-				(prev, curr) => {
-					return {
-						...prev,
-						[curr]: [
-							...(prev[curr] ?? []),
-							...(list?.filter((o) => o.categories.includes(curr)) ?? [])
-						]
-					};
-				},
-				{} as Record<string, Exclude<OfferList, 'undefined'>>
-			);
-
-		if (categorised) {
-			categorised['Other'] = list?.filter((o) => o.categories.length === 0) ?? [];
-		}
-
-		return categorised;
-	};
 
 	const addOffer = (offerId: number, id: string) => {
 		// FIXME: :)
@@ -46,6 +23,35 @@
 		$state[offerId].push({ id });
 
 		$state = $state;
+	};
+
+	const defaultSelected: Selected<string>[] = [];
+
+	const modifyFilter = (selected: Selected<string>[] | undefined) => {
+		if (selected?.length === 0) {
+			filters.set(undefined);
+		} else {
+			filters.set(selected?.map((s) => s.value));
+		}
+	};
+
+	const checkIfFilterMatch = (
+		offerCategories: Array<string>,
+		filters: Array<string> | undefined
+	) => {
+		if (filters === undefined) {
+			return true;
+		}
+
+		if (filters?.includes('Other') && offerCategories.length === 0) {
+			return true;
+		}
+
+		if (offerCategories.some((c) => filters?.includes(c))) {
+			return true;
+		}
+
+		return false;
 	};
 
 	const removeOffer = async (offerId: number, id: string) => {
@@ -62,6 +68,7 @@
 
 <div class="grid grid-flow-row gap-4">
 	{#await offersList}
+		<Skeleton class="h-[34px] w-full rounded-sm" />
 		{#each Array(30) as _}
 			<Card.Root>
 				<div class="flex">
@@ -77,65 +84,81 @@
 		{/each}
 	{:then offersList}
 		{#await categories then categories}
-			{@const offers = categoriseOffers(offersList, categories)}
-			{#each Object.entries(offers ?? {}) as [category, offerList]}
-				{#if (offerList?.length ?? 0) > 0}
-					<h2 class="text-lg font-bold tracking-tight">{category}</h2>
-					<Separator />
-					{#each offerList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
-						{@const isValid = isOfferValid({ validFrom, validTo })}
-						<Card.Root
-							on:click={() => {
-								if (($state[offerPropositionId]?.length ?? 0) < count) {
-									addOffer(offerPropositionId, crypto.randomUUID());
-								}
-							}}
-							class={isValid ? undefined : 'opacity-30'}
-						>
-							<div class="grid grid-flow-col justify-between">
-								<Card.Header class="grid justify-between">
-									<Card.Title>{shortName}</Card.Title>
-									<Card.Description>
-										{isFuture(parseJSON(validTo)) ? 'Expires' : 'Expired'}
-										{formatDistanceToNow(new Date(validTo + 'Z'), {
-											addSuffix: true
-										})}
-									</Card.Description>
-									<div class="self-end">
-										<Badge class="h-fit w-fit">{count} available</Badge>
-									</div>
-								</Card.Header>
-								<Card.Header>
-									<img
-										class="rounded-xl"
-										src={`api/images/${imageBasename}`}
-										alt={shortName}
-										width={90}
-										height={90}
-									/>
-								</Card.Header>
-							</div>
-							{#if $state[offerPropositionId] && $state[offerPropositionId].length > 0}
-								<div in:slide={{ duration: 600 }} out:slide={{ duration: 600 }}>
-									<Card.Footer>
-										<div class="grid h-full w-full grid-flow-row gap-2">
-											{#each $state[offerPropositionId] as { id }}
-												<span in:slide={{ duration: 800 }} out:slide={{ duration: 800 }}>
-													<DealCode
-														offerId={offerPropositionId}
-														{id}
-														removeSelf={() => removeOffer(offerPropositionId, id)}
-													/>
-												</span>
-											{/each}
-										</div>
-									</Card.Footer>
-								</div>
-							{/if}
-						</Card.Root>
+			<Select.Root
+				selected={defaultSelected}
+				multiple
+				closeOnOutsideClick
+				closeOnEscape
+				onSelectedChange={(e) => modifyFilter(e)}
+			>
+				<Select.Trigger class="w-full">
+					<Select.Value placeholder="Filter" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
+						<Select.Item value={category}>{category}</Select.Item>
 					{/each}
-				{/if}
-			{/each}
+					<Select.Item value="Other">Other</Select.Item>
+				</Select.Content>
+			</Select.Root>
 		{/await}
+		{#each offersList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
+			{@const isValid = isOfferValid({ validFrom, validTo })}
+			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
+			{#if matchesFilter}
+				<Card.Root
+					on:click={() => {
+						if (($state[offerPropositionId]?.length ?? 0) < count) {
+							addOffer(offerPropositionId, crypto.randomUUID());
+						}
+					}}
+					class={isValid ? undefined : 'opacity-30'}
+				>
+					<div class="grid grid-flow-col justify-between">
+						<Card.Header class="grid justify-between">
+							<Card.Title>{shortName}</Card.Title>
+							<Card.Description>
+								{isFuture(parseJSON(validTo)) ? 'Expires' : 'Expired'}
+								{formatDistanceToNow(new Date(validTo + 'Z'), {
+									addSuffix: true
+								})}
+							</Card.Description>
+							<div class="self-end">
+								<Badge class="h-fit w-fit">{count} available</Badge>
+								{#each categories as category}
+									<Badge class="h-fit w-fit">{category}</Badge>
+								{/each}
+							</div>
+						</Card.Header>
+						<Card.Header>
+							<img
+								class="rounded-xl"
+								src={`api/images/${imageBasename}`}
+								alt={shortName}
+								width={90}
+								height={90}
+							/>
+						</Card.Header>
+					</div>
+					{#if $state[offerPropositionId] && $state[offerPropositionId].length > 0}
+						<div in:slide={{ duration: 600 }} out:slide={{ duration: 600 }}>
+							<Card.Footer>
+								<div class="grid h-full w-full grid-flow-row gap-2">
+									{#each $state[offerPropositionId] as { id }}
+										<span in:slide={{ duration: 800 }} out:slide={{ duration: 800 }}>
+											<DealCode
+												offerId={offerPropositionId}
+												{id}
+												removeSelf={() => removeOffer(offerPropositionId, id)}
+											/>
+										</span>
+									{/each}
+								</div>
+							</Card.Footer>
+						</div>
+					{/if}
+				</Card.Root>
+			{/if}
+		{/each}
 	{/await}
 </div>
