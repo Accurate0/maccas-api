@@ -122,6 +122,4 @@ impl Job for CreateAccountJob {
 
         Ok(())
     }
-
-    async fn cleanup(&self, _context: &JobContext) {}
 }

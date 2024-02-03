@@ -23,7 +23,6 @@ pub trait Job: Send + Sync + Debug {
     ) -> Result<(), JobError> {
         Ok(())
     }
-    async fn cleanup(&self, _context: &JobContext) {}
 }
 
 #[derive(Debug)]

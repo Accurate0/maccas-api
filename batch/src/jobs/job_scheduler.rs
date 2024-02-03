@@ -291,11 +291,15 @@ impl JobScheduler {
                     }
 
                     if let Err(e) = {
+                        let current_context = context.get::<serde_json::Value>().await;
+
                         entity::job_history::ActiveModel {
                             id: Unchanged(execution_id),
                             error: Set(error.is_some()),
                             error_message: Set(error.clone()),
                             completed_at: Set(Some(time_now.naive_utc())),
+                            context: Set(current_context),
+
                             ..Default::default()
                         }
                         .update(&db)
@@ -303,8 +307,6 @@ impl JobScheduler {
                     } {
                         tracing::error!("error setting job error: {}, {:?}", e, error)
                     }
-
-                    job.cleanup(&context).await;
 
                     let update_finish_time = jobs::ActiveModel {
                         id: Set(job_model.id),

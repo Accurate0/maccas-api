@@ -128,6 +128,4 @@ impl Job for ActivateAccountJob {
         }
         Ok(())
     }
-
-    async fn cleanup(&self, _context: &JobContext) {}
 }

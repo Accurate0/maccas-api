@@ -8,12 +8,18 @@ use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
     QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
 };
+use serde::Serialize;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct RefreshJob {
     pub http_client: ClientWithMiddleware,
     pub mcdonalds_config: McDonalds,
+}
+
+#[derive(Serialize)]
+struct RefreshContext {
+    account_id: String,
 }
 
 #[async_trait::async_trait]
@@ -34,6 +40,12 @@ impl Job for RefreshJob {
             .one(&context.database)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
+
+        context
+            .set(RefreshContext {
+                account_id: account_to_refresh.id.to_string(),
+            })
+            .await?;
 
         let account_id = account_to_refresh.id.to_owned();
         tracing::info!("refreshing account: {:?}", &account_id);
@@ -192,6 +204,4 @@ impl Job for RefreshJob {
 
         Ok(())
     }
-
-    async fn cleanup(&self, _context: &JobContext) {}
 }
