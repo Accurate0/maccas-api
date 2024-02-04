@@ -14,6 +14,7 @@
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
 	import type { LayoutServerData } from './$types';
+	import { configStore } from '$lib/config';
 
 	const queryClient = new QueryClient();
 
@@ -33,7 +34,11 @@
 	});
 
 	const data = derived(page, (p) => p.data as LayoutServerData);
-	const storeName = derived(data, (data) => data.config?.storeName);
+	configStore.set($page.data.config);
+	const storeName = derived(
+		[configStore, page],
+		([$config, $layout]) => $config?.storeName ?? $layout.data.config?.storeName
+	);
 </script>
 
 <svelte:head>
