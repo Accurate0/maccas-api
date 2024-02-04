@@ -7,7 +7,7 @@ const Page = async () => {
     redirect("/login");
   }
 
-  return null;
+  redirect("/event");
 };
 
 export default Page;
