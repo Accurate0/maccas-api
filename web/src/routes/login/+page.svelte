@@ -9,7 +9,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 
 	export let data: PageData;
-	const { form, errors, submitting, enhance } = superForm(data.form);
+	const { form, errors, submitting, enhance } = superForm(data.form, { taintedMessage: false });
 </script>
 
 <svelte:head>

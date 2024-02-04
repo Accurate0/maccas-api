@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async (event) => {
-	const isLogin = event.route.id === '/login';
+	const isLogin = event.url.pathname === '/login';
 
 	if (!isLogin) {
 		const user = await prisma.user.findUniqueOrThrow({
