@@ -36,6 +36,7 @@ impl Job for RefreshJob {
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         let account_to_refresh = accounts::Entity::find()
+            .filter(accounts::Column::Active.eq(true))
             .order_by_asc(accounts::Column::UpdatedAt)
             .one(&context.database)
             .await?
