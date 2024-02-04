@@ -158,7 +158,7 @@ impl Job for RefreshJob {
             .exec(&txn)
             .await?;
 
-        let offer_history_models: Vec<offer_history::ActiveModel> = models
+        let offer_history_models = models
             .iter()
             .cloned()
             .map(|m| -> Result<Database<offer_history::Model>, DbErr> {
@@ -167,7 +167,7 @@ impl Job for RefreshJob {
                 ))
             })
             .flat_map(|m| m.map(|r| r.0.into_active_model()))
-            .collect();
+            .collect::<Vec<offer_history::ActiveModel>>();
 
         offer_history::Entity::insert_many(offer_history_models)
             .on_empty_do_nothing()
