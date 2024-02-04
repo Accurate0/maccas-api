@@ -2,16 +2,13 @@ import { handler } from './build/handler.js';
 import express from 'express';
 
 const app = express();
+app.disable('x-powered-by');
 
 app.get('/health', (req, res) => {
 	res.end('ok');
 });
 
 app.use(handler);
-app.use(function (req, res, next) {
-	res.removeHeader('Server');
-	next();
-});
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
