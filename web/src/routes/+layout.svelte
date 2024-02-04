@@ -8,16 +8,14 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
 	import { QueryClient, QueryClientProvider } from '@sveltestack/svelte-query';
-	import type { LayoutData } from './$types';
 	import { derived } from 'svelte/store';
-	import { configStore } from '$lib/config';
 	import { ModeWatcher, mode } from 'mode-watcher';
 	import { Sun, Moon } from 'radix-icons-svelte';
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
+	import type { LayoutServerData } from './$types';
 
 	const queryClient = new QueryClient();
-	export let data: LayoutData;
 
 	onNavigate((navigation) => {
 		// @ts-expect-error
@@ -34,8 +32,8 @@
 		});
 	});
 
-	configStore.set(data.config);
-	const storeName = derived(configStore, (c) => c?.storeName);
+	const data = derived(page, (p) => p.data as LayoutServerData);
+	const storeName = derived(data, (data) => data.config?.storeName);
 </script>
 
 <svelte:head>
@@ -67,10 +65,10 @@
 		<div class="w-full">
 			<div class="space-bet flex justify-between align-baseline">
 				<Tabs.Root value={$page.route.id?.replace('/', '') ?? undefined}>
-					{#if !data.hideAll}
+					{#if !$data.hideAll}
 						<Tabs.List class="m-4 mb-0">
 							<Tabs.Trigger on:click={() => goto('/offers')} value="offers">Offers</Tabs.Trigger>
-							{#if data.showPoints}
+							{#if $data.showPoints}
 								<Tabs.Trigger on:click={() => goto('/points')} value="points">Points</Tabs.Trigger>
 							{/if}
 							<Tabs.Trigger on:click={() => goto('/location')} value="location"
@@ -92,7 +90,7 @@
 				</div>
 			</div>
 
-			{#if $storeName && !data.hideAll}
+			{#if $storeName && !$data.hideAll}
 				<div class="m-4 grid grid-flow-row gap-4">
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
