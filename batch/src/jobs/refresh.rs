@@ -167,7 +167,7 @@ impl Job for RefreshJob {
                 ))
             })
             .flat_map(|m| m.map(|r| r.0.into_active_model()))
-            .collect::<Vec<offer_history::ActiveModel>>();
+            .collect::<Vec<_>>();
 
         offer_history::Entity::insert_many(offer_history_models)
             .on_empty_do_nothing()
