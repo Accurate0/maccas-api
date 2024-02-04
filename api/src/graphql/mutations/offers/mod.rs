@@ -5,7 +5,7 @@ use crate::{
 };
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
-use base::{account_manager::AccountManager, constants::mc_donalds::OFFSET};
+use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
 use event::{CreateEvent, CreateEventResponse, Event};
 use reqwest::{header::AUTHORIZATION, StatusCode};
@@ -29,9 +29,12 @@ impl OffersMutation {
         input: AddOfferInput,
     ) -> async_graphql::Result<AddOfferResponse> {
         let db = ctx.data::<DatabaseConnection>()?;
-        let account_manager = ctx.data::<AccountManager>()?;
 
-        let all_locked_accounts = account_manager.get_all_locked().await?;
+        let all_locked_accounts = entity::account_lock::Entity::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|a| a.id);
 
         let mut conditions = Condition::all();
         for locked_account in all_locked_accounts {
@@ -45,9 +48,14 @@ impl OffersMutation {
             .await?
             .context("No offer found for this id")?;
 
-        account_manager
-            .lock(offer.account_id, Duration::from_secs(900))
-            .await?;
+        let in_15_minutes = chrono::offset::Utc::now().naive_utc() + Duration::from_secs(900);
+        entity::account_lock::ActiveModel {
+            id: Set(offer.account_id),
+            unlock_at: Set(in_15_minutes),
+            ..Default::default()
+        }
+        .insert(db)
+        .await?;
 
         let claims = ctx.data_opt::<ValidatedClaims>();
         let offer_id = offer.id;
@@ -139,7 +147,6 @@ impl OffersMutation {
         input: RemoveOfferInput,
     ) -> async_graphql::Result<Uuid> {
         let db = ctx.data::<DatabaseConnection>()?;
-        let account_manager = ctx.data::<AccountManager>()?;
 
         let offer = offers::Entity::find_by_id(input.id)
             .one(db)
@@ -176,7 +183,9 @@ impl OffersMutation {
         let claims = ctx.data_opt::<ValidatedClaims>();
 
         if response.status.is_success() {
-            account_manager.unlock(offer.account_id).await?;
+            entity::account_lock::Entity::delete_by_id(offer.account_id)
+                .exec(db)
+                .await?;
 
             entity::offer_audit::ActiveModel {
                 action: Set(Action::Remove),

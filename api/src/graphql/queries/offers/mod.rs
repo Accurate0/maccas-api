@@ -2,7 +2,7 @@ use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
 use crate::{name_of, settings::Settings};
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
-use base::{account_manager::AccountManager, constants::mc_donalds::OFFSET};
+use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers};
 use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, JoinType,
@@ -66,8 +66,11 @@ impl OffersQuery {
 
     async fn offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
-        let account_manager = ctx.data::<AccountManager>()?;
-        let all_locked_accounts = account_manager.get_all_locked().await?;
+        let all_locked_accounts = entity::account_lock::Entity::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|a| a.id);
 
         tracing::info!("locked accounts: {:?}", all_locked_accounts);
         let mut conditions = Condition::all();

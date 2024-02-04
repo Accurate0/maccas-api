@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod account_lock;
 pub mod accounts;
 pub mod categories;
 pub mod events;

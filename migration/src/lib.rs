@@ -29,6 +29,7 @@ mod m20240201_095751_remove_products;
 mod m20240201_095903_remove_product_ids_and_add_categories;
 mod m20240203_105911_update_categories;
 mod m20240203_123115_update_categories_2;
+mod m20240204_080304_add_account_lock;
 
 pub struct Migrator;
 
@@ -65,6 +66,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240201_095903_remove_product_ids_and_add_categories::Migration),
             Box::new(m20240203_105911_update_categories::Migration),
             Box::new(m20240203_123115_update_categories_2::Migration),
+            Box::new(m20240204_080304_add_account_lock::Migration),
         ]
     }
 }

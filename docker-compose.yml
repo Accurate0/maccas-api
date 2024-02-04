@@ -54,17 +54,14 @@ services:
       - "db:database"
       - "event:event"
       - "batch:batch"
-      - "cache:cache"
     depends_on:
       - db
-      - cache
       - event
       - batch
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
-      - CACHE_CONNECTION_STRING=redis://cache:6379
     env_file:
       - .env.local
     healthcheck:
@@ -83,10 +80,8 @@ services:
       - "8001:8001"
     links:
       - "db:database"
-      - "cache:cache"
     depends_on:
       - db
-      - cache
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
       - CACHE_CONNECTION_STRING=redis://cache:6379
@@ -150,15 +145,6 @@ services:
       interval: 90s
       timeout: 5s
       retries: 5
-
-  cache:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly
-    ulimits:
-      memlock: -1
-    ports:
-      - "6379:6379"
-    volumes:
-      - dragonflydata:/data
 
 volumes:
   pgdata:
