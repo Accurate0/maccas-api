@@ -89,7 +89,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .add_manual(CategoriseOffersJob {
             api_client: openai::ApiClient::new(
                 settings.openai_api_key.clone(),
-                http_client.clone(),
+                base::http::get_simple_http_client()?,
             ),
         })
         .await;
