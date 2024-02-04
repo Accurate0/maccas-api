@@ -7,7 +7,6 @@ use crate::{
 };
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
-use base::account_manager::AccountManager;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
@@ -38,12 +37,10 @@ async fn main() -> Result<(), anyhow::Error> {
     // most likely immediately
     // might need throttling etc, semaphore?
 
-    let account_manager = AccountManager::new(&settings.cache_connection_string).await?;
     let db = Database::connect(opt).await?;
 
     let event_manager = EventManager::new(db);
     event_manager.set_state(settings.clone());
-    event_manager.set_state(account_manager);
 
     event_manager.reload_incomplete_events().await?;
     let (handle, cancellation_token) = event_manager.process_events();

@@ -1,5 +1,4 @@
 use async_graphql::Object;
-use base::account_manager::AccountManager;
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::DatabaseConnection;
@@ -33,10 +32,5 @@ impl HealthResponse {
         let batch_health_response = http_client.get(request_url).send().await;
 
         Ok(batch_health_response.is_ok_and(|r| r.status() == StatusCode::NO_CONTENT))
-    }
-
-    pub async fn cache(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<bool> {
-        let account_manager = ctx.data::<AccountManager>()?;
-        Ok(account_manager.ping().await)
     }
 }

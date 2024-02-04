@@ -1,9 +1,6 @@
 use super::EventManager;
 use crate::event_manager::handlers::cleanup::cleanup;
-use base::{
-    account_manager::AccountManagerError,
-    retry::{retry_async, ExponentialBackoff, RetryResult},
-};
+use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use event::Event;
 use sea_orm::DbErr;
 use std::time::Duration;
@@ -25,8 +22,6 @@ pub enum HandlerError {
     ReqwestError(#[from] reqwest::Error),
     #[error("McDonald's client error occurred: `{0}`")]
     McDonaldsClientError(#[from] libmaccas::ClientError),
-    #[error("Account manager error occurred: `{0}`")]
-    AccountManagerError(#[from] AccountManagerError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)

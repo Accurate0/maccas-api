@@ -2,9 +2,10 @@ use crate::types::{ApiState, AppError};
 use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, ServerError};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
+use axum::http::StatusCode;
+use axum::response::Result;
 use axum::{extract::State, http::HeaderMap, response::IntoResponse, Json};
 use base::jwt::{self, JwtClaims};
-use reqwest::StatusCode;
 
 pub async fn graphiql() -> impl IntoResponse {
     axum::response::Html(GraphiQLSource::build().endpoint("/v1/graphql").finish())
@@ -81,12 +82,11 @@ pub struct HealthResponse {
     database: bool,
     event: bool,
     batch: bool,
-    cache: bool,
 }
 
 pub async fn health(
     State(ApiState { schema, .. }): State<ApiState>,
-) -> Result<Json<HealthResponse>, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let request = async_graphql::Request::new(
         r#"
       {
@@ -94,7 +94,6 @@ pub async fn health(
           database
           event
           batch
-          cache
         }
       }
       "#,
@@ -110,14 +109,10 @@ pub async fn health(
             .clone(),
     )?;
 
-    if health_response.database
-        && health_response.event
-        && health_response.batch
-        && health_response.cache
-    {
-        Ok(Json(health_response))
+    if health_response.database && health_response.event && health_response.batch {
+        Ok((StatusCode::OK, Json(health_response)))
     } else {
-        Err(AppError::StatusCode(StatusCode::SERVICE_UNAVAILABLE))
+        Ok((StatusCode::SERVICE_UNAVAILABLE, Json(health_response)))
     }
 }
 

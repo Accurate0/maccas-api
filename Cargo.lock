@@ -410,6 +410,7 @@ dependencies = [
  "axum",
  "base",
  "batch",
+ "chrono",
  "config",
  "entity",
  "event",

@@ -1,7 +1,7 @@
 use super::HandlerError;
 use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context as _;
-use base::{account_manager::AccountManager, constants::mc_donalds::OFFSET};
+use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use uuid::Uuid;
@@ -64,9 +64,6 @@ pub async fn cleanup(
 
         match response {
             Ok(r) => {
-                let account_manager = em.get_state::<AccountManager>();
-                account_manager.unlock(offer.account_id).await?;
-
                 tracing::info!("deal stack response: {r:?}");
                 entity::offer_audit::ActiveModel {
                     action: Set(Action::Remove),
@@ -82,6 +79,10 @@ pub async fn cleanup(
     } else {
         tracing::info!("not found in deal stack, skipped");
     }
+
+    entity::account_lock::Entity::delete_by_id(offer.account_id)
+        .exec(db)
+        .await?;
 
     Ok(())
 }
