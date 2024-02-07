@@ -10,16 +10,14 @@ app.get('/health', (req, res) => {
 
 app.use(handler);
 
+const server = app.listen(3000, () => {
+	console.log('listening on port 3000');
+});
+
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 function shutdown() {
 	console.log('graceful shutdown express');
-	app.close(function () {
-		console.log('closed express');
-	});
+	server.close();
 }
-
-app.listen(3000, () => {
-	console.log('listening on port 3000');
-});
