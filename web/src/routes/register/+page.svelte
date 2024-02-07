@@ -52,7 +52,9 @@
 						<Alert.Root>
 							<ExclamationTriangle class="h-4 w-4" />
 							<Alert.Title>Message</Alert.Title>
-							<Alert.Description>{$message}</Alert.Description>
+							<Alert.Description
+								>{$message} - <a href="/login">Click here to login</a></Alert.Description
+							>
 						</Alert.Root>
 					</div>
 				{/if}
