@@ -82,9 +82,12 @@
 							{#if $data.showPoints}
 								<Tabs.Trigger on:click={() => goto('/points')} value="points">Points</Tabs.Trigger>
 							{/if}
-							<Tabs.Trigger on:click={() => goto('/location')} value="location"
-								>Location</Tabs.Trigger
-							>
+							<Tabs.Trigger on:click={() => goto('/location')} value="location">
+								Location
+							</Tabs.Trigger>
+							{#if $data.showUsers}
+								<Tabs.Trigger on:click={() => goto('/users')} value="users">Users</Tabs.Trigger>
+							{/if}
 						</Tabs.List>
 					{/if}
 				</Tabs.Root>
@@ -101,7 +104,7 @@
 				</div>
 			</div>
 
-			{#if $storeName && !$data.hideAll}
+			{#if $storeName && !$data.hideAll && $page.url.pathname !== '/users'}
 				<div class="m-4 grid grid-flow-row gap-4">
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
