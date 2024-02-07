@@ -23,19 +23,37 @@ export async function POST(event) {
 
 	const store = new StoreByIdStore();
 	const { data } = await store.fetch({ event, variables: { storeId: validatedBody.data.storeId } });
-	await prisma.user.update({
-		where: { id: event.locals.session.userId },
-		data: {
-			config: {
-				update: {
-					data: {
-						storeId: validatedBody.data.storeId,
-						storeName: data?.location.storeId.name
+	const user = await prisma.user.findUniqueOrThrow({ where: { id: event.locals.session.userId } });
+	if (user.configId) {
+		await prisma.user.update({
+			where: { id: event.locals.session.userId },
+			data: {
+				config: {
+					update: {
+						data: {
+							storeId: validatedBody.data.storeId,
+							storeName: data?.location.storeId.name
+						}
 					}
 				}
 			}
-		}
-	});
+		});
+	} else {
+		const createdConfig = await prisma.config.create({
+			data: {
+				userId: user.id,
+				storeId: validatedBody.data.storeId,
+				storeName: data?.location.storeId.name
+			}
+		});
+
+		await prisma.user.update({
+			where: { id: event.locals.session.userId },
+			data: {
+				configId: createdConfig.id
+			}
+		});
+	}
 
 	return new Response(null, { status: 204 });
 }

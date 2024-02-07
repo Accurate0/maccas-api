@@ -3,7 +3,7 @@
 	import '../app.pcss';
 
 	import { goto, onNavigate } from '$app/navigation';
-	import { Toaster } from 'svelte-sonner';
+	import { Toaster, toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
@@ -15,6 +15,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import type { LayoutServerData } from './$types';
 	import { configStore } from '$lib/config';
+	import ConfigToast from '$lib/components/config-toast.svelte';
+	import ActiveUserCheck from '$lib/components/active-user-check.svelte';
 
 	const queryClient = new QueryClient();
 
@@ -66,9 +68,13 @@
 	<a href="/">Maccas</a>
 </h2>
 <div class="flex h-full justify-center">
+	{#if !$data.hideAll}
+		<ConfigToast config={$data.config ?? null} />
+		<ActiveUserCheck isUserActive={$data.isUserActive ?? false} />
+	{/if}
 	<QueryClientProvider client={queryClient}>
 		<div class="w-full">
-			<div class="space-bet flex justify-between align-baseline">
+			<div class="flex justify-between align-baseline">
 				<Tabs.Root value={$page.route.id?.replace('/', '') ?? undefined}>
 					{#if !$data.hideAll}
 						<Tabs.List class="m-4 mb-0">

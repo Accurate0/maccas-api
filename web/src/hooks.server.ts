@@ -9,7 +9,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
-	if (event.url.pathname !== '/login') {
+	if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
 		const sessionId = event.cookies.get(SessionId);
 		if (!sessionId) {
 			return new Response(null, {

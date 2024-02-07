@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-    id           String @id @default(uuid())
-    username     String @unique
-    passwordHash Bytes  @db.ByteA
-    role         Role   @default(USER)
+    id           String  @id @default(uuid())
+    active       Boolean @default(true)
+    username     String  @unique
+    passwordHash Bytes   @db.ByteA
+    role         Role    @default(USER)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    configId String  @unique
+    configId String? @unique
     config   Config? @relation(fields: [configId], references: [id], onDelete: Cascade)
 
     Session Session[]
