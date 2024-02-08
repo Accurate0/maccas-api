@@ -19,7 +19,7 @@ memory_mb = 512
 [env]
 OLD_API_BASE_URL = "https://api.maccas.one/v1"
 API_BASE_URL = "http://maccas-api.internal:8000/v1"
-ORIGIN = "https://next.maccas.one"
+ORIGIN = "https://maccas.one"
 
 [deploy]
 strategy = "canary"
