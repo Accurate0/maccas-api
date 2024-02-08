@@ -111,7 +111,9 @@ export const actions = {
 				headers: { Authorization: `Bearer ${result.data.token}` }
 			});
 
-			const config = await configSchema.safeParseAsync(await configResponse.json());
+			const config = configResponse.ok
+				? await configSchema.safeParseAsync(await configResponse.json())
+				: null;
 			const passwordHash = await bcrypt.hash(password, 10);
 			// TODO: fetch existing config
 			// https://api.maccas.one/v1/user/config
@@ -126,7 +128,7 @@ export const actions = {
 					config: {
 						create: {
 							userId: existingUserId,
-							...(config.success ? config.data : {})
+							...(config ? config : {})
 						}
 					}
 				}
