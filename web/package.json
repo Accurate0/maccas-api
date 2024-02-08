@@ -61,7 +61,7 @@
 		"material-symbols": "^0.14.3",
 		"mode-watcher": "^0.2.0",
 		"radix-icons-svelte": "^1.2.1",
-		"svelte-sonner": "^0.3.7",
+		"svelte-sonner": "^0.3.17",
 		"tailwind-merge": "^2.2.0",
 		"tailwind-variants": "^0.1.19"
 	}
