@@ -104,6 +104,7 @@
 		{/await}
 		{#each offersList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
+			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
 			{#if matchesFilter}
 				<Card.Root
@@ -118,10 +119,17 @@
 						<Card.Header class="grid justify-between">
 							<Card.Title>{shortName}</Card.Title>
 							<Card.Description>
-								{isFuture(parseJSON(validTo)) ? 'Expires' : 'Expired'}
-								{formatDistanceToNow(new Date(validTo + 'Z'), {
-									addSuffix: true
-								})}
+								{#if validInFuture}
+									Active
+									{formatDistanceToNow(new Date(validFrom + 'Z'), {
+										addSuffix: true
+									})}
+								{:else}
+									{isFuture(parseJSON(validTo)) ? 'Expires' : 'Expired'}
+									{formatDistanceToNow(new Date(validTo + 'Z'), {
+										addSuffix: true
+									})}
+								{/if}
 							</Card.Description>
 							<div class="self-end">
 								<Badge class="h-fit w-fit">{count} available</Badge>
