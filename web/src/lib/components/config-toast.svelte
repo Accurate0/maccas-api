@@ -7,8 +7,9 @@
 
 	export let config: Config | null;
 
+	const configMissing = config === null || config.storeId === null || config.storeName === null;
 	const forceLocationTab = () => {
-		if (!config && $page.url.pathname !== '/location') {
+		if (configMissing && $page.url.pathname !== '/location') {
 			toast.error('No location selected');
 			goto('/location');
 		}
