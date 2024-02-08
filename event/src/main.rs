@@ -20,7 +20,7 @@ mod state;
 
 #[actix_web::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt().without_time().init();
 
     let settings = Settings::new()?;
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
