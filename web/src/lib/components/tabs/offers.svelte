@@ -8,11 +8,14 @@
 	import { isFuture, isPast, parseJSON, formatDistanceToNow } from 'date-fns';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
+	import { CaretSort, ChevronDown, ChevronUp, Moon, Sun } from 'radix-icons-svelte';
+	import { Button } from '$lib/components/ui/button';
 	export let categories: Promise<Array<string> | undefined>;
 	export let offersList: Promise<import('$houdini').GetOffers$result['offers'] | undefined>;
 
 	let filters = writable<Array<string> | undefined>();
 	let state: Writable<Record<number, Array<{ id: string }>>> = writable({});
+	let sortByAsc = true;
 
 	const addOffer = (offerId: number, id: string) => {
 		// FIXME: :)
@@ -83,26 +86,49 @@
 			</Card.Root>
 		{/each}
 	{:then offersList}
-		{#await categories then categories}
-			<Select.Root
-				selected={defaultSelected}
-				multiple
-				closeOnOutsideClick
-				closeOnEscape
-				onSelectedChange={(e) => modifyFilter(e)}
-			>
-				<Select.Trigger class="grid h-12 grid-flow-col">
-					<Select.Value placeholder="Filter by type" />
-				</Select.Trigger>
-				<Select.Content>
-					{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
-						<Select.Item value={category}>{category}</Select.Item>
-					{/each}
-					<Select.Item value="Other">Other</Select.Item>
-				</Select.Content>
-			</Select.Root>
-		{/await}
-		{#each offersList ?? [] as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
+		<div class="flex flex-row gap-2">
+			{#await categories then categories}
+				<Select.Root
+					selected={defaultSelected}
+					multiple
+					closeOnOutsideClick
+					closeOnEscape
+					onSelectedChange={(e) => modifyFilter(e)}
+				>
+					<Select.Trigger class="grid h-12 grid-flow-col">
+						<Select.Value placeholder="Filter by type" />
+					</Select.Trigger>
+					<Select.Content>
+						{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
+							<Select.Item value={category}>{category}</Select.Item>
+						{/each}
+						<Select.Item value="Other">Other</Select.Item>
+					</Select.Content>
+				</Select.Root>
+			{/await}
+			<div>
+				<Button
+					on:click={() => (sortByAsc = !sortByAsc)}
+					variant="outline"
+					size="icon"
+					class="h-12 w-12"
+				>
+					{#if sortByAsc}
+						<ChevronDown />
+					{:else}
+						<ChevronUp />
+					{/if}
+					<span class="sr-only">Toggle theme</span>
+				</Button>
+			</div>
+		</div>
+		{#each (offersList ?? []).sort((a, b) => {
+			if (sortByAsc) {
+				return (a?.price ?? 0) - (b?.price ?? 0);
+			} else {
+				return (b?.price ?? 0) - (a?.price ?? 0);
+			}
+		}) as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
