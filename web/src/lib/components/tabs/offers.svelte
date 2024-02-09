@@ -70,7 +70,7 @@
 </script>
 
 <div class="grid grid-flow-row gap-4">
-	{#await offersList}
+	{#await Promise.all([offersList, categories])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
 			<Skeleton class="h-12 w-[50px] rounded-sm" />
@@ -88,27 +88,25 @@
 				</div>
 			</Card.Root>
 		{/each}
-	{:then offersList}
+	{:then [offersList, categories]}
 		<div class="flex flex-row gap-2">
-			{#await categories then categories}
-				<Select.Root
-					selected={defaultSelected}
-					multiple
-					closeOnOutsideClick
-					closeOnEscape
-					onSelectedChange={(e) => modifyFilter(e)}
-				>
-					<Select.Trigger class="grid h-12 grid-flow-col">
-						<Select.Value placeholder="Filter by type" />
-					</Select.Trigger>
-					<Select.Content>
-						{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
-							<Select.Item value={category}>{category}</Select.Item>
-						{/each}
-						<Select.Item value="Other">Other</Select.Item>
-					</Select.Content>
-				</Select.Root>
-			{/await}
+			<Select.Root
+				selected={defaultSelected}
+				multiple
+				closeOnOutsideClick
+				closeOnEscape
+				onSelectedChange={(e) => modifyFilter(e)}
+			>
+				<Select.Trigger class="grid h-12 grid-flow-col">
+					<Select.Value placeholder="Filter by type" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each (categories ?? []).sort((a, b) => a.localeCompare(b)) as category}
+						<Select.Item value={category}>{category}</Select.Item>
+					{/each}
+					<Select.Item value="Other">Other</Select.Item>
+				</Select.Content>
+			</Select.Root>
 			<div>
 				<Button
 					on:click={() => (sortByAsc = !sortByAsc)}
