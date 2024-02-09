@@ -35,21 +35,23 @@
 						<Card.Title>{currentPoints}</Card.Title>
 					</Card.Header>
 					<Card.Header>
-						{#if currentPoints >= 2500}
-							<Badge class="h-fit w-fit">
-								<span class="material-symbols-outlined">local_cafe</span>
-							</Badge>
-						{/if}
-						{#if currentPoints >= 5000}
-							<Badge class="h-fit w-fit">
-								<span class="material-symbols-outlined">icecream</span>
-							</Badge>
-						{/if}
-						{#if currentPoints >= 7500}
-							<Badge class="h-fit w-fit">
-								<span class="material-symbols-outlined">lunch_dining</span>
-							</Badge>
-						{/if}
+						<div>
+							{#if currentPoints >= 2500}
+								<Badge class="h-fit w-fit">
+									<span class="material-symbols-outlined">local_cafe</span>
+								</Badge>
+							{/if}
+							{#if currentPoints >= 5000}
+								<Badge class="h-fit w-fit">
+									<span class="material-symbols-outlined">icecream</span>
+								</Badge>
+							{/if}
+							{#if currentPoints >= 7500}
+								<Badge class="h-fit w-fit">
+									<span class="material-symbols-outlined">lunch_dining</span>
+								</Badge>
+							{/if}
+						</div>
 					</Card.Header>
 				</div>
 				{#if $state[accountId]}
