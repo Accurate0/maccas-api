@@ -71,7 +71,10 @@
 
 <div class="grid grid-flow-row gap-4">
 	{#await offersList}
-		<Skeleton class="h-[46px] w-full rounded-sm" />
+		<div class="flex flex-row gap-2">
+			<Skeleton class="h-[48px] w-full rounded-sm" />
+			<Skeleton class="h-12 w-[50px] rounded-sm" />
+		</div>
 		{#each Array(30) as _}
 			<Card.Root>
 				<div class="flex">
