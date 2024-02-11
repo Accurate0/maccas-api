@@ -28,22 +28,22 @@ pub struct Location {
 }
 
 #[derive(Clone)]
-pub struct DataloaderLocation {
+pub struct LocationRequest {
     pub lat: f64,
     pub long: f64,
 }
 
-impl std::hash::Hash for DataloaderLocation {
+impl std::hash::Hash for LocationRequest {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.lat.to_bits().hash(state);
         self.long.to_bits().hash(state);
     }
 }
 
-impl PartialEq for DataloaderLocation {
+impl PartialEq for LocationRequest {
     fn eq(&self, other: &Self) -> bool {
         self.lat == other.lat && self.long == other.long
     }
 }
 
-impl Eq for DataloaderLocation {}
+impl Eq for LocationRequest {}
