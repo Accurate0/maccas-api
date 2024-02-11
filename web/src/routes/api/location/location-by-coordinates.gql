@@ -1,0 +1,9 @@
+query LocationByCoordinates($latitude: Float!, $longitude: Float!) {
+	location {
+		coordinate(input: { lat: $latitude, lng: $longitude }) {
+			name
+			storeNumber
+			address
+		}
+	}
+}

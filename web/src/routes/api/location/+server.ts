@@ -1,17 +1,32 @@
-import { LocationByTextStore, StoreByIdStore } from '$houdini';
+import { LocationByCoordinatesStore, LocationByTextStore, StoreByIdStore } from '$houdini';
 import { json } from '@sveltejs/kit';
 import { schema } from './schema';
 import { prisma } from '$lib/prisma';
 
 export async function GET(event) {
-	const query = event.url.searchParams.get('query')!;
-	const store = new LocationByTextStore();
-	const { data } = await store.fetch({
-		event,
-		variables: { query }
-	});
+	const query = event.url.searchParams.get('query');
 
-	return json(data?.location.text ?? []);
+	if (query) {
+		const store = new LocationByTextStore();
+		const { data } = await store.fetch({
+			event,
+			variables: { query }
+		});
+
+		return json(data?.location.text ?? []);
+	}
+
+	const latitude = Number(event.url.searchParams.get('latitude'));
+	const longitude = Number(event.url.searchParams.get('longitude'));
+
+	if (!isNaN(latitude) && !isNaN(longitude)) {
+		const store = new LocationByCoordinatesStore();
+		const { data } = await store.fetch({ event, variables: { latitude, longitude } });
+
+		return json(data?.location.coordinate ?? []);
+	}
+
+	return new Response(null, { status: 400 });
 }
 
 export async function POST(event) {
