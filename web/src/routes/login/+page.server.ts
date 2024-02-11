@@ -118,6 +118,10 @@ export const actions = {
 			// TODO: fetch existing config
 			// https://api.maccas.one/v1/user/config
 
+			const configParsed = config?.success
+				? { storeId: config.data.storeId, storeName: config.data.storeName }
+				: {};
+
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
@@ -128,7 +132,7 @@ export const actions = {
 					config: {
 						create: {
 							userId: existingUserId,
-							...(config ? config : {})
+							...configParsed
 						}
 					}
 				}
