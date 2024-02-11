@@ -5,7 +5,7 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 
-	export let config: Exclude<Config, 'id' | 'userId'> | null;
+	export let config: Omit<Config, 'id' | 'userId'> | null;
 
 	const configMissing = config === null || config.storeId === null || config.storeName === null;
 	const forceLocationTab = () => {

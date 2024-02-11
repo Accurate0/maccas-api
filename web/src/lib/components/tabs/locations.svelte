@@ -8,23 +8,71 @@
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { configStore } from '$lib/config';
-	import { page } from '$app/stores';
+	import { Crosshair1 } from 'radix-icons-svelte';
 
 	let disabled = false;
 	let optionsDisabled = false;
 	let query: string = '';
 	let options: LocationByText$result['location']['text'] = [];
 
+	const positionOptions: PositionOptions = {
+		enableHighAccuracy: true,
+		timeout: 5000,
+		maximumAge: 0
+	};
+
 	const searchLocations = async () => {
-		if (query) {
-			disabled = true;
-			const response = await fetch(`/api/location?query=${encodeURIComponent(query)}`, {
-				method: 'GET'
-			});
-			options = (await response.json()) as LocationByText$result['location']['text'];
-			disabled = false;
-		} else {
+		if (!query) {
 			toast.error('Gotta type something');
+			return;
+		}
+
+		disabled = true;
+		const url = `/api/location?query=${encodeURIComponent(query)}`;
+
+		const response = await fetch(url, {
+			method: 'GET'
+		});
+
+		options = (await response.json()) as LocationByText$result['location']['text'];
+		disabled = false;
+	};
+
+	const getLocation = async () => {
+		if (!navigator.geolocation) {
+			toast.error('Location not available');
+		}
+
+		disabled = true;
+		const result = await navigator.permissions.query({ name: 'geolocation' });
+		switch (result.state) {
+			case 'granted':
+			case 'prompt':
+				navigator.geolocation.getCurrentPosition(
+					async (position) => {
+						const { latitude, longitude } = position.coords;
+						const url = `/api/location?latitude=${encodeURIComponent(
+							latitude
+						)}&longitude=${encodeURIComponent(longitude)}`;
+
+						const response = await fetch(url, {
+							method: 'GET'
+						});
+
+						options = (await response.json()) as LocationByText$result['location']['text'];
+						disabled = false;
+					},
+					(err: GeolocationPositionError) => {
+						toast.error(`Error getting location: ${err.message}`);
+						disabled = false;
+					},
+					positionOptions
+				);
+				break;
+			case 'denied':
+				toast.error('Location access denied');
+				disabled = false;
+				break;
 		}
 	};
 
@@ -48,20 +96,34 @@
 		<Card.Title>Search</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		<div class="grid w-full items-center gap-4">
-			<Input
-				id="query"
-				type="username"
-				placeholder="e.g. Armadale"
-				name="query"
-				bind:value={query}
-				on:keyup={async (e) => {
-					if (e.key === 'Enter' || e.keyCode === 13) {
-						await searchLocations();
-					}
-				}}
-				required
-			/>
+		<div class="flex gap-2">
+			<div class="w-full">
+				<Input
+					id="query"
+					type="username"
+					placeholder="e.g. Armadale"
+					name="query"
+					bind:value={query}
+					on:keyup={async (e) => {
+						if (e.key === 'Enter') {
+							await searchLocations();
+						}
+					}}
+					required
+				/>
+			</div>
+			<div>
+				<Button
+					{disabled}
+					aria-disabled={disabled}
+					variant="outline"
+					size="icon"
+					on:click={getLocation}
+				>
+					<Crosshair1 />
+					<span class="sr-only">Search by coordinates</span>
+				</Button>
+			</div>
 		</div>
 		{#if options.length > 0}
 			<div transition:slide>
