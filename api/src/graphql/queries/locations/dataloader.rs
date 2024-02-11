@@ -1,4 +1,4 @@
-use super::types::{DataloaderLocation, Location};
+use super::types::{Location, LocationRequest};
 use crate::settings::Settings;
 use async_graphql::dataloader::Loader;
 use base::{
@@ -15,14 +15,14 @@ pub struct LocationLoader {
 }
 
 #[async_trait::async_trait]
-impl Loader<DataloaderLocation> for LocationLoader {
+impl Loader<LocationRequest> for LocationLoader {
     type Value = Vec<Location>;
     type Error = Arc<anyhow::Error>;
 
     async fn load(
         &self,
-        keys: &[DataloaderLocation],
-    ) -> Result<HashMap<DataloaderLocation, Self::Value>, Self::Error> {
+        keys: &[LocationRequest],
+    ) -> Result<HashMap<LocationRequest, Self::Value>, Self::Error> {
         // pick more recently updated account
         let account_to_use = accounts::Entity::find()
             .order_by_desc(accounts::Column::UpdatedAt)

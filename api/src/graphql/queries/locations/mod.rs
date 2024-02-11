@@ -2,7 +2,7 @@ use self::types::{
     CoordinateSearchInput, Location, QueriedLocation, StoreIdInput, TextSearchInput,
 };
 use crate::graphql::queries::locations::dataloader::LocationLoader;
-use crate::graphql::queries::locations::types::DataloaderLocation;
+use crate::graphql::queries::locations::types::LocationRequest;
 use crate::settings::Settings;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::{Context, Object};
@@ -66,7 +66,7 @@ impl QueriedLocation {
             Some(response) => {
                 let loader = ctx.data::<DataLoader<LocationLoader>>()?;
                 match loader
-                    .load_one(DataloaderLocation {
+                    .load_one(LocationRequest {
                         lat: response.location.latitude,
                         long: response.location.longitude,
                     })
@@ -87,7 +87,7 @@ impl QueriedLocation {
     ) -> async_graphql::Result<Vec<Location>> {
         let loader = ctx.data::<DataLoader<LocationLoader>>()?;
         match loader
-            .load_one(DataloaderLocation {
+            .load_one(LocationRequest {
                 lat: input.lat,
                 long: input.lng,
             })
