@@ -53,7 +53,7 @@
 		"@prisma/client": "5.9.1",
 		"@sveltestack/svelte-query": "^1.6.0",
 		"bcrypt": "^5.1.1",
-		"bits-ui": "^0.11.8",
+		"bits-ui": "^0.18.1",
 		"clsx": "^2.0.0",
 		"date-fns": "^3.3.1",
 		"express": "^4.18.2",
