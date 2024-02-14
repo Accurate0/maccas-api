@@ -2,7 +2,7 @@
 	import { useMutation } from '@sveltestack/svelte-query';
 	import { Skeleton } from './ui/skeleton';
 	import type { AddOfferResponse } from '../../routes/api/offers/[offerId]/+server';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { writable } from 'svelte/store';
 
@@ -48,8 +48,13 @@
 		}
 	);
 
-	onMount(async () => {
-		await $addOffer.mutateAsync();
+	onMount(() => {
+		$addOffer.mutate();
+		return () => {
+			if ($addOffer.data?.id) {
+				$removeOffer.mutate({ id: $addOffer.data.id });
+			}
+		};
 	});
 </script>
 
@@ -74,7 +79,6 @@
 				disabled={$removeOffer.isLoading || $refreshOffer.isLoading}
 				on:click={async (e) => {
 					e.stopPropagation();
-					await $removeOffer.mutateAsync({ id: $addOffer.data?.id ?? "this can't be null" });
 					removeSelf();
 				}}>close</Button
 			>
