@@ -33,8 +33,8 @@ dependencies:
     specifier: ^9.0.2
     version: 9.0.2
   material-symbols:
-    specifier: ^0.14.3
-    version: 0.14.3
+    specifier: ^0.14.7
+    version: 0.14.7
   mode-watcher:
     specifier: ^0.2.0
     version: 0.2.0(svelte@4.2.8)
@@ -3125,8 +3125,8 @@ packages:
       semver: 6.3.1
     dev: false
 
-  /material-symbols@0.14.3:
-    resolution: {integrity: sha512-oys7SbIaPz1sfUCMVYlEE5HJGzh0GMoUK0jCGH7hAqO9iW/b9dnSAeYgOQp2s1ifQP5Y+Q4+Fcujay/ASzvy2w==}
+  /material-symbols@0.14.7:
+    resolution: {integrity: sha512-65aJAnHtKx98tm41vz9gS6fQfUo+8pCg2sETOC/linpHKEv6gw7U+iHN5Bha6tfM8hDSGfjCwaKOWb+Rs/XyDg==}
     dev: false
 
   /mdn-data@2.0.30:
