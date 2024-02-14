@@ -8,7 +8,7 @@
 	import { isFuture, isPast, parseJSON, formatDistanceToNow } from 'date-fns';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
-	import { CaretSort, ChevronDown, ChevronUp, Moon, Sun } from 'radix-icons-svelte';
+	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
 	import { Button } from '$lib/components/ui/button';
 	export let categories: Promise<Array<string> | undefined>;
 	export let offersList: Promise<import('$houdini').GetOffers$result['offers'] | undefined>;
