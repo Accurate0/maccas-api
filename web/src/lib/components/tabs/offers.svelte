@@ -124,10 +124,18 @@
 			</div>
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
+			if (!a.price) {
+				return Number.MAX_SAFE_INTEGER;
+			}
+
+			if (!b.price) {
+				return Number.MIN_SAFE_INTEGER;
+			}
+
 			if (sortByAsc) {
-				return (a?.price ?? 0) - (b?.price ?? 0);
+				return a.price - b.price;
 			} else {
-				return (b?.price ?? 0) - (a?.price ?? 0);
+				return b.price - a.price;
 			}
 		}) as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
