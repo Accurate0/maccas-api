@@ -2,7 +2,7 @@
 	import { useMutation } from '@sveltestack/svelte-query';
 	import { Skeleton } from './ui/skeleton';
 	import type { AddOfferResponse } from '../../routes/api/offers/[offerId]/+server';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { writable } from 'svelte/store';
 
