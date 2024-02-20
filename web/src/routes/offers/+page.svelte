@@ -189,7 +189,7 @@
 						<div in:slide={{ duration: 600 }} out:slide={{ duration: 600 }}>
 							<Card.Footer>
 								<div class="grid h-full w-full grid-flow-row gap-2">
-									{#each $state[offerPropositionId] as { id }}
+									{#each $state[offerPropositionId] as { id } (id)}
 										<span in:slide={{ duration: 800 }} out:slide={{ duration: 800 }}>
 											<DealCode
 												offerId={offerPropositionId}
