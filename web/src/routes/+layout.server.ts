@@ -8,21 +8,21 @@ export const load: LayoutServerLoad = async (event) => {
 		event.url.pathname === '/register' ||
 		event.url.pathname === '/inactive';
 
-	if (!isLoginOrRegister) {
-		const user = await prisma.user.findUniqueOrThrow({
-			where: { id: event.locals.session.userId },
-			include: { config: true }
-		});
-
+	if (isLoginOrRegister) {
 		return {
-			showPoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
-			showUsers: user.role === Role.ADMIN,
-			config: user.config,
-			isUserActive: user.active
+			hideAll: true
 		};
 	}
 
+	const user = await prisma.user.findUniqueOrThrow({
+		where: { id: event.locals.session.userId },
+		include: { config: true }
+	});
+
 	return {
-		hideAll: true
+		showPoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
+		showUsers: user.role === Role.ADMIN,
+		config: user.config,
+		isUserActive: user.active
 	};
 };
