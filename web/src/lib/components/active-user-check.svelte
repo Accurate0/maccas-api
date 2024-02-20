@@ -6,18 +6,13 @@
 
 	export let isUserActive: boolean;
 
-	const forceLocationTab = () => {
+	const forceInactivePage = () => {
 		if (!isUserActive && $page.url.pathname !== '/inactive') {
 			toast.error('This account is not yet activated');
 			goto('/inactive');
 		}
 	};
 
-	onMount(() => {
-		forceLocationTab();
-	});
-
-	afterNavigate(() => {
-		forceLocationTab();
-	});
+	onMount(forceInactivePage);
+	afterNavigate(forceInactivePage);
 </script>

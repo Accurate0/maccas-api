@@ -69,8 +69,8 @@
 </h2>
 <div class="flex h-full justify-center">
 	{#if !$data.hideAll}
-		<ConfigToast config={$configStore ?? $data.config ?? null} />
 		<ActiveUserCheck isUserActive={$data.isUserActive ?? false} />
+		<ConfigToast config={$configStore ?? $data.config ?? null} />
 	{/if}
 	<QueryClientProvider client={queryClient}>
 		<div class="w-full">
