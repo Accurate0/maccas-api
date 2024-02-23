@@ -75,7 +75,7 @@
 	{#await Promise.all([data.offers, data.categories])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
-			<Skeleton class="h-12 w-[50px] rounded-sm" />
+			<Skeleton class="min-w-12 h-12 rounded-sm" />
 		</div>
 		{#each Array(30) as _}
 			<Card.Root>
@@ -121,7 +121,7 @@
 					{:else}
 						<ChevronUp />
 					{/if}
-					<span class="sr-only">Toggle theme</span>
+					<span class="sr-only">Toggle price</span>
 				</Button>
 			</div>
 		</div>
