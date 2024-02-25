@@ -93,7 +93,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     base::http::get_simple_http_client()?,
                 ),
             },
-            "0 0 * * * *".parse()?,
+            "0 0 0 * * *".parse()?,
         )
         .await;
 
