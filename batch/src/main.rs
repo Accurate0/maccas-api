@@ -86,14 +86,13 @@ async fn main() -> Result<(), anyhow::Error> {
         .await;
 
     scheduler
-        .add_scheduled(
+        .add_manual(
             CategoriseOffersJob {
                 api_client: openai::ApiClient::new(
                     settings.openai_api_key.clone(),
                     base::http::get_simple_http_client()?,
                 ),
             },
-            "0 */11 * * * *".parse()?,
         )
         .await;
 
