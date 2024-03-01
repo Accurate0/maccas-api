@@ -6,7 +6,6 @@ members = [
     "external/libmaccas",
     "external/places",
     "external/openai",
-    "dynamodb-migration",
     "batch",
     "base",
     "event",
