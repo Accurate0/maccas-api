@@ -1,5 +1,6 @@
 use base::delay_queue::DelayQueue;
 use entity::events;
+use entity::sea_orm_active_enums::EventStatus;
 use event::Event;
 use sea_orm::prelude::Uuid;
 use sea_orm::{
@@ -85,6 +86,7 @@ impl EventManager {
             data: Set(serde_json::to_value(&evt)?),
             is_completed: Set(false),
             should_be_completed_at: Set(should_be_completed_at),
+            status: Set(EventStatus::Pending),
             ..Default::default()
         }
         .insert(&self.inner.db)
@@ -152,6 +154,8 @@ impl EventManager {
                             tracing::info!("handle cancelled");
                             break;
                         },
+
+                        // FIXME: replace with dynamic events or something?
                         _ =  handlers::handle(em.clone()) => {}
                     }
                 }
@@ -160,28 +164,18 @@ impl EventManager {
         )
     }
 
-    pub async fn set_retry_attempts(
+    pub async fn set_event_completed(
         &self,
         id: i32,
         attempts: i32,
     ) -> Result<(), EventManagerError> {
-        events::ActiveModel {
-            id: Unchanged(id),
-            attempts: Set(attempts),
-            ..Default::default()
-        }
-        .update(&self.inner.db)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn complete_event(&self, id: i32) -> Result<(), EventManagerError> {
         let completed_at = chrono::offset::Utc::now().naive_utc();
         events::ActiveModel {
             id: Unchanged(id),
             is_completed: Set(true),
             completed_at: Set(Some(completed_at)),
+            attempts: Set(attempts),
+            status: Set(EventStatus::Completed),
             ..Default::default()
         }
         .update(&self.inner.db)
@@ -190,11 +184,34 @@ impl EventManager {
         Ok(())
     }
 
-    pub async fn set_event_error(&self, id: i32, msg: &str) -> Result<(), EventManagerError> {
+    pub async fn set_event_running(&self, id: i32) -> Result<(), EventManagerError> {
         events::ActiveModel {
             id: Unchanged(id),
+            status: Set(EventStatus::Running),
+            ..Default::default()
+        }
+        .update(&self.inner.db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn set_event_completed_in_error(
+        &self,
+        id: i32,
+        msg: &str,
+        attempts: i32,
+    ) -> Result<(), EventManagerError> {
+        let completed_at = chrono::offset::Utc::now().naive_utc();
+
+        events::ActiveModel {
+            id: Unchanged(id),
+            is_completed: Set(true),
+            completed_at: Set(Some(completed_at)),
             error: Set(true),
+            attempts: Set(attempts),
             error_message: Set(Some(msg.to_owned())),
+            status: Set(EventStatus::Failed),
             ..Default::default()
         }
         .update(&self.inner.db)
