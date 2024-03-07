@@ -31,7 +31,9 @@ pub async fn handle(event_manager: EventManager) {
         // 1st attempt + 5 retries
         let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
 
-        tokio::spawn(async move {
+        let fut = async move {
+            event_manager.set_event_running(event.id).await?;
+
             let result = match event.evt {
                 Event::Cleanup {
                     offer_id,
@@ -53,37 +55,31 @@ pub async fn handle(event_manager: EventManager) {
             match result {
                 RetryResult::Ok { attempts, .. } => {
                     tracing::info!("success: with {} attempts", attempts);
-                    match event_manager
-                        .set_retry_attempts(event.id, attempts.try_into().unwrap())
-                        .await
-                    {
-                        Ok(_) => {}
-                        Err(e) => tracing::error!("error incrementing attempt: {}", e),
-                    };
+
+                    event_manager
+                        .set_event_completed(event.id, attempts.try_into()?)
+                        .await?;
                 }
                 RetryResult::Err { attempts, value } => {
                     tracing::error!("error: {} with {} attempts", value, attempts);
-                    match event_manager
-                        .set_retry_attempts(event.id, attempts.try_into().unwrap())
-                        .await
-                    {
-                        Ok(_) => {}
-                        Err(e) => tracing::error!("error incrementing attempt: {}", e),
-                    };
 
-                    match event_manager
-                        .set_event_error(event.id, &value.to_string())
-                        .await
-                    {
-                        Ok(_) => {}
-                        Err(e) => tracing::error!("error setting error: {}", e),
-                    };
+                    event_manager
+                        .set_event_completed_in_error(
+                            event.id,
+                            &value.to_string(),
+                            attempts.try_into()?,
+                        )
+                        .await?;
                 }
             }
 
-            if let Err(e) = event_manager.complete_event(event.id).await {
-                tracing::error!("error marking event as completed: {}", e)
-            };
+            Ok::<(), anyhow::Error>(())
+        };
+
+        tokio::spawn(async move {
+            if let Err(e) = fut.await {
+                tracing::error!("Error handling event: {}", e);
+            }
         });
     }
 }
