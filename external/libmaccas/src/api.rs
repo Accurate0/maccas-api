@@ -80,7 +80,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/v1/security/auth/token
-    #[instrument(skip(self, client_secret))]
+    #[instrument(skip(self, client_secret), fields(statusCode))]
     pub async fn security_auth_token<A>(
         &self,
         client_secret: &A,
@@ -106,7 +106,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/registration
-    #[instrument(skip(sensor_data, self))]
+    #[instrument(skip(sensor_data, self), fields(statusCode))]
     pub async fn customer_registration<A>(
         &self,
         request: &RegistrationRequest,
@@ -130,7 +130,7 @@ impl ApiClient {
     }
 
     // PUT https://ap-prod.api.mcd.com/exp/v1/customer/activation
-    #[instrument(skip(sensor_data, self))]
+    #[instrument(skip(sensor_data, self), fields(statusCode))]
     pub async fn put_customer_activation<A>(
         &self,
         request: &ActivationRequest,
@@ -154,7 +154,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/activation
-    #[instrument(skip(sensor_data, self))]
+    #[instrument(skip(sensor_data, self), fields(statusCode))]
     pub async fn post_customer_activation<A>(
         &self,
         request: &ActivationRequest,
@@ -178,7 +178,7 @@ impl ApiClient {
     }
 
     // PUT https://ap-prod.api.mcd.com/exp/v1/customer/activateandsignin
-    #[instrument(skip(sensor_data, self))]
+    #[instrument(skip(sensor_data, self), fields(statusCode))]
     pub async fn activate_and_signin<A>(
         &self,
         request: &ActivateAndSignInRequest,
@@ -202,7 +202,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/identity/email
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn identity_email(
         &self,
         request: &EmailRequest,
@@ -221,7 +221,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/login
-    #[instrument(skip(sensor_data, self))]
+    #[instrument(skip(sensor_data, self), fields(statusCode))]
     pub async fn customer_login<A, B, C, D>(
         &self,
         login_username: &A,
@@ -259,7 +259,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/offers?distance=10000&exclude=14&latitude=-32.0117&longitude=115.8845&optOuts=&timezoneOffsetInMinutes=480
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_offers<A, B, C, D, E>(
         &self,
         distance: &A,
@@ -299,7 +299,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/restaurant/location?distance=20&filter=summary&latitude=-32.0117&longitude=115.8845
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn restaurant_location<A, B, C, D>(
         &self,
         distance: &A,
@@ -333,7 +333,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/offers/details/166870
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn offer_details<S>(
         &self,
         offer_proposition_id: &S,
@@ -357,7 +357,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/offers/dealstack?offset=480&storeId=951488
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_offers_dealstack<A, B>(
         &self,
         offset: &A,
@@ -385,7 +385,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/166870?offerId=1139347703&offset=480&storeId=951488
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn add_to_offers_dealstack<A, B, C>(
         &self,
         offer_id: &A,
@@ -418,7 +418,7 @@ impl ApiClient {
     }
 
     // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack/offer/166870?offerId=1139347703&offset=480&storeId=951488
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn remove_from_offers_dealstack<A, B, C, D>(
         &self,
         offer_id: &A,
@@ -465,7 +465,7 @@ impl ApiClient {
     }
 
     // DELETE https://ap-prod.api.mcd.com/exp/v1/offers/dealstack
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn clear_dealstack(&self) -> ClientResult<ClientResponse<OfferDealStackResponse>> {
         let token = self.auth_token.as_ref().context("no auth token set")?;
         let request = self
@@ -479,7 +479,7 @@ impl ApiClient {
     }
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/login/refresh
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn customer_login_refresh<S>(
         &self,
         refresh_token: &S,
@@ -502,7 +502,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/loyalty/customer/points
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_customer_points(&self) -> ClientResult<ClientResponse<CustomerPointResponse>> {
         let token = self.auth_token.as_ref().context("no auth token set")?;
         let request = self
@@ -516,7 +516,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/menu/catalog/AU/950442?filter=summary
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_menu_catalog<A, B, C>(
         &self,
         country_code: &A,
@@ -545,7 +545,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/menu/1/category
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_menu_categories<A>(
         &self,
         id: &A,
@@ -565,7 +565,7 @@ impl ApiClient {
     }
 
     // GET https://ap-prod.api.mcd.com/exp/v1/restaurant/951094?filter=full&storeUniqueIdType=NSN
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_restaurant<A, B, C>(
         &self,
         store_id: &A,
