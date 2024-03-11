@@ -56,7 +56,7 @@ futures = "0.3.29"
 reqwest = { version = "0.11", features = ["json", "gzip", "native-tls"] }
 reqwest-middleware = "0.2.4"
 reqwest-retry = "0.3.0"
-reqwest-tracing = "0.4.6"
+reqwest-tracing = { version = "0.4.7", features = ["opentelemetry_0_21"] }
 
 async-trait = "0.1.74"
 

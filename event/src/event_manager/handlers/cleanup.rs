@@ -4,8 +4,10 @@ use anyhow::Context as _;
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
+use tracing::instrument;
 use uuid::Uuid;
 
+#[instrument(skip(em))]
 pub async fn cleanup(
     offer_id: Uuid,
     transaction_id: Uuid,

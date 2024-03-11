@@ -7,23 +7,14 @@ use crate::{
     types::ApiState,
 };
 use async_graphql::{dataloader::DataLoader, EmptySubscription};
-use axum::{
-    extract::MatchedPath,
-    http::{Method, Request},
-    routing::get,
-    Router,
-};
+use axum::{http::Method, routing::get, Router};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use base::shutdown::axum_shutdown_signal;
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
-use tower_http::{
-    cors::CorsLayer,
-    trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer},
-    LatencyUnit,
-};
+use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
-use tracing::Level;
 
 mod graphql;
 mod macros;
@@ -32,7 +23,7 @@ mod types;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().without_time().init();
+    base::tracing::init("api");
 
     let settings = Settings::new()?;
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
@@ -80,23 +71,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .route("/health", get(health))
         .route("/health/self", get(self_health))
         .layer(cors)
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(|request: &Request<_>| {
-                    let matched_path = request
-                        .extensions()
-                        .get::<MatchedPath>()
-                        .map(MatchedPath::as_str);
-
-                    tracing::info_span!("request", uri = matched_path)
-                })
-                .on_request(DefaultOnRequest::new().level(Level::INFO))
-                .on_response(
-                    DefaultOnResponse::new()
-                        .level(Level::INFO)
-                        .latency_unit(LatencyUnit::Millis),
-                ),
-        )
+        .layer(OtelInResponseLayer)
+        .layer(OtelAxumLayer::default())
         .with_state(ApiState { schema, settings });
 
     let app = Router::new().nest("/v1", api_routes);

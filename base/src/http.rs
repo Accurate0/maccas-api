@@ -5,8 +5,7 @@ use reqwest_retry::{
     RetryTransientMiddleware, Retryable, RetryableStrategy,
 };
 use reqwest_tracing::{
-    default_on_request_end, reqwest_otel_span, DisableOtelPropagation, ReqwestOtelSpanBackend,
-    TracingMiddleware,
+    default_on_request_end, DisableOtelPropagation, ReqwestOtelSpanBackend, TracingMiddleware,
 };
 use std::time::Instant;
 use task_local_extensions::Extensions;
@@ -39,13 +38,12 @@ impl ReqwestOtelSpanBackend for TimeTrace {
         extension.insert(Instant::now());
         let url = req.url().to_string();
 
-        tracing::info!("started request");
-        reqwest_otel_span!(
-            name = "http",
-            req,
-            time_elapsed = tracing::field::Empty,
-            url
-        )
+        let current = Span::current();
+
+        current.record("url", &url);
+        current.record("time_elapsed", tracing::field::Empty);
+
+        current
     }
 
     fn on_request_end(
@@ -85,7 +83,6 @@ pub fn get_simple_http_client() -> Result<ClientWithMiddleware, HttpCreationErro
     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
 
     Ok(ClientBuilder::new(reqwest::ClientBuilder::new().build()?)
-        .with_init(Extension(DisableOtelPropagation))
         .with(TracingMiddleware::<TimeTrace>::new())
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
         .build())

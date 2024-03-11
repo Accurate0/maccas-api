@@ -7,6 +7,7 @@ use crate::{
 };
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
+use actix_web_opentelemetry::RequestTracing;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
@@ -20,7 +21,7 @@ mod state;
 
 #[actix_web::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().without_time().init();
+    base::tracing::init("event");
 
     let settings = Settings::new()?;
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
@@ -54,6 +55,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 event_manager: event_manager.clone(),
                 settings: settings.clone(),
             }))
+            .wrap(RequestTracing::new())
             .wrap(Logger::default())
             .route("/health", web::get().to(health))
             .route(

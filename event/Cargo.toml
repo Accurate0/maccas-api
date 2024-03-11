@@ -27,6 +27,7 @@ libmaccas = { workspace = true }
 reqwest = { workspace = true }
 state = "0.6.0"
 actix-web-lab = "0.20.1"
+actix-web-opentelemetry = "0.16.0"
 
 [lib]
 name = "event"
