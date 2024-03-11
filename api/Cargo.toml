@@ -31,3 +31,4 @@ reqwest-middleware = { workspace = true }
 redis = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
+axum-tracing-opentelemetry = "0.15.0"

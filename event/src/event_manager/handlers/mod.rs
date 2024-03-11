@@ -5,6 +5,7 @@ use event::Event;
 use sea_orm::DbErr;
 use std::time::Duration;
 use thiserror::Error;
+use tracing::{span, Instrument};
 
 mod cleanup;
 
@@ -74,7 +75,8 @@ pub async fn handle(event_manager: EventManager) {
             }
 
             Ok::<(), anyhow::Error>(())
-        };
+        }
+        .instrument(span!(tracing::Level::INFO, "event::cleanup"));
 
         tokio::spawn(async move {
             if let Err(e) = fut.await {

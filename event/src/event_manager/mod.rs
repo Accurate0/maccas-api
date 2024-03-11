@@ -13,6 +13,7 @@ use std::{sync::Arc, time::Duration};
 use thiserror::Error;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
+use tracing::instrument;
 
 mod handlers;
 
@@ -100,6 +101,7 @@ impl EventManager {
         Ok(event_id)
     }
 
+    #[instrument(skip(self))]
     pub async fn reload_incomplete_events(&self) -> Result<(), EventManagerError> {
         let incomplete_events = events::Entity::find()
             .filter(Condition::all().add(events::Column::IsCompleted.eq(false)))
