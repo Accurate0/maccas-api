@@ -58,8 +58,6 @@ async fn main() -> Result<(), anyhow::Error> {
         },
         tokio::spawn,
     ))
-    // FIXME: make own logger extension, this one uses info for errors lol
-    .extension(async_graphql::extensions::Logger)
     .finish();
 
     let cors = CorsLayer::new()
