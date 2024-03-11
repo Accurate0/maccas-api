@@ -38,7 +38,7 @@ impl ApiClient {
     }
 
     // chat/completions
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn chat_completions(
         &self,
         request: &OpenAIChatCompletionRequest,
