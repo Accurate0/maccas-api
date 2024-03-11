@@ -68,11 +68,11 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let api_routes = Router::new()
         .route("/graphql", get(graphiql).post(graphql_handler))
+        .layer(OtelInResponseLayer)
+        .layer(OtelAxumLayer::default())
         .route("/health", get(health))
         .route("/health/self", get(self_health))
         .layer(cors)
-        .layer(OtelInResponseLayer)
-        .layer(OtelAxumLayer::default())
         .with_state(ApiState { schema, settings });
 
     let app = Router::new().nest("/v1", api_routes);

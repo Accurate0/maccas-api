@@ -55,18 +55,21 @@ async fn main() -> Result<(), anyhow::Error> {
                 event_manager: event_manager.clone(),
                 settings: settings.clone(),
             }))
-            .wrap(RequestTracing::new())
             .wrap(Logger::default())
             .route("/health", web::get().to(health))
             .route(
                 "/event",
-                web::post().to(create_event).wrap(from_fn(validator)),
+                web::post()
+                    .to(create_event)
+                    .wrap(from_fn(validator))
+                    .wrap(RequestTracing::new()),
             )
             .route(
                 "/event",
                 web::get()
                     .to(get_events)
-                    .wrap(from_fn(validator_admin_only)),
+                    .wrap(from_fn(validator_admin_only))
+                    .wrap(RequestTracing::new()),
             )
     })
     .bind(addr)?
