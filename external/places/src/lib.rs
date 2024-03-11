@@ -24,7 +24,7 @@ impl ApiClient {
     }
 
     // /findplacefromtext/json
-    #[instrument(skip(self))]
+    #[instrument(skip(self), fields(statusCode))]
     pub async fn get_place_by_text(
         &self,
         request: &PlacesRequest,
