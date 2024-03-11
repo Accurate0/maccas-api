@@ -26,8 +26,11 @@ where
     T: for<'de> serde::Deserialize<'de> + Debug,
 {
     pub async fn from_response(resp: reqwest::Response) -> Result<Self, ClientError> {
+        tracing::Span::current().record("statusCode", resp.status().as_u16());
+
         // return the status error before trying to decode the response to propogate correct error
         let resp = resp.error_for_status()?;
+
         Ok(Self {
             status: resp.status(),
             headers: resp.headers().clone(),
