@@ -11,7 +11,7 @@ serde = { workspace = true }
 tokio = { workspace = true }
 actix-web = "4"
 futures = { workspace = true }
-actix-cors = "0.6.1"
+actix-cors = "0.7.0"
 serde_json = { workspace = true }
 chrono = { workspace = true }
 sea-orm = { workspace = true }
@@ -26,8 +26,8 @@ uuid = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
 state = "0.6.0"
-actix-web-lab = "0.20.1"
-actix-web-opentelemetry = "0.16.0"
+actix-web-lab = "0.20.2"
+actix-web-opentelemetry = "0.17.0"
 
 [lib]
 name = "event"
