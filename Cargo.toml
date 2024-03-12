@@ -21,6 +21,8 @@ async-graphql = { version = "6.0.11", features = [
     "chrono",
     "dataloader",
     "log",
+    "tracing",
+    "opentelemetry",
 ] }
 
 serde = { version = "1.0.193", features = ["derive"] }
@@ -77,3 +79,4 @@ redis = { version = "0.24.0", features = [
 axum = { version = "0.6.20", features = ["macros"] }
 tower-http = { version = "0.4.4", features = ["trace", "cors"] }
 itertools = "0.12.1"
+opentelemetry = "0.21.0"
