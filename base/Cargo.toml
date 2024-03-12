@@ -28,7 +28,7 @@ task-local-extensions = "0.1.4"
 jwt = "0.16.0"
 hmac = "0.12.1"
 sha2 = "0.10.8"
-opentelemetry = "0.21.0"
+opentelemetry = { workspace = true }
 opentelemetry_sdk = { version = "0.21.0", features = ["rt-tokio"] }
 opentelemetry-stdout = { version = "0.2.0", features = ["trace"] }
 tracing-opentelemetry = "0.22.0"
