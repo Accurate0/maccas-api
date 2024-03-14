@@ -59,9 +59,9 @@ async fn main() -> Result<(), anyhow::Error> {
         tokio::spawn,
     ))
     .extension(async_graphql::extensions::Tracing)
-    .extension(async_graphql::extensions::OpenTelemetry::new(
-        opentelemetry::global::tracer("graphql"),
-    ))
+    // .extension(async_graphql::extensions::OpenTelemetry::new(
+    //     opentelemetry::global::tracer("graphql"),
+    // ))
     .finish();
 
     let cors = CorsLayer::new()
