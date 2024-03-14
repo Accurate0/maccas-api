@@ -1,10 +1,10 @@
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 import type { Actions } from './$types';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { randomBytes } from 'crypto';
-import { SessionId } from '$lib/session';
+import { SessionId } from '$lib/server/session';
 import { fail, redirect } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';

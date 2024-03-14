@@ -1,5 +1,5 @@
 import { GetAccountCodeStore } from '$houdini';
-import { prisma } from '$lib/prisma.js';
+import { prisma } from '$lib/server/prisma.js';
 import { json } from '@sveltejs/kit';
 
 export type AddOfferResponse = {

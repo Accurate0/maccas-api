@@ -1,4 +1,4 @@
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 import { Role } from '@prisma/client';
 
 async function validateAdminUser(userId: string) {

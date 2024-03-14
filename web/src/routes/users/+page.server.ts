@@ -1,4 +1,4 @@
-import { prisma } from '$lib/prisma.js';
+import { prisma } from '$lib/server/prisma.js';
 import { Role } from '@prisma/client';
 import { redirect } from '@sveltejs/kit';
 

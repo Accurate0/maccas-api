@@ -1,4 +1,4 @@
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 import type { Actions } from './$types';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
