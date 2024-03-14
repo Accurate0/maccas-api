@@ -24,7 +24,6 @@ input FilterInput {
 
 type HealthResponse {
   batch: Boolean!
-  cache: Boolean!
   database: Boolean!
   event: Boolean!
 }

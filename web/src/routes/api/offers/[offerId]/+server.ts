@@ -1,5 +1,5 @@
 import { AddOfferStore, GetOfferCodeStore, RemoveOfferStore } from '$houdini';
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 import { json } from '@sveltejs/kit';
 
 export type AddOfferResponse = {

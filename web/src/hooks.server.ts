@@ -1,7 +1,11 @@
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 import type { Handle } from '@sveltejs/kit';
 import { setSession } from '$houdini';
-import { SessionId } from '$lib/session';
+import { SessionId } from '$lib/server/session';
+import '$lib/server/opentelemetry';
+import type { HandleFetch } from '@sveltejs/kit';
+import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
+import { IMAGE_CDN } from '$lib/server/constants';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// don't query db for this... public images...
@@ -30,5 +34,59 @@ export const handle: Handle = async ({ event, resolve }) => {
 		setSession(event, { ...session });
 	}
 
+	const tracer = opentelemetry.trace.getTracer('default');
+	if (event.url.pathname.startsWith('/api')) {
+		return tracer.startActiveSpan(`fetch ${event.url.pathname}`, async (span) => {
+			const response = await resolve(event);
+
+			if (response.ok) {
+				span.setStatus({ code: SpanStatusCode.OK });
+			} else {
+				span.setStatus({ code: SpanStatusCode.ERROR });
+			}
+
+			span.setAttribute('statusCode', response.status);
+
+			span.end();
+			return response;
+		});
+	}
+
 	return await resolve(event);
+};
+
+export const handleFetch: HandleFetch = async ({ request, fetch, event }) => {
+	if (request.url.startsWith(IMAGE_CDN)) {
+		return fetch(request);
+	}
+
+	const tracer = opentelemetry.trace.getTracer('default');
+
+	return tracer.startActiveSpan(`fetch ${event.url.pathname}`, async (span: Span) => {
+		const output: { traceparent?: string; tracestate?: string } = {};
+		opentelemetry.propagation.inject(opentelemetry.context.active(), output);
+
+		const { traceparent, tracestate } = output;
+
+		if (traceparent) {
+			request.headers.set('traceparent', traceparent);
+		}
+
+		if (tracestate) {
+			request.headers.set('tracestate', tracestate);
+		}
+
+		const response = await fetch(request);
+
+		if (response.ok) {
+			span.setStatus({ code: SpanStatusCode.OK });
+		} else {
+			span.setStatus({ code: SpanStatusCode.ERROR });
+		}
+
+		span.setAttribute('statusCode', response.status);
+
+		span.end();
+		return response;
+	});
 };

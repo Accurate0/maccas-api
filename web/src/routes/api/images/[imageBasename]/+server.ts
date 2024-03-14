@@ -1,4 +1,4 @@
-import { IMAGE_CDN } from '$lib/constants';
+import { IMAGE_CDN } from '$lib/server/constants';
 import sharp from 'sharp';
 
 export async function GET({ fetch, params: { imageBasename } }) {
@@ -7,6 +7,10 @@ export async function GET({ fetch, params: { imageBasename } }) {
 		method: 'GET',
 		referrer: ''
 	});
+
+	if (!response.ok) {
+		return response;
+	}
 
 	const image = await sharp(await response.arrayBuffer())
 		.resize(180, 180)

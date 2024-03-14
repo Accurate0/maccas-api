@@ -1,7 +1,7 @@
 import { LocationByCoordinatesStore, LocationByTextStore, StoreByIdStore } from '$houdini';
 import { json } from '@sveltejs/kit';
 import { schema } from './schema';
-import { prisma } from '$lib/prisma';
+import { prisma } from '$lib/server/prisma';
 
 export async function GET(event) {
 	const query = event.url.searchParams.get('query');
