@@ -9,7 +9,7 @@ import { IMAGE_CDN } from '$lib/server/constants';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// don't query db for this... public images...
-	if (event.url.pathname.startsWith('/api/images')) {
+	if (event.url.pathname.startsWith('/api/images') || event.url.pathname.startsWith('/favicon')) {
 		return await resolve(event);
 	}
 
