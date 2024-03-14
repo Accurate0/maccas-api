@@ -2,7 +2,7 @@ use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
 use base::constants::mc_donalds;
 use converters::Database;
-use entity::{accounts, offer_details, offer_history, offers, points};
+use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
@@ -176,6 +176,11 @@ impl Job for RefreshJob {
 
         offers::Entity::insert_many(models)
             .on_empty_do_nothing()
+            .exec(&txn)
+            .await?;
+
+        // unlock account now if it was locked...
+        account_lock::Entity::delete_by_id(account_id)
             .exec(&txn)
             .await?;
 
