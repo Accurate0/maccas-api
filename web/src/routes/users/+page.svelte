@@ -5,8 +5,21 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	export let data: PageData;
+
+	const resetRateLimit = async () => {
+		const response = await fetch(`/api/ratelimit`, {
+			method: 'DELETE'
+		});
+
+		if (response.status === 204) {
+			toast('Rate limit reset');
+		} else {
+			toast.error(await response.text());
+		}
+	};
 
 	const toggleActive = async (activate: boolean, userId: string) => {
 		const response = await fetch(`/api/users/${userId}/active`, {
@@ -21,6 +34,12 @@
 </script>
 
 <div class="grid grid-flow-row gap-4">
+	<Card.Root>
+		<Card.Header>Actions</Card.Header>
+		<Card.Content>
+			<Button on:click={resetRateLimit}>Reset rate limit</Button>
+		</Card.Content>
+	</Card.Root>
 	{#await data.users}
 		{#each Array(5) as _}
 			<Card.Root>

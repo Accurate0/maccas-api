@@ -9,6 +9,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 import { setError, superValidate } from 'sveltekit-superforms/server';
+import { RateLimiter } from '$lib/server/ratelimiter';
 
 const schema = z.object({
 	username: z.string().min(1, { message: 'Invalid username' }),
@@ -30,14 +31,29 @@ const configSchema = z.object({
 	storeName: z.string().min(1)
 });
 
-export const load = async () => {
+export const load = async (event) => {
+	await RateLimiter.cookieLimiter?.preflight(event);
 	const form = await superValidate(schema);
 	return { form };
 };
 
 export const actions = {
-	default: async ({ request, fetch, cookies }) => {
+	default: async (event) => {
+		const { request, fetch, cookies } = event;
 		const form = await superValidate(request, schema);
+
+		const { limited, retryAfter } = await RateLimiter.check(event);
+		if (limited) {
+			return setError(
+				form,
+				'password',
+				`Too many attempts, try again after ${retryAfter} seconds`,
+				{
+					status: 429
+				}
+			);
+		}
+
 		if (!form.valid) {
 			return fail(400, { form });
 		}
