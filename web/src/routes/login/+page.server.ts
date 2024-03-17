@@ -10,11 +10,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 import { setError, superValidate } from 'sveltekit-superforms/server';
 import { RateLimiter } from '$lib/server/ratelimiter';
-
-const schema = z.object({
-	username: z.string().min(1, { message: 'Invalid username' }),
-	password: z.string().min(1, { message: 'Invalid password' })
-});
+import { schema } from './schema';
 
 export type LoginState = {
 	error: string | null;
