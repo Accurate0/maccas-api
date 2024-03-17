@@ -20,6 +20,7 @@ memory_mb = 512
 OLD_API_BASE_URL = "https://api.maccas.one/v1"
 API_BASE_URL = "http://maccas-api.internal:8000/v1"
 ORIGIN = "https://maccas.one"
+ADDRESS_HEADER = "Fly-Client-IP"
 
 [deploy]
 strategy = "canary"
