@@ -59,6 +59,9 @@
 				<div class="flex">
 					<Card.Header class="grid w-full">
 						{user.username}
+						<div class="text-sm">
+							Roles: {user.roles.join(', ')}
+						</div>
 					</Card.Header>
 					<Card.Header>
 						<Switch
