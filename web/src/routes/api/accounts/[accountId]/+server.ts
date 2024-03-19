@@ -18,11 +18,12 @@ export async function GET(event) {
 		where: { userId: locals.session.userId },
 		include: { User: true }
 	});
+
 	if (!config || !config.storeId) {
 		return new Response(null, { status: 400 });
 	}
 
-	if (config.User?.role !== Role.PRIVILEGED) {
+	if (config.User?.role !== Role.PRIVILEGED && config.User?.role !== Role.ADMIN) {
 		return new Response(null, { status: 403 });
 	}
 
