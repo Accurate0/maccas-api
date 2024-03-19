@@ -54,7 +54,7 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const createSession = async (userId: string, role: Role) => {
+		const createSession = async (userId: string, role: Role[]) => {
 			const sessionId = randomBytes(64).toString('base64');
 			const sevenDaysInMs = 604800000;
 			const expires = new Date(Date.now() + sevenDaysInMs);
@@ -140,7 +140,7 @@ export const actions = {
 					username: username.toLowerCase(),
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
-					role: role === 'none' ? Role.USER : (role.toUpperCase() as Role),
+					role: [role === 'none' ? Role.USER : (role.toUpperCase() as Role)],
 					config: {
 						create: {
 							userId: existingUserId,
@@ -150,10 +150,9 @@ export const actions = {
 				}
 			});
 
-			await createSession(
-				existingUserId,
+			await createSession(existingUserId, [
 				role === 'none' ? Role.USER : (role.toUpperCase() as Role)
-			);
+			]);
 		}
 
 		redirect(303, '/');

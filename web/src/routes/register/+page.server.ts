@@ -52,7 +52,7 @@ export const actions = {
 			data: {
 				username: username.toLowerCase(),
 				passwordHash: Buffer.from(passwordHash),
-				role: Role.USER,
+				role: [Role.USER],
 				active: false
 			}
 		});

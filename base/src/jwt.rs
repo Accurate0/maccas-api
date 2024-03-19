@@ -29,7 +29,7 @@ pub struct JwtClaims {
     pub iss: String,
     pub sub: String,
     #[serde(default)]
-    pub role: Role,
+    pub role: Vec<Role>,
 }
 
 #[derive(Error, Debug)]

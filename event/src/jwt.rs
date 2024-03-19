@@ -56,7 +56,7 @@ pub async fn validator_admin_only(
             state.settings.auth_secret.as_bytes(),
             &token.map_err(|_| MiddlewareError::Unauthenticated)?,
         ) {
-            Ok(claims) if claims.role == Role::Admin => {
+            Ok(claims) if claims.role.contains(&Role::Admin) => {
                 tracing::info!("verified token with claims, user is admin: {:?}", claims);
                 next.call(req).await
             }
