@@ -11,7 +11,7 @@ export const load = async (event) => {
 	return {
 		users: prisma.user
 			.findMany()
-			.then((p) => p.filter((u) => u.role.some((role) => role === Role.ADMIN)))
+			.then((p) => p.filter((u) => !u.role.some((role) => role === Role.ADMIN)))
 			.then((p) =>
 				p.map((u) => ({ username: u.username, active: u.active, id: u.id, roles: u.role }))
 			)
