@@ -20,8 +20,8 @@ export const load: LayoutServerLoad = async (event) => {
 	});
 
 	return {
-		showPoints: user.role === Role.ADMIN || user.role === Role.PRIVILEGED,
-		showUsers: user.role === Role.ADMIN,
+		showPoints: user.role.some((role) => role === Role.POINTS),
+		showUsers: user.role.some((role) => role === Role.ADMIN),
 		config: user.config,
 		isUserActive: user.active
 	};
