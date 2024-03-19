@@ -13,7 +13,7 @@ use thiserror::Error;
 #[serde(rename_all = "UPPERCASE")]
 pub enum Role {
     Admin,
-    Privileged,
+    Points,
     #[default]
     User,
 }
