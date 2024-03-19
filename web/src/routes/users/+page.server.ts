@@ -4,7 +4,7 @@ import { redirect } from '@sveltejs/kit';
 
 export const load = async (event) => {
 	const user = await prisma.user.findUniqueOrThrow({ where: { id: event.locals.session.userId } });
-	if (user.role.some((role) => role === Role.ADMIN)) {
+	if (!user.role.some((role) => role === Role.ADMIN)) {
 		redirect(303, '/');
 	}
 
