@@ -14,7 +14,7 @@ model User {
     active       Boolean @default(true)
     username     String  @unique
     passwordHash Bytes   @db.ByteA
-    role         Role    @default(USER)
+    role         Role[]  @default([USER])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -50,6 +50,6 @@ model Session {
 
 enum Role {
     USER
+    POINTS
     ADMIN
-    PRIVILEGED
 }

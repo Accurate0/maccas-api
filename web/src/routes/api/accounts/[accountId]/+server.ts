@@ -23,7 +23,7 @@ export async function GET(event) {
 		return new Response(null, { status: 400 });
 	}
 
-	if (config.User?.role !== Role.PRIVILEGED && config.User?.role !== Role.ADMIN) {
+	if (config.User?.role.some((role) => role === Role.POINTS)) {
 		return new Response(null, { status: 403 });
 	}
 
