@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 
 export async function validateAdminUser(userId: string) {
 	const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-	if (user.role.some((role) => role === Role.ADMIN)) {
+	if (!user.role.some((role) => role === Role.ADMIN)) {
 		return new Response(null, { status: 403 });
 	}
 
