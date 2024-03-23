@@ -135,13 +135,14 @@ export const actions = {
 				? { storeId: config.data.storeId, storeName: config.data.storeName }
 				: {};
 
+			const newRole = role === 'none' ? Role.USER : (role.toUpperCase() as Role);
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
 					username: username.toLowerCase(),
 					passwordHash: Buffer.from(passwordHash),
 					// the prisma one is just uppercase, this should be fine
-					role: [role === 'none' ? Role.USER : (role.toUpperCase() as Role)],
+					role: [newRole],
 					config: {
 						create: {
 							userId: existingUserId,
@@ -151,9 +152,7 @@ export const actions = {
 				}
 			});
 
-			await createSession(existingUserId, [
-				role === 'none' ? Role.USER : (role.toUpperCase() as Role)
-			]);
+			await createSession(existingUserId, [newRole]);
 		}
 
 		redirect(303, '/');
