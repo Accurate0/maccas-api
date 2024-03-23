@@ -39,6 +39,7 @@ export const actions = {
 		const form = await superValidate(request, schema);
 
 		const { limited, retryAfter } = await RateLimiter.check(event);
+		console.log(`Rate limiter check: ${event.getClientAddress()} ${limited}`);
 		if (limited) {
 			return setError(
 				form,
