@@ -7,7 +7,6 @@ pub struct OfferDetailsLoader {
     pub database: DatabaseConnection,
 }
 
-#[async_trait::async_trait]
 impl Loader<i64> for OfferDetailsLoader {
     type Value = offer_details::Model;
     type Error = Arc<anyhow::Error>;

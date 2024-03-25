@@ -10,8 +10,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 
 reqwest = { workspace = true }
-uuid = { version = "1.5.0", features = ["v4"] }
-http = "0.2"
+uuid = { version = "1.8.0", features = ["v4"] }
+http = "1.1"
 reqwest-middleware = { workspace = true }
 tracing = { workspace = true }
 anyhow = { workspace = true }

@@ -77,7 +77,7 @@ pub fn init(name: &'static str) {
         .with(tracing_subscriber::fmt::layer())
         .with(OpenTelemetryLayer::new(otel_tracer))
         .with(OpenTelemetryTracingBridge::new(
-            &otel_logger.provider().unwrap(),
+            &otel_logger.provider().clone(),
         ))
         .init();
 }

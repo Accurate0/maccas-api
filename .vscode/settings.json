@@ -17,6 +17,7 @@
     "qrcode",
     "reqwest",
     "simplelog",
+    "sqlx",
     "utoipa",
     "vergen",
     "webp"

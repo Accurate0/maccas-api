@@ -34,7 +34,7 @@ itertools = { workspace = true }
 native-tls = "0.2.11"
 imap = "2.4.1"
 mailparse = "0.14.1"
-regex = "1.10.3"
+regex = "1.10.4"
 
 
 [lib]

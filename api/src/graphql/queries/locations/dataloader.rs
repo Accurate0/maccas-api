@@ -14,7 +14,6 @@ pub struct LocationLoader {
     pub settings: Settings,
 }
 
-#[async_trait::async_trait]
 impl Loader<LocationRequest> for LocationLoader {
     type Value = Vec<Location>;
     type Error = Arc<anyhow::Error>;
@@ -82,7 +81,6 @@ impl Loader<LocationRequest> for LocationLoader {
     }
 }
 
-#[async_trait::async_trait]
 impl Loader<String> for LocationLoader {
     type Value = Location;
     type Error = Arc<anyhow::Error>;
