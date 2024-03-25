@@ -9,7 +9,7 @@ use crate::types::response::{
 };
 use crate::ClientResult;
 use anyhow::Context;
-use reqwest::Method;
+use http::method::Method;
 use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 use std::fmt::{Debug, Display};
 use tracing::instrument;

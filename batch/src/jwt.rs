@@ -1,18 +1,17 @@
 use crate::types::{ApiState, AppError};
 use axum::{
-    extract::State,
-    http::Request,
+    extract::{Request, State},
     http::{HeaderMap, StatusCode},
     middleware::Next,
     response::Response,
 };
 use base::jwt::{self, Role};
 
-pub async fn validate<B>(
+pub async fn validate(
     headers: HeaderMap,
     State(state): State<ApiState>,
-    request: Request<B>,
-    next: Next<B>,
+    request: Request,
+    next: Next,
 ) -> Result<Response, AppError> {
     let auth_header = headers.get("Authorization");
     let settings = state.settings;
