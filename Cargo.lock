@@ -434,7 +434,7 @@ dependencies = [
  "opentelemetry 0.22.0",
  "places",
  "redis",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "sea-orm",
  "serde",
@@ -964,7 +964,7 @@ dependencies = [
  "opentelemetry-stdout",
  "opentelemetry_sdk 0.22.1",
  "redis",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "reqwest-retry",
  "reqwest-tracing",
@@ -1021,7 +1021,7 @@ dependencies = [
  "openai",
  "rand",
  "regex",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "sea-orm",
  "serde",
@@ -1703,7 +1703,7 @@ dependencies = [
  "entity",
  "futures",
  "libmaccas",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "sea-orm",
  "serde",
  "serde_json",
@@ -2270,7 +2270,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.6",
+ "socket2 0.4.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -2614,7 +2614,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -2972,7 +2972,7 @@ name = "openai"
 version = "0.1.0"
 dependencies = [
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -3439,7 +3439,7 @@ name = "places"
 version = "0.1.0"
 dependencies = [
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -3775,9 +3775,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.1"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e333b1eb9fe677f6893a9efcb0d277a2d3edd83f358a236b657c32301dc6e5f6"
+checksum = "2d66674f2b6fb864665eea7a3c1ac4e3dfacd2fda83cf6f935a612e01b0e3338"
 dependencies = [
  "async-compression",
  "base64 0.21.7",
@@ -3826,7 +3826,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "serde",
  "task-local-extensions",
  "thiserror",
@@ -3845,7 +3845,7 @@ dependencies = [
  "http 1.1.0",
  "hyper 1.2.0",
  "parking_lot 0.11.2",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "retry-policies",
  "task-local-extensions",
@@ -3864,7 +3864,7 @@ dependencies = [
  "getrandom",
  "matchit",
  "opentelemetry 0.21.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.2",
  "reqwest-middleware",
  "task-local-extensions",
  "tracing",
@@ -4341,9 +4341,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.114"
+version = "1.0.115"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5f09b1bd632ef549eaa9f60a1f8de742bdbc698e6cee2095fc84dde5f549ae0"
+checksum = "12dc5c46daa8e9fdf4f5e71b6cf9a53f2487da0e86e55808e2d35539666497dd"
 dependencies = [
  "itoa",
  "ryu",
