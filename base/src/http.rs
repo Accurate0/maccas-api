@@ -8,7 +8,6 @@ use reqwest_tracing::{
     default_on_request_end, DisableOtelPropagation, ReqwestOtelSpanBackend, TracingMiddleware,
 };
 use std::time::Instant;
-use task_local_extensions::Extensions;
 use thiserror::Error;
 use tracing::Span;
 
@@ -34,7 +33,7 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
 
 pub struct TimeTrace;
 impl ReqwestOtelSpanBackend for TimeTrace {
-    fn on_request_start(req: &Request, extension: &mut Extensions) -> Span {
+    fn on_request_start(req: &Request, extension: &mut http::Extensions) -> Span {
         extension.insert(Instant::now());
         let url = req.url().to_string();
 
@@ -49,7 +48,7 @@ impl ReqwestOtelSpanBackend for TimeTrace {
     fn on_request_end(
         span: &Span,
         outcome: &reqwest_middleware::Result<Response>,
-        extension: &mut Extensions,
+        extension: &mut http::Extensions,
     ) {
         let time_elapsed = extension.get::<Instant>().unwrap().elapsed().as_millis() as i64;
         default_on_request_end(span, outcome);
