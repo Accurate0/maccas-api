@@ -26,9 +26,9 @@ async-graphql = { version = "7.0.3", features = [
 ] }
 
 serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.114"
+serde_json = "1.0.115"
 rand = "0.8.5"
-chrono = "0.4.35"
+chrono = "0.4.37"
 
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
@@ -62,7 +62,7 @@ reqwest-tracing = { version = "0.4.8", features = ["opentelemetry_0_21"] }
 
 async-trait = "0.1.79"
 
-tokio = { version = "1.36.0", features = [
+tokio = { version = "1.37.0", features = [
     "macros",
     "rt-multi-thread",
     "signal",
@@ -71,7 +71,7 @@ tokio = { version = "1.36.0", features = [
 tokio-util = "0.7.10"
 cron = "0.12.1"
 uuid = { version = "1.8", features = ["v4"] }
-redis = { version = "0.25.2", features = [
+redis = { version = "0.25.3", features = [
     "tokio-comp",
     "aio",
     "connection-manager",
@@ -80,8 +80,3 @@ axum = { version = "0.7.5", features = ["macros"] }
 tower-http = { version = "0.5.2", features = ["trace", "cors"] }
 itertools = "0.12.1"
 opentelemetry = "0.22.0"
-
-[patch.crates-io]
-reqwest-middleware = { git = "https://github.com/campeis/reqwest-middleware.git", branch = "update_http_to_v1" }
-reqwest-tracing = { git = "https://github.com/campeis/reqwest-middleware.git", branch = "update_http_to_v1" }
-reqwest-retry = { git = "https://github.com/campeis/reqwest-middleware.git", branch = "update_http_to_v1" }
