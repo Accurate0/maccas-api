@@ -955,6 +955,7 @@ dependencies = [
  "entity",
  "futures",
  "hmac",
+ "http 1.1.0",
  "jwt",
  "libmaccas",
  "opentelemetry 0.22.0",
@@ -972,7 +973,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "task-local-extensions",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -2270,7 +2270,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.6",
  "tokio",
  "tower-service",
  "tracing",
@@ -2773,16 +2773,6 @@ name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
-
-[[package]]
-name = "mime_guess"
-version = "2.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4192263c238a5f0d0c6bfd21f336a313a4ce1c450542449ca191bb657b4642ef"
-dependencies = [
- "mime",
- "unicase",
-]
 
 [[package]]
 name = "minimal-lexical"
@@ -3752,7 +3742,6 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
- "mime_guess",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -3820,37 +3809,34 @@ dependencies = [
 
 [[package]]
 name = "reqwest-middleware"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a735987236a8e238bf0296c7e351b999c188ccc11477f311b82b55c93984216"
+version = "0.3.0"
+source = "git+https://github.com/TrueLayer/reqwest-middleware.git?branch=main#cb083ad66e162f880cce20cea0baf75f388c0945"
 dependencies = [
  "anyhow",
  "async-trait",
- "http 0.2.12",
- "reqwest 0.11.27",
+ "http 1.1.0",
+ "reqwest 0.12.1",
  "serde",
- "task-local-extensions",
  "thiserror",
+ "tower-service",
 ]
 
 [[package]]
 name = "reqwest-retry"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cadced6a67c5c2d1c819cc2d7e6ddf066f32b9b6a04f8866203ceeb44b79c37f"
+version = "0.5.0"
+source = "git+https://github.com/TrueLayer/reqwest-middleware.git?branch=main#cb083ad66e162f880cce20cea0baf75f388c0945"
 dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
  "futures",
  "getrandom",
- "http 0.2.12",
- "hyper 0.14.28",
+ "http 1.1.0",
+ "hyper 1.2.0",
  "parking_lot 0.11.2",
- "reqwest 0.11.27",
+ "reqwest 0.12.1",
  "reqwest-middleware",
  "retry-policies",
- "task-local-extensions",
  "tokio",
  "tracing",
  "wasm-timer",
@@ -3858,18 +3844,17 @@ dependencies = [
 
 [[package]]
 name = "reqwest-tracing"
-version = "0.4.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "190838e54153d7a7e2ea98851304b3ce92daeabf14c54d32b01b84a3e636f683"
+version = "0.5.0"
+source = "git+https://github.com/TrueLayer/reqwest-middleware.git?branch=main#cb083ad66e162f880cce20cea0baf75f388c0945"
 dependencies = [
  "anyhow",
  "async-trait",
  "getrandom",
+ "http 1.1.0",
  "matchit",
  "opentelemetry 0.21.0",
- "reqwest 0.11.27",
+ "reqwest 0.12.1",
  "reqwest-middleware",
- "task-local-extensions",
  "tracing",
  "tracing-opentelemetry 0.22.0",
 ]
@@ -4883,15 +4868,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
-name = "task-local-extensions"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba323866e5d033818e3240feeb9f7db2c4296674e4d9e16b97b7bf8f490434e8"
-dependencies = [
- "pin-utils",
-]
-
-[[package]]
 name = "tempfile"
 version = "3.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5387,15 +5363,6 @@ name = "ucd-trie"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed646292ffc8188ef8ea4d1e0e0150fb15a5c2e12ad9b8fc191ae7a8a7f3c4b9"
-
-[[package]]
-name = "unicase"
-version = "2.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7d2d4dafb69621809a81864c9c1b864479e1235c0dd4e199924b9742439ed89"
-dependencies = [
- "version_check",
-]
 
 [[package]]
 name = "unicode-bidi"
