@@ -12,7 +12,7 @@ model User {
   id           String @id @default(uuid())
   username     String @unique
   passwordHash Bytes  @db.ByteA
-  role         Role   @default(ADMIN)
+  role         Role[] @default([ADMIN])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
