@@ -57,7 +57,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
         .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
-    let http_client = base::http::get_http_client(proxy)?;
+    let http_client = base::http::get_proxied_maccas_http_client(proxy)?;
 
     scheduler
         .add_scheduled(

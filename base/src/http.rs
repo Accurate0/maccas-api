@@ -62,7 +62,9 @@ pub enum HttpCreationError {
     ReqwestBuilderError(#[from] reqwest::Error),
 }
 
-pub fn get_http_client(proxy: Proxy) -> Result<ClientWithMiddleware, HttpCreationError> {
+pub fn get_proxied_maccas_http_client(
+    proxy: Proxy,
+) -> Result<ClientWithMiddleware, HttpCreationError> {
     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(5);
 
     Ok(
