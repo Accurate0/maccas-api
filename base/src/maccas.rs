@@ -1,4 +1,4 @@
-use crate::{constants, http::get_http_client};
+use crate::{constants, http::get_proxied_maccas_http_client};
 use entity::accounts;
 use reqwest::Proxy;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, IntoActiveModel, Set};
@@ -11,7 +11,7 @@ pub async fn get_activated_maccas_api_client(
 ) -> Result<libmaccas::ApiClient, anyhow::Error> {
     let mut api_client = libmaccas::ApiClient::new(
         constants::mc_donalds::BASE_URL.to_owned(),
-        get_http_client(proxy)?,
+        get_proxied_maccas_http_client(proxy)?,
         client_id.to_owned(),
     );
 
