@@ -39,7 +39,7 @@ sea-orm = { version = "0.12", features = [
     "macros",
 ] }
 
-anyhow = "1.0.81"
+anyhow = "1.0.82"
 
 config = "0.14.0"
 
@@ -80,8 +80,7 @@ axum = { version = "0.7.5", features = ["macros"] }
 tower-http = { version = "0.5.2", features = ["trace", "cors"] }
 itertools = "0.12.1"
 opentelemetry = "0.22.0"
-old_http = { package = "http", version = "0.2.1" }
-http = "1.0.0"
+http = "1.1.0"
 
 [patch.crates-io]
 reqwest-middleware = { git = "https://github.com/TrueLayer/reqwest-middleware.git", branch = "main" }
