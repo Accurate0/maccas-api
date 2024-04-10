@@ -31,8 +31,7 @@ axum = { workspace = true }
 rand = { workspace = true }
 openai = { workspace = true }
 itertools = { workspace = true }
-native-tls = "0.2.11"
-imap = "2.4.1"
+imap = { version = "3.0.0-alpha.14", features = ["native-tls"] }
 mailparse = "0.14.1"
 regex = "1.10.4"
 

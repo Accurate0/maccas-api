@@ -32,12 +32,9 @@ impl Job for ActivateAccountJob {
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         // TODO: actually finish this, not needed yet apparently.. things kinda just work..
-        let tls = native_tls::TlsConnector::builder().build().unwrap();
-        let imap_client = imap::connect(
-            (self.email_config.server_address.clone(), 993),
-            self.email_config.server_address.clone(),
-            &tls,
-        )?;
+        let imap_client = imap::ClientBuilder::new(&self.email_config.server_address, 993)
+            .tls_kind(imap::TlsKind::Native)
+            .connect()?;
 
         let mut imap_session = imap_client
             .login(
@@ -62,7 +59,7 @@ impl Job for ActivateAccountJob {
         let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
         for message_uid in all_unseen_emails.iter() {
             let messages = imap_session.uid_fetch(message_uid.to_string(), "RFC822")?;
-            let message = messages.first().context("should have at least one")?;
+            let message = messages.get(0).context("should have at least one")?;
             let body = message.body().expect("message did not have a body!");
 
             let parsed_email = mailparse::parse_mail(body)?;
