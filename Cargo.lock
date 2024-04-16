@@ -434,7 +434,7 @@ dependencies = [
  "opentelemetry 0.22.0",
  "places",
  "redis",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "sea-orm",
  "serde",
@@ -758,9 +758,9 @@ checksum = "fbb36e985947064623dbd357f727af08ffd077f93d696782f3c56365fa2e2799"
 
 [[package]]
 name = "async-trait"
-version = "0.1.79"
+version = "0.1.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a507401cad91ec6a857ed5513a2073c82a9b9048762b885bb98655b306964681"
+checksum = "c6fa2087f2753a7da8cc1c0dbfcf89579dd57458e36769de5ac750b4671737ca"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -959,7 +959,7 @@ dependencies = [
  "opentelemetry-stdout",
  "opentelemetry_sdk 0.22.1",
  "redis",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "reqwest-retry",
  "reqwest-tracing",
@@ -1020,7 +1020,7 @@ dependencies = [
  "openai",
  "rand",
  "regex",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "sea-orm",
  "serde",
@@ -1233,9 +1233,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.37"
+version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0d04d43504c61aa6c7531f1871dd0d418d91130162063b789da00fd7057a5e"
+checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -1702,7 +1702,7 @@ dependencies = [
  "entity",
  "futures",
  "libmaccas",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "sea-orm",
  "serde",
  "serde_json",
@@ -2601,7 +2601,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -2938,7 +2938,7 @@ name = "openai"
 version = "0.1.0"
 dependencies = [
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -3430,7 +3430,7 @@ name = "places"
 version = "0.1.0"
 dependencies = [
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "serde",
  "serde_json",
@@ -3761,7 +3761,7 @@ dependencies = [
  "pin-project-lite",
  "rustls",
  "rustls-native-certs",
- "rustls-pemfile",
+ "rustls-pemfile 1.0.4",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -3774,17 +3774,17 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "winreg",
+ "winreg 0.50.0",
 ]
 
 [[package]]
 name = "reqwest"
-version = "0.12.1"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e333b1eb9fe677f6893a9efcb0d277a2d3edd83f358a236b657c32301dc6e5f6"
+checksum = "3e6cc1e89e689536eb5aeede61520e874df5a4707df811cd5da4aa5fbb2aae19"
 dependencies = [
  "async-compression",
- "base64 0.21.7",
+ "base64 0.22.0",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -3804,7 +3804,7 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls-pemfile",
+ "rustls-pemfile 2.1.2",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -3818,7 +3818,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "winreg",
+ "winreg 0.52.0",
 ]
 
 [[package]]
@@ -3829,7 +3829,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "http 1.1.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "serde",
  "thiserror",
  "tower-service",
@@ -3848,7 +3848,7 @@ dependencies = [
  "http 1.1.0",
  "hyper 1.2.0",
  "parking_lot 0.11.2",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "retry-policies",
  "tokio",
@@ -3867,7 +3867,7 @@ dependencies = [
  "http 1.1.0",
  "matchit",
  "opentelemetry 0.21.0",
- "reqwest 0.12.1",
+ "reqwest 0.12.3",
  "reqwest-middleware",
  "tracing",
  "tracing-opentelemetry 0.22.0",
@@ -4047,7 +4047,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9aace74cb666635c918e9c12bc0d348266037aa8eb599b5cba565709a8dff00"
 dependencies = [
  "openssl-probe",
- "rustls-pemfile",
+ "rustls-pemfile 1.0.4",
  "schannel",
  "security-framework",
 ]
@@ -4060,6 +4060,22 @@ checksum = "1c74cae0a4cf6ccbbf5f359f08efdf8ee7e1dc532573bf0db71968cb56b1448c"
 dependencies = [
  "base64 0.21.7",
 ]
+
+[[package]]
+name = "rustls-pemfile"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29993a25686778eb88d4189742cd713c9bce943bc54251a33509dc63cbacf73d"
+dependencies = [
+ "base64 0.22.0",
+ "rustls-pki-types",
+]
+
+[[package]]
+name = "rustls-pki-types"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecd36cc4259e3e4514335c4a138c6b43171a8d61d8f5c9348f9fc7529416f247"
 
 [[package]]
 name = "rustls-webpki"
@@ -4310,18 +4326,18 @@ checksum = "92d43fe69e652f3df9bdc2b85b2854a0825b86e4fb76bc44d945137d053639ca"
 
 [[package]]
 name = "serde"
-version = "1.0.197"
+version = "1.0.198"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fb1c873e1b9b056a4dc4c0c198b24c3ffa059243875552b2bd0933b1aee4ce2"
+checksum = "9846a40c979031340571da2545a4e5b7c4163bdae79b301d5f86d03979451fcc"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.197"
+version = "1.0.198"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eb0b34b42edc17f6b7cac84a52a1c5f0e1bb2227e997ca9011ea3dd34e8610b"
+checksum = "e88edab869b01783ba905e7d0153f9fc1a6505a96e4ad3018011eedb838566d9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4343,9 +4359,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.115"
+version = "1.0.116"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12dc5c46daa8e9fdf4f5e71b6cf9a53f2487da0e86e55808e2d35539666497dd"
+checksum = "3e17db7126d17feb94eb3fad46bf1a96b034e8aacbc2e775fe81505f8b0b2813"
 dependencies = [
  "itoa",
  "ryu",
@@ -5823,6 +5839,16 @@ name = "winreg"
 version = "0.50.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "524e57b2c537c0f9b1e69f1965311ec12182b4122e45035b1508cd24d2adadb1"
+dependencies = [
+ "cfg-if",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "winreg"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a277a57398d4bfa075df44f501a17cfdf8542d224f0d36095a2adc7aee4ef0a5"
 dependencies = [
  "cfg-if",
  "windows-sys 0.48.0",
