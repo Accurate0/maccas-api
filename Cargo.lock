@@ -3887,10 +3887,12 @@ dependencies = [
  "http 1.1.0",
  "matchit",
  "opentelemetry 0.21.0",
+ "opentelemetry 0.22.0",
  "reqwest 0.12.1",
  "reqwest-middleware",
  "tracing",
  "tracing-opentelemetry 0.22.0",
+ "tracing-opentelemetry 0.23.0",
 ]
 
 [[package]]
