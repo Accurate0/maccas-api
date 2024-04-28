@@ -43,8 +43,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 
 		const response = await resolve(event);
+		const isRedirect = response.status >= 300 && response.status < 400;
 
-		if (response.ok) {
+		if (response.ok || isRedirect) {
 			span.setStatus({ code: SpanStatusCode.OK });
 		} else {
 			span.setStatus({ code: SpanStatusCode.ERROR });
