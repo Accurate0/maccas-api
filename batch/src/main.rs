@@ -141,9 +141,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 .latency_unit(LatencyUnit::Millis),
         );
 
-    let health = Router::new()
-        .route("/health", get(health))
-        .layer(trace_layer.clone());
+    let health = Router::new().route("/health", get(health));
 
     let app = Router::new()
         .route("/job", get(get_jobs))
