@@ -14,48 +14,51 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const tracer = opentelemetry.trace.getTracer('default');
-	return tracer.startActiveSpan(`fetch ${event.route.id}`, async (span) => {
-		if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
-			const sessionId = event.cookies.get(SessionId);
-			if (!sessionId) {
-				span.setStatus({ code: SpanStatusCode.OK });
-				span.end();
+	return tracer.startActiveSpan(
+		`${event.request.method.toUpperCase()} ${event.route.id}`,
+		async (span) => {
+			if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
+				const sessionId = event.cookies.get(SessionId);
+				if (!sessionId) {
+					span.setStatus({ code: SpanStatusCode.OK });
+					span.end();
 
-				return new Response(null, {
-					status: 307,
-					headers: { location: '/login' }
-				});
+					return new Response(null, {
+						status: 307,
+						headers: { location: '/login' }
+					});
+				}
+
+				const session = await prisma.session.findUnique({ where: { id: sessionId } });
+				if (!session || new Date() > session.expires) {
+					span.setStatus({ code: SpanStatusCode.OK });
+					span.end();
+
+					return new Response(null, {
+						status: 307,
+						headers: { location: '/login' }
+					});
+				}
+
+				event.locals.session = session;
+				setSession(event, { ...session });
 			}
 
-			const session = await prisma.session.findUnique({ where: { id: sessionId } });
-			if (!session || new Date() > session.expires) {
-				span.setStatus({ code: SpanStatusCode.OK });
-				span.end();
+			const response = await resolve(event);
+			const isRedirect = response.status >= 300 && response.status < 400;
 
-				return new Response(null, {
-					status: 307,
-					headers: { location: '/login' }
-				});
+			if (response.ok || isRedirect) {
+				span.setStatus({ code: SpanStatusCode.OK });
+			} else {
+				span.setStatus({ code: SpanStatusCode.ERROR });
 			}
 
-			event.locals.session = session;
-			setSession(event, { ...session });
+			span.setAttribute('statusCode', response.status);
+
+			span.end();
+			return response;
 		}
-
-		const response = await resolve(event);
-		const isRedirect = response.status >= 300 && response.status < 400;
-
-		if (response.ok || isRedirect) {
-			span.setStatus({ code: SpanStatusCode.OK });
-		} else {
-			span.setStatus({ code: SpanStatusCode.ERROR });
-		}
-
-		span.setAttribute('statusCode', response.status);
-
-		span.end();
-		return response;
-	});
+	);
 };
 
 export const handleFetch: HandleFetch = async ({ request, fetch }) => {
