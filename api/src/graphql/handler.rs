@@ -1,4 +1,3 @@
-use crate::gql_tracing::DoNotTrace;
 use crate::types::{ApiState, AppError};
 use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, ServerError};
