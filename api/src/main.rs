@@ -16,7 +16,6 @@ use std::time::Duration;
 use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
 
-mod gql_tracing;
 mod graphql;
 mod macros;
 mod settings;
@@ -59,10 +58,6 @@ async fn main() -> Result<(), anyhow::Error> {
         },
         tokio::spawn,
     ))
-    .extension(gql_tracing::Tracing)
-    // .extension(async_graphql::extensions::OpenTelemetry::new(
-    //     opentelemetry::global::tracer("graphql"),
-    // ))
     .finish();
 
     let cors = CorsLayer::new()
