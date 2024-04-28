@@ -430,6 +430,7 @@ dependencies = [
  "entity",
  "event",
  "futures",
+ "futures-util",
  "libmaccas",
  "opentelemetry 0.22.0",
  "places",
@@ -443,6 +444,7 @@ dependencies = [
  "tokio",
  "tower-http",
  "tracing",
+ "tracing-futures",
  "tracing-subscriber",
 ]
 

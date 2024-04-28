@@ -33,6 +33,7 @@ chrono = "0.4.38"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 tracing-axiom = "0.6"
+tracing-futures = "0.2.5"
 
 sea-orm = { version = "0.12", features = [
     "sqlx-postgres",
@@ -55,6 +56,7 @@ batch = { path = "./batch" }
 
 thiserror = "1.0.59"
 futures = "0.3.30"
+futures-util = "0.3.30"
 
 reqwest = { version = "0.12", features = ["json", "gzip", "native-tls"] }
 reqwest-middleware = { version = "0.3.0", features = ["json"] }
