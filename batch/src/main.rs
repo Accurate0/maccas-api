@@ -39,7 +39,7 @@ mod types;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().without_time().init();
+    base::tracing::init("batch");
 
     let settings = Settings::new()?;
 
