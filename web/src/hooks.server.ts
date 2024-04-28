@@ -14,8 +14,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const tracer = opentelemetry.trace.getTracer('default');
-
-	return tracer.startActiveSpan(`fetch ${event.url.pathname}`, async (span) => {
+	return tracer.startActiveSpan(`fetch ${event.route.id}`, async (span) => {
 		if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
 			const sessionId = event.cookies.get(SessionId);
 			if (!sessionId) {
