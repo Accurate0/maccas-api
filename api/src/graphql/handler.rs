@@ -1,3 +1,4 @@
+use crate::gql_tracing::DoNotTrace;
 use crate::types::{ApiState, AppError};
 use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, ServerError};
@@ -97,7 +98,8 @@ pub async fn health(
         }
       }
       "#,
-    );
+    )
+    .data(DoNotTrace);
 
     let response = schema.execute(request).await;
     let health_response = serde_json::from_value::<HealthResponse>(
@@ -132,7 +134,8 @@ pub async fn self_health(
         }
       }
       "#,
-    );
+    )
+    .data(DoNotTrace);
 
     let response = schema.execute(request).await;
     let health_response = serde_json::from_value::<SelfHealthResponse>(
