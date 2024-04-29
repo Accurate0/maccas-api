@@ -263,10 +263,9 @@ impl JobScheduler {
         };
 
         if !running {
-            tracing::info!("triggered job {}", name);
-            let db: DatabaseConnection = self.0.db.clone();
+            let db = self.0.db.clone();
             let context = JobContext::new(self.0.db.clone(), job_model.id);
-            let span = tracing::span!(parent: None, Level::INFO, "job", name);
+            let span = tracing::span!(parent: None, Level::INFO, "job", job_name = name, "otel.name" = name);
             let queue = self.0.task_queue.clone();
             let task_name = name.to_string();
 
@@ -281,6 +280,7 @@ impl JobScheduler {
 
             let handle = tokio::spawn(
                 async move {
+                    tracing::info!("triggered job {}", job.name());
                     let result = job.execute(&context, cancellation_token_cloned).await;
                     let error = result.map_err(|e| e.to_string()).err();
 
