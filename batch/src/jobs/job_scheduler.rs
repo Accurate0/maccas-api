@@ -265,7 +265,7 @@ impl JobScheduler {
         if !running {
             let db = self.0.db.clone();
             let context = JobContext::new(self.0.db.clone(), job_model.id);
-            let span = tracing::span!(parent: None, Level::INFO, "job", job_name = name, "otel.name" = name);
+            let span = tracing::span!(parent: None, Level::INFO, "job", job_name = name, "otel.name" = format!("job::{}", name));
             let queue = self.0.task_queue.clone();
             let task_name = name.to_string();
 
