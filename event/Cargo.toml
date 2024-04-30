@@ -25,6 +25,7 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
+opentelemetry = { workspace = true }
 state = "0.6.0"
 actix-web-lab = "0.20.2"
 actix-web-opentelemetry = "0.17.0"

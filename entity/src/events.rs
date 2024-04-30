@@ -23,6 +23,7 @@ pub struct Model {
     pub error_message: Option<String>,
     pub completed_at: Option<DateTime>,
     pub status: EventStatus,
+    pub trace_id: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -32,6 +32,7 @@ mod m20240203_123115_update_categories_2;
 mod m20240204_080304_add_account_lock;
 mod m20240204_084509_add_disable_flag;
 mod m20240307_122712_add_event_status;
+mod m20240430_023736_add_trace_id;
 
 pub struct Migrator;
 
@@ -71,6 +72,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240204_080304_add_account_lock::Migration),
             Box::new(m20240204_084509_add_disable_flag::Migration),
             Box::new(m20240307_122712_add_event_status::Migration),
+            Box::new(m20240430_023736_add_trace_id::Migration),
         ]
     }
 }
