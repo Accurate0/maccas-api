@@ -25,12 +25,15 @@ pub enum EventManagerError {
     Database(#[from] DbErr),
     #[error("Chrono out of range error has ocurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
+    #[error("An unknown error ocurred: `{0}`")]
+    UnknownError(#[from] anyhow::Error),
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct QueuedEvent {
     pub(crate) evt: Event,
     pub(crate) id: i32,
+    pub(crate) trace_id: String,
 }
 
 struct EventManagerInner {
@@ -77,6 +80,7 @@ impl EventManager {
         &self,
         evt: Event,
         delay: Duration,
+        trace_id: String,
     ) -> Result<Uuid, EventManagerError> {
         let event_id = Uuid::new_v4();
         let should_be_completed_at = chrono::offset::Utc::now().naive_utc() + delay;
@@ -87,6 +91,7 @@ impl EventManager {
             data: Set(serde_json::to_value(&evt)?),
             is_completed: Set(false),
             should_be_completed_at: Set(should_be_completed_at),
+            trace_id: Set(Some(trace_id.to_owned())),
             status: Set(EventStatus::Pending),
             ..Default::default()
         }
@@ -95,7 +100,14 @@ impl EventManager {
 
         self.inner
             .event_queue
-            .push(QueuedEvent { evt, id: event.id }, delay)
+            .push(
+                QueuedEvent {
+                    evt,
+                    id: event.id,
+                    trace_id,
+                },
+                delay,
+            )
             .await;
 
         Ok(event_id)
@@ -123,6 +135,7 @@ impl EventManager {
                         QueuedEvent {
                             evt: serde_json::from_value(event.data.clone())?,
                             id: event.id,
+                            trace_id: event.trace_id.to_owned().unwrap_or_default(),
                         },
                         // run immediately if its past the should be completed at
                         delay.to_std().unwrap_or(Duration::ZERO),

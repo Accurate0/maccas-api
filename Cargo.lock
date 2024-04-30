@@ -1706,6 +1706,7 @@ dependencies = [
  "entity",
  "futures",
  "libmaccas",
+ "opentelemetry 0.22.0",
  "reqwest 0.12.1",
  "sea-orm",
  "serde",
