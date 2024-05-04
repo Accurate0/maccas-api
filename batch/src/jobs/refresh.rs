@@ -193,6 +193,14 @@ impl Job for RefreshJob {
             .exec(&txn)
             .await?;
 
+        accounts::Entity::update(accounts::ActiveModel {
+            id: sea_orm::Unchanged(account_id),
+            refresh_failure_count: sea_orm::Set(0),
+            ..Default::default()
+        })
+        .exec(&txn)
+        .await?;
+
         // unlock account now if it was locked...
         account_lock::Entity::delete_by_id(account_id)
             .exec(&txn)
