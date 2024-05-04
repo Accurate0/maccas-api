@@ -116,7 +116,6 @@ impl Job for RefreshJob {
                         .one(&context.database)
                         .await?;
 
-                    tracing::info!("details: {:?}", details);
                     if details.is_none()
                         || details.as_ref().and_then(|d| d.raw_data.as_ref()).is_none()
                     {
