@@ -37,6 +37,7 @@ impl Job for RefreshJob {
     ) -> Result<(), JobError> {
         let account_to_refresh = accounts::Entity::find()
             .filter(accounts::Column::Active.eq(true))
+            .filter(accounts::Column::RefreshFailureCount.lte(3))
             .order_by_asc(accounts::Column::UpdatedAt)
             .one(&context.database)
             .await?
@@ -60,9 +61,22 @@ impl Job for RefreshJob {
         api_client.set_auth_token(&account_to_refresh.access_token);
         let response = api_client
             .customer_login_refresh(&account_to_refresh.refresh_token)
+            .await;
+
+        if let Err(e) = response {
+            accounts::Entity::update(accounts::ActiveModel {
+                id: sea_orm::Unchanged(account_to_refresh.id),
+                refresh_failure_count: sea_orm::Set(account_to_refresh.refresh_failure_count + 1),
+                ..Default::default()
+            })
+            .exec(&context.database)
             .await?;
 
+            return Err(e.into());
+        }
+
         let response = response
+            .unwrap()
             .body
             .response
             .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
