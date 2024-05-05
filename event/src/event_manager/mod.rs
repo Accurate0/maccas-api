@@ -19,13 +19,13 @@ mod handlers;
 
 #[derive(Error, Debug)]
 pub enum EventManagerError {
-    #[error("Serializer error has ocurred: `{0}`")]
+    #[error("Serializer error has occurred: `{0}`")]
     Serializer(#[from] serde_json::Error),
-    #[error("Database error has ocurred: `{0}`")]
+    #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
-    #[error("Chrono out of range error has ocurred: `{0}`")]
+    #[error("Chrono out of range error has occurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
-    #[error("An unknown error ocurred: `{0}`")]
+    #[error("An unknown error occurred: `{0}`")]
     UnknownError(#[from] anyhow::Error),
 }
 
@@ -128,19 +128,24 @@ impl EventManager {
                 tracing::info!("delay for this event is: {}", delay);
 
                 // FIXME: throttle events if too many to avoid overload / ratelimit
-
-                self.inner
-                    .event_queue
-                    .push(
-                        QueuedEvent {
-                            evt: serde_json::from_value(event.data.clone())?,
-                            id: event.id,
-                            trace_id: event.trace_id.to_owned().unwrap_or_default(),
-                        },
-                        // run immediately if its past the should be completed at
-                        delay.to_std().unwrap_or(Duration::ZERO),
-                    )
-                    .await;
+                let event_data = serde_json::from_value(event.data.clone());
+                match event_data {
+                    Ok(event_data) => {
+                        self.inner
+                            .event_queue
+                            .push(
+                                QueuedEvent {
+                                    evt: event_data,
+                                    id: event.id,
+                                    trace_id: event.trace_id.to_owned().unwrap_or_default(),
+                                },
+                                // run immediately if its past the should be completed at
+                                delay.to_std().unwrap_or(Duration::ZERO),
+                            )
+                            .await;
+                    }
+                    Err(e) => tracing::error!("error deserializing {}: {e}", event.name),
+                }
 
                 Ok::<(), EventManagerError>(())
             };
