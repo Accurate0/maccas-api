@@ -128,24 +128,18 @@ impl EventManager {
                 tracing::info!("delay for this event is: {}", delay);
 
                 // FIXME: throttle events if too many to avoid overload / ratelimit
-                let event_data = serde_json::from_value(event.data.clone());
-                match event_data {
-                    Ok(event_data) => {
-                        self.inner
-                            .event_queue
-                            .push(
-                                QueuedEvent {
-                                    evt: event_data,
-                                    id: event.id,
-                                    trace_id: event.trace_id.to_owned().unwrap_or_default(),
-                                },
-                                // run immediately if its past the should be completed at
-                                delay.to_std().unwrap_or(Duration::ZERO),
-                            )
-                            .await;
-                    }
-                    Err(e) => tracing::error!("error deserializing {}: {e}", event.name),
-                }
+                self.inner
+                    .event_queue
+                    .push(
+                        QueuedEvent {
+                            evt: serde_json::from_value(event.data.clone())?,
+                            id: event.id,
+                            trace_id: event.trace_id.to_owned().unwrap_or_default(),
+                        },
+                        // run immediately if its past the should be completed at
+                        delay.to_std().unwrap_or(Duration::ZERO),
+                    )
+                    .await;
 
                 Ok::<(), EventManagerError>(())
             };
