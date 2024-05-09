@@ -17,7 +17,6 @@ pub struct Proxy {
 pub struct McDonalds {
     pub client_id: String,
     pub client_secret: String,
-    pub sensor_data: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -36,6 +35,7 @@ pub struct Settings {
     pub auth_secret: String,
     pub email: Email,
     pub openai_api_key: String,
+    pub sensordata_api_base: String,
 }
 
 impl Settings {

@@ -1,7 +1,14 @@
-
-version: '3'
+version: "3"
 
 services:
+  sensordata:
+    build:
+      context: sensordata
+    devices:
+      - /dev/kvm
+    ports:
+      - "8080:8080"
+
   web:
     build:
       context: web
@@ -18,7 +25,7 @@ services:
       - API_BASE_URL=http://api:8000/v1
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
       - AUTH_SECRET=111
-      # svelte needs orgin for csrf
+      # svelte needs origin for csrf
       - ORIGIN=http://localhost:3000
 
   dashboard:
@@ -102,11 +109,14 @@ services:
     ports:
       - "8002:8002"
     links:
+      - "sensordata:sensordata"
       - "db:database"
     depends_on:
       - db
+      - sensordata
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
+      - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - AUTH_SECRET=111
     env_file:
       - .env.local

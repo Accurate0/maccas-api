@@ -1,3 +1,4 @@
+use base::http::HttpCreationError;
 use sea_orm::DbErr;
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;
@@ -28,4 +29,8 @@ pub enum JobError {
     MailParseError(#[from] mailparse::MailParseError),
     #[error("A reqwest error ocurred: `{0}`")]
     ReqwestError(#[from] reqwest::Error),
+    #[error("A http creation error ocurred: `{0}`")]
+    HttpCreationError(#[from] HttpCreationError),
+    #[error("A reqwest middleware error ocurred: `{0}`")]
+    ReqwestMiddlewareError(#[from] reqwest_middleware::Error),
 }
