@@ -2,6 +2,7 @@ use super::{error::JobError, Job, JobContext};
 use crate::settings::{Email, McDonalds};
 use anyhow::Context;
 use base::constants::mc_donalds;
+use base::http::get_simple_http_client;
 use entity::accounts;
 use libmaccas::{
     types::request::{ActivateAndSignInRequest, ActivationDevice, ClientInfo},
@@ -11,11 +12,13 @@ use mailparse::MailHeaderMap;
 use regex::Regex;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, Set};
+use sensordata::{SensorDataRequest, SensorDataResponse};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct ActivateAccountJob {
     pub http_client: ClientWithMiddleware,
+    pub sensordata_api_base: String,
     pub mcdonalds_config: McDonalds,
     pub email_config: Email,
 }
@@ -98,6 +101,18 @@ impl Job for ActivateAccountJob {
                 tracing::info!("code: {:?}", magic_link);
                 tracing::info!("email to: {:?}", to.clone().as_str().to_string());
 
+                let http_client = get_simple_http_client()?;
+                let sensor_data_response = http_client
+                    .get(format!(
+                        "{}/{}",
+                        self.sensordata_api_base,
+                        SensorDataRequest::path()
+                    ))
+                    .send()
+                    .await?
+                    .json::<SensorDataResponse>()
+                    .await?;
+
                 let response = client
                     .activate_and_signin(
                         &ActivateAndSignInRequest {
@@ -110,7 +125,7 @@ impl Job for ActivateAccountJob {
                                 },
                             },
                         },
-                        &self.mcdonalds_config.sensor_data,
+                        &sensor_data_response.sensor_data,
                     )
                     .await?;
 

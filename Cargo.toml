@@ -8,7 +8,8 @@ members = [
     "external/openai",
     "batch",
     "base",
-    "event",
+    "event", 
+    "sensordata/lib",
 ]
 
 [profile.release-strip]
@@ -53,6 +54,7 @@ base = { path = "./base" }
 converters = { path = "./converters" }
 event = { path = "./event" }
 batch = { path = "./batch" }
+sensordata = { path = "./sensordata/lib" }
 
 thiserror = "1.0.59"
 futures = "0.3.30"

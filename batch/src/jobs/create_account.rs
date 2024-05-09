@@ -1,6 +1,6 @@
 use super::{error::JobError, Job, JobContext};
 use crate::settings::{Email, McDonalds};
-use base::constants::mc_donalds;
+use base::{constants::mc_donalds, http::get_simple_http_client};
 use entity::accounts;
 use libmaccas::{
     types::request::{
@@ -16,12 +16,14 @@ use rand::{
 };
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{prelude::Uuid, ActiveModelTrait, Set};
+use sensordata::{SensorDataRequest, SensorDataResponse};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct CreateAccountJob {
     pub http_client: ClientWithMiddleware,
     pub mcdonalds_config: McDonalds,
+    pub sensordata_api_base: String,
     pub email_config: Email,
 }
 
@@ -97,8 +99,20 @@ impl Job for CreateAccountJob {
             .unwrap(),
         };
 
+        let http_client = get_simple_http_client()?;
+        let sensor_data_response = http_client
+            .get(format!(
+                "{}/{}",
+                self.sensordata_api_base,
+                SensorDataRequest::path()
+            ))
+            .send()
+            .await?
+            .json::<SensorDataResponse>()
+            .await?;
+
         let response = client
-            .customer_registration(&request, &self.mcdonalds_config.sensor_data)
+            .customer_registration(&request, &sensor_data_response.sensor_data)
             .await?;
 
         tracing::info!(

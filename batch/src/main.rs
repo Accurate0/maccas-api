@@ -71,6 +71,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     scheduler
         .add_manual(CreateAccountJob {
+            sensordata_api_base: settings.sensordata_api_base.clone(),
             http_client: http_client.clone(),
             mcdonalds_config: settings.mcdonalds.clone(),
             email_config: settings.email.clone(),
@@ -80,6 +81,7 @@ async fn main() -> Result<(), anyhow::Error> {
     scheduler
         .add_manual(ActivateAccountJob {
             http_client: http_client.clone(),
+            sensordata_api_base: settings.sensordata_api_base.clone(),
             mcdonalds_config: settings.mcdonalds.clone(),
             email_config: settings.email.clone(),
         })
