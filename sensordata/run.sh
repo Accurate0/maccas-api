@@ -5,7 +5,7 @@ trap 'pkill -P $$' SIGINT SIGTERM EXIT
 
 command -v emulator > /dev/null && emulator=emulator || emulator=/android-sdk/emulator/emulator
 
-rm -f "$HOME/.android/avd/test.avd/*.lock"
+rm -f "$HOME"/.android/avd/test.avd/*.lock
 
 $emulator -avd test -no-window -read-only -no-metrics &
 
