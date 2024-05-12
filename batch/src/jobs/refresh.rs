@@ -3,10 +3,11 @@ use crate::settings::McDonalds;
 use base::constants::mc_donalds;
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
+use libmaccas::ApiClient;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
-    QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
+    QueryFilter, QueryOrder, Set, TryIntoModel,
 };
 use serde::Serialize;
 use tokio_util::sync::CancellationToken;
@@ -50,23 +51,43 @@ impl Job for RefreshJob {
             .await?;
 
         let account_id = account_to_refresh.id.to_owned();
-        tracing::info!("refreshing account: {:?}", &account_id);
+        let current_failure_count = account_to_refresh.refresh_failure_count;
+        let api_client = {
+            tracing::info!("refreshing account: {:?}", &account_id);
 
-        let mut api_client = libmaccas::ApiClient::new(
-            base::constants::mc_donalds::BASE_URL.to_owned(),
-            self.http_client.clone(),
-            self.mcdonalds_config.client_id.clone(),
-        );
+            let mut api_client = libmaccas::ApiClient::new(
+                base::constants::mc_donalds::BASE_URL.to_owned(),
+                self.http_client.clone(),
+                self.mcdonalds_config.client_id.clone(),
+            );
 
-        api_client.set_auth_token(&account_to_refresh.access_token);
-        let response = api_client
-            .customer_login_refresh(&account_to_refresh.refresh_token)
-            .await;
+            api_client.set_auth_token(&account_to_refresh.access_token);
+            let response = api_client
+                .customer_login_refresh(&account_to_refresh.refresh_token)
+                .await;
 
-        if let Err(e) = response {
+            let response = response?
+                .body
+                .response
+                .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
+
+            api_client.set_auth_token(&response.access_token);
+
+            let mut update_model = account_to_refresh.into_active_model();
+
+            update_model.access_token = Set(response.access_token);
+            update_model.refresh_token = Set(response.refresh_token);
+            tracing::info!("new tokens fetched, updating database");
+
+            update_model.update(&context.database).await?;
+
+            Ok::<ApiClient, anyhow::Error>(api_client)
+        };
+
+        if let Err(e) = api_client {
             accounts::Entity::update(accounts::ActiveModel {
-                id: sea_orm::Unchanged(account_to_refresh.id),
-                refresh_failure_count: sea_orm::Set(account_to_refresh.refresh_failure_count + 1),
+                id: sea_orm::Unchanged(account_id),
+                refresh_failure_count: sea_orm::Set(current_failure_count + 1),
                 ..Default::default()
             })
             .exec(&context.database)
@@ -75,21 +96,7 @@ impl Job for RefreshJob {
             return Err(e.into());
         }
 
-        let response = response
-            .unwrap()
-            .body
-            .response
-            .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
-
-        api_client.set_auth_token(&response.access_token);
-
-        let mut update_model = account_to_refresh.into_active_model();
-
-        update_model.access_token = Set(response.access_token);
-        update_model.refresh_token = Set(response.refresh_token);
-        tracing::info!("new tokens fetched, updating database");
-
-        update_model.update(&context.database).await?;
+        let api_client = api_client.unwrap();
 
         let offers = api_client
             .get_offers(
@@ -147,7 +154,7 @@ impl Job for RefreshJob {
             }
         }
 
-        let txn = context.database.begin().await?;
+        // let txn = context.database.begin().await?;
 
         offer_details::Entity::insert_many(active_models)
             .on_conflict(
@@ -156,7 +163,7 @@ impl Job for RefreshJob {
                     .to_owned(),
             )
             .on_empty_do_nothing()
-            .exec(&txn)
+            .exec(&context.database)
             .await?;
 
         let models = offer_list
@@ -168,7 +175,7 @@ impl Job for RefreshJob {
 
         offers::Entity::delete_many()
             .filter(offers::Column::AccountId.eq(account_id))
-            .exec(&txn)
+            .exec(&context.database)
             .await?;
 
         let offer_history_models = models
@@ -184,12 +191,12 @@ impl Job for RefreshJob {
 
         offer_history::Entity::insert_many(offer_history_models)
             .on_empty_do_nothing()
-            .exec(&txn)
+            .exec(&context.database)
             .await?;
 
         offers::Entity::insert_many(models)
             .on_empty_do_nothing()
-            .exec(&txn)
+            .exec(&context.database)
             .await?;
 
         accounts::Entity::update(accounts::ActiveModel {
@@ -197,17 +204,17 @@ impl Job for RefreshJob {
             refresh_failure_count: sea_orm::Set(0),
             ..Default::default()
         })
-        .exec(&txn)
+        .exec(&context.database)
         .await?;
 
-        txn.commit().await?;
+        // txn.commit().await?;
 
         // unlock account now if it was locked...
         let _ = account_lock::Entity::delete_by_id(account_id)
             .exec(&context.database)
             .await;
 
-        let txn = context.database.begin().await?;
+        // let txn = context.database.begin().await?;
 
         let points = api_client.get_customer_points().await?;
         let points_model =
@@ -224,10 +231,10 @@ impl Job for RefreshJob {
                     ])
                     .to_owned(),
             )
-            .exec(&txn)
+            .exec(&context.database)
             .await?;
 
-        txn.commit().await?;
+        // txn.commit().await?;
 
         Ok(())
     }
