@@ -52,7 +52,7 @@ impl Job for RefreshJob {
 
         let account_id = account_to_refresh.id.to_owned();
         let current_failure_count = account_to_refresh.refresh_failure_count;
-        let api_client = {
+        let api_client = async move {
             tracing::info!("refreshing account: {:?}", &account_id);
 
             let mut api_client = libmaccas::ApiClient::new(
@@ -64,9 +64,9 @@ impl Job for RefreshJob {
             api_client.set_auth_token(&account_to_refresh.access_token);
             let response = api_client
                 .customer_login_refresh(&account_to_refresh.refresh_token)
-                .await;
+                .await?;
 
-            let response = response?
+            let response = response
                 .body
                 .response
                 .ok_or_else(|| anyhow::Error::msg("access token refresh failed"))?;
@@ -82,9 +82,11 @@ impl Job for RefreshJob {
             update_model.update(&context.database).await?;
 
             Ok::<ApiClient, anyhow::Error>(api_client)
-        };
+        }
+        .await;
 
         if let Err(e) = api_client {
+            tracing::warn!("increasing error count: {}", current_failure_count + 1);
             accounts::Entity::update(accounts::ActiveModel {
                 id: sea_orm::Unchanged(account_id),
                 refresh_failure_count: sea_orm::Set(current_failure_count + 1),
