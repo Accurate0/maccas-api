@@ -200,12 +200,12 @@ impl Job for RefreshJob {
         .exec(&txn)
         .await?;
 
-        // unlock account now if it was locked...
-        account_lock::Entity::delete_by_id(account_id)
-            .exec(&txn)
-            .await?;
-
         txn.commit().await?;
+
+        // unlock account now if it was locked...
+        let _ = account_lock::Entity::delete_by_id(account_id)
+            .exec(&context.database)
+            .await;
 
         let txn = context.database.begin().await?;
 
