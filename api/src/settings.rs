@@ -17,7 +17,6 @@ pub struct Proxy {
 pub struct McDonalds {
     pub client_id: String,
     pub client_secret: String,
-    pub sensor_data: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

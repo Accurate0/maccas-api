@@ -26,6 +26,9 @@ grace_period = '10s'
 method = 'get'
 path = '/health'
 
+[env]
+DISABLE_JOBS='activate-account,create-account'
+
 [[vm]]
 cpu_kind = 'shared'
 cpus = 1

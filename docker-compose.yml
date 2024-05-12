@@ -2,12 +2,19 @@ version: "3"
 
 services:
   sensordata:
+    restart: unless-stopped
     build:
       context: sensordata
     devices:
       - /dev/kvm
     ports:
       - "8080:8080"
+    healthcheck:
+      test: curl --fail-with-body http://localhost:8080 || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 90s
+      timeout: 3s
 
   web:
     build:
@@ -111,13 +118,17 @@ services:
     links:
       - "sensordata:sensordata"
       - "db:database"
+    restart: unless-stopped
     depends_on:
-      - db
-      - sensordata
+      # db:
+      #   condition: service_healthy
+      sensordata:
+        condition: service_healthy
     environment:
-      - DATABASE__URL=postgres://postgres:test@database/maccas
+      # - DATABASE__URL=postgres://postgres:test@database/maccas
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - AUTH_SECRET=111
+      - DISABLE_JOBS=refresh,categorise-offers
     env_file:
       - .env.local
     healthcheck:
