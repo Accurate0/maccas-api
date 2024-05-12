@@ -59,7 +59,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let http_client = base::http::get_proxied_maccas_http_client(proxy)?;
 
     let disable_jobs = &settings.disable_jobs;
-    tracing::info!("disabling the following: {:?}", disable_jobs);
+    tracing::info!("disabling the following jobs: {:?}", disable_jobs);
 
     if !disable_jobs.contains(&"refresh".to_owned()) {
         scheduler
