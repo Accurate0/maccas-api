@@ -102,6 +102,7 @@ impl JobScheduler {
         self
     }
 
+    #[allow(dead_code)]
     pub async fn add_manual<T>(&self, job: T) -> &Self
     where
         T: Job + 'static,

@@ -30,6 +30,7 @@ pub struct Email {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub database: Database,
+    pub disable_jobs: Vec<String>,
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
     pub auth_secret: String,
@@ -41,7 +42,13 @@ pub struct Settings {
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
-            .add_source(Environment::default().separator("__"))
+            .add_source(
+                Environment::default()
+                    .separator("__")
+                    .list_separator(",")
+                    .with_list_parse_key("disable_jobs")
+                    .try_parsing(true),
+            )
             .build()?;
 
         s.try_deserialize()

@@ -40,7 +40,6 @@ mod types;
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     base::tracing::init("batch");
-
     let settings = Settings::new()?;
 
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
@@ -59,45 +58,62 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let http_client = base::http::get_proxied_maccas_http_client(proxy)?;
 
-    scheduler
-        .add_scheduled(
-            RefreshJob {
-                http_client: http_client.clone(),
-                mcdonalds_config: settings.mcdonalds.clone(),
-            },
-            "0 */7 * * * *".parse()?,
-        )
-        .await;
+    let disable_jobs = &settings.disable_jobs;
+    tracing::info!("disabling the following: {:?}", disable_jobs);
 
-    scheduler
-        .add_manual(CreateAccountJob {
-            sensordata_api_base: settings.sensordata_api_base.clone(),
-            http_client: http_client.clone(),
-            mcdonalds_config: settings.mcdonalds.clone(),
-            email_config: settings.email.clone(),
-        })
-        .await;
+    if !disable_jobs.contains(&"refresh".to_owned()) {
+        scheduler
+            .add_scheduled(
+                RefreshJob {
+                    http_client: http_client.clone(),
+                    mcdonalds_config: settings.mcdonalds.clone(),
+                },
+                "0 */7 * * * *".parse()?,
+            )
+            .await;
+    }
 
-    scheduler
-        .add_manual(ActivateAccountJob {
-            http_client: http_client.clone(),
-            sensordata_api_base: settings.sensordata_api_base.clone(),
-            mcdonalds_config: settings.mcdonalds.clone(),
-            email_config: settings.email.clone(),
-        })
-        .await;
+    if !disable_jobs.contains(&"create-account".to_owned()) {
+        scheduler
+            .add_scheduled(
+                CreateAccountJob {
+                    sensordata_api_base: settings.sensordata_api_base.clone(),
+                    http_client: http_client.clone(),
+                    mcdonalds_config: settings.mcdonalds.clone(),
+                    email_config: settings.email.clone(),
+                },
+                "0 */2 * * * *".parse()?,
+            )
+            .await;
+    }
 
-    scheduler
-        .add_scheduled(
-            CategoriseOffersJob {
-                api_client: openai::ApiClient::new(
-                    settings.openai_api_key.clone(),
-                    base::http::get_simple_http_client()?,
-                ),
-            },
-            "0 0 0 * * *".parse()?,
-        )
-        .await;
+    if !disable_jobs.contains(&"activate-account".to_owned()) {
+        scheduler
+            .add_scheduled(
+                ActivateAccountJob {
+                    http_client: http_client.clone(),
+                    sensordata_api_base: settings.sensordata_api_base.clone(),
+                    mcdonalds_config: settings.mcdonalds.clone(),
+                    email_config: settings.email.clone(),
+                },
+                "0 */10 * * * *".parse()?,
+            )
+            .await;
+    }
+
+    if !disable_jobs.contains(&"categorise-jobs".to_owned()) {
+        scheduler
+            .add_scheduled(
+                CategoriseOffersJob {
+                    api_client: openai::ApiClient::new(
+                        settings.openai_api_key.clone(),
+                        base::http::get_simple_http_client()?,
+                    ),
+                },
+                "0 0 0 * * *".parse()?,
+            )
+            .await;
+    }
 
     tracing::info!("scheduler initializing");
     scheduler.init().await?;
@@ -161,6 +177,9 @@ async fn main() -> Result<(), anyhow::Error> {
         .into_future();
 
     tokio::select! {
+        _ = handle => {
+            scheduler.shutdown().await;
+        },
         _ = ctrl_c => {
             scheduler.shutdown().await;
         },
@@ -171,13 +190,6 @@ async fn main() -> Result<(), anyhow::Error> {
             scheduler.shutdown().await;
         }
     }
-
-    handle.await.map(|r| {
-        if let Err(e) = r {
-            tracing::error!("error with job scheduler: {}", e)
-        }
-    })?;
-    // FIXME: after cancel, await all remaining tasks with timeout to ensure cleanup is completed
 
     Ok(())
 }

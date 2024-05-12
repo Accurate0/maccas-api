@@ -7,9 +7,9 @@ command -v emulator > /dev/null && emulator=emulator || emulator=/android-sdk/em
 
 rm -f "$HOME/.android/avd/test.avd/*.lock"
 
-$emulator -avd test -no-window -lowram &
+$emulator -avd test -no-window -read-only -no-metrics &
 
-adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+timeout 60 adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
 adb root
 
@@ -24,3 +24,7 @@ adb shell svc power stayon true
 sleep 10
 
 bun run server.js
+
+pkill -P $$
+
+wait
