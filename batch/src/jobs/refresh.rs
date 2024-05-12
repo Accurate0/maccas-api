@@ -7,7 +7,7 @@ use libmaccas::ApiClient;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
-    QueryFilter, QueryOrder, Set, TryIntoModel,
+    QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
 };
 use serde::Serialize;
 use tokio_util::sync::CancellationToken;
@@ -156,7 +156,7 @@ impl Job for RefreshJob {
             }
         }
 
-        // let txn = context.database.begin().await?;
+        let txn = context.database.begin().await?;
 
         offer_details::Entity::insert_many(active_models)
             .on_conflict(
@@ -209,14 +209,14 @@ impl Job for RefreshJob {
         .exec(&context.database)
         .await?;
 
-        // txn.commit().await?;
+        txn.commit().await?;
 
         // unlock account now if it was locked...
         let _ = account_lock::Entity::delete_by_id(account_id)
             .exec(&context.database)
             .await;
 
-        // let txn = context.database.begin().await?;
+        let txn = context.database.begin().await?;
 
         let points = api_client.get_customer_points().await?;
         let points_model =
@@ -236,7 +236,7 @@ impl Job for RefreshJob {
             .exec(&context.database)
             .await?;
 
-        // txn.commit().await?;
+        txn.commit().await?;
 
         Ok(())
     }
