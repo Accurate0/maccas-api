@@ -58,6 +58,7 @@ impl Job for ActivateAccountJob {
             .security_auth_token(&self.mcdonalds_config.client_secret)
             .await?;
         client.set_login_token(&response.body.response.token);
+        let http_client = get_simple_http_client()?;
 
         let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
         for message_uid in all_unseen_emails.iter() {
@@ -101,7 +102,6 @@ impl Job for ActivateAccountJob {
                 tracing::info!("code: {:?}", magic_link);
                 tracing::info!("email to: {:?}", to.clone().as_str().to_string());
 
-                let http_client = get_simple_http_client()?;
                 let sensor_data_response = http_client
                     .get(format!(
                         "{}/{}",
