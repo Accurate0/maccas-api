@@ -165,7 +165,7 @@ impl Job for RefreshJob {
                     .to_owned(),
             )
             .on_empty_do_nothing()
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
 
         let models = offer_list
@@ -177,7 +177,7 @@ impl Job for RefreshJob {
 
         offers::Entity::delete_many()
             .filter(offers::Column::AccountId.eq(account_id))
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
 
         let offer_history_models = models
@@ -193,12 +193,12 @@ impl Job for RefreshJob {
 
         offer_history::Entity::insert_many(offer_history_models)
             .on_empty_do_nothing()
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
 
         offers::Entity::insert_many(models)
             .on_empty_do_nothing()
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
 
         accounts::Entity::update(accounts::ActiveModel {
@@ -206,7 +206,7 @@ impl Job for RefreshJob {
             refresh_failure_count: sea_orm::Set(0),
             ..Default::default()
         })
-        .exec(&context.database)
+        .exec(&txn)
         .await?;
 
         txn.commit().await?;
@@ -233,7 +233,7 @@ impl Job for RefreshJob {
                     ])
                     .to_owned(),
             )
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
 
         txn.commit().await?;
