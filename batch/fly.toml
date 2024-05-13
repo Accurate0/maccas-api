@@ -36,3 +36,8 @@ memory_mb = 512
 
 [deploy]
 strategy = "rolling"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10
+  processes = ["app"]

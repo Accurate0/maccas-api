@@ -39,3 +39,8 @@ path = "/health"
 port = 3000
 timeout = "10s"
 type = "http"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10
+  processes = ["app"]

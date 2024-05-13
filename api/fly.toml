@@ -32,3 +32,8 @@ type = "http"
 [env]
 EVENT_API_BASE = "http://maccas-event.internal:8001"
 BATCH_API_BASE = "http://maccas-batch.internal:8002"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10
+  processes = ["app"]
