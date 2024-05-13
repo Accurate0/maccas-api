@@ -30,3 +30,8 @@ BATCH_API_BASE = "http://maccas-batch.internal:8002"
 
 [deploy]
 release_command = "pnpx prisma migrate deploy"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10
+  processes = ["app"]
