@@ -65,7 +65,7 @@ impl Job for CategoriseOffersJob {
         let response = self
             .api_client
             .chat_completions(&OpenAIChatCompletionRequest {
-                model: "gpt-4-turbo-preview".to_string(),
+                model: "gpt-4o".to_string(),
                 messages: prompt,
                 max_tokens: None,
                 response_format: Some(ResponseFormat {
