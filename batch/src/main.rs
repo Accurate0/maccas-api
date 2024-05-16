@@ -101,7 +101,7 @@ async fn main() -> Result<(), anyhow::Error> {
             .await;
     }
 
-    if !disable_jobs.contains(&"categorise-jobs".to_owned()) {
+    if !disable_jobs.contains(&"categorise-offers".to_owned()) {
         scheduler
             .add_scheduled(
                 CategoriseOffersJob {
