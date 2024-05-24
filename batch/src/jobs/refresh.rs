@@ -1,8 +1,5 @@
-use std::time::Duration;
-
 use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
-use axum::http::request;
 use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
@@ -15,6 +12,7 @@ use sea_orm::{
     QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
 };
 use serde::Serialize;
+use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
@@ -166,7 +164,6 @@ impl Job for RefreshJob {
         let http_client = get_simple_http_client()?;
         let token = generate_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
         let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
-        tracing::info!("request url: {}", request_url);
 
         for offer in &offer_list.offers {
             let save_image_event = event::CreateEvent {
@@ -182,8 +179,6 @@ impl Job for RefreshJob {
                 .post(&request_url)
                 .json(&save_image_event)
                 .bearer_auth(&token);
-
-            tracing::info!("{:#?}", request);
 
             let response = request.send().await;
 

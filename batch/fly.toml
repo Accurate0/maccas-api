@@ -28,6 +28,7 @@ path = '/health'
 
 [env]
 DISABLE_JOBS='activate-account,create-account'
+EVENT_API_BASE = "http://maccas-event.internal:8001"
 
 [[vm]]
 cpu_kind = 'shared'
