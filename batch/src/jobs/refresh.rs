@@ -164,10 +164,12 @@ impl Job for RefreshJob {
 
         let http_client = get_simple_http_client()?;
         let token = generate_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
-        for offer_details in &active_models {
+        for offer in &offer_list.offers {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
-                    basename: offer_details.image_base_name.as_ref().to_owned(),
+                    // FIXME: once its populated, it should switch to active models
+                    // which is basically new offer details to be added only :)
+                    basename: offer.image_base_name.to_owned(),
                 },
                 delay: Duration::from_secs(0),
             };
