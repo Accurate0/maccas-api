@@ -25,10 +25,13 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
 opentelemetry = { workspace = true }
 state = "0.6.0"
 actix-web-lab = "0.20.2"
 actix-web-opentelemetry = "0.17.0"
+rust-s3 = "0.33.0"
+image = "0.25.1"
 
 [lib]
 name = "event"

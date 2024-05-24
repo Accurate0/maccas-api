@@ -1,9 +1,13 @@
+use std::time::Duration;
+
 use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
-use base::constants::mc_donalds;
+use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
+use event::{CreateEventResponse, Event};
 use libmaccas::ApiClient;
+use reqwest::{header::AUTHORIZATION, StatusCode};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
@@ -14,7 +18,9 @@ use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct RefreshJob {
+    pub event_api_base: String,
     pub http_client: ClientWithMiddleware,
+    pub auth_secret: String,
     pub mcdonalds_config: McDonalds,
 }
 
@@ -153,6 +159,38 @@ impl Job for RefreshJob {
                     }
                 }
                 Err(e) => tracing::error!("error fetching offer details: {}", e),
+            }
+        }
+
+        let http_client = get_simple_http_client()?;
+        let token = generate_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
+        for offer_details in &active_models {
+            let save_image_event = event::CreateEvent {
+                event: Event::SaveImage {
+                    basename: offer_details.image_base_name.as_ref().to_owned(),
+                },
+                delay: Duration::from_secs(0),
+            };
+
+            let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
+            let request = http_client
+                .post(request_url)
+                .json(&save_image_event)
+                .header(AUTHORIZATION, format!("Bearer {token}"));
+
+            let response = request.send().await;
+
+            match response {
+                Ok(response) => match response.status() {
+                    StatusCode::CREATED => {
+                        let id = response.json::<CreateEventResponse>().await?.id;
+                        tracing::info!("created image event with id {}", id);
+                    }
+                    status => {
+                        tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                    }
+                },
+                Err(e) => tracing::warn!("event request failed with {}", e),
             }
         }
 

@@ -19,11 +19,19 @@ pub struct McDonalds {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct ImagesBucket {
+    pub access_key_id: String,
+    pub access_secret_key: String,
+    pub endpoint: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub database: Database,
     pub proxy: Proxy,
     pub auth_secret: String,
     pub mcdonalds: McDonalds,
+    pub images_bucket: ImagesBucket,
 }
 
 impl Settings {

@@ -37,6 +37,7 @@ pub struct Settings {
     pub email: Email,
     pub openai_api_key: String,
     pub sensordata_api_base: String,
+    pub event_api_base: String,
 }
 
 impl Settings {
