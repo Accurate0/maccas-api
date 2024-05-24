@@ -65,6 +65,8 @@ async fn main() -> Result<(), anyhow::Error> {
         scheduler
             .add_scheduled(
                 RefreshJob {
+                    auth_secret: settings.auth_secret.clone(),
+                    event_api_base: settings.event_api_base.clone(),
                     http_client: http_client.clone(),
                     mcdonalds_config: settings.mcdonalds.clone(),
                 },

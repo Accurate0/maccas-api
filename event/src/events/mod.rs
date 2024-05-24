@@ -10,12 +10,16 @@ pub enum Event {
         transaction_id: Uuid,
         store_id: String,
     },
+    SaveImage {
+        basename: String,
+    },
 }
 
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Event::Cleanup { .. } => write!(f, "Cleanup"),
+            Event::SaveImage { .. } => write!(f, "SaveImage"),
         }
     }
 }
