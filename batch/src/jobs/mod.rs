@@ -12,6 +12,7 @@ pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
 pub mod refresh;
+pub mod save_images;
 
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {
