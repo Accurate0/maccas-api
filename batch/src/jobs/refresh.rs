@@ -5,7 +5,7 @@ use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
 use event::{CreateEventResponse, Event};
 use libmaccas::ApiClient;
-use reqwest::{header::AUTHORIZATION, StatusCode};
+use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
