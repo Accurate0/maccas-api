@@ -1,6 +1,6 @@
 use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
-use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_jwt};
+use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_internal_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
 use event::{CreateEventResponse, Event};
@@ -162,15 +162,14 @@ impl Job for RefreshJob {
         }
 
         let http_client = get_simple_http_client()?;
-        let token = generate_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
+        let token =
+            generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
         let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
 
-        for offer in &offer_list.offers {
+        for offer in &active_models {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
-                    // FIXME: once its populated, it should switch to active models
-                    // which is basically new offer details to be added only :)
-                    basename: offer.image_base_name.to_owned(),
+                    basename: offer.image_base_name.as_ref().clone(),
                 },
                 delay: Duration::from_secs(0),
             };

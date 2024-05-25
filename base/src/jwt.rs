@@ -51,7 +51,7 @@ pub fn verify_jwt(secret: &[u8], unverified_token: &str) -> Result<JwtClaims, Jw
     Ok(token.claims().clone())
 }
 
-pub fn generate_jwt(
+pub fn generate_internal_jwt(
     secret: &[u8],
     creator: &str,
     created_for: &str,
@@ -60,7 +60,7 @@ pub fn generate_jwt(
 
     let now = chrono::offset::Utc::now().timestamp();
     let claims = JwtClaims {
-        user_id: "svc-batch".to_owned(),
+        user_id: "svc-internal".to_owned(),
         session_id: "<none>".to_owned(),
         iat: now,
         exp: now + 180,

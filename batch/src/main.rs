@@ -1,7 +1,7 @@
 use crate::{
     jobs::{
         activate_account::ActivateAccountJob, categorise_offers::CategoriseOffersJob,
-        create_account::CreateAccountJob, refresh::RefreshJob,
+        create_account::CreateAccountJob, refresh::RefreshJob, save_images::SaveImagesJob,
     },
     jwt::validate,
     routes::{
@@ -114,6 +114,16 @@ async fn main() -> Result<(), anyhow::Error> {
                 },
                 "0 0 0 * * *".parse()?,
             )
+            .await;
+    }
+
+    if !disable_jobs.contains(&"save-images".to_owned()) {
+        scheduler
+            .add_manual(SaveImagesJob {
+                http_client: base::http::get_simple_http_client()?,
+                auth_secret: settings.auth_secret.clone(),
+                event_api_base: settings.event_api_base.clone(),
+            })
             .await;
     }
 
