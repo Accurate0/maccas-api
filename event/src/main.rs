@@ -40,7 +40,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let db = Database::connect(opt).await?;
 
-    let event_manager = EventManager::new(db);
+    let event_manager = EventManager::new(db, 5);
     event_manager.set_state(settings.clone());
 
     event_manager.reload_incomplete_events().await?;

@@ -11,6 +11,7 @@ use serde::Serialize;
 use state::TypeMap;
 use std::{sync::Arc, time::Duration};
 use thiserror::Error;
+use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 use tracing::instrument;
@@ -43,12 +44,14 @@ struct EventManagerInner {
 }
 
 pub struct EventManager {
+    semaphore: Arc<Semaphore>,
     inner: Arc<EventManagerInner>,
 }
 
 impl EventManager {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: DatabaseConnection, max_concurrency: usize) -> Self {
         Self {
+            semaphore: Arc::new(Semaphore::new(max_concurrency)),
             inner: EventManagerInner {
                 db,
                 event_queue: Default::default(),
@@ -155,6 +158,10 @@ impl EventManager {
         Ok(())
     }
 
+    pub async fn acquire_permit(&self) -> OwnedSemaphorePermit {
+        self.semaphore.clone().acquire_owned().await.unwrap()
+    }
+
     pub fn process_events(&self) -> (JoinHandle<()>, CancellationToken) {
         let em = self.clone();
         let cancellation_token = CancellationToken::new();
@@ -238,6 +245,7 @@ impl EventManager {
 impl Clone for EventManager {
     fn clone(&self) -> Self {
         Self {
+            semaphore: self.semaphore.clone(),
             inner: self.inner.clone(),
         }
     }
