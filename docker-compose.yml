@@ -66,8 +66,8 @@ services:
       - "8000:8000"
     links:
       - "db:database"
-      - "event:event"
-      - "batch:batch"
+      # - "event:event"
+      # - "batch:batch"
     depends_on:
       - db
       # - event

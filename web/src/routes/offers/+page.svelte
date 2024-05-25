@@ -75,7 +75,7 @@
 	{#await Promise.all([data.offers, data.categories])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
-			<Skeleton class="min-w-12 h-12 rounded-sm" />
+			<Skeleton class="h-12 min-w-12 rounded-sm" />
 		</div>
 		{#each Array(30) as _}
 			<Card.Root>
@@ -139,7 +139,7 @@
 			} else {
 				return b.price - a.price;
 			}
-		}) as { shortName, count, imageBasename, offerPropositionId, validFrom, validTo, categories }}
+		}) as { shortName, count, imageUrl, offerPropositionId, validFrom, validTo, categories }}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
@@ -176,13 +176,7 @@
 							</div>
 						</Card.Header>
 						<Card.Header>
-							<img
-								class="rounded-xl"
-								src={`api/images/${imageBasename}`}
-								alt={shortName}
-								width={90}
-								height={90}
-							/>
+							<img class="rounded-xl" src={imageUrl} alt={shortName} width={90} height={90} />
 						</Card.Header>
 					</div>
 					{#if $state[offerPropositionId] && $state[offerPropositionId].length > 0}
