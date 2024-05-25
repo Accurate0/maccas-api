@@ -34,6 +34,7 @@ mod m20240204_084509_add_disable_flag;
 mod m20240307_122712_add_event_status;
 mod m20240430_023736_add_trace_id;
 mod m20240504_053110_add_refresh_failure_count;
+mod m20240525_113934_add_index_for_iscompleted;
 
 pub struct Migrator;
 
@@ -75,6 +76,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240307_122712_add_event_status::Migration),
             Box::new(m20240430_023736_add_trace_id::Migration),
             Box::new(m20240504_053110_add_refresh_failure_count::Migration),
+            Box::new(m20240525_113934_add_index_for_iscompleted::Migration),
         ]
     }
 }
