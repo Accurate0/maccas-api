@@ -1,7 +1,7 @@
 query GetOffers {
 	offers {
 		shortName
-		imageBasename
+		imageUrl
 		count
 		offerPropositionId
 		validFrom

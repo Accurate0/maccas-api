@@ -18,6 +18,8 @@ pub struct OfferByIdResponse {
     pub code: String,
 }
 
+const IMAGE_BASE_URL: &str = "https://images.maccas.one";
+
 pub struct Offer(pub offers::Model, pub Option<i64>);
 
 impl Offer {
@@ -99,12 +101,21 @@ impl Offer {
         &self.0.creation_date
     }
 
+    #[graphql(deprecation = "use image_url instead")]
     pub async fn image_basename(
         &self,
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<String> {
         self.load_from_related_offer(context, |o| o.image_base_name)
             .await
+    }
+
+    pub async fn image_url(
+        &self,
+        context: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<String> {
+        let basename = self.image_basename(context).await?;
+        Ok(format!("{IMAGE_BASE_URL}/{basename}"))
     }
 
     pub async fn price(

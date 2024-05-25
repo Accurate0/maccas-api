@@ -54,7 +54,8 @@ type Offer {
   creationDate: NaiveDateTime!
   description: String!
   id: UUID!
-  imageBasename: String!
+  imageBasename: String! @deprecated(reason: "use image_url instead")
+  imageUrl: String!
   name: String!
   offerPropositionId: Int!
   price: Float
