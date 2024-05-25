@@ -15,6 +15,7 @@ use thiserror::Error;
 pub enum Role {
     Admin,
     Points,
+    InternalService,
     #[default]
     User,
 }
@@ -67,7 +68,7 @@ pub fn generate_internal_jwt(
         aud: created_for.to_owned(),
         iss: creator.to_owned(),
         sub: created_for.to_owned(),
-        role: vec![Role::User],
+        role: vec![Role::InternalService],
     };
 
     Ok(claims.sign_with_key(&key)?)
