@@ -44,6 +44,7 @@ pub enum HandlerError {
 pub async fn handle(event_manager: EventManager) {
     if let Some(event) = event_manager.inner.event_queue.pop().await {
         // wait for concurrency limit before processing next item
+        // FIXME: is this the best spot?
         let permit = event_manager.acquire_permit().await;
         let event_manager = event_manager.clone();
         // 1st attempt + 5 retries
