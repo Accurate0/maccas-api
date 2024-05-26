@@ -32,12 +32,6 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging(true)
         .sqlx_logging_level(LevelFilter::Trace);
 
-    // load the task queue immediately with remains from the database
-    // aka anything that didn't get processed in the last time
-    // figure out from added time and delay when to run it now
-    // most likely immediately
-    // might need throttling etc, semaphore?
-
     let db = Database::connect(opt).await?;
 
     let event_manager = EventManager::new(db, 5);

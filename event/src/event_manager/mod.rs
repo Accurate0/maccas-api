@@ -130,7 +130,6 @@ impl EventManager {
                 let delay = event.should_be_completed_at - now;
                 tracing::info!("delay for this event is: {}", delay);
 
-                // FIXME: throttle events if too many to avoid overload / ratelimit
                 self.inner
                     .event_queue
                     .push(
@@ -147,11 +146,8 @@ impl EventManager {
                 Ok::<(), EventManagerError>(())
             };
 
-            match reload_event.await {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::error!("error while reloading event: {}", e);
-                }
+            if let Err(e) = reload_event.await {
+                tracing::error!("error while reloading event: {}", e);
             }
         }
 
