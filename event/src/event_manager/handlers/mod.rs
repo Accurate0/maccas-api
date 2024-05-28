@@ -38,6 +38,8 @@ pub enum HandlerError {
     ImageError(#[from] image::ImageError),
     #[error("An io error occurred: `{0}`")]
     IOError(#[from] std::io::Error),
+    #[error("A join error occurred: `{0}`")]
+    TaskJoinError(#[from] tokio::task::JoinError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)

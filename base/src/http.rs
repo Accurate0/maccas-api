@@ -5,7 +5,8 @@ use reqwest_retry::{
     RetryTransientMiddleware, Retryable, RetryableStrategy,
 };
 use reqwest_tracing::{
-    default_on_request_end, DisableOtelPropagation, ReqwestOtelSpanBackend, TracingMiddleware,
+    default_on_request_end, reqwest_otel_span, DisableOtelPropagation, ReqwestOtelSpanBackend,
+    TracingMiddleware,
 };
 use std::time::Instant;
 use thiserror::Error;
@@ -19,13 +20,10 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
         res: &Result<reqwest::Response, reqwest_middleware::Error>,
     ) -> Option<Retryable> {
         match res {
-            Ok(success) => {
-                if success.status() == StatusCode::FORBIDDEN {
-                    Some(Retryable::Transient)
-                } else {
-                    default_on_request_success(success)
-                }
-            }
+            Ok(success) if success.status() == StatusCode::FORBIDDEN => Some(Retryable::Transient),
+            // Not sure the conditions on locked
+            Ok(success) if success.status() == StatusCode::LOCKED => Some(Retryable::Transient),
+            Ok(success) => default_on_request_success(success),
             Err(error) => default_on_request_failure(error),
         }
     }
@@ -34,15 +32,16 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
 pub struct TimeTrace;
 impl ReqwestOtelSpanBackend for TimeTrace {
     fn on_request_start(req: &Request, extension: &mut http::Extensions) -> Span {
+        let url = req.url().as_str();
         extension.insert(Instant::now());
-        let url = req.url().to_string();
 
-        let current = Span::current();
-
-        current.record("url", &url);
-        current.record("time_elapsed", tracing::field::Empty);
-
-        current
+        reqwest_otel_span!(
+            name = format!("{} {}", req.method(), url),
+            req,
+            url = url,
+            time_elapsed = tracing::field::Empty,
+            time_elapsed_formatted = tracing::field::Empty
+        )
     }
 
     fn on_request_end(
@@ -52,7 +51,8 @@ impl ReqwestOtelSpanBackend for TimeTrace {
     ) {
         let time_elapsed = extension.get::<Instant>().unwrap().elapsed().as_millis() as i64;
         default_on_request_end(span, outcome);
-        span.record("time_elapsed", format!("{time_elapsed}ms"));
+        span.record("time_elapsed", time_elapsed);
+        span.record("time_elapsed_formatted", format!("{time_elapsed}ms"));
     }
 }
 
