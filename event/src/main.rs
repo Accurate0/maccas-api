@@ -16,6 +16,7 @@ use tracing::log::LevelFilter;
 mod error;
 mod event_manager;
 mod jwt;
+mod result_extension;
 mod routes;
 mod settings;
 mod state;
