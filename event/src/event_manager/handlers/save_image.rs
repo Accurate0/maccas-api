@@ -1,5 +1,6 @@
 use super::HandlerError;
 use crate::event_manager::EventManager;
+use crate::result_extension::ResultExtension;
 use image::io::Reader as ImageReader;
 use reqwest_middleware::ClientWithMiddleware;
 use tokio::runtime::Handle;
@@ -48,7 +49,9 @@ pub async fn save_image(basename: String, em: EventManager) -> Result<(), Handle
             Ok::<Vec<u8>, HandlerError>(bytes)
         })
         .instrument(tracing::span!(Level::INFO, "encode image"))
-        .await??;
+        .await
+        .map_err(HandlerError::from)
+        .flatten_std()?;
 
     bucket
         .put_object_with_content_type(&basename, bytes.as_ref(), "image/jpeg")
