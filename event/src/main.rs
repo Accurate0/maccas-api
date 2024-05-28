@@ -8,6 +8,7 @@ use crate::{
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
 use actix_web_opentelemetry::RequestTracing;
+use base::http::get_simple_http_client;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
@@ -19,11 +20,31 @@ mod routes;
 mod settings;
 mod state;
 
+const BUCKET_NAME: &str = "maccas-api-images";
+
 #[actix_web::main]
 async fn main() -> Result<(), anyhow::Error> {
     base::tracing::init("event");
 
     let settings = Settings::new()?;
+
+    let credentials = s3::creds::Credentials::new(
+        Some(&settings.images_bucket.access_key_id),
+        Some(&settings.images_bucket.access_secret_key),
+        None,
+        None,
+        None,
+    )?;
+
+    let bucket = s3::Bucket::new(
+        BUCKET_NAME,
+        s3::Region::Custom {
+            region: "apac".to_owned(),
+            endpoint: settings.images_bucket.endpoint.clone(),
+        },
+        credentials,
+    )?;
+
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
     opt.max_connections(100)
         .min_connections(5)
@@ -36,6 +57,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let event_manager = EventManager::new(db, 5);
     event_manager.set_state(settings.clone());
+    event_manager.set_state(bucket);
+    event_manager.set_state(get_simple_http_client()?);
 
     event_manager.reload_incomplete_events().await?;
     let (handle, cancellation_token) = event_manager.process_events();
