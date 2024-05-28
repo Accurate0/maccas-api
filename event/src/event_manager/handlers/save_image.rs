@@ -51,7 +51,7 @@ pub async fn save_image(basename: String, em: EventManager) -> Result<(), Handle
         .instrument(tracing::span!(Level::INFO, "encode image"))
         .await
         .map_err(HandlerError::from)
-        .flatten_std()?;
+        .flatten_unstable()?;
 
     bucket
         .put_object_with_content_type(&basename, bytes.as_ref(), "image/jpeg")
