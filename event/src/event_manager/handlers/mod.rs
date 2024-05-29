@@ -44,10 +44,11 @@ pub enum HandlerError {
 
 // TODO: make them event manager functions or some kind of trait setup :)
 pub async fn handle(event_manager: EventManager) {
+    // wait for concurrency limit before processing next item
+    // FIXME: is this the best spot?
+    let permit = event_manager.acquire_permit().await;
+
     if let Some(event) = event_manager.inner.event_queue.pop().await {
-        // wait for concurrency limit before processing next item
-        // FIXME: is this the best spot?
-        let permit = event_manager.acquire_permit().await;
         let event_manager = event_manager.clone();
         // 1st attempt + 5 retries
         let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
@@ -66,6 +67,7 @@ pub async fn handle(event_manager: EventManager) {
                         store_id,
                         account_id,
                     } => {
+                        // FIXME: too many args
                         cleanup(
                             offer_id,
                             transaction_id,
