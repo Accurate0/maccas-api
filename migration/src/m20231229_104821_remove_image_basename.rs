@@ -30,7 +30,7 @@ impl MigrationTrait for Migration {
                     .add_column(
                         ColumnDef::new(OfferDetails::OriginalImageBaseName)
                             .string()
-                            .not_null(),
+                            .null(),
                     )
                     .to_owned(),
             )
