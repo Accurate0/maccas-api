@@ -19,7 +19,7 @@ use axum::{
     Router,
 };
 use base::shutdown::axum_shutdown_signal;
-use jobs::job_scheduler::JobScheduler;
+use jobs::{account_unlock::AccountUnlockJob, job_scheduler::JobScheduler};
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
 use std::{future::IntoFuture, time::Duration};
@@ -63,68 +63,60 @@ async fn main() -> Result<(), anyhow::Error> {
 
     if !disable_jobs.contains(&"refresh".to_owned()) {
         scheduler
-            .add_scheduled(
-                RefreshJob {
-                    auth_secret: settings.auth_secret.clone(),
-                    event_api_base: settings.event_api_base.clone(),
-                    http_client: http_client.clone(),
-                    mcdonalds_config: settings.mcdonalds.clone(),
-                },
-                "0 */5 * * * *".parse()?,
-            )
+            .add(RefreshJob {
+                auth_secret: settings.auth_secret.clone(),
+                event_api_base: settings.event_api_base.clone(),
+                http_client: http_client.clone(),
+                mcdonalds_config: settings.mcdonalds.clone(),
+            })
             .await;
     }
 
     if !disable_jobs.contains(&"create-account".to_owned()) {
         scheduler
-            .add_scheduled(
-                CreateAccountJob {
-                    sensordata_api_base: settings.sensordata_api_base.clone(),
-                    http_client: http_client.clone(),
-                    mcdonalds_config: settings.mcdonalds.clone(),
-                    email_config: settings.email.clone(),
-                },
-                "0 */2 * * * *".parse()?,
-            )
+            .add(CreateAccountJob {
+                sensordata_api_base: settings.sensordata_api_base.clone(),
+                http_client: http_client.clone(),
+                mcdonalds_config: settings.mcdonalds.clone(),
+                email_config: settings.email.clone(),
+            })
             .await;
     }
 
     if !disable_jobs.contains(&"activate-account".to_owned()) {
         scheduler
-            .add_scheduled(
-                ActivateAccountJob {
-                    http_client: http_client.clone(),
-                    sensordata_api_base: settings.sensordata_api_base.clone(),
-                    mcdonalds_config: settings.mcdonalds.clone(),
-                    email_config: settings.email.clone(),
-                },
-                "0 */10 * * * *".parse()?,
-            )
+            .add(ActivateAccountJob {
+                http_client: http_client.clone(),
+                sensordata_api_base: settings.sensordata_api_base.clone(),
+                mcdonalds_config: settings.mcdonalds.clone(),
+                email_config: settings.email.clone(),
+            })
             .await;
     }
 
     if !disable_jobs.contains(&"categorise-offers".to_owned()) {
         scheduler
-            .add_scheduled(
-                CategoriseOffersJob {
-                    api_client: openai::ApiClient::new(
-                        settings.openai_api_key.clone(),
-                        base::http::get_simple_http_client()?,
-                    ),
-                },
-                "0 0 0 * * *".parse()?,
-            )
+            .add(CategoriseOffersJob {
+                api_client: openai::ApiClient::new(
+                    settings.openai_api_key.clone(),
+                    base::http::get_simple_http_client()?,
+                ),
+            })
             .await;
     }
 
     if !disable_jobs.contains(&"save-images".to_owned()) {
         scheduler
-            .add_manual(SaveImagesJob {
+            .add(SaveImagesJob {
                 http_client: base::http::get_simple_http_client()?,
                 auth_secret: settings.auth_secret.clone(),
                 event_api_base: settings.event_api_base.clone(),
             })
             .await;
+    }
+
+    if !disable_jobs.contains(&"account-unlock".to_owned()) {
+        scheduler.add(AccountUnlockJob).await;
     }
 
     tracing::info!("scheduler initializing");

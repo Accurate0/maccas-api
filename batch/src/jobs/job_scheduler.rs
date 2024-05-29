@@ -89,26 +89,13 @@ impl JobScheduler {
         &self.0.db
     }
 
-    pub async fn add_scheduled<T>(&self, job: T, schedule: cron::Schedule) -> &Self
+    pub async fn add<T>(&self, job: T) -> &Self
     where
         T: Job + 'static,
     {
         let mut jobs = self.0.jobs.write().await;
-        jobs.insert(
-            job.name(),
-            JobDetails::new(Arc::new(job), JobType::Schedule(schedule)),
-        );
-
-        self
-    }
-
-    #[allow(dead_code)]
-    pub async fn add_manual<T>(&self, job: T) -> &Self
-    where
-        T: Job + 'static,
-    {
-        let mut jobs = self.0.jobs.write().await;
-        jobs.insert(job.name(), JobDetails::new(Arc::new(job), JobType::Manual));
+        let execution_type = job.job_type();
+        jobs.insert(job.name(), JobDetails::new(Arc::new(job), execution_type));
 
         self
     }

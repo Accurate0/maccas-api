@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext};
+use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::{Email, McDonalds};
 use anyhow::Context;
 use base::constants::mc_donalds;
@@ -29,12 +29,15 @@ impl Job for ActivateAccountJob {
         "activate_account".to_owned()
     }
 
+    fn job_type(&self) -> JobType {
+        JobType::Schedule("0 */10 * * * *".parse().unwrap())
+    }
+
     async fn execute(
         &self,
         context: &JobContext,
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
-        // TODO: actually finish this, not needed yet apparently.. things kinda just work..
         let imap_client = imap::ClientBuilder::new(&self.email_config.server_address, 993)
             .tls_kind(imap::TlsKind::Native)
             .connect()?;

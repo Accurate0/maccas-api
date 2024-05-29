@@ -1,3 +1,4 @@
+use super::{error::JobError, Job, JobContext, JobType};
 use ::entity::offer_details;
 use base::jwt::generate_internal_jwt;
 use event::{CreateEventResponse, Event};
@@ -6,8 +7,6 @@ use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::EntityTrait;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
-
-use super::{error::JobError, Job, JobContext};
 
 #[derive(Debug)]
 pub struct SaveImagesJob {
@@ -20,6 +19,10 @@ pub struct SaveImagesJob {
 impl Job for SaveImagesJob {
     fn name(&self) -> String {
         "save_images".to_owned()
+    }
+
+    fn job_type(&self) -> JobType {
+        JobType::Manual
     }
 
     async fn execute(

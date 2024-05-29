@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext};
+use super::{error::JobError, Job, JobContext, JobType};
 use anyhow::Context;
 use itertools::Itertools;
 use openai::types::{
@@ -17,6 +17,10 @@ pub struct CategoriseOffersJob {
 impl Job for CategoriseOffersJob {
     fn name(&self) -> String {
         "categorise_offers".to_owned()
+    }
+
+    fn job_type(&self) -> JobType {
+        JobType::Schedule("0 0 0 * * *".parse().unwrap())
     }
 
     async fn execute(
