@@ -64,7 +64,17 @@ pub async fn handle(event_manager: EventManager) {
                         offer_id,
                         transaction_id,
                         store_id,
-                    } => cleanup(offer_id, transaction_id, store_id, event_manager).await,
+                        account_id,
+                    } => {
+                        cleanup(
+                            offer_id,
+                            transaction_id,
+                            store_id,
+                            account_id,
+                            event_manager,
+                        )
+                        .await
+                    }
                     Event::SaveImage { basename } => save_image(basename, event_manager).await,
                 }
             })
