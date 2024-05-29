@@ -9,6 +9,7 @@ pub enum Event {
         offer_id: Uuid,
         transaction_id: Uuid,
         store_id: String,
+        account_id: Uuid,
     },
     SaveImage {
         basename: String,

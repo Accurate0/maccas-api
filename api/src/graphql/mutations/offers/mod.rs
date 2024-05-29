@@ -107,6 +107,8 @@ impl OffersMutation {
                 offer_id,
                 transaction_id,
                 store_id: input.store_id,
+                // account.id
+                account_id: offer.account_id,
             },
             delay: Duration::from_secs(900),
         };
