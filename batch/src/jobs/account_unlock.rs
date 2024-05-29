@@ -23,10 +23,12 @@ impl Job for AccountUnlockJob {
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         let now = chrono::offset::Utc::now();
-        account_lock::Entity::delete_many()
+        let res = account_lock::Entity::delete_many()
             .filter(account_lock::Column::UnlockAt.lte(now))
             .exec(&context.database)
             .await?;
+
+        tracing::info!("unlocked {} accounts", res.rows_affected);
 
         Ok(())
     }
