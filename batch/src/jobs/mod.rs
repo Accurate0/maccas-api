@@ -6,6 +6,7 @@ use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
+pub mod account_unlock;
 pub mod activate_account;
 pub mod categorise_offers;
 pub mod create_account;
@@ -17,6 +18,7 @@ pub mod save_images;
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {
     fn name(&self) -> String;
+    fn job_type(&self) -> JobType;
     async fn execute(
         &self,
         _context: &JobContext,

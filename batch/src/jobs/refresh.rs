@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext};
+use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::McDonalds;
 use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_internal_jwt};
 use converters::Database;
@@ -32,6 +32,10 @@ struct RefreshContext {
 impl Job for RefreshJob {
     fn name(&self) -> String {
         "refresh".to_owned()
+    }
+
+    fn job_type(&self) -> JobType {
+        JobType::Schedule("0 */5 * * * *".parse().unwrap())
     }
 
     // TODO: needs refreshed at datetime as well, since updated at is updated by updating tokens alone
