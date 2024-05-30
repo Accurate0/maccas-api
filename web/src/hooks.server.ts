@@ -68,31 +68,34 @@ export const handleFetch: HandleFetch = async ({ request, fetch }) => {
 
 	const tracer = opentelemetry.trace.getTracer('default');
 
-	return tracer.startActiveSpan(`fetch external ${request.url}`, async (span: Span) => {
-		const output: { traceparent?: string; tracestate?: string } = {};
-		opentelemetry.propagation.inject(opentelemetry.context.active(), output);
+	return tracer.startActiveSpan(
+		`${request.method.toUpperCase()} ${request.url}`,
+		async (span: Span) => {
+			const output: { traceparent?: string; tracestate?: string } = {};
+			opentelemetry.propagation.inject(opentelemetry.context.active(), output);
 
-		const { traceparent, tracestate } = output;
+			const { traceparent, tracestate } = output;
 
-		if (traceparent) {
-			request.headers.set('traceparent', traceparent);
+			if (traceparent) {
+				request.headers.set('traceparent', traceparent);
+			}
+
+			if (tracestate) {
+				request.headers.set('tracestate', tracestate);
+			}
+
+			const response = await fetch(request);
+
+			if (response.ok) {
+				span.setStatus({ code: SpanStatusCode.OK });
+			} else {
+				span.setStatus({ code: SpanStatusCode.ERROR });
+			}
+
+			span.setAttribute('statusCode', response.status);
+
+			span.end();
+			return response;
 		}
-
-		if (tracestate) {
-			request.headers.set('tracestate', tracestate);
-		}
-
-		const response = await fetch(request);
-
-		if (response.ok) {
-			span.setStatus({ code: SpanStatusCode.OK });
-		} else {
-			span.setStatus({ code: SpanStatusCode.ERROR });
-		}
-
-		span.setAttribute('statusCode', response.status);
-
-		span.end();
-		return response;
-	});
+	);
 };
