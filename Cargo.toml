@@ -22,7 +22,6 @@ async-graphql = { version = "7.0.3", features = [
     "chrono",
     "dataloader",
     "log",
-    "tracing",
     "opentelemetry",
 ] }
 

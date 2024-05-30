@@ -58,6 +58,7 @@ async fn main() -> Result<(), anyhow::Error> {
         },
         tokio::spawn,
     ))
+    .extension(crate::graphql::tracing::Tracing)
     .finish();
 
     let cors = CorsLayer::new()

@@ -14,6 +14,7 @@ pub async fn graphiql() -> impl IntoResponse {
 pub struct ValidatedToken(pub String);
 pub struct ValidatedClaims(pub JwtClaims);
 
+// FIXME: tracing the authorization code
 pub async fn graphql_handler(
     State(ApiState { schema, settings }): State<ApiState>,
     headers: HeaderMap,

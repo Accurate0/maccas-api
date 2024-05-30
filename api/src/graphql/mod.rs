@@ -10,6 +10,7 @@ use async_graphql::{EmptySubscription, MergedObject, Schema};
 mod handler;
 pub mod mutations;
 pub mod queries;
+pub mod tracing;
 pub use handler::*;
 
 #[derive(Default, MergedObject)]
