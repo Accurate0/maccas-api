@@ -287,7 +287,6 @@ impl JobScheduler {
                             error_message: Set(error.clone()),
                             completed_at: Set(Some(time_now.naive_utc())),
                             context: Set(current_context),
-
                             ..Default::default()
                         }
                         .update(&db)

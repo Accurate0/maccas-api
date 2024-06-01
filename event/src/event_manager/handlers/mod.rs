@@ -1,11 +1,10 @@
-use self::save_image::save_image;
-
-use super::EventManager;
+use super::{EventManager, EventManagerError};
 use crate::event_manager::handlers::cleanup::cleanup;
+use crate::event_manager::handlers::save_image::save_image;
 use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use event::Event;
 use sea_orm::DbErr;
-use std::time::Duration;
+use std::{num::TryFromIntError, time::Duration};
 use thiserror::Error;
 use tracing::{span, Instrument};
 
@@ -40,6 +39,10 @@ pub enum HandlerError {
     IOError(#[from] std::io::Error),
     #[error("A join error occurred: `{0}`")]
     TaskJoinError(#[from] tokio::task::JoinError),
+    #[error("An event manager error occurred: `{0}`")]
+    EventManagerError(#[from] EventManagerError),
+    #[error("A TryFromInt error occurred: `{0}`")]
+    TryFromIntError(#[from] TryFromIntError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)
@@ -103,7 +106,7 @@ pub async fn handle(event_manager: EventManager) {
                 }
             }
 
-            Ok::<(), anyhow::Error>(())
+            Ok::<(), HandlerError>(())
         }
         .instrument(span!(
             tracing::Level::INFO,

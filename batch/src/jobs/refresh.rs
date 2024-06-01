@@ -1,6 +1,6 @@
 use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::McDonalds;
-use base::{constants::mc_donalds, http::get_simple_http_client, jwt::generate_internal_jwt};
+use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
 use event::{CreateEventResponse, Event};
@@ -165,7 +165,7 @@ impl Job for RefreshJob {
             }
         }
 
-        let http_client = get_simple_http_client()?;
+        let http_client = get_http_client()?;
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
         let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
