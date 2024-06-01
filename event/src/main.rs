@@ -8,7 +8,7 @@ use crate::{
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
 use actix_web_opentelemetry::RequestTracing;
-use base::http::get_simple_http_client;
+use base::http::get_http_client;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
@@ -59,7 +59,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let event_manager = EventManager::new(db, 5);
     event_manager.set_state(settings.clone());
     event_manager.set_state(bucket);
-    event_manager.set_state(get_simple_http_client()?);
+    event_manager.set_state(get_http_client()?);
 
     event_manager.reload_incomplete_events().await?;
     let (handle, cancellation_token) = event_manager.process_events();

@@ -26,8 +26,6 @@ pub enum EventManagerError {
     Database(#[from] DbErr),
     #[error("Chrono out of range error has occurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
-    #[error("An unknown error occurred: `{0}`")]
-    UnknownError(#[from] anyhow::Error),
 }
 
 #[derive(Debug, Clone, Serialize)]

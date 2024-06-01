@@ -2,7 +2,7 @@ use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::{Email, McDonalds};
 use anyhow::Context;
 use base::constants::mc_donalds;
-use base::http::get_simple_http_client;
+use base::http::get_http_client;
 use entity::accounts;
 use libmaccas::{
     types::request::{ActivateAndSignInRequest, ActivationDevice, ClientInfo},
@@ -61,7 +61,7 @@ impl Job for ActivateAccountJob {
             .security_auth_token(&self.mcdonalds_config.client_secret)
             .await?;
         client.set_login_token(&response.body.response.token);
-        let http_client = get_simple_http_client()?;
+        let http_client = get_http_client()?;
 
         let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
         for message_uid in all_unseen_emails.iter() {

@@ -1,6 +1,6 @@
 use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::{Email, McDonalds};
-use base::{constants::mc_donalds, http::get_simple_http_client};
+use base::{constants::mc_donalds, http::get_http_client};
 use entity::accounts;
 use libmaccas::{
     types::request::{
@@ -103,7 +103,7 @@ impl Job for CreateAccountJob {
             .unwrap(),
         };
 
-        let http_client = get_simple_http_client()?;
+        let http_client = get_http_client()?;
         let sensor_data_response = http_client
             .get(format!(
                 "{}/{}",

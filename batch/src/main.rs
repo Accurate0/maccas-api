@@ -99,7 +99,7 @@ async fn main() -> Result<(), anyhow::Error> {
             .add(CategoriseOffersJob {
                 api_client: openai::ApiClient::new(
                     settings.openai_api_key.clone(),
-                    base::http::get_simple_http_client()?,
+                    base::http::get_http_client()?,
                 ),
             })
             .await;
@@ -108,7 +108,7 @@ async fn main() -> Result<(), anyhow::Error> {
     if !disable_jobs.contains(&"save-images".to_owned()) {
         scheduler
             .add(SaveImagesJob {
-                http_client: base::http::get_simple_http_client()?,
+                http_client: base::http::get_http_client()?,
                 auth_secret: settings.auth_secret.clone(),
                 event_api_base: settings.event_api_base.clone(),
             })
