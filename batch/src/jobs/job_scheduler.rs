@@ -247,7 +247,9 @@ impl JobScheduler {
 
         let running = match job_details.state {
             JobState::Stopped => false,
-            JobState::Running(_) => true,
+            JobState::Running(ref s) => {
+                !s.handle.is_finished() && !s.cancellation_token.is_cancelled()
+            }
         };
 
         if !running {
