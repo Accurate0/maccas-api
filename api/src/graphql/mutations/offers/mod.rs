@@ -8,7 +8,7 @@ use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
 use event::{CreateEvent, CreateEventResponse, Event};
-use reqwest::{header::AUTHORIZATION, StatusCode};
+use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     prelude::Uuid, ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait,
@@ -117,7 +117,7 @@ impl OffersMutation {
         let request = http_client.post(request_url).json(&cleanup_event);
 
         let request = if let Some(token) = token {
-            request.header(AUTHORIZATION, format!("Bearer {token}"))
+            request.bearer_auth(token)
         } else {
             request
         };
