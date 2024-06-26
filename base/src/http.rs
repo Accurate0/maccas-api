@@ -19,13 +19,21 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
         &self,
         res: &Result<reqwest::Response, reqwest_middleware::Error>,
     ) -> Option<Retryable> {
-        match res {
+        let retry_decision = match res {
             Ok(success) if success.status() == StatusCode::FORBIDDEN => Some(Retryable::Transient),
             // Not sure the conditions on locked
             Ok(success) if success.status() == StatusCode::LOCKED => Some(Retryable::Transient),
             Ok(success) => default_on_request_success(success),
             Err(error) => default_on_request_failure(error),
-        }
+        };
+
+        tracing::info!(
+            "response: {:?}, retry decision: {:?}",
+            res,
+            matches!(retry_decision, Some(Retryable::Transient))
+        );
+
+        retry_decision
     }
 }
 
