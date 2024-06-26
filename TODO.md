@@ -1,4 +1,0 @@
-- add versioning to events / jobs
-- add offer rating table for rating each proposition id
-- configuration management
-- use event to unlock accounts instead of redis
