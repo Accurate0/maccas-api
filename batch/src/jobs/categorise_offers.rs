@@ -101,7 +101,18 @@ impl Job for CategoriseOffersJob {
                         .exec(&context.database)
                         .await?
                 }
-                None => continue,
+                None => {
+                    // Empty arrays means we were unable to categorise this :)
+                    // Won't be null so we won't waste tokens
+                    entity::offer_details::Entity::update_many()
+                        .filter(entity::offer_details::Column::ShortName.eq(key))
+                        .col_expr(
+                            entity::offer_details::Column::Categories,
+                            Expr::value(Vec::<String>::default()),
+                        )
+                        .exec(&context.database)
+                        .await?
+                }
             };
         }
 
