@@ -88,10 +88,17 @@ impl Database<OfferDetails> {
             .to_string();
 
         let now = chrono::offset::Utc::now().naive_utc();
+        let name = offer.name.clone().replace(&short_name, "");
+        let name = if name.is_empty() {
+            // they could be the same.....
+            short_name.clone()
+        } else {
+            name
+        };
 
         Ok(Database(OfferDetails {
             proposition_id: offer.offer_proposition_id,
-            name: offer.name.clone().replace(&short_name, ""),
+            name,
             short_name,
             description: offer.long_description.clone(),
             price: if total_price == 0.0 {
