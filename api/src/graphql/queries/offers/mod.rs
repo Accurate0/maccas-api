@@ -72,7 +72,6 @@ impl OffersQuery {
             .into_iter()
             .map(|a| a.id);
 
-        tracing::info!("locked accounts: {:?}", all_locked_accounts);
         let mut conditions = Condition::all();
         for locked_account in all_locked_accounts {
             conditions = conditions.add(offers::Column::AccountId.ne(locked_account));

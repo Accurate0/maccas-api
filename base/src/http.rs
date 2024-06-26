@@ -8,7 +8,7 @@ use reqwest_tracing::{
     default_on_request_end, reqwest_otel_span, DisableOtelPropagation, ReqwestOtelSpanBackend,
     TracingMiddleware,
 };
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 use tracing::Span;
 
@@ -86,4 +86,10 @@ pub fn get_http_client() -> Result<ClientWithMiddleware, HttpCreationError> {
         .with(TracingMiddleware::<TimeTrace>::new())
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
         .build())
+}
+
+pub fn get_basic_http_client() -> Result<reqwest::Client, HttpCreationError> {
+    Ok(reqwest::ClientBuilder::new()
+        .timeout(Duration::from_secs(5))
+        .build()?)
 }

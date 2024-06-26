@@ -36,6 +36,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let db = Database::connect(opt).await?;
     let http_client = base::http::get_http_client()?;
+    let basic_http_client = base::http::get_basic_http_client()?;
 
     let schema = FinalSchema::build(
         QueryRoot::default(),
@@ -43,6 +44,7 @@ async fn main() -> Result<(), anyhow::Error> {
         EmptySubscription,
     )
     .data(http_client)
+    .data(basic_http_client)
     .data(settings.clone())
     .data(db.clone())
     .data(DataLoader::new(
