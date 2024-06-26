@@ -44,6 +44,7 @@ async fn main() -> Result<(), anyhow::Error> {
         EmptySubscription,
     )
     .data(http_client)
+    // this client is special, it contains no tracing or retry
     .data(basic_http_client)
     .data(settings.clone())
     .data(db.clone())
