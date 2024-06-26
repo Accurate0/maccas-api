@@ -27,6 +27,13 @@ const configSchema = z.object({
 	storeName: z.string().min(1)
 });
 
+type OldRole = z.infer<typeof legacyLoginResponseSchema>['role'];
+const roleMap = {
+	none: Role.USER,
+	privileged: Role.POINTS,
+	admin: Role.ADMIN
+} as const satisfies Record<OldRole, Role>;
+
 export const load = async (event) => {
 	await RateLimiter.cookieLimiter?.preflight(event);
 	const form = await superValidate(schema);
@@ -127,6 +134,7 @@ export const actions = {
 			const config = configResponse.ok
 				? await configSchema.safeParseAsync(await configResponse.json())
 				: null;
+
 			const passwordHash = await bcrypt.hash(password, 10);
 			// TODO: fetch existing config
 			// https://api.maccas.one/v1/user/config
@@ -135,7 +143,8 @@ export const actions = {
 				? { storeId: config.data.storeId, storeName: config.data.storeName }
 				: {};
 
-			const newRole = role === 'none' ? Role.USER : (role.toUpperCase() as Role);
+			const newRole = roleMap[role];
+
 			await prisma.user.create({
 				data: {
 					id: existingUserId,
