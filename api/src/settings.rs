@@ -16,7 +16,6 @@ pub struct Proxy {
 #[derive(Debug, Deserialize, Clone)]
 pub struct McDonalds {
     pub client_id: String,
-    pub client_secret: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

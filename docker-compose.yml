@@ -34,6 +34,8 @@ services:
       - AUTH_SECRET=111
       # svelte needs origin for csrf
       - ORIGIN=http://localhost:3000
+    env_file:
+      - .env.local
 
   dashboard:
     build:
@@ -115,7 +117,7 @@ services:
     ports:
       - "8002:8002"
     links:
-      - "sensordata:sensordata"
+      # - "sensordata:sensordata"
       - "db:database"
     restart: unless-stopped
     depends_on:
