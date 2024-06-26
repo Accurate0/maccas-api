@@ -1,6 +1,5 @@
 use async_graphql::Object;
 use reqwest::StatusCode;
-use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::DatabaseConnection;
 
 use crate::settings::Settings;
@@ -14,9 +13,10 @@ impl HealthResponse {
         Ok(db.ping().await.is_ok())
     }
 
+    // checking event and batch health is done with basic clients which do not trace
     pub async fn event(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<bool> {
         let settings = ctx.data::<Settings>()?;
-        let http_client = ctx.data::<ClientWithMiddleware>()?;
+        let http_client = ctx.data::<reqwest::Client>()?;
 
         let request_url = format!("{}/{}", settings.event_api_base, event::Health::path());
         let event_health_response = http_client.get(request_url).send().await;
@@ -26,7 +26,7 @@ impl HealthResponse {
 
     pub async fn batch(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<bool> {
         let settings = ctx.data::<Settings>()?;
-        let http_client = ctx.data::<ClientWithMiddleware>()?;
+        let http_client = ctx.data::<reqwest::Client>()?;
 
         let request_url = format!("{}/{}", settings.batch_api_base, batch::Health::path());
         let batch_health_response = http_client.get(request_url).send().await;
