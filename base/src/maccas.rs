@@ -1,7 +1,10 @@
 use crate::{constants, http::get_proxied_maccas_http_client};
 use entity::accounts;
 use reqwest::Proxy;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, IntoActiveModel, Set};
+use sea_orm::{
+    ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QuerySelect, Set,
+    TransactionTrait,
+};
 
 pub async fn get_activated_maccas_api_client(
     account: accounts::Model,
@@ -19,6 +22,12 @@ pub async fn get_activated_maccas_api_client(
 
     // refresh case
     if (now - account.refreshed_at).num_minutes() >= 14 {
+        let txn = db.begin().await?;
+        accounts::Entity::find_by_id(account.id)
+            .lock_exclusive()
+            .one(&txn)
+            .await?;
+
         api_client.set_auth_token(&account.access_token);
         let response = api_client
             .customer_login_refresh(&account.refresh_token)
@@ -37,7 +46,8 @@ pub async fn get_activated_maccas_api_client(
         update_model.refresh_token = Set(response.refresh_token);
         tracing::info!("new tokens fetched, updating database");
 
-        update_model.update(db).await?;
+        update_model.update(&txn).await?;
+        txn.commit().await?;
     } else {
         api_client.set_auth_token(&account.access_token);
     }

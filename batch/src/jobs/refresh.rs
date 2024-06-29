@@ -9,7 +9,7 @@ use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
-    QueryFilter, QueryOrder, Set, TransactionTrait, TryIntoModel,
+    QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait, TryIntoModel,
 };
 use serde::Serialize;
 use std::time::Duration;
@@ -45,11 +45,14 @@ impl Job for RefreshJob {
         context: &JobContext,
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
+        let txn = context.database.begin().await?;
+
         let account_to_refresh = accounts::Entity::find()
+            .lock_exclusive()
             .filter(accounts::Column::Active.eq(true))
             .filter(accounts::Column::RefreshFailureCount.lte(3))
             .order_by_asc(accounts::Column::UpdatedAt)
-            .one(&context.database)
+            .one(&txn)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
@@ -61,7 +64,7 @@ impl Job for RefreshJob {
 
         let account_id = account_to_refresh.id.to_owned();
         let current_failure_count = account_to_refresh.refresh_failure_count;
-        let api_client = async move {
+        let api_client = async {
             tracing::info!("refreshing account: {:?}", &account_id);
 
             let mut api_client = libmaccas::ApiClient::new(
@@ -88,7 +91,7 @@ impl Job for RefreshJob {
             update_model.refresh_token = Set(response.refresh_token);
             tracing::info!("new tokens fetched, updating database");
 
-            update_model.update(&context.database).await?;
+            update_model.update(&txn).await?;
 
             Ok::<ApiClient, anyhow::Error>(api_client)
         }
@@ -101,12 +104,15 @@ impl Job for RefreshJob {
                 refresh_failure_count: sea_orm::Set(current_failure_count + 1),
                 ..Default::default()
             })
-            .exec(&context.database)
+            .exec(&txn)
             .await?;
+
+            txn.commit().await?;
 
             return Err(e.into());
         }
 
+        txn.commit().await?;
         let api_client = api_client.unwrap();
 
         let offers = api_client
