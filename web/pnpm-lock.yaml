@@ -108,6 +108,9 @@ importers:
       '@types/eslint':
         specifier: 8.56.0
         version: 8.56.0
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.21
       '@types/jsonwebtoken':
         specifier: ^9.0.6
         version: 9.0.6

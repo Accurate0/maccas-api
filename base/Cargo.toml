@@ -9,7 +9,7 @@ reqwest_old = { workspace = true }
 reqwest-middleware = { workspace = true }
 tracing = { workspace = true }
 reqwest-retry = { workspace = true }
-reqwest-tracing = { workspace = true, features = ["opentelemetry_0_21"] }
+reqwest-tracing = { workspace = true, features = ["opentelemetry_0_23"] }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
