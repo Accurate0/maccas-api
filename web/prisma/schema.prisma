@@ -27,6 +27,30 @@ model User {
     @@map("users")
 }
 
+enum Priority {
+    HIGH
+    NORMAL
+    LOW
+}
+
+enum NotificationType {
+    USER_CREATED
+    USER_ACTIVATED
+    USER_DEACTIVATED
+}
+
+model Notification {
+    id        String           @id @default(uuid())
+    content   String
+    context   Json             @db.JsonB
+    read      Boolean          @default(false)
+    priority  Priority
+    type      NotificationType
+    createdAt DateTime         @default(now())
+
+    @@map("notifications")
+}
+
 model Config {
     id        String  @id @default(uuid())
     storeName String?

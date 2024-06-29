@@ -6,6 +6,9 @@
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { ExclamationTriangle, Check, Cross1 } from 'radix-icons-svelte';
+	import * as Alert from '$lib/components/ui/alert/index.js';
+	import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
 	export let data: PageData;
 
@@ -40,6 +43,39 @@
 			<Button on:click={resetRateLimit}>Reset rate limit</Button>
 		</Card.Content>
 	</Card.Root>
+
+	{#await data.notifications}
+		<Card.Root>
+			<div class="flex">
+				<Card.Header class="grid w-full">
+					<Skeleton class="h-[16px] w-[33%] rounded-xl" />
+				</Card.Header>
+			</div>
+		</Card.Root>
+	{:then notifications}
+		<Card.Root>
+			<div class="m-4 grid grid-flow-row gap-4">
+				<h4 class="text-sm font-semibold">Recent notifications</h4>
+			</div>
+
+			<div class="flex h-96 flex-col overflow-y-scroll">
+				{#each notifications as notification}
+					<Alert.Root variant="default" class="m-4 mt-0 w-[inherit]">
+						{#if notification.priority === 'HIGH'}
+							<ExclamationTriangle class="h-4 w-4" />
+						{:else if notification.type === 'USER_CREATED' || notification.type === 'USER_ACTIVATED'}
+							<Check class="h-4 w-4" />
+						{:else if notification.type === 'USER_DEACTIVATED'}
+							<Cross1 class="h-4 w-4" />
+						{/if}
+						<Alert.Title>{notification.content}</Alert.Title>
+						<Alert.Description>{formatDistanceToNow(notification.createdAt)} ago</Alert.Description>
+					</Alert.Root>
+				{/each}
+			</div>
+		</Card.Root>
+	{/await}
+
 	{#await data.users}
 		{#each Array(5) as _}
 			<Card.Root>

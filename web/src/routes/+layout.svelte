@@ -3,7 +3,7 @@
 	import '../app.pcss';
 
 	import { goto, onNavigate } from '$app/navigation';
-	import { Toaster, toast } from 'svelte-sonner';
+	import { Toaster } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
@@ -85,7 +85,7 @@
 							<Tabs.Trigger on:click={() => goto('/location')} value="location">
 								Location
 							</Tabs.Trigger>
-							{#if $data.showUsers}
+							{#if $data.isAdmin}
 								<Tabs.Trigger on:click={() => goto('/users')} value="users">Users</Tabs.Trigger>
 							{/if}
 						</Tabs.List>
