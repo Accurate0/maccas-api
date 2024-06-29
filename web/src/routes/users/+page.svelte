@@ -60,7 +60,7 @@
 				<h4 class="text-sm font-semibold">Recent notifications</h4>
 			</div>
 
-			<div class="flex h-96 flex-col overflow-y-scroll">
+			<div class="flex max-h-96 flex-col overflow-y-scroll">
 				{#each notifications as notification}
 					<Alert.Root variant="default" class="m-4 mt-0 w-[inherit]">
 						{#if notification.priority === 'HIGH'}
