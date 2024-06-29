@@ -46,10 +46,12 @@
 
 	{#await data.notifications}
 		<Card.Root>
-			<div class="flex">
-				<Card.Header class="grid w-full">
-					<Skeleton class="h-[16px] w-[33%] rounded-xl" />
-				</Card.Header>
+			<div class="m-4 grid grid-flow-row gap-4">
+				<h4 class="text-sm font-semibold">Recent notifications</h4>
+			</div>
+
+			<div class="flex h-96 flex-col overflow-y-scroll">
+				<Skeleton class="m-4 mt-0 h-96 w-[inherit] rounded-xl" />
 			</div>
 		</Card.Root>
 	{:then notifications}
