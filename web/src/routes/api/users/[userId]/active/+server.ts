@@ -1,5 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { validateAdminUser } from '$lib/server/validateAdminUser';
+import { NotificationType, Priority } from '@prisma/client';
 
 export async function POST(event) {
 	const {
@@ -12,10 +13,20 @@ export async function POST(event) {
 		return validationResult;
 	}
 
-	await prisma.user.update({
+	const user = await prisma.user.update({
 		where: { id: userId },
 		data: {
 			active: true
+		}
+	});
+
+	await prisma.notification.create({
+		data: {
+			content: `User set to active ${user.username}`,
+			context: { username: user.username },
+			read: false,
+			priority: Priority.NORMAL,
+			type: NotificationType.USER_ACTIVATED
 		}
 	});
 
@@ -33,10 +44,20 @@ export async function DELETE(event) {
 		return validationResult;
 	}
 
-	await prisma.user.update({
+	const user = await prisma.user.update({
 		where: { id: userId },
 		data: {
 			active: false
+		}
+	});
+
+	await prisma.notification.create({
+		data: {
+			content: `User set to inactive ${user.username}`,
+			context: { username: user.username },
+			read: false,
+			priority: Priority.NORMAL,
+			type: NotificationType.USER_DEACTIVATED
 		}
 	});
 

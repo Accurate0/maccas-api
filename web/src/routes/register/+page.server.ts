@@ -1,7 +1,7 @@
 import { prisma } from '$lib/server/prisma';
 import type { Actions } from './$types';
 import bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
+import { NotificationType, Priority, Role } from '@prisma/client';
 import { fail } from '@sveltejs/kit';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { schema } from './schema';
@@ -47,7 +47,6 @@ export const actions = {
 		}
 
 		const password = passwordUntrimmed.trim();
-
 		const passwordHash = await bcrypt.hash(password, 10);
 
 		await prisma.user.create({
@@ -55,7 +54,17 @@ export const actions = {
 				username: username.toLowerCase(),
 				passwordHash: Buffer.from(passwordHash),
 				role: [Role.USER],
-				active: false
+				active: true
+			}
+		});
+
+		await prisma.notification.create({
+			data: {
+				content: `New user created ${username}`,
+				context: { username },
+				read: false,
+				priority: Priority.NORMAL,
+				type: NotificationType.USER_CREATED
 			}
 		});
 

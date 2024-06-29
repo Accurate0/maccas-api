@@ -19,9 +19,11 @@ export const load: LayoutServerLoad = async (event) => {
 		include: { config: true }
 	});
 
+	const isAdmin = user.role.some((role) => role === Role.ADMIN);
+
 	return {
 		showPoints: user.role.some((role) => role === Role.POINTS),
-		showUsers: user.role.some((role) => role === Role.ADMIN),
+		isAdmin,
 		config: user.config,
 		isUserActive: user.active
 	};

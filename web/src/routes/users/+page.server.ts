@@ -9,6 +9,7 @@ export const load = async (event) => {
 	}
 
 	return {
+		notifications: prisma.notification.findMany({ orderBy: { createdAt: 'desc' } }),
 		users: prisma.user
 			.findMany()
 			.then((p) => p.filter((u) => !u.role.some((role) => role === Role.ADMIN)))
