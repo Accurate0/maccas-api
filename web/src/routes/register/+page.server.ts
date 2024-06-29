@@ -68,6 +68,6 @@ export const actions = {
 			}
 		});
 
-		return message(form, 'Account created but not active');
+		return message(form, 'Account created');
 	}
 } satisfies Actions;
