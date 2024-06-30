@@ -27,9 +27,10 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
             Err(error) => default_on_request_failure(error),
         };
 
+        let maybe_status_code = res.as_ref().map(|r| r.status());
         tracing::info!(
-            "response: {:?}, retry decision: {:?}",
-            res,
+            "status: {:?}, retry: {:?}",
+            maybe_status_code,
             matches!(retry_decision, Some(Retryable::Transient))
         );
 
