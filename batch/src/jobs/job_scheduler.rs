@@ -315,8 +315,6 @@ impl JobScheduler {
 
                     // must send after updating last execution or it can trigger twice
                     // race condition
-                    // FIXME: if this is not sent, the job is not marked done
-                    // we should deal with this
                     queue
                         .push(
                             Message::JobFinished {

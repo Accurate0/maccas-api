@@ -101,7 +101,6 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   deploy:
-    environment: production
     strategy:
       fail-fast: false
       matrix:
