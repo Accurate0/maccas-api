@@ -51,6 +51,7 @@ pub enum JobType {
 pub struct JobDetails {
     pub job: Arc<dyn Job>,
     pub state: JobState,
+    pub enabled: bool,
     pub job_type: JobType,
 }
 
@@ -67,11 +68,12 @@ pub struct IntrospectedJobDetails {
 }
 
 impl JobDetails {
-    pub fn new(job: Arc<dyn Job>, job_type: JobType) -> Self {
+    pub fn new(job: Arc<dyn Job>, job_type: JobType, enabled: bool) -> Self {
         Self {
             job,
             job_type,
             state: Default::default(),
+            enabled,
         }
     }
 }

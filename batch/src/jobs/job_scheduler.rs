@@ -89,13 +89,16 @@ impl JobScheduler {
         &self.0.db
     }
 
-    pub async fn add<T>(&self, job: T) -> &Self
+    pub async fn add<T>(&self, job: T, enabled: bool) -> &Self
     where
         T: Job + 'static,
     {
         let mut jobs = self.0.jobs.write().await;
         let execution_type = job.job_type();
-        jobs.insert(job.name(), JobDetails::new(Arc::new(job), execution_type));
+        jobs.insert(
+            job.name(),
+            JobDetails::new(Arc::new(job), execution_type, enabled),
+        );
 
         self
     }
@@ -312,6 +315,8 @@ impl JobScheduler {
 
                     // must send after updating last execution or it can trigger twice
                     // race condition
+                    // FIXME: if this is not sent, the job is not marked done
+                    // we should deal with this
                     queue
                         .push(
                             Message::JobFinished {
@@ -350,6 +355,12 @@ impl JobScheduler {
                 tracing::info!("initializing scheduler with required tasks");
                 for (name, job_details) in jobs.iter() {
                     tracing::info!("task: {}", name);
+
+                    if !job_details.enabled {
+                        tracing::info!("skipping task");
+                        continue;
+                    }
+
                     let job_model = jobs::Entity::find()
                         .filter(jobs::Column::Name.eq(name.clone()))
                         .one(&self.0.db)

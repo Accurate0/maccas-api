@@ -61,63 +61,71 @@ async fn main() -> Result<(), anyhow::Error> {
     let disable_jobs = &settings.disable_jobs;
     tracing::info!("disabling the following jobs: {:?}", disable_jobs);
 
-    if !disable_jobs.contains(&"refresh".to_owned()) {
-        scheduler
-            .add(RefreshJob {
+    scheduler
+        .add(
+            RefreshJob {
                 auth_secret: settings.auth_secret.clone(),
                 event_api_base: settings.event_api_base.clone(),
                 http_client: http_client.clone(),
                 mcdonalds_config: settings.mcdonalds.clone(),
-            })
-            .await;
-    }
+            },
+            !disable_jobs.iter().any(|j| j == "refresh"),
+        )
+        .await;
 
-    if !disable_jobs.contains(&"create-account".to_owned()) {
-        scheduler
-            .add(CreateAccountJob {
+    scheduler
+        .add(
+            CreateAccountJob {
                 sensordata_api_base: settings.sensordata_api_base.clone(),
                 http_client: http_client.clone(),
                 mcdonalds_config: settings.mcdonalds.clone(),
                 email_config: settings.email.clone(),
-            })
-            .await;
-    }
+            },
+            !disable_jobs.iter().any(|j| j == "create-account"),
+        )
+        .await;
 
-    if !disable_jobs.contains(&"activate-account".to_owned()) {
-        scheduler
-            .add(ActivateAccountJob {
+    scheduler
+        .add(
+            ActivateAccountJob {
                 http_client: http_client.clone(),
                 sensordata_api_base: settings.sensordata_api_base.clone(),
                 mcdonalds_config: settings.mcdonalds.clone(),
                 email_config: settings.email.clone(),
-            })
-            .await;
-    }
+            },
+            !disable_jobs.iter().any(|j| j == "activate-account"),
+        )
+        .await;
 
-    if !disable_jobs.contains(&"categorise-offers".to_owned()) {
-        scheduler
-            .add(CategoriseOffersJob {
+    scheduler
+        .add(
+            CategoriseOffersJob {
                 api_client: openai::ApiClient::new(
                     settings.openai_api_key.clone(),
                     base::http::get_http_client()?,
                 ),
-            })
-            .await;
-    }
+            },
+            !disable_jobs.iter().any(|j| j == "categorise-offers"),
+        )
+        .await;
 
-    if !disable_jobs.contains(&"save-images".to_owned()) {
-        scheduler
-            .add(SaveImagesJob {
+    scheduler
+        .add(
+            SaveImagesJob {
                 http_client: base::http::get_http_client()?,
                 auth_secret: settings.auth_secret.clone(),
                 event_api_base: settings.event_api_base.clone(),
-            })
-            .await;
-    }
+            },
+            !disable_jobs.iter().any(|j| j == "save-images"),
+        )
+        .await;
 
-    if !disable_jobs.contains(&"account-unlock".to_owned()) {
-        scheduler.add(AccountUnlockJob).await;
-    }
+    scheduler
+        .add(
+            AccountUnlockJob,
+            !disable_jobs.iter().any(|j| j == "account-unlock"),
+        )
+        .await;
 
     tracing::info!("scheduler initializing");
     scheduler.init().await?;
