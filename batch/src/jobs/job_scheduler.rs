@@ -212,6 +212,8 @@ impl JobScheduler {
                     };
 
                     // setup next wake up for this job
+                    // FIXME: if this is not sent, the job is not marked done
+                    // we should deal with this
                     self.0
                         .task_queue
                         .push(
