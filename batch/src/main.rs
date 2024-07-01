@@ -19,7 +19,10 @@ use axum::{
     Router,
 };
 use base::shutdown::axum_shutdown_signal;
-use jobs::{account_unlock::AccountUnlockJob, job_scheduler::JobScheduler};
+use jobs::{
+    account_unlock::AccountUnlockJob, job_scheduler::JobScheduler,
+    recategorise_offers::RecategoriseOffersJob,
+};
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
 use std::{future::IntoFuture, net::SocketAddr, time::Duration};
@@ -61,6 +64,11 @@ async fn main() -> Result<(), anyhow::Error> {
     let disable_jobs = &settings.disable_jobs;
     tracing::info!("disabling the following jobs: {:?}", disable_jobs);
 
+    let openai_api_client = openai::ApiClient::new(
+        settings.openai_api_key.clone(),
+        base::http::get_http_client()?,
+    );
+
     scheduler
         .add(
             RefreshJob {
@@ -100,10 +108,7 @@ async fn main() -> Result<(), anyhow::Error> {
     scheduler
         .add(
             CategoriseOffersJob {
-                api_client: openai::ApiClient::new(
-                    settings.openai_api_key.clone(),
-                    base::http::get_http_client()?,
-                ),
+                api_client: openai_api_client.clone(),
             },
             !disable_jobs.iter().any(|j| j == "categorise-offers"),
         )
@@ -124,6 +129,15 @@ async fn main() -> Result<(), anyhow::Error> {
         .add(
             AccountUnlockJob,
             !disable_jobs.iter().any(|j| j == "account-unlock"),
+        )
+        .await;
+
+    scheduler
+        .add(
+            RecategoriseOffersJob {
+                api_client: openai_api_client,
+            },
+            !disable_jobs.iter().any(|j| j == "recategorise-offers"),
         )
         .await;
 

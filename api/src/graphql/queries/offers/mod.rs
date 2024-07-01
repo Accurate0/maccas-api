@@ -64,6 +64,11 @@ impl OffersQuery {
         })
     }
 
+    async fn upcoming_offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
+        let db = ctx.data::<DatabaseConnection>()?;
+        Ok(vec![])
+    }
+
     async fn offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let all_locked_accounts = entity::account_lock::Entity::find()
@@ -117,11 +122,16 @@ impl OffersQuery {
             .into_iter()
             .map(|o| {
                 let (offer, offer_details) = o;
-                let count = count_map
-                    .as_ref()
-                    .and_then(|c| c.get(&offer_details.unwrap().short_name).copied());
+                let count = if let Some(offer_details) = offer_details {
+                    count_map
+                        .as_ref()
+                        .and_then(|c| c.get(&offer_details.short_name).copied())
+                        .unwrap_or(0)
+                } else {
+                    0
+                };
 
-                Offer(offer, count)
+                Offer(offer, Some(count))
             })
             .collect::<Vec<_>>())
     }

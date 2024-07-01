@@ -12,6 +12,7 @@ pub mod categorise_offers;
 pub mod create_account;
 pub mod error;
 pub mod job_scheduler;
+pub mod recategorise_offers;
 pub mod refresh;
 pub mod save_images;
 
