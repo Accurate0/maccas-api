@@ -28,7 +28,7 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
         };
 
         let maybe_status_code = res.as_ref().map(|r| r.status());
-        tracing::info!(
+        tracing::warn!(
             "status: {:?}, retry: {:?}",
             maybe_status_code,
             matches!(retry_decision, Some(Retryable::Transient))
