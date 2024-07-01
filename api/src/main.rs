@@ -12,7 +12,7 @@ use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer}
 use base::shutdown::axum_shutdown_signal;
 use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
 use sea_orm::{ConnectOptions, Database};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
 
@@ -80,8 +80,10 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let app = Router::new().nest("/v1", api_routes);
 
-    let listener = tokio::net::TcpListener::bind("[::]:8000").await.unwrap();
-    tracing::info!("starting api server {listener:?}");
+    let addr = "[::]:8000".parse::<SocketAddr>().unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+
+    tracing::info!("starting api server {addr}");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(axum_shutdown_signal())

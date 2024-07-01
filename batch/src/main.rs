@@ -22,7 +22,7 @@ use base::shutdown::axum_shutdown_signal;
 use jobs::{account_unlock::AccountUnlockJob, job_scheduler::JobScheduler};
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
-use std::{future::IntoFuture, time::Duration};
+use std::{future::IntoFuture, net::SocketAddr, time::Duration};
 use tokio::signal;
 use tower_http::{
     cors::CorsLayer,
@@ -182,8 +182,9 @@ async fn main() -> Result<(), anyhow::Error> {
         .merge(health)
         .with_state(api_state);
 
-    let listener = tokio::net::TcpListener::bind("[::]:8002").await.unwrap();
-    tracing::info!("starting batch server {listener:?}");
+    let addr = "[::]:8002".parse::<SocketAddr>().unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tracing::info!("starting batch api server {addr}");
     let server = axum::serve(listener, app)
         .with_graceful_shutdown(axum_shutdown_signal())
         .into_future();
