@@ -3,10 +3,10 @@ use crate::{name_of, settings::Settings};
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
-use entity::{accounts, offers};
+use entity::{accounts, offer_details, offers};
 use sea_orm::{
-    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, JoinType,
-    QueryFilter, QuerySelect, RelationTrait,
+    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, JoinType, Order,
+    QueryFilter, QueryOrder, QuerySelect, RelationTrait,
 };
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ mod types;
 
 #[derive(FromQueryResult, Debug)]
 struct OfferCount {
-    offer_proposition_id: i64,
+    short_name: String,
     count: i64,
 }
 
@@ -77,22 +77,29 @@ impl OffersQuery {
             conditions = conditions.add(offers::Column::AccountId.ne(locked_account));
         }
 
+        let now = chrono::offset::Utc::now().naive_utc();
+
+        let conditions = conditions
+            .add(offers::Column::ValidTo.gt(now))
+            .add(offers::Column::ValidFrom.lt(now));
+
         let count_map = if ctx.look_ahead().field("count").exists() {
             Some(
                 offers::Entity::find()
                     .select_only()
                     .filter(conditions.clone())
-                    .column(offers::Column::OfferPropositionId)
+                    .join(JoinType::InnerJoin, offers::Relation::OfferDetails.def())
+                    .column(offer_details::Column::ShortName)
                     .column_as(
-                        offers::Column::OfferPropositionId.count(),
+                        offer_details::Column::ShortName.count(),
                         name_of!(count in OfferCount),
                     )
-                    .group_by(offers::Column::OfferPropositionId)
+                    .group_by(offer_details::Column::ShortName)
                     .into_model::<OfferCount>()
                     .all(db)
                     .await?
-                    .iter()
-                    .map(|o| (o.offer_proposition_id, o.count))
+                    .into_iter()
+                    .map(|o| (o.short_name, o.count))
                     .collect::<HashMap<_, _>>(),
             )
         } else {
@@ -100,17 +107,21 @@ impl OffersQuery {
         };
 
         Ok(offers::Entity::find()
-            .distinct_on([offers::Column::OfferPropositionId])
+            .distinct_on([offer_details::Column::ShortName])
+            .find_also_related(offer_details::Entity)
+            .order_by(offer_details::Column::ShortName, Order::Asc)
+            .order_by(offers::Column::ValidTo, Order::Asc)
             .filter(conditions)
             .all(db)
             .await?
             .into_iter()
             .map(|o| {
+                let (offer, offer_details) = o;
                 let count = count_map
                     .as_ref()
-                    .and_then(|c| c.get(&o.offer_proposition_id).copied());
+                    .and_then(|c| c.get(&offer_details.unwrap().short_name).copied());
 
-                Offer(o, count)
+                Offer(offer, count)
             })
             .collect::<Vec<_>>())
     }
