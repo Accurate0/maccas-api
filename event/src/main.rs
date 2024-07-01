@@ -65,7 +65,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let (handle, cancellation_token) = event_manager.process_events();
 
     let addr = "[::]:8001".parse::<SocketAddr>().unwrap();
-    tracing::info!("starting api server {addr}");
+    tracing::info!("starting event api server {addr}");
 
     HttpServer::new(move || {
         App::new()

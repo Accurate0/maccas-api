@@ -28,11 +28,23 @@ impl RetryableStrategy for AkamaiCdnRetryStrategy {
         };
 
         let maybe_status_code = res.as_ref().map(|r| r.status());
-        tracing::warn!(
-            "status: {:?}, retry: {:?}",
-            maybe_status_code,
-            matches!(retry_decision, Some(Retryable::Transient))
-        );
+        let maybe_error = maybe_status_code
+            .map(|s| s.is_client_error() || s.is_server_error())
+            .unwrap_or(false);
+
+        if maybe_error {
+            tracing::error!(
+                "status: {:?}, retry: {:?}",
+                maybe_status_code,
+                matches!(retry_decision, Some(Retryable::Transient))
+            );
+        } else {
+            tracing::info!(
+                "status: {:?}, retry: {:?}",
+                maybe_status_code,
+                matches!(retry_decision, Some(Retryable::Transient))
+            );
+        }
 
         retry_decision
     }
