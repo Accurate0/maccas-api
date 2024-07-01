@@ -5,13 +5,17 @@ use super::{
 use anyhow::Context;
 use base::delay_queue::{DelayQueue, IntrospectionResult};
 use entity::jobs;
+use futures::FutureExt;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, Set, Unchanged,
 };
 use serde::Serialize;
 use serde_json::Value;
-use std::{collections::HashMap, fmt::Debug, ops::ControlFlow, sync::Arc, time::Duration};
+use std::{
+    collections::HashMap, fmt::Debug, ops::ControlFlow, panic::AssertUnwindSafe, sync::Arc,
+    time::Duration,
+};
 use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
@@ -276,15 +280,23 @@ impl JobScheduler {
             let handle = tokio::spawn(
                 async move {
                     tracing::info!("triggered job {}", job.name());
-                    let result = job.execute(&context, cancellation_token_cloned).await;
-                    let error = result.map_err(|e| e.to_string()).err();
+                    let result = AssertUnwindSafe(job.execute(&context, cancellation_token_cloned))
+                        .catch_unwind()
+                        .await;
 
-                    let time_now = chrono::offset::Utc::now();
+                    let error = match result {
+                        Ok(r) => match r {
+                            Ok(_) => None,
+                            Err(e) => Some(e.to_string()),
+                        },
+                        Err(e) => Some(format!("panic in completing job: {e:?}")),
+                    };
 
                     if error.is_some() {
                         tracing::error!("error with job completion: {:?}", &error)
                     }
 
+                    let time_now = chrono::offset::Utc::now();
                     if let Err(e) = {
                         let current_context = context.get::<serde_json::Value>().await;
 
