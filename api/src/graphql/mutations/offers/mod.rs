@@ -41,12 +41,15 @@ impl OffersMutation {
             conditions = conditions.add(offers::Column::AccountId.ne(locked_account));
         }
 
-        let offer = offers::Entity::find()
+        let (offer, account) = offers::Entity::find()
             .filter(conditions)
             .filter(offers::Column::OfferPropositionId.eq(input.offer_proposition_id))
+            .find_also_related(accounts::Entity)
             .one(db)
             .await?
             .context("No offer found for this id")?;
+
+        let account = account.context("Must find related account")?;
 
         let in_15_minutes = chrono::offset::Utc::now().naive_utc() + Duration::from_secs(900);
         entity::account_lock::ActiveModel {
@@ -61,12 +64,6 @@ impl OffersMutation {
         let offer_id = offer.id;
         let validated_proposition_id = input.offer_proposition_id;
         let settings = ctx.data::<Settings>()?;
-
-        // FIXME: use join to get both at same time
-        let account = accounts::Entity::find_by_id(offer.account_id)
-            .one(db)
-            .await?
-            .context("Must find related account")?;
 
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);

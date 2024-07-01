@@ -8,6 +8,7 @@ use types::{
 
 pub mod types;
 
+#[derive(Clone)]
 pub struct ApiClient {
     api_key: String,
     client: ClientWithMiddleware,
