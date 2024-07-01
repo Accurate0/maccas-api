@@ -35,7 +35,7 @@ impl Job for RefreshJob {
     }
 
     fn job_type(&self) -> JobType {
-        JobType::Schedule("0 */5 * * * *".parse().unwrap())
+        JobType::Schedule("0 */3 * * * *".parse().unwrap())
     }
 
     // TODO: needs refreshed at datetime as well, since updated at is updated by updating tokens alone
