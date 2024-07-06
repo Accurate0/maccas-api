@@ -1,6 +1,6 @@
 use crate::{error::EventError, state::AppState};
 use actix_web::web::{self, Json};
-use entity::events;
+use entity::{events, sea_orm_active_enums::EventStatus};
 use event::GetEventsResponse;
 use sea_orm::{EntityTrait, QueryOrder, QuerySelect};
 
@@ -23,9 +23,10 @@ pub async fn get_events(
     let mut historical_events = vec![];
 
     for event in events {
-        match event.is_completed {
-            true => historical_events.push(event),
-            false => active_events.push(event),
+        match event.status {
+            EventStatus::Completed | EventStatus::Failed => historical_events.push(event),
+            EventStatus::Pending | EventStatus::Running => active_events.push(event),
+            EventStatus::Duplicate => continue,
         }
     }
 
