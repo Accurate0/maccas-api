@@ -6,7 +6,7 @@ use base::{
     maccas,
 };
 use entity::accounts;
-use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder, TransactionTrait};
 use std::{collections::HashMap, sync::Arc};
 
 pub struct LocationLoader {
@@ -37,13 +37,24 @@ impl Loader<LocationRequest> for LocationLoader {
             .map_err(|e| Arc::new(e.into()))?
             .basic_auth(&self.settings.proxy.username, &self.settings.proxy.password);
 
+        let account_lock_txn = self
+            .database
+            .begin()
+            .await
+            .map_err(|e| Arc::new(e.into()))?;
+
         let api_client = maccas::get_activated_maccas_api_client(
             account_to_use,
             proxy,
             &self.settings.mcdonalds.client_id,
-            &self.database,
+            &account_lock_txn,
         )
         .await?;
+
+        account_lock_txn
+            .commit()
+            .await
+            .map_err(|e| Arc::new(e.into()))?;
 
         // FIXME: parallel
         let mut location_map = HashMap::new();
@@ -101,13 +112,24 @@ impl Loader<String> for LocationLoader {
             .map_err(|e| Arc::new(e.into()))?
             .basic_auth(&self.settings.proxy.username, &self.settings.proxy.password);
 
+        let account_lock_txn = self
+            .database
+            .begin()
+            .await
+            .map_err(|e| Arc::new(e.into()))?;
+
         let api_client = maccas::get_activated_maccas_api_client(
             account_to_use,
             proxy,
             &self.settings.mcdonalds.client_id,
-            &self.database,
+            &account_lock_txn,
         )
         .await?;
+
+        account_lock_txn
+            .commit()
+            .await
+            .map_err(|e| Arc::new(e.into()))?;
 
         Ok(futures::future::try_join_all(
             keys.iter()

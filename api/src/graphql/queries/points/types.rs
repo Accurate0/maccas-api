@@ -1,8 +1,8 @@
 use crate::settings::Settings;
 use async_graphql::{InputObject, Object};
-use base::{constants::mc_donalds::OFFSET, maccas};
+use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, points};
-use sea_orm::{prelude::Uuid, DatabaseConnection, EntityTrait};
+use sea_orm::{prelude::Uuid, DatabaseConnection, EntityTrait, TransactionTrait};
 
 #[derive(InputObject)]
 pub struct FilterInput {
@@ -54,13 +54,15 @@ impl Points {
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
-        let api_client = maccas::get_activated_maccas_api_client(
+        let account_lock_txn = db.begin().await?;
+        let api_client = base::maccas::get_activated_maccas_api_client(
             account_to_use,
             proxy,
             &settings.mcdonalds.client_id,
-            db,
+            &account_lock_txn,
         )
         .await?;
+        account_lock_txn.commit().await?;
 
         let response = api_client
             .get_offers_dealstack(OFFSET, self.store_id.as_ref().unwrap())

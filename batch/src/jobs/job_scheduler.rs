@@ -8,7 +8,7 @@ use entity::jobs;
 use futures::FutureExt;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
-    EntityTrait, QueryFilter, Set, Unchanged,
+    EntityTrait, QueryFilter, Set, TransactionTrait, Unchanged,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -261,9 +261,12 @@ impl JobScheduler {
             }
         };
 
+        tracing::info!("should run: {}", !running);
+
         if !running {
+            let txn = self.0.db.begin().await?;
             let db = self.0.db.clone();
-            let context = JobContext::new(self.0.db.clone(), job_model.id);
+            let context = JobContext::new(txn, job_model.id);
             let span = tracing::span!(parent: None, Level::INFO, "job", job_name = name, "otel.name" = format!("job::{}", name));
             let queue = self.0.task_queue.clone();
             let task_name = name.to_string();
@@ -284,6 +287,13 @@ impl JobScheduler {
                         .catch_unwind()
                         .await;
 
+                    let current_context = context.get::<serde_json::Value>().await;
+
+                    tracing::info!("committing transaction");
+                    if let Err(e) = context.database.commit().await {
+                        tracing::error!("error committing transaction: {e}");
+                    }
+
                     let error = match result {
                         Ok(r) => match r {
                             Ok(_) => None,
@@ -298,8 +308,6 @@ impl JobScheduler {
 
                     let time_now = chrono::offset::Utc::now();
                     if let Err(e) = {
-                        let current_context = context.get::<serde_json::Value>().await;
-
                         entity::job_history::ActiveModel {
                             id: Unchanged(execution_id),
                             error: Set(error.is_some()),

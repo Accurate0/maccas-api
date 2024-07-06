@@ -1,6 +1,7 @@
 use self::error::JobError;
 use entity::jobs;
-use sea_orm::{prelude::Uuid, ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
+use sea_orm::DatabaseTransaction;
+use sea_orm::{prelude::Uuid, ActiveModelTrait, EntityTrait, Set};
 use std::fmt::Debug;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
@@ -80,13 +81,13 @@ impl JobDetails {
 }
 
 pub struct JobContext {
-    database: DatabaseConnection,
+    database: DatabaseTransaction,
     id: Uuid,
 }
 
 #[allow(unused)]
 impl JobContext {
-    pub fn new(database: DatabaseConnection, id: Uuid) -> Self {
+    pub fn new(database: DatabaseTransaction, id: Uuid) -> Self {
         Self { database, id }
     }
 
