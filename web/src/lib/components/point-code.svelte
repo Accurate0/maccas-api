@@ -15,7 +15,16 @@
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
 				.then((r) => r.json())
-				.then((j) => j as GetAccountCode$result['pointsByAccountId'])
+				.then((j) => j as GetAccountCode$result['pointsByAccountId']),
+
+		{
+			onError: () => {
+				code.update(() => 'Something went wrong');
+			},
+			onSuccess: (data) => {
+				code.update(() => data.code);
+			}
+		}
 	);
 
 	const refreshAccountCode = useMutation(
@@ -23,17 +32,24 @@
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
 				.then((r) => r.json())
-				.then((j) => j as GetAccountCode$result['pointsByAccountId'])
+				.then((j) => j as GetAccountCode$result['pointsByAccountId']),
+		{
+			onError: () => {
+				code.update(() => 'Something went wrong');
+			},
+			onSuccess: (data) => {
+				code.update(() => data.code);
+			}
+		}
 	);
 
 	onMount(async () => {
-		const response = await $getAccountCode.mutateAsync();
-		code.update(() => response.code);
+		await $getAccountCode.mutateAsync();
 	});
 </script>
 
 {#if $getAccountCode.isLoading}
-	<Skeleton class="bg-primary/50 h-[54px] w-full rounded-sm" />
+	<Skeleton class="h-[54px] w-full rounded-sm bg-primary/50" />
 {:else}
 	<div
 		class="flex flex-grow flex-row items-center justify-between rounded-sm bg-slate-700/10 p-3 text-center"

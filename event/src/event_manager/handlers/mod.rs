@@ -2,13 +2,16 @@ use super::{EventManager, EventManagerError};
 use crate::event_manager::handlers::cleanup::cleanup;
 use crate::event_manager::handlers::save_image::save_image;
 use base::retry::{retry_async, ExponentialBackoff, RetryResult};
+use converters::ConversionError;
 use event::Event;
+use refresh_points::refresh_points;
 use sea_orm::DbErr;
 use std::{num::TryFromIntError, time::Duration};
 use thiserror::Error;
 use tracing::{span, Instrument};
 
 mod cleanup;
+mod refresh_points;
 mod save_image;
 
 #[derive(Error, Debug)]
@@ -43,6 +46,8 @@ pub enum HandlerError {
     EventManagerError(#[from] EventManagerError),
     #[error("A TryFromInt error occurred: `{0}`")]
     TryFromIntError(#[from] TryFromIntError),
+    #[error("A ConversionError error occurred: `{0}`")]
+    ConversionError(#[from] ConversionError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)
@@ -81,6 +86,9 @@ pub async fn handle(event_manager: EventManager) {
                         .await
                     }
                     Event::SaveImage { basename } => save_image(basename, event_manager).await,
+                    Event::RefreshPoints { account_id } => {
+                        refresh_points(account_id, event_manager).await
+                    }
                 }
             })
             .await;

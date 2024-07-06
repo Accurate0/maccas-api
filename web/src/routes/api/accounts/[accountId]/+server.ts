@@ -29,6 +29,9 @@ export async function GET(event) {
 
 	const store = new GetAccountCodeStore();
 	const { data } = await store.fetch({ event, variables: { accountId, storeId: config.storeId } });
+	if (!data?.pointsByAccountId.code) {
+		return new Response(null, { status: 500 });
+	}
 
 	return json({ code: data?.pointsByAccountId.code });
 }

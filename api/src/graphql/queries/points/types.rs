@@ -1,7 +1,12 @@
-use crate::settings::Settings;
+use std::time::Duration;
+
+use crate::{graphql::ValidatedToken, settings::Settings};
 use async_graphql::{InputObject, Object};
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, points};
+use event::{CreateEvent, CreateEventResponse, Event};
+use reqwest::StatusCode;
+use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{prelude::Uuid, DatabaseConnection, EntityTrait, TransactionTrait};
 
 #[derive(InputObject)]
@@ -39,6 +44,7 @@ impl Points {
     ) -> async_graphql::Result<Option<String>> {
         let db = context.data::<DatabaseConnection>()?;
         let settings = context.data::<Settings>()?;
+        let http_client = context.data::<ClientWithMiddleware>()?;
 
         if self.store_id.is_none() {
             return Err(async_graphql::Error::new(
@@ -64,10 +70,42 @@ impl Points {
         .await?;
         account_lock_txn.commit().await?;
 
-        let response = api_client
+        let code_response = api_client
             .get_offers_dealstack(OFFSET, self.store_id.as_ref().unwrap())
             .await?;
 
-        Ok(response.body.response.map(|r| r.random_code))
+        let cleanup_event = CreateEvent {
+            event: Event::RefreshPoints {
+                account_id: self.model.account_id,
+            },
+            delay: Duration::from_secs(900),
+        };
+
+        let request_url = format!("{}/{}", settings.event_api_base, CreateEvent::path());
+        let request = http_client.post(request_url).json(&cleanup_event);
+        let token = context.data_opt::<ValidatedToken>().map(|v| &v.0);
+
+        let request = if let Some(token) = token {
+            request.bearer_auth(token)
+        } else {
+            request
+        };
+
+        let response = request.send().await;
+
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    let id = response.json::<CreateEventResponse>().await?.id;
+                    tracing::info!("created refresh points event with id {}", id);
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
+        }
+
+        Ok(code_response.body.response.map(|r| r.random_code))
     }
 }

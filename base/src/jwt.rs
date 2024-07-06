@@ -24,7 +24,7 @@ pub enum Role {
 #[serde(rename_all = "camelCase")]
 pub struct JwtClaims {
     pub user_id: String,
-    pub session_id: String,
+    pub session_id: Option<String>,
     pub iat: i64,
     pub exp: i64,
     pub aud: String,
@@ -62,9 +62,10 @@ pub fn generate_internal_jwt(
     let now = chrono::offset::Utc::now().timestamp();
     let claims = JwtClaims {
         user_id: "svc-internal".to_owned(),
-        session_id: "<none>".to_owned(),
+        session_id: None,
         iat: now,
-        exp: now + 180,
+        // 15mins
+        exp: now + 900,
         aud: created_for.to_owned(),
         iss: creator.to_owned(),
         sub: created_for.to_owned(),

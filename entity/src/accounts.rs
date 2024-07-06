@@ -19,6 +19,7 @@ pub struct Model {
     pub refreshed_at: DateTime,
     pub active: bool,
     pub refresh_failure_count: i32,
+    pub offers_refreshed_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
