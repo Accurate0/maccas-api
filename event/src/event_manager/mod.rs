@@ -6,8 +6,8 @@ use futures::TryFutureExt;
 use sea_orm::prelude::Uuid;
 use sea_orm::sea_query::Expr;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    Set, TransactionTrait, Unchanged,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Set,
+    TransactionTrait, Unchanged,
 };
 use serde::Serialize;
 use state::TypeMap;
@@ -152,11 +152,12 @@ impl EventManager {
     #[instrument(skip(self))]
     pub async fn reload_incomplete_events(&self) -> Result<(), EventManagerError> {
         let incomplete_events = events::Entity::find()
-            .filter(Condition::all().add(events::Column::IsCompleted.eq(false)))
+            .filter(events::Column::Status.eq(EventStatus::Pending))
             .all(&self.inner.db)
             .await?;
         let now = chrono::offset::Utc::now().naive_utc();
 
+        tracing::info!("reloading {} incomplete events", incomplete_events.len());
         for event in &incomplete_events {
             tracing::info!("reloading incomplete event: {}", event.event_id);
             let reload_event = async move {
