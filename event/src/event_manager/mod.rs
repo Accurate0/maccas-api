@@ -1,11 +1,13 @@
 use base::delay_queue::DelayQueue;
 use entity::events;
-use entity::sea_orm_active_enums::EventStatus;
+use entity::sea_orm_active_enums::{EventStatus, EventStatusEnum};
 use event::Event;
+use futures::TryFutureExt;
 use sea_orm::prelude::Uuid;
+use sea_orm::sea_query::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    Set, Unchanged,
+    Set, TransactionTrait, Unchanged,
 };
 use serde::Serialize;
 use state::TypeMap;
@@ -86,6 +88,8 @@ impl EventManager {
         let event_id = Uuid::new_v4();
         let should_be_completed_at = chrono::offset::Utc::now().naive_utc() + delay;
 
+        let txn = self.inner.db.begin().await?;
+
         let event = events::ActiveModel {
             name: Set(evt.to_string()),
             event_id: Set(event_id),
@@ -96,8 +100,28 @@ impl EventManager {
             status: Set(EventStatus::Pending),
             ..Default::default()
         }
-        .insert(&self.inner.db)
+        .insert(&txn)
         .await?;
+
+        // mark other matching pending events as duplicate
+        let duplicate_events = events::Entity::update_many()
+            .filter(events::Column::Hash.eq(event.hash))
+            // ignore newly added event :)
+            .filter(events::Column::EventId.ne(event_id))
+            .filter(events::Column::Status.eq(EventStatus::Pending))
+            .col_expr(
+                events::Column::Status,
+                Expr::val(EventStatus::Duplicate).as_enum(EventStatusEnum),
+            )
+            .exec(&txn)
+            .await?;
+
+        txn.commit().await?;
+
+        tracing::info!(
+            "marked {} events as duplicates",
+            duplicate_events.rows_affected
+        );
 
         self.inner
             .event_queue
@@ -112,6 +136,17 @@ impl EventManager {
             .await;
 
         Ok(event_id)
+    }
+
+    pub async fn should_run(&self, event_id: i32) -> bool {
+        events::Entity::find_by_id(event_id)
+            .one(&self.inner.db)
+            .map_ok(|maybe_evt| {
+                maybe_evt.map_or_else(|| false, |evt| evt.status == EventStatus::Pending)
+            })
+            .await
+            .ok()
+            .unwrap_or(false)
     }
 
     #[instrument(skip(self))]

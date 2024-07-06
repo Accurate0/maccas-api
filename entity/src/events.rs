@@ -24,6 +24,7 @@ pub struct Model {
     pub completed_at: Option<DateTime>,
     pub status: EventStatus,
     pub trace_id: Option<String>,
+    pub hash: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

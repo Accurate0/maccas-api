@@ -2,7 +2,7 @@ use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::McDonalds;
 use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
 use converters::Database;
-use entity::{account_lock, accounts, offer_details, offer_history, offers, points};
+use entity::{account_lock, accounts, offer_details, offer_history, offers};
 use event::{CreateEventResponse, Event};
 use libmaccas::ApiClient;
 use reqwest::StatusCode;

@@ -57,6 +57,11 @@ pub async fn handle(event_manager: EventManager) {
     let permit = event_manager.acquire_permit().await;
 
     if let Some(event) = event_manager.inner.event_queue.pop().await {
+        if !event_manager.should_run(event.id).await {
+            tracing::info!("skipping event {} as it does not meet criteria", event.id);
+            return;
+        }
+
         let event_manager = event_manager.clone();
         // 1st attempt + 5 retries
         let backoff = ExponentialBackoff::new(Duration::from_millis(100), 5);
