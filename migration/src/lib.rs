@@ -40,6 +40,7 @@ mod m20240526_095905_add_pg_stat_statement_extension;
 mod m20240706_061027_add_offer_refreshed_at;
 mod m20240706_071219_add_duplicate_status;
 mod m20240706_073116_add_event_hash;
+mod m20240706_085421_add_event_status_index;
 
 pub struct Migrator;
 
@@ -87,6 +88,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240706_061027_add_offer_refreshed_at::Migration),
             Box::new(m20240706_071219_add_duplicate_status::Migration),
             Box::new(m20240706_073116_add_event_hash::Migration),
+            Box::new(m20240706_085421_add_event_status_index::Migration),
         ]
     }
 }
