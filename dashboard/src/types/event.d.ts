@@ -3,14 +3,6 @@ export interface GetEventsResponse {
   historical_events: Event[];
 }
 
-export type EventType = Cleanup;
-
-export interface Cleanup {
-  offer_id: string;
-  transaction_id: string;
-  store_id: string;
-}
-
 export interface Event {
   name: string;
   id: number;
@@ -18,6 +10,7 @@ export interface Event {
   data: EventType;
   is_completed: boolean;
   should_be_completed_at: string;
+  status: "Completed" | "Failed" | "Pending" | "Running" | "Duplicate";
   created_at: string;
   updated_at: string;
   attempts: number;
