@@ -14,6 +14,9 @@ pub enum Event {
     SaveImage {
         basename: String,
     },
+    RefreshPoints {
+        account_id: Uuid,
+    },
 }
 
 impl fmt::Display for Event {
@@ -21,6 +24,7 @@ impl fmt::Display for Event {
         match self {
             Event::Cleanup { .. } => write!(f, "Cleanup"),
             Event::SaveImage { .. } => write!(f, "SaveImage"),
+            Event::RefreshPoints { .. } => write!(f, "RefreshPoints"),
         }
     }
 }

@@ -23,6 +23,7 @@ tokio-util = { workspace = true }
 entity = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
+converters = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true }

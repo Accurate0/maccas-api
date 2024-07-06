@@ -50,7 +50,7 @@ impl Job for RefreshJob {
             .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
             .filter(accounts::Column::Active.eq(true))
             .filter(accounts::Column::RefreshFailureCount.lte(3))
-            .order_by_asc(accounts::Column::UpdatedAt)
+            .order_by_asc(accounts::Column::OffersRefreshedAt)
             .one(&context.database)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
@@ -247,9 +247,11 @@ impl Job for RefreshJob {
             .exec(&txn)
             .await?;
 
+        let now = chrono::offset::Utc::now().naive_utc();
         accounts::Entity::update(accounts::ActiveModel {
             id: sea_orm::Unchanged(account_id),
             refresh_failure_count: sea_orm::Set(0),
+            offers_refreshed_at: sea_orm::Set(now),
             ..Default::default()
         })
         .exec(&context.database)
@@ -262,27 +264,30 @@ impl Job for RefreshJob {
             .exec(&context.database)
             .await;
 
-        let txn = context.database.begin().await?;
+        let refresh_points_event = event::CreateEvent {
+            event: Event::RefreshPoints { account_id },
+            delay: Duration::from_secs(0),
+        };
 
-        let points = api_client.get_customer_points().await?;
-        let points_model =
-            converters::Database::convert_points_response(&points.body.response, account_id)?
-                .0
-                .into_active_model();
+        let request = http_client
+            .post(&request_url)
+            .json(&refresh_points_event)
+            .bearer_auth(&token);
 
-        points::Entity::insert(points_model)
-            .on_conflict(
-                OnConflict::column(points::Column::AccountId)
-                    .update_columns([
-                        points::Column::LifetimePoints,
-                        points::Column::CurrentPoints,
-                    ])
-                    .to_owned(),
-            )
-            .exec(&txn)
-            .await?;
+        let response = request.send().await;
 
-        txn.commit().await?;
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    let id = response.json::<CreateEventResponse>().await?.id;
+                    tracing::info!("created refresh points event with id {}", id);
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
+        }
 
         Ok(())
     }

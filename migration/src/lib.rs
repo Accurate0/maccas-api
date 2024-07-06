@@ -37,6 +37,7 @@ mod m20240504_053110_add_refresh_failure_count;
 mod m20240525_113934_add_index_for_iscompleted;
 mod m20240525_121202_add_more_index;
 mod m20240526_095905_add_pg_stat_statement_extension;
+mod m20240706_061027_add_offer_refreshed_at;
 
 pub struct Migrator;
 
@@ -81,6 +82,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240525_113934_add_index_for_iscompleted::Migration),
             Box::new(m20240525_121202_add_more_index::Migration),
             Box::new(m20240526_095905_add_pg_stat_statement_extension::Migration),
+            Box::new(m20240706_061027_add_offer_refreshed_at::Migration),
         ]
     }
 }
