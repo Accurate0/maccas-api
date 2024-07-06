@@ -3,9 +3,9 @@ resolver = "2"
 members = [
     "api",
     "migration",
-    "external/libmaccas",
-    "external/places",
-    "external/openai",
+    "libmaccas",
+    "places",
+    "openai",
     "batch",
     "base",
     "event", 
@@ -46,9 +46,9 @@ anyhow = "1.0.86"
 config = "0.14.0"
 
 entity = { path = "./entity" }
-libmaccas = { path = "./external/libmaccas" }
-places = { path = "./external/places" }
-openai = { path = "./external/openai" }
+libmaccas = { path = "./libmaccas" }
+places = { path = "./places" }
+openai = { path = "./openai" }
 base = { path = "./base" }
 converters = { path = "./converters" }
 event = { path = "./event" }
