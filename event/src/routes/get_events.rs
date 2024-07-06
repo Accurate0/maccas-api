@@ -26,7 +26,7 @@ pub async fn get_events(
         match event.status {
             EventStatus::Completed | EventStatus::Failed => historical_events.push(event),
             EventStatus::Pending | EventStatus::Running => active_events.push(event),
-            EventStatus::Duplicate => continue,
+            EventStatus::Duplicate => historical_events.push(event),
         }
     }
 

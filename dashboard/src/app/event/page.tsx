@@ -95,14 +95,8 @@ const Page = async () => {
                 const colour = item.error
                   ? "rose"
                   : item.is_completed
-                  ? "emerald"
-                  : "gray";
-
-                const text = item.error
-                  ? "failed"
-                  : item.is_completed
-                  ? "success"
-                  : "not completed";
+                    ? "emerald"
+                    : "gray";
 
                 return (
                   <TableRow key={item.event_id}>
@@ -122,15 +116,13 @@ const Page = async () => {
                     </TableCell>
                     <TableCell>{item.attempts}</TableCell>
                     <TableCell className="whitespace-pre-line">
-                      {item.error
+                      {item.status === "Failed"
                         ? item.error_message
-                        : item.completed_at
-                        ? "Completed"
-                        : "In progress"}
+                        : item.status}
                     </TableCell>
                     <TableCell className="w-24">
                       <Badge className="w-24" color={colour} size="xl">
-                        {text}
+                        {item.status}
                       </Badge>
                     </TableCell>
                   </TableRow>
