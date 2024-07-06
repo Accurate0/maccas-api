@@ -2,7 +2,8 @@ use crate::{constants, http::get_proxied_maccas_http_client};
 use entity::accounts;
 use reqwest::Proxy;
 use sea_orm::{
-    ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QuerySelect, Set,
+    sea_query::{LockBehavior, LockType},
+    ActiveModelTrait, DatabaseTransaction, EntityTrait, IntoActiveModel, QuerySelect, Set,
     TransactionTrait,
 };
 
@@ -10,7 +11,7 @@ pub async fn get_activated_maccas_api_client(
     account: accounts::Model,
     proxy: Proxy,
     client_id: &str,
-    db: &DatabaseConnection,
+    db: &DatabaseTransaction,
 ) -> Result<libmaccas::ApiClient, anyhow::Error> {
     let mut api_client = libmaccas::ApiClient::new(
         constants::mc_donalds::BASE_URL.to_owned(),
@@ -24,7 +25,7 @@ pub async fn get_activated_maccas_api_client(
     if (now - account.refreshed_at).num_minutes() >= 14 {
         let txn = db.begin().await?;
         accounts::Entity::find_by_id(account.id)
-            .lock_exclusive()
+            .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
             .one(&txn)
             .await?;
 

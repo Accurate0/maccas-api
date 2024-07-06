@@ -6,7 +6,7 @@ use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offer_details, offers};
 use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, JoinType, Order,
-    QueryFilter, QueryOrder, QuerySelect, RelationTrait,
+    QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
 use std::collections::HashMap;
 
@@ -44,13 +44,15 @@ impl OffersQuery {
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
+        let account_lock_txn = db.begin().await?;
         let api_client = base::maccas::get_activated_maccas_api_client(
             account,
             proxy,
             &settings.mcdonalds.client_id,
-            db,
+            &account_lock_txn,
         )
         .await?;
+        account_lock_txn.commit().await?;
 
         let offer_code = api_client
             .get_offers_dealstack(OFFSET, &input.store_id)

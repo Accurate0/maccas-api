@@ -8,8 +8,9 @@ use libmaccas::ApiClient;
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel,
-    QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait, TryIntoModel,
+    sea_query::{LockBehavior, LockType, OnConflict},
+    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
+    QuerySelect, Set, TransactionTrait, TryIntoModel,
 };
 use serde::Serialize;
 use std::time::Duration;
@@ -45,14 +46,12 @@ impl Job for RefreshJob {
         context: &JobContext,
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
-        let txn = context.database.begin().await?;
-
         let account_to_refresh = accounts::Entity::find()
-            .lock_exclusive()
+            .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
             .filter(accounts::Column::Active.eq(true))
             .filter(accounts::Column::RefreshFailureCount.lte(3))
             .order_by_asc(accounts::Column::UpdatedAt)
-            .one(&txn)
+            .one(&context.database)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
@@ -91,29 +90,27 @@ impl Job for RefreshJob {
             update_model.refresh_token = Set(response.refresh_token);
             tracing::info!("new tokens fetched, updating database");
 
-            update_model.update(&txn).await?;
+            update_model.update(&context.database).await?;
 
             Ok::<ApiClient, anyhow::Error>(api_client)
         }
         .await;
 
-        if let Err(e) = api_client {
-            tracing::warn!("increasing error count: {}", current_failure_count + 1);
-            accounts::Entity::update(accounts::ActiveModel {
-                id: sea_orm::Unchanged(account_id),
-                refresh_failure_count: sea_orm::Set(current_failure_count + 1),
-                ..Default::default()
-            })
-            .exec(&txn)
-            .await?;
+        let api_client = match api_client {
+            Ok(api_client) => api_client,
+            Err(e) => {
+                tracing::warn!("increasing error count: {}", current_failure_count + 1);
+                accounts::Entity::update(accounts::ActiveModel {
+                    id: sea_orm::Unchanged(account_id),
+                    refresh_failure_count: sea_orm::Set(current_failure_count + 1),
+                    ..Default::default()
+                })
+                .exec(&context.database)
+                .await?;
 
-            txn.commit().await?;
-
-            return Err(e.into());
-        }
-
-        txn.commit().await?;
-        let api_client = api_client.unwrap();
+                return Err(e.into());
+            }
+        };
 
         let offers = api_client
             .get_offers(
@@ -255,7 +252,7 @@ impl Job for RefreshJob {
             refresh_failure_count: sea_orm::Set(0),
             ..Default::default()
         })
-        .exec(&txn)
+        .exec(&context.database)
         .await?;
 
         txn.commit().await?;

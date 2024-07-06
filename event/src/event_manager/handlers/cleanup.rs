@@ -1,9 +1,9 @@
 use super::HandlerError;
 use crate::{event_manager::EventManager, settings::Settings};
-use anyhow::Context as _;
+use anyhow::Context;
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
-use sea_orm::{ActiveModelTrait, EntityTrait, Set};
+use sea_orm::{ActiveModelTrait, EntityTrait, Set, TransactionTrait};
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -21,26 +21,26 @@ pub async fn cleanup(
     let db = em.db();
 
     let fut = async {
-        let offer = offers::Entity::find_by_id(offer_id)
+        let (offer, account) = offers::Entity::find_by_id(offer_id)
+            .find_also_related(accounts::Entity)
             .one(db)
             .await?
             .context("No offer found for this id")?;
 
-        let account = accounts::Entity::find_by_id(offer.account_id)
-            .one(db)
-            .await?
-            .context("Must find related account")?;
+        let account = account.context("Must find matching account")?;
 
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
+        let account_lock_txn = db.begin().await?;
         let api_client = base::maccas::get_activated_maccas_api_client(
             account,
             proxy,
             &settings.mcdonalds.client_id,
-            db,
+            &account_lock_txn,
         )
         .await?;
+        account_lock_txn.commit().await?;
 
         let is_in_deal_stack = api_client
             .get_offers_dealstack(OFFSET, &store_id)

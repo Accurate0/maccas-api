@@ -12,7 +12,7 @@ use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     prelude::Uuid, ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait,
-    QueryFilter, Set,
+    QueryFilter, Set, TransactionTrait,
 };
 use std::time::Duration;
 
@@ -68,13 +68,15 @@ impl OffersMutation {
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
+        let account_lock_txn = db.begin().await?;
         let api_client = base::maccas::get_activated_maccas_api_client(
             account,
             proxy,
             &settings.mcdonalds.client_id,
-            db,
+            &account_lock_txn,
         )
         .await?;
+        account_lock_txn.commit().await?;
 
         let deal_stack_response = api_client
             .add_to_offers_dealstack(&offer.offer_proposition_id, OFFSET, &input.store_id)
@@ -147,28 +149,28 @@ impl OffersMutation {
     ) -> async_graphql::Result<Uuid> {
         let db = ctx.data::<DatabaseConnection>()?;
 
-        let offer = offers::Entity::find_by_id(input.id)
+        let (offer, account) = offers::Entity::find_by_id(input.id)
+            .find_also_related(accounts::Entity)
             .one(db)
             .await?
             .context("No offer found for this id")?;
 
-        let settings = ctx.data::<Settings>()?;
+        let account = account.context("Must find related account")?;
 
-        let account = accounts::Entity::find_by_id(offer.account_id)
-            .one(db)
-            .await?
-            .context("Must find related account")?;
+        let settings = ctx.data::<Settings>()?;
 
         let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
             .basic_auth(&settings.proxy.username, &settings.proxy.password);
 
+        let account_lock_txn = db.begin().await?;
         let api_client = base::maccas::get_activated_maccas_api_client(
             account,
             proxy,
             &settings.mcdonalds.client_id,
-            db,
+            &account_lock_txn,
         )
         .await?;
+        account_lock_txn.commit().await?;
 
         let response = api_client
             .remove_from_offers_dealstack(
