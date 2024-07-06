@@ -16,6 +16,8 @@ pub enum Action {
 pub enum EventStatus {
     #[sea_orm(string_value = "completed")]
     Completed,
+    #[sea_orm(string_value = "duplicate")]
+    Duplicate,
     #[sea_orm(string_value = "failed")]
     Failed,
     #[sea_orm(string_value = "pending")]
