@@ -11,7 +11,6 @@ use sea_orm::{
     EntityTrait, QueryFilter, Set, TransactionTrait, Unchanged,
 };
 use serde::Serialize;
-use serde_json::Value;
 use std::{
     collections::HashMap, fmt::Debug, ops::ControlFlow, panic::AssertUnwindSafe, sync::Arc,
     time::Duration,
@@ -252,7 +251,6 @@ impl JobScheduler {
 
         let cancellation_token = CancellationToken::new();
         let cancellation_token_cloned = cancellation_token.clone();
-        let job = job_details.job.clone();
 
         let running = match job_details.state {
             JobState::Stopped => false,
@@ -264,91 +262,14 @@ impl JobScheduler {
         tracing::info!("should run: {}", !running);
 
         if !running {
-            let txn = self.0.db.begin().await?;
-            let db = self.0.db.clone();
-            let context = JobContext::new(txn, job_model.id);
-            let span = tracing::span!(parent: None, Level::INFO, "job", job_name = name, "otel.name" = format!("job::{}", name));
-            let queue = self.0.task_queue.clone();
-            let task_name = name.to_string();
-
-            let execution_id = entity::job_history::ActiveModel {
-                context: Set(context.get::<Value>().await),
-                job_name: Set(job_model.name),
-                ..Default::default()
-            }
-            .insert(&db)
-            .await?
-            .id;
-
-            let handle = tokio::spawn(
-                async move {
-                    tracing::info!("triggered job {}", job.name());
-                    let result = AssertUnwindSafe(job.execute(&context, cancellation_token_cloned))
-                        .catch_unwind()
-                        .await;
-
-                    let current_context = context.get::<serde_json::Value>().await;
-
-                    tracing::info!("committing transaction");
-                    if let Err(e) = context.database.commit().await {
-                        tracing::error!("error committing transaction: {e}");
-                    }
-
-                    let error = match result {
-                        Ok(r) => match r {
-                            Ok(_) => None,
-                            Err(e) => Some(e.to_string()),
-                        },
-                        Err(e) => Some(format!("panic in completing job: {e:?}")),
-                    };
-
-                    if error.is_some() {
-                        tracing::error!("error with job completion: {:?}", &error)
-                    }
-
-                    let time_now = chrono::offset::Utc::now();
-                    if let Err(e) = {
-                        entity::job_history::ActiveModel {
-                            id: Unchanged(execution_id),
-                            error: Set(error.is_some()),
-                            error_message: Set(error.clone()),
-                            completed_at: Set(Some(time_now.naive_utc())),
-                            context: Set(current_context),
-                            ..Default::default()
-                        }
-                        .update(&db)
-                        .await
-                    } {
-                        tracing::error!("error setting job error: {}, {:?}", e, error)
-                    }
-
-                    let update_finish_time = jobs::ActiveModel {
-                        id: Set(job_model.id),
-                        name: Set(task_name.to_string()),
-                        last_execution: Set(Some(time_now.naive_utc())),
-                        ..Default::default()
-                    }
-                    .update(&db)
-                    .await;
-
-                    if let Err(e) = update_finish_time {
-                        tracing::error!("error setting last execution: {}", e)
-                    }
-
-                    // must send after updating last execution or it can trigger twice
-                    // race condition
-                    queue
-                        .push(
-                            Message::JobFinished {
-                                name: task_name,
-                                queue_next,
-                            },
-                            Duration::ZERO,
-                        )
-                        .await;
-                }
-                .instrument(span),
-            );
+            let handle = self
+                .handle_start_new_job(
+                    &job_model,
+                    job_details,
+                    queue_next,
+                    cancellation_token_cloned,
+                )
+                .await?;
 
             job_details.state = JobState::Running(RunningState {
                 cancellation_token,
@@ -356,6 +277,153 @@ impl JobScheduler {
             });
         };
         Ok(())
+    }
+
+    async fn handle_start_new_job(
+        &self,
+        job_model: &entity::jobs::Model,
+        job_details: &JobDetails,
+        queue_next: bool,
+        cancellation_token: CancellationToken,
+    ) -> Result<JoinHandle<()>, JobError> {
+        let job = job_details.job.clone();
+        let db = self.0.db.clone();
+        let job_id = job_model.id;
+        let task_name = job_model.name.to_string();
+        let span = tracing::span!(parent: None, Level::INFO, "job", job_name = task_name, "otel.name" = format!("job::{}", task_name));
+        let queue = self.0.task_queue.clone();
+
+        let execution_id = entity::job_history::ActiveModel {
+            job_name: Set(task_name.clone()),
+            ..Default::default()
+        }
+        .insert(&db)
+        .await?
+        .id;
+
+        let fut = async move {
+            let txn = db.begin().await?;
+            let context = JobContext::new(&txn, job_id);
+
+            let result = async {
+                let cancellation_token = cancellation_token.child_token();
+                tracing::info!("triggered job {}", job.name());
+                AssertUnwindSafe(job.execute(&context, cancellation_token))
+                    .catch_unwind()
+                    .await
+            }
+            .instrument(tracing::span!(Level::INFO, "job::execute"))
+            .await;
+
+            let context_id = context.id;
+
+            txn.commit()
+                .instrument(tracing::span!(Level::INFO, "job::commit_transaction"))
+                .await?;
+
+            let job_error = match result {
+                Ok(r) => match r {
+                    Ok(_) => None,
+                    Err(e) => Some(e.to_string()),
+                },
+                Err(e) => Some(format!("panic: {e:?}")),
+            };
+
+            if job_error.is_none() {
+                let txn = db.begin().await?;
+                let post_context = JobContext::new(&txn, job_id);
+
+                let post_result = async {
+                    let cancellation_token = cancellation_token.child_token();
+                    AssertUnwindSafe(job.post_execute(&post_context, cancellation_token))
+                        .catch_unwind()
+                        .await
+                }
+                .instrument(tracing::span!(Level::INFO, "job::post::execute"))
+                .await;
+
+                async move {
+                    tracing::info!("committing transaction");
+                    txn.commit().await?;
+
+                    Ok::<_, JobError>(())
+                }
+                .instrument(tracing::span!(Level::INFO, "job::post::commit_transaction"))
+                .await?;
+
+                let post_error = match post_result {
+                    Ok(r) => match r {
+                        Ok(_) => None,
+                        Err(e) => Some(e.to_string()),
+                    },
+                    Err(e) => Some(format!("panic: {e:?}")),
+                };
+
+                if let Some(e) = post_error {
+                    tracing::error!("error in post execute task: {e}");
+                }
+            } else {
+                tracing::warn!("skipping post_execute as execute failed");
+            }
+
+            async move {
+                let time_now = chrono::offset::Utc::now();
+                let current_context = entity::jobs::Entity::find_by_id(job_id)
+                    .one(&db)
+                    .await?
+                    .and_then(|j| j.context);
+
+                entity::job_history::ActiveModel {
+                    id: Unchanged(execution_id),
+                    error: Set(job_error.is_some()),
+                    error_message: Set(job_error.clone()),
+                    completed_at: Set(Some(time_now.naive_utc())),
+                    context: Set(current_context),
+                    ..Default::default()
+                }
+                .update(&db)
+                .await?;
+
+                jobs::ActiveModel {
+                    id: Set(context_id),
+                    name: Set(task_name.to_string()),
+                    last_execution: Set(Some(time_now.naive_utc())),
+                    ..Default::default()
+                }
+                .update(&db)
+                .await?;
+
+                Ok::<_, JobError>(())
+            }
+            .instrument(tracing::span!(Level::INFO, "job::complete"))
+            .await?;
+
+            Ok::<(), JobError>(())
+        }
+        .instrument(span);
+
+        let task_name = job_model.name.to_string();
+
+        let handle = tokio::spawn(
+            fut.then(|r| async move {
+                if let Err(e) = r {
+                    tracing::error!("error in job completion: {e}")
+                }
+            })
+            .then(move |_| async move {
+                queue
+                    .push(
+                        Message::JobFinished {
+                            name: task_name,
+                            queue_next,
+                        },
+                        Duration::ZERO,
+                    )
+                    .await;
+            }),
+        );
+
+        Ok(handle)
     }
 
     async fn handle_message(&self, message: Message) -> Result<(), JobError> {

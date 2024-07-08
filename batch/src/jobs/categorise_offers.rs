@@ -47,7 +47,7 @@ impl Job for CategoriseOffersJob {
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         let available_categories = entity::categories::Entity::find()
-            .all(&context.database)
+            .all(context.database)
             .await?
             .into_iter()
             .map(|c| c.name)
@@ -55,7 +55,7 @@ impl Job for CategoriseOffersJob {
 
         let offer_details = entity::offer_details::Entity::find()
             .filter(Condition::any().add(entity::offer_details::Column::Categories.is_null()))
-            .all(&context.database)
+            .all(context.database)
             .await?
             .into_iter()
             .map(|o| o.short_name)
@@ -104,7 +104,7 @@ impl Job for CategoriseOffersJob {
                     entity::offer_details::Column::Categories,
                     Expr::value(value),
                 )
-                .exec(&context.database)
+                .exec(context.database)
                 .await?;
         }
 

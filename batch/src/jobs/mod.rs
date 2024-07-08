@@ -28,6 +28,13 @@ pub trait Job: Send + Sync + Debug {
     ) -> Result<(), JobError> {
         Ok(())
     }
+    async fn post_execute(
+        &self,
+        _context: &JobContext,
+        _cancellation_token: CancellationToken,
+    ) -> Result<(), JobError> {
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
@@ -80,14 +87,14 @@ impl JobDetails {
     }
 }
 
-pub struct JobContext {
-    database: DatabaseTransaction,
+pub struct JobContext<'a> {
+    database: &'a DatabaseTransaction,
     id: Uuid,
 }
 
 #[allow(unused)]
-impl JobContext {
-    pub fn new(database: DatabaseTransaction, id: Uuid) -> Self {
+impl<'a> JobContext<'a> {
+    pub fn new(database: &'a DatabaseTransaction, id: Uuid) -> Self {
         Self { database, id }
     }
 
@@ -97,7 +104,7 @@ impl JobContext {
     {
         serde_json::from_value::<T>(
             jobs::Entity::find_by_id(self.id)
-                .one(&self.database)
+                .one(self.database)
                 .await
                 .map(|e| e.map(|m| m.context))
                 .ok()
@@ -117,7 +124,7 @@ impl JobContext {
             context: Set(Some(serde_json::to_value(context)?)),
             ..Default::default()
         }
-        .update(&self.database)
+        .update(self.database)
         .await?;
 
         Ok(())
@@ -129,7 +136,7 @@ impl JobContext {
             context: Set(None),
             ..Default::default()
         }
-        .update(&self.database)
+        .update(self.database)
         .await?;
 
         Ok(())

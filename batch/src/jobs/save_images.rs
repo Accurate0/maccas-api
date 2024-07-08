@@ -33,7 +33,7 @@ impl Job for SaveImagesJob {
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
         let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
-        let offer_details = offer_details::Entity::find().all(&context.database).await?;
+        let offer_details = offer_details::Entity::find().all(context.database).await?;
 
         for offer in offer_details {
             let save_image_event = event::CreateEvent {

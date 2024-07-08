@@ -135,7 +135,7 @@ impl Job for CreateAccountJob {
             device_id: Set(device_id),
             ..Default::default()
         }
-        .insert(&context.database)
+        .insert(context.database)
         .await?;
 
         Ok(())
