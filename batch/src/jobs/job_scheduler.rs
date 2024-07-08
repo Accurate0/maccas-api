@@ -302,32 +302,26 @@ impl JobScheduler {
         .id;
 
         let fut = async move {
-            let txn = db.begin().await?;
-            let context = JobContext::new(&txn, job_id);
-
             let result = async {
+                let txn = db.begin().await?;
+                let context = JobContext::new(&txn, job_id);
+
                 let cancellation_token = cancellation_token.child_token();
                 tracing::info!("triggered job {}", job.name());
-                AssertUnwindSafe(job.execute(&context, cancellation_token))
+                let result = AssertUnwindSafe(job.execute(&context, cancellation_token))
                     .catch_unwind()
-                    .await
+                    .await;
+
+                txn.commit().await?;
+
+                Ok::<_, JobError>(result)
             }
             .instrument(tracing::span!(
                 Level::INFO,
                 "job::execute",
                 "otel.name" = format!("job::{}::execute", task_name)
             ))
-            .await;
-
-            let context_id = context.id;
-
-            txn.commit()
-                .instrument(tracing::span!(
-                    Level::INFO,
-                    "job::commit_transaction",
-                    "otel.name" = format!("job::{}::commit_transaction", task_name)
-                ))
-                .await?;
+            .await?;
 
             let job_error = match result {
                 Ok(r) => match r {
@@ -338,32 +332,24 @@ impl JobScheduler {
             };
 
             if job_error.is_none() {
-                let txn = db.begin().await?;
-                let post_context = JobContext::new(&txn, job_id);
-
                 let post_result = async {
+                    let txn = db.begin().await?;
+                    let post_context = JobContext::new(&txn, job_id);
+
                     let cancellation_token = cancellation_token.child_token();
-                    AssertUnwindSafe(job.post_execute(&post_context, cancellation_token))
-                        .catch_unwind()
-                        .await
+                    let result =
+                        AssertUnwindSafe(job.post_execute(&post_context, cancellation_token))
+                            .catch_unwind()
+                            .await;
+
+                    txn.commit().await?;
+
+                    Ok::<_, JobError>(result)
                 }
                 .instrument(tracing::span!(
                     Level::INFO,
                     "job::post::execute",
                     "otel.name" = format!("job::{}::post::execute", task_name)
-                ))
-                .await;
-
-                async move {
-                    tracing::info!("committing transaction");
-                    txn.commit().await?;
-
-                    Ok::<_, JobError>(())
-                }
-                .instrument(tracing::span!(
-                    Level::INFO,
-                    "job::post::commit_transaction",
-                    "otel.name" = format!("job::{}::post::commit_transaction", task_name)
                 ))
                 .await?;
 
@@ -401,7 +387,7 @@ impl JobScheduler {
                 .await?;
 
                 jobs::ActiveModel {
-                    id: Set(context_id),
+                    id: Set(job_id),
                     name: Set(task_name.to_string()),
                     last_execution: Set(Some(time_now.naive_utc())),
                     ..Default::default()
