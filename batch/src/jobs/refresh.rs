@@ -1,5 +1,6 @@
 use super::{error::JobError, Job, JobContext, JobType};
 use crate::settings::McDonalds;
+use anyhow::Context as _;
 use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
@@ -8,11 +9,12 @@ use libmaccas::ApiClient;
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
+    prelude::Uuid,
     sea_query::{LockBehavior, LockType, OnConflict},
     ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
     QuerySelect, Set, TransactionTrait, TryIntoModel,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
@@ -24,9 +26,9 @@ pub struct RefreshJob {
     pub mcdonalds_config: McDonalds,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct RefreshContext {
-    account_id: String,
+    account_id: Uuid,
 }
 
 #[async_trait::async_trait]
@@ -51,13 +53,13 @@ impl Job for RefreshJob {
             .filter(accounts::Column::Active.eq(true))
             .filter(accounts::Column::RefreshFailureCount.lte(3))
             .order_by_asc(accounts::Column::OffersRefreshedAt)
-            .one(&context.database)
+            .one(context.database)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
         context
             .set(RefreshContext {
-                account_id: account_to_refresh.id.to_string(),
+                account_id: account_to_refresh.id,
             })
             .await?;
 
@@ -90,7 +92,7 @@ impl Job for RefreshJob {
             update_model.refresh_token = Set(response.refresh_token);
             tracing::info!("new tokens fetched, updating database");
 
-            update_model.update(&context.database).await?;
+            update_model.update(context.database).await?;
 
             Ok::<ApiClient, anyhow::Error>(api_client)
         }
@@ -105,7 +107,7 @@ impl Job for RefreshJob {
                     refresh_failure_count: sea_orm::Set(current_failure_count + 1),
                     ..Default::default()
                 })
-                .exec(&context.database)
+                .exec(context.database)
                 .await?;
 
                 return Err(e.into());
@@ -134,7 +136,7 @@ impl Job for RefreshJob {
 
                 async move {
                     let details = offer_details::Entity::find_by_id(id)
-                        .one(&context.database)
+                        .one(context.database)
                         .await?;
 
                     if details.is_none()
@@ -254,40 +256,47 @@ impl Job for RefreshJob {
             offers_refreshed_at: sea_orm::Set(now),
             ..Default::default()
         })
-        .exec(&context.database)
+        .exec(context.database)
         .await?;
 
         txn.commit().await?;
 
         // unlock account now if it was locked...
         let _ = account_lock::Entity::delete_by_id(account_id)
-            .exec(&context.database)
+            .exec(context.database)
             .await;
 
+        Ok(())
+    }
+
+    async fn post_execute(
+        &self,
+        context: &JobContext,
+        _cancellation_token: CancellationToken,
+    ) -> Result<(), JobError> {
+        let refresh_context = context
+            .get::<RefreshContext>()
+            .await
+            .context("must have a context")?;
+
         let refresh_points_event = event::CreateEvent {
-            event: Event::RefreshPoints { account_id },
+            event: Event::RefreshPoints {
+                account_id: refresh_context.account_id,
+            },
             delay: Duration::from_secs(0),
         };
+
+        let http_client = get_http_client()?;
+        let token =
+            generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
+        let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
 
         let request = http_client
             .post(&request_url)
             .json(&refresh_points_event)
             .bearer_auth(&token);
 
-        let response = request.send().await;
-
-        match response {
-            Ok(response) => match response.status() {
-                StatusCode::CREATED => {
-                    let id = response.json::<CreateEventResponse>().await?.id;
-                    tracing::info!("created refresh points event with id {}", id);
-                }
-                status => {
-                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                }
-            },
-            Err(e) => tracing::warn!("event request failed with {}", e),
-        }
+        request.send().await?.error_for_status()?;
 
         Ok(())
     }

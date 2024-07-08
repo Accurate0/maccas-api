@@ -28,7 +28,7 @@ impl Job for RecategoriseOffersJob {
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         let available_categories = entity::categories::Entity::find()
-            .all(&context.database)
+            .all(context.database)
             .await?
             .into_iter()
             .map(|c| c.name)
@@ -38,7 +38,7 @@ impl Job for RecategoriseOffersJob {
             .filter(offer_details::Column::Categories.eq(Vec::<String>::new()))
             // just in case
             .limit(100)
-            .all(&context.database)
+            .all(context.database)
             .await?
             .into_iter()
             .map(|o| o.short_name)
@@ -90,7 +90,7 @@ impl Job for RecategoriseOffersJob {
                     entity::offer_details::Column::Categories,
                     Expr::value(value),
                 )
-                .exec(&context.database)
+                .exec(context.database)
                 .await?;
         }
 

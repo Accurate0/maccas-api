@@ -96,7 +96,7 @@ impl Job for ActivateAccountJob {
             if magic_link.is_some() {
                 let account = accounts::Entity::find()
                     .filter(accounts::Column::Username.eq(to.clone()))
-                    .one(&context.database)
+                    .one(context.database)
                     .await?
                     .ok_or(anyhow::Error::msg("no account found"))?;
 
@@ -137,7 +137,7 @@ impl Job for ActivateAccountJob {
                     active_model.access_token = Set(token_response.access_token);
                     active_model.refresh_token = Set(token_response.refresh_token);
 
-                    active_model.update(&context.database).await?;
+                    active_model.update(context.database).await?;
                 }
             }
         }

@@ -25,7 +25,7 @@ impl Job for AccountUnlockJob {
         let now = chrono::offset::Utc::now();
         let res = account_lock::Entity::delete_many()
             .filter(account_lock::Column::UnlockAt.lte(now))
-            .exec(&context.database)
+            .exec(context.database)
             .await?;
 
         tracing::info!("unlocked {} accounts", res.rows_affected);
