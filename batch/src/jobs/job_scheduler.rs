@@ -312,13 +312,21 @@ impl JobScheduler {
                     .catch_unwind()
                     .await
             }
-            .instrument(tracing::span!(Level::INFO, "job::execute"))
+            .instrument(tracing::span!(
+                Level::INFO,
+                "job::execute",
+                "otel.name" = format!("job::{}::execute", task_name)
+            ))
             .await;
 
             let context_id = context.id;
 
             txn.commit()
-                .instrument(tracing::span!(Level::INFO, "job::commit_transaction"))
+                .instrument(tracing::span!(
+                    Level::INFO,
+                    "job::commit_transaction",
+                    "otel.name" = format!("job::{}::commit_transaction", task_name)
+                ))
                 .await?;
 
             let job_error = match result {
@@ -339,7 +347,11 @@ impl JobScheduler {
                         .catch_unwind()
                         .await
                 }
-                .instrument(tracing::span!(Level::INFO, "job::post::execute"))
+                .instrument(tracing::span!(
+                    Level::INFO,
+                    "job::post::execute",
+                    "otel.name" = format!("job::{}::post::execute", task_name)
+                ))
                 .await;
 
                 async move {
@@ -348,7 +360,11 @@ impl JobScheduler {
 
                     Ok::<_, JobError>(())
                 }
-                .instrument(tracing::span!(Level::INFO, "job::post::commit_transaction"))
+                .instrument(tracing::span!(
+                    Level::INFO,
+                    "job::post::commit_transaction",
+                    "otel.name" = format!("job::{}::post::commit_transaction", task_name)
+                ))
                 .await?;
 
                 let post_error = match post_result {
@@ -366,7 +382,7 @@ impl JobScheduler {
                 tracing::warn!("skipping post_execute as execute failed");
             }
 
-            async move {
+            async {
                 let time_now = chrono::offset::Utc::now();
                 let current_context = entity::jobs::Entity::find_by_id(job_id)
                     .one(&db)
@@ -395,7 +411,11 @@ impl JobScheduler {
 
                 Ok::<_, JobError>(())
             }
-            .instrument(tracing::span!(Level::INFO, "job::complete"))
+            .instrument(tracing::span!(
+                Level::INFO,
+                "job::complete",
+                "otel.name" = format!("job::{}::complete", task_name)
+            ))
             .await?;
 
             Ok::<(), JobError>(())
