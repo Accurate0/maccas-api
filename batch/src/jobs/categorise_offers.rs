@@ -22,8 +22,10 @@ pub fn get_prompt(available_categories: &str, offer_details: &str) -> Vec<ChatMe
         ChatMessage {
             role: "user".to_string(),
             content: format!(r#"Give the following categories as comma separated: {available_categories}
-            Categorise the following names which are also comma separated, you must select the category that fits the best:
+            Categorise the following names which are also comma separated, you must select the categories that fit the best:
             {offer_details}
+
+            You may select multiple categories, only if they match well however, single categories are preferred where possible.
 
             If a name does not match any category, return a null value in the json instead.
             You must respond with a JSON dictionary that maps the name to the category selected."#,)
@@ -89,15 +91,10 @@ impl Job for CategoriseOffersJob {
             .context("must have one choice")?;
 
         let response =
-            serde_json::from_str::<HashMap<String, Option<String>>>(&response.message.content)?;
+            serde_json::from_str::<HashMap<String, Vec<String>>>(&response.message.content)?;
 
         // FIXME: bad...
         for (key, value) in response {
-            let value = match value {
-                Some(v) => vec![v],
-                None => vec![],
-            };
-
             entity::offer_details::Entity::update_many()
                 .filter(entity::offer_details::Column::ShortName.eq(key))
                 .col_expr(
