@@ -16,10 +16,10 @@
 	import DealCode from '$lib/components/deal-code.svelte';
 
 	let filters = writable<Array<string> | undefined>();
-	let state: Writable<Record<number, Array<{ id: string }>>> = writable({});
+	let state: Writable<Record<string, Array<{ id: string }>>> = writable({});
 	let sortByAsc = true;
 
-	const addOffer = (offerId: number, id: string) => {
+	const addOffer = (offerId: string, id: string) => {
 		// FIXME: :)
 		if (!$state[offerId]) {
 			$state[offerId] = [];
@@ -59,7 +59,7 @@
 		return false;
 	};
 
-	const removeOffer = async (offerId: number, id: string) => {
+	const removeOffer = async (offerId: string, id: string) => {
 		state.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
 	};
 
@@ -127,11 +127,11 @@
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
 			if (!a.price) {
-				return Number.MAX_SAFE_INTEGER;
+				return 0;
 			}
 
 			if (!b.price) {
-				return Number.MIN_SAFE_INTEGER;
+				return 0;
 			}
 
 			if (sortByAsc) {
@@ -139,15 +139,15 @@
 			} else {
 				return b.price - a.price;
 			}
-		}) as { shortName, count, imageUrl, offerPropositionId, validFrom, validTo, categories }}
+		}) as { shortName, count, imageUrl, offerPropositionId, validFrom, validTo, categories } (shortName)}
 			{@const isValid = isOfferValid({ validFrom, validTo })}
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
 			{#if matchesFilter}
 				<Card.Root
 					on:click={() => {
-						if (($state[offerPropositionId]?.length ?? 0) < count) {
-							addOffer(offerPropositionId, crypto.randomUUID());
+						if (($state[shortName]?.length ?? 0) < count) {
+							addOffer(shortName, crypto.randomUUID());
 						}
 					}}
 					class={isValid ? undefined : 'opacity-30'}
@@ -179,16 +179,16 @@
 							<img class="rounded-xl" src={imageUrl} alt={shortName} width={90} height={90} />
 						</Card.Header>
 					</div>
-					{#if $state[offerPropositionId] && $state[offerPropositionId].length > 0}
+					{#if $state[shortName] && $state[shortName].length > 0}
 						<div in:slide={{ duration: 600 }} out:slide={{ duration: 600 }}>
 							<Card.Footer>
 								<div class="grid h-full w-full grid-flow-row gap-2">
-									{#each $state[offerPropositionId] as { id } (id)}
+									{#each $state[shortName] as { id } (id)}
 										<span in:slide={{ duration: 800 }} out:slide={{ duration: 800 }}>
 											<DealCode
 												offerId={offerPropositionId}
 												{id}
-												removeSelf={() => removeOffer(offerPropositionId, id)}
+												removeSelf={() => removeOffer(shortName, id)}
 											/>
 										</span>
 									{/each}
