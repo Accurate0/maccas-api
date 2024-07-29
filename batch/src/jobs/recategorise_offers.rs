@@ -50,6 +50,8 @@ impl Job for RecategoriseOffersJob {
             return Ok(());
         }
 
+        tracing::info!("{count}", count = all_empty_offer_details.len());
+
         let offer_details = all_empty_offer_details.join(",");
 
         let response = self

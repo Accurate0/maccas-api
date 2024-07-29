@@ -168,10 +168,10 @@
 									})}
 								{/if}
 							</Card.Description>
-							<div class="self-end">
-								<Badge class="h-fit w-fit">{count} available</Badge>
+							<div class="flex flex-row self-end">
+								<Badge class="mr-1 h-fit w-fit">{count} available</Badge>
 								{#each categories as category}
-									<Badge class="h-fit w-fit">{category}</Badge>
+									<Badge class="mr-1 h-fit w-fit">{category}</Badge>
 								{/each}
 							</div>
 						</Card.Header>

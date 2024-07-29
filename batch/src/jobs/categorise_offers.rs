@@ -26,8 +26,9 @@ pub fn get_prompt(available_categories: &str, offer_details: &str) -> Vec<ChatMe
             {offer_details}
 
             You may select multiple categories, only if they match well however, single categories are preferred where possible.
+            Provide single values as arrays as well.
 
-            If a name does not match any category, return a null value in the json instead.
+            If a name does not match any category, return an empty array value in the json instead.
             You must respond with a JSON dictionary that maps the name to the category selected."#,)
         }]
         .to_vec()
