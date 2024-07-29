@@ -75,15 +75,10 @@ impl Job for RecategoriseOffersJob {
             .context("must have one choice")?;
 
         let response =
-            serde_json::from_str::<HashMap<String, Option<String>>>(&response.message.content)?;
+            serde_json::from_str::<HashMap<String, Vec<String>>>(&response.message.content)?;
 
         // FIXME: bad...
         for (key, value) in response {
-            let value = match value {
-                Some(v) => vec![v],
-                None => vec![],
-            };
-
             entity::offer_details::Entity::update_many()
                 .filter(entity::offer_details::Column::ShortName.eq(key))
                 .col_expr(
