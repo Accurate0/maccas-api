@@ -27,4 +27,4 @@ COPY --from=build /app/run.sh .
 COPY package.json .
 EXPOSE 3000
 ENV NODE_ENV=production
-CMD ["/bin/bash", "/app/run.sh"]
+CMD ["bash", "/app/run.sh"]
