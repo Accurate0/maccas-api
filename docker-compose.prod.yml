@@ -7,21 +7,18 @@ services:
       - 3000
     links:
       - "api:api"
-      - "db:database"
     depends_on:
       api:
         condition: service_healthy
     environment:
       - OLD_API_BASE_URL=https://api.maccas.one/v1
       - API_BASE_URL=http://api:8000/v1
-      - DATABASE_URL=postgres://postgres:test@database/maccas_web
 
   dashboard:
     build:
       context: dashboard
     links:
       - "api:api"
-      - "db:database"
       - "batch:batch"
       - "event:event"
     expose:
@@ -36,7 +33,6 @@ services:
       batch:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgres://postgres:test@database/maccas_dashboard
       - API_BASE_URL=http://api:8000/v1
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
@@ -47,7 +43,6 @@ services:
       args:
         - BINARY_NAME=api
     links:
-      - "db:database"
       - "event:event"
       - "batch:batch"
     expose:
@@ -76,15 +71,11 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=event
-    links:
-      - "db:database"
     expose:
       - 8001
     depends_on:
       migration:
         condition: service_completed_successfully
-    environment:
-      - DATABASE__URL=postgres://postgres:test@database/maccas
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 90s
@@ -97,8 +88,6 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=batch
-    links:
-      - "db:database"
     expose:
       - 8002
     restart: unless-stopped
@@ -109,8 +98,6 @@ services:
       - EVENT_API_BASE=http://event:8001
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - DISABLE_JOBS=create-account,activate-account
-    env_file:
-      - .env.local
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 90s
@@ -123,10 +110,3 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=migration
-    links:
-      - "db:database"
-    environment:
-      - DATABASE_URL=postgres://postgres:test@database/maccas
-
-volumes:
-  pgdata:
