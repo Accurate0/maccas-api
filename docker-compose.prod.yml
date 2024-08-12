@@ -13,6 +13,7 @@ services:
     environment:
       - OLD_API_BASE_URL=https://api.maccas.one/v1
       - API_BASE_URL=http://api:8000/v1
+      - DATABASE_URL=${WEB_DATABASE_URL}
 
   dashboard:
     build:
@@ -36,6 +37,7 @@ services:
       - API_BASE_URL=http://api:8000/v1
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
+      - DATABASE_URL=${DASHBOARD_DATABASE_URL}
 
   api:
     build:
@@ -57,8 +59,7 @@ services:
     environment:
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
-    env_file:
-      - .env.local
+      - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 90s
@@ -76,6 +77,8 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
+    environment:
+      - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 90s
@@ -98,6 +101,7 @@ services:
       - EVENT_API_BASE=http://event:8001
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - DISABLE_JOBS=create-account,activate-account
+      - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 90s
