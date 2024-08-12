@@ -62,7 +62,7 @@ services:
       - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 90s
+      interval: 30s
       timeout: 10s
       retries: 3
       start_period: 1s
@@ -81,7 +81,7 @@ services:
       - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 90s
+      interval: 30s
       timeout: 10s
       retries: 3
       start_period: 1s
@@ -104,7 +104,7 @@ services:
       - DATABASE__URL=${MACCAS_DATABASE_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
-      interval: 90s
+      interval: 30s
       timeout: 10s
       retries: 3
       start_period: 1s
