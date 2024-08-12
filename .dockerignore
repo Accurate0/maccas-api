@@ -1,7 +1,9 @@
 **/target/
+target/
 prisma.rs
 node_modules
 docker-compose.yml
+docker-compose.prod.yml
 web/
 dashboard/
 Dockerfile

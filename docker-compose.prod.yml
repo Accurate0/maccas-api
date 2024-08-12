@@ -1,0 +1,160 @@
+name: "maccas-prod"
+services:
+  web:
+    build:
+      context: web
+    ports:
+      - "3000:3000"
+    links:
+      - "api:api"
+      - "db:database"
+    depends_on:
+      api:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    environment:
+      - OLD_API_BASE_URL=https://api.maccas.one/v1
+      - API_BASE_URL=http://api:8000/v1
+      - DATABASE_URL=postgres://postgres:test@database/maccas_web
+      - AUTH_SECRET=111
+
+  dashboard:
+    build:
+      context: dashboard
+    ports:
+      - "3001:3001"
+    links:
+      - "api:api"
+      - "db:database"
+      - "batch:batch"
+      - "event:event"
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      event:
+        condition: service_healthy
+      batch:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://postgres:test@database/maccas_dashboard
+      - API_BASE_URL=http://api:8000/v1
+      - EVENT_API_BASE=http://event:8001
+      - BATCH_API_BASE=http://batch:8002
+
+  api:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=api
+    ports:
+      - "8000:8000"
+    links:
+      - "db:database"
+      - "event:event"
+      - "batch:batch"
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      event:
+        condition: service_healthy
+      batch:
+        condition: service_healthy
+    environment:
+      - EVENT_API_BASE=http://event:8001
+      - BATCH_API_BASE=http://batch:8002
+    env_file:
+      - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  event:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=event
+    ports:
+      - "8001:8001"
+    links:
+      - "db:database"
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE__URL=postgres://postgres:test@database/maccas
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  batch:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=batch
+    ports:
+      - "8002:8002"
+    links:
+      - "db:database"
+    restart: unless-stopped
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      - EVENT_API_BASE=http://event:8001
+      - SENSORDATA_API_BASE=http://sensordata:8080/v1
+      - DISABLE_JOBS=create-account,activate-account
+    env_file:
+      - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  migration:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=migration
+    links:
+      - "db:database"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:test@database/maccas
+
+  db:
+    build:
+      context: database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
