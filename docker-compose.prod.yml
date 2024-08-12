@@ -3,6 +3,8 @@ services:
   web:
     build:
       context: web
+    expose:
+      - 3000
     links:
       - "api:api"
       - "db:database"
@@ -25,6 +27,8 @@ services:
       - "db:database"
       - "batch:batch"
       - "event:event"
+    expose:
+      - 3001
     depends_on:
       migration:
         condition: service_completed_successfully
@@ -51,6 +55,8 @@ services:
       - "db:database"
       - "event:event"
       - "batch:batch"
+    expose:
+      - 8000
     depends_on:
       migration:
         condition: service_completed_successfully
@@ -79,6 +85,8 @@ services:
         - BINARY_NAME=event
     links:
       - "db:database"
+    expose:
+      - 8001
     depends_on:
       migration:
         condition: service_completed_successfully
@@ -100,6 +108,8 @@ services:
         - BINARY_NAME=batch
     links:
       - "db:database"
+    expose:
+      - 8002
     restart: unless-stopped
     depends_on:
       migration:
