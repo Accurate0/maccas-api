@@ -110,6 +110,7 @@ services:
       start_period: 1s
 
   migration:
+    restart: on-failure
     build:
       dockerfile: Dockerfile
       args:
