@@ -28,5 +28,5 @@ COPY package.json .
 EXPOSE 3000
 ENV NODE_ENV=production
 
-ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "/bin/sh" ]
 CMD ["/app/run.sh"]
