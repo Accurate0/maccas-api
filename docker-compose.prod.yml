@@ -114,3 +114,5 @@ services:
       dockerfile: Dockerfile
       args:
         - BINARY_NAME=migration
+    environment:
+      - DATABASE_URL=${MACCAS_DATABASE_URL}
