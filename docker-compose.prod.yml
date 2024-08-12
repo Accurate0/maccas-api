@@ -11,8 +11,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      db:
-        condition: service_healthy
     environment:
       - OLD_API_BASE_URL=https://api.maccas.one/v1
       - API_BASE_URL=http://api:8000/v1
@@ -32,8 +30,6 @@ services:
       migration:
         condition: service_completed_successfully
       api:
-        condition: service_healthy
-      db:
         condition: service_healthy
       event:
         condition: service_healthy
@@ -59,8 +55,6 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
-      db:
-        condition: service_healthy
       event:
         condition: service_healthy
       batch:
@@ -89,8 +83,6 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
-      db:
-        condition: service_healthy
     environment:
       - DATABASE__URL=postgres://postgres:test@database/maccas
     healthcheck:
@@ -113,8 +105,6 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
-      db:
-        condition: service_healthy
     environment:
       - EVENT_API_BASE=http://event:8001
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
@@ -135,23 +125,8 @@ services:
         - BINARY_NAME=migration
     links:
       - "db:database"
-    depends_on:
-      - db
     environment:
       - DATABASE_URL=postgres://postgres:test@database/maccas
-
-  db:
-    build:
-      context: database
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: test
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
 
 volumes:
   pgdata:
