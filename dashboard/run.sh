@@ -1,1 +1,1 @@
-pnpx prisma migrate deploy && node server.js
+cd /app && pnpx prisma migrate deploy && node server.js
