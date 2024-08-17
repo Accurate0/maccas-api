@@ -1,4 +1,3 @@
-use opentelemetry_semantic_conventions::trace::OTEL_STATUS_CODE;
 use reqwest::{Proxy, Request, Response, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Extension};
 use reqwest_retry::{
