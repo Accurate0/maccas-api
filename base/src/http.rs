@@ -1,3 +1,4 @@
+use opentelemetry_semantic_conventions::trace::OTEL_STATUS_CODE;
 use reqwest::{Proxy, Request, Response, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Extension};
 use reqwest_retry::{
@@ -91,11 +92,11 @@ pub fn get_proxied_maccas_http_client(
     Ok(
         ClientBuilder::new(reqwest::ClientBuilder::new().proxy(proxy).build()?)
             .with_init(Extension(DisableOtelPropagation))
-            .with(TracingMiddleware::<TimeTrace>::new())
             .with(RetryTransientMiddleware::new_with_policy_and_strategy(
                 retry_policy,
                 AkamaiCdnRetryStrategy,
             ))
+            .with(TracingMiddleware::<TimeTrace>::new())
             .build(),
     )
 }
@@ -104,8 +105,8 @@ pub fn get_http_client() -> Result<ClientWithMiddleware, HttpCreationError> {
     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
 
     Ok(ClientBuilder::new(reqwest::ClientBuilder::new().build()?)
-        .with(TracingMiddleware::<TimeTrace>::new())
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .with(TracingMiddleware::<TimeTrace>::new())
         .build())
 }
 
