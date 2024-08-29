@@ -7,7 +7,7 @@ on:
 jobs:
   clean:
     runs-on: ubuntu-latest
-    name: Delete old test images
+    name: Delete old images
 
     permissions:
       packages: write
@@ -21,4 +21,3 @@ jobs:
           image-tags: "!latest"
           keep-n-most-recent: 3
           cut-off: 2w
-          dry-run: true
