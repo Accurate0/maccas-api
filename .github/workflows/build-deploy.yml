@@ -59,7 +59,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/accurate0/maccas-${{ matrix.apps }}:latest,ghcr.io/accurate0/maccas-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}
+          tags: ghcr.io/accurate0/maccas-${{ matrix.apps }}:latest,ghcr.io/accurate0/maccas-${{ matrix.apps }}:${{ github.sha }}
           build-args: |
             BINARY_NAME=${{ matrix.apps }}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -71,7 +71,7 @@ jobs:
         with:
           context: ${{ matrix.apps }}
           push: true
-          tags: ghcr.io/accurate0/maccas-${{ matrix.apps }}:latest,ghcr.io/accurate0/maccas-${{ matrix.apps }}:${{ github.ref_name }}-${{ github.sha }}
+          tags: ghcr.io/accurate0/maccas-${{ matrix.apps }}:latest,ghcr.io/accurate0/maccas-${{ matrix.apps }}:${{ github.sha }}
           build-args: |
             BINARY_NAME=${{ matrix.apps }}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -86,3 +86,11 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Coolify
+        run: |
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}' --fail

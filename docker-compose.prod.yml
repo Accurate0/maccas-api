@@ -1,8 +1,7 @@
 name: "maccas-prod"
 services:
   web:
-    build:
-      context: web
+    image: ghcr.io/accurate0/maccas-web:${SOURCE_COMMIT}
     expose:
       - 3000
     links:
@@ -17,8 +16,7 @@ services:
       - ADDRESS_HEADER=CF-Connecting-IP
 
   dashboard:
-    build:
-      context: dashboard
+    image: ghcr.io/accurate0/maccas-dashboard:${SOURCE_COMMIT}
     links:
       - "api:api"
       - "batch:batch"
@@ -41,10 +39,7 @@ services:
       - DATABASE_URL=${DASHBOARD_DATABASE_URL}
 
   api:
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=api
+    image: ghcr.io/accurate0/maccas-api:${SOURCE_COMMIT}
     links:
       - "event:event"
       - "batch:batch"
@@ -69,10 +64,7 @@ services:
       start_period: 1s
 
   event:
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=event
+    image: ghcr.io/accurate0/maccas-event:${SOURCE_COMMIT}
     expose:
       - 8001
     depends_on:
@@ -88,10 +80,7 @@ services:
       start_period: 1s
 
   batch:
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=batch
+    image: ghcr.io/accurate0/maccas-batch:${SOURCE_COMMIT}
     expose:
       - 8002
     restart: unless-stopped
@@ -112,9 +101,6 @@ services:
 
   migration:
     restart: on-failure
-    build:
-      dockerfile: Dockerfile
-      args:
-        - BINARY_NAME=migration
+    image: ghcr.io/accurate0/maccas-migration:${SOURCE_COMMIT}
     environment:
       - DATABASE_URL=${MACCAS_DATABASE_URL}
