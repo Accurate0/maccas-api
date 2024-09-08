@@ -153,9 +153,11 @@
 					class={isValid ? undefined : 'opacity-30'}
 				>
 					<div class="grid grid-flow-col justify-between">
-						<Card.Header class="grid justify-between">
-							<Card.Title>{shortName}</Card.Title>
-							<Card.Description>
+						<Card.Header class="grid justify-between pr-0">
+							<Card.Title class="max-w-[12rem] overflow-hidden text-ellipsis"
+								>{shortName}</Card.Title
+							>
+							<Card.Description class="mt-0">
 								{#if validInFuture}
 									Active
 									{formatDistanceToNow(new Date(validFrom + 'Z'), {
@@ -169,13 +171,15 @@
 								{/if}
 							</Card.Description>
 							<div class="flex flex-row self-end">
-								<Badge class="mr-1 h-fit w-fit">{count} available</Badge>
+								<Badge class="mr-1 h-fit w-fit"
+									>{count}{categories.length < 2 ? ' available' : ''}</Badge
+								>
 								{#each categories as category}
 									<Badge class="mr-1 h-fit w-fit">{category}</Badge>
 								{/each}
 							</div>
 						</Card.Header>
-						<Card.Header>
+						<Card.Header class="pl-0">
 							<img class="rounded-xl" src={imageUrl} alt={shortName} width={90} height={90} />
 						</Card.Header>
 					</div>
