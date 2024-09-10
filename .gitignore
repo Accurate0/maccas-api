@@ -10,3 +10,4 @@ hidden/*
 prisma.rs
 .env.local
 *.sql
+*.apk
