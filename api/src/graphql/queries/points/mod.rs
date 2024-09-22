@@ -1,5 +1,7 @@
 use self::types::{FilterInput, Points};
+use crate::graphql::guard::RoleGuard;
 use async_graphql::{Context, Object};
+use base::jwt::Role;
 use entity::points;
 use sea_orm::{
     prelude::Uuid, ColumnTrait, DatabaseConnection, EntityTrait, Order, QueryFilter, QueryOrder,
@@ -12,6 +14,7 @@ pub struct PointsQuery;
 
 #[Object]
 impl PointsQuery {
+    #[graphql(guard = "RoleGuard::with_role(Role::Points)")]
     async fn points<'a>(
         &self,
         ctx: &Context<'a>,
@@ -35,6 +38,7 @@ impl PointsQuery {
             .collect())
     }
 
+    #[graphql(guard = "RoleGuard::with_role(Role::Points)")]
     async fn points_by_account_id<'a>(
         &self,
         ctx: &Context<'a>,

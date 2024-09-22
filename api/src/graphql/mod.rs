@@ -12,6 +12,7 @@ pub mod mutations;
 pub mod queries;
 pub mod tracing;
 pub use handler::*;
+pub mod guard;
 
 #[derive(Default, MergedObject)]
 pub struct QueryRoot(
