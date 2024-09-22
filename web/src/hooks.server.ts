@@ -19,6 +19,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		async (span) => {
 			if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
 				const sessionId = event.cookies.get(SessionId);
+				span.setAttribute('sessionId', sessionId ?? '(unknown)');
+
 				if (!sessionId) {
 					span.setStatus({ code: SpanStatusCode.OK });
 					span.end();
@@ -30,6 +32,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 				}
 
 				const session = await prisma.session.findUnique({ where: { id: sessionId } });
+				span.setAttribute('userId', session?.userId ?? '(unknown)');
+
 				if (!session || new Date() > session.expires) {
 					span.setStatus({ code: SpanStatusCode.OK });
 					span.end();
