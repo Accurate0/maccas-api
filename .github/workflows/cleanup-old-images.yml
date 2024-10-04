@@ -20,4 +20,4 @@ jobs:
           image-names: "maccas-web maccas-dashboard maccas-migration maccas-api maccas-batch maccas-event"
           image-tags: "!latest"
           keep-n-most-recent: 3
-          cut-off: 2w
+          cut-off: 3d
