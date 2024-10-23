@@ -6,8 +6,12 @@
 	import { writable } from 'svelte/store';
 	import type { GetAccountCode$result } from '$houdini';
 
-	export let accountId: string;
-	export let removeSelf: () => void;
+	interface Props {
+		accountId: string;
+		removeSelf: () => void;
+	}
+
+	let { accountId, removeSelf }: Props = $props();
 
 	const code = writable<string | null>('');
 	const getAccountCode = useMutation(

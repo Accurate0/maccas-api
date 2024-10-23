@@ -8,7 +8,11 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { superForm } from 'sveltekit-superforms/client';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 	const { form, errors, submitting, enhance } = superForm(data.form, { taintedMessage: false });
 </script>
 

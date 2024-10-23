@@ -75,7 +75,7 @@ services:
       # - event
       # - batch
     environment:
-      # - DATABASE__URL=postgres://postgres:test@database/maccas
+      - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
     env_file:
@@ -98,8 +98,8 @@ services:
       - "db:database"
     depends_on:
       - db
-    # environment:
-    # - DATABASE__URL=postgres://postgres:test@database/maccas
+    environment:
+      - DATABASE__URL=postgres://postgres:test@database/maccas
     env_file:
       - .env.local
     healthcheck:
@@ -127,7 +127,7 @@ services:
       # sensordata:
       # condition: service_healthy
     environment:
-      # - DATABASE__URL=postgres://postgres:test@database/maccas
+      - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - AUTH_SECRET=111

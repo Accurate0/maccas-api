@@ -1,7 +1,7 @@
 use super::HandlerError;
 use crate::event_manager::EventManager;
 use crate::result_extension::ResultExtension;
-use image::io::Reader as ImageReader;
+use image::ImageReader;
 use reqwest_middleware::ClientWithMiddleware;
 use tokio::runtime::Handle;
 use tracing::{Instrument, Level};

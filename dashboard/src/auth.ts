@@ -4,7 +4,7 @@ import { db } from "./db";
 export const SessionId = "dashboard-session-id";
 
 export const getSession = async () => {
-  const cookie = cookies().get(SessionId);
+  const cookie = (await cookies()).get(SessionId);
   if (cookie) {
     const session = await db.session.findUnique({
       where: {

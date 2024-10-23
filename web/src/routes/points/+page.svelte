@@ -1,13 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
-
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { writable, type Writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
 	import PointCode from '$lib/components/point-code.svelte';
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let state: Writable<Record<string, boolean>> = writable({});
 

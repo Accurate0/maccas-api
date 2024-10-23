@@ -17,6 +17,11 @@
 	import { configStore } from '$lib/config';
 	import ConfigToast from '$lib/components/config-toast.svelte';
 	import ActiveUserCheck from '$lib/components/active-user-check.svelte';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 
 	const queryClient = new QueryClient();
 
@@ -117,7 +122,7 @@
 				</div>
 			{/if}
 			<div class="m-4 grid grid-flow-row gap-4">
-				<slot />
+				{@render children?.()}
 			</div>
 		</div>
 	</QueryClientProvider>

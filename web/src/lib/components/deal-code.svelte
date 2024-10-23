@@ -6,9 +6,13 @@
 	import { Button } from '$lib/components/ui/button';
 	import { writable } from 'svelte/store';
 
-	export let offerId: number;
-	export let id: string;
-	export let removeSelf: () => void;
+	interface Props {
+		offerId: number;
+		id: string;
+		removeSelf: () => void;
+	}
+
+	let { offerId, id, removeSelf }: Props = $props();
 
 	const offerCode = writable('');
 	const addOffer = useMutation(

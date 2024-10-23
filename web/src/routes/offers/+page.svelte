@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
-
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Skeleton } from '$lib/components/ui/skeleton';
@@ -14,20 +12,25 @@
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import DealCode from '$lib/components/deal-code.svelte';
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let filters = writable<Array<string> | undefined>();
-	let state: Writable<Record<string, Array<{ id: string }>>> = writable({});
-	let sortByAsc = true;
+	let offerState: Writable<Record<string, Array<{ id: string }>>> = writable({});
+	let sortByAsc = $state(true);
 
 	const addOffer = (offerId: string, id: string) => {
 		// FIXME: :)
-		if (!$state[offerId]) {
-			$state[offerId] = [];
+		if (!$offerState[offerId]) {
+			$offerState[offerId] = [];
 		}
 
-		$state[offerId].push({ id });
+		$offerState[offerId].push({ id });
 
-		$state = $state;
+		$offerState = $offerState;
 	};
 
 	const defaultSelected: Selected<string>[] = [];
@@ -60,7 +63,7 @@
 	};
 
 	const removeOffer = async (offerId: string, id: string) => {
-		state.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
+		offerState.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
 	};
 
 	const isOfferValid = (offer: { validTo: string; validFrom: string }) => {
@@ -146,7 +149,7 @@
 			{#if matchesFilter}
 				<Card.Root
 					on:click={() => {
-						if (($state[shortName]?.length ?? 0) < count) {
+						if (($offerState[shortName]?.length ?? 0) < count) {
 							addOffer(shortName, crypto.randomUUID());
 						}
 					}}
@@ -183,11 +186,11 @@
 							<img class="rounded-xl" src={imageUrl} alt={shortName} width={90} height={90} />
 						</Card.Header>
 					</div>
-					{#if $state[shortName] && $state[shortName].length > 0}
+					{#if $offerState[shortName] && $offerState[shortName].length > 0}
 						<div in:slide={{ duration: 600 }} out:slide={{ duration: 600 }}>
 							<Card.Footer>
 								<div class="grid h-full w-full grid-flow-row gap-2">
-									{#each $state[shortName] as { id } (id)}
+									{#each $offerState[shortName] as { id } (id)}
 										<span in:slide={{ duration: 800 }} out:slide={{ duration: 800 }}>
 											<DealCode
 												offerId={offerPropositionId}

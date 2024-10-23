@@ -5,8 +5,8 @@ use crate::{
     settings::Settings,
     state::AppState,
 };
+use actix_web::middleware::from_fn;
 use actix_web::{middleware::Logger, web, App, HttpServer};
-use actix_web_lab::middleware::from_fn;
 use actix_web_opentelemetry::RequestTracing;
 use base::http::get_http_client;
 use sea_orm::{ConnectOptions, Database};

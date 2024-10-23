@@ -10,10 +10,10 @@
 	import { Crosshair1 } from 'radix-icons-svelte';
 	import type { UpdateLocationBody } from '../api/location/schema';
 
-	let disabled = false;
-	let optionsDisabled = false;
-	let query: string = '';
-	let options: LocationByText$result['location']['text'] = [];
+	let disabled = $state(false);
+	let optionsDisabled = $state(false);
+	let query: string = $state('');
+	let options: LocationByText$result['location']['text'] = $state([]);
 
 	const positionOptions: PositionOptions = {
 		enableHighAccuracy: true,

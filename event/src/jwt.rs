@@ -3,8 +3,8 @@ use crate::state::AppState;
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::http::header::AUTHORIZATION;
+use actix_web::middleware::Next;
 use actix_web::{web, Error};
-use actix_web_lab::middleware::Next;
 use base::jwt::{self, Role};
 
 pub async fn validator(

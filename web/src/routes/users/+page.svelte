@@ -10,7 +10,11 @@
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const resetRateLimit = async () => {
 		const response = await fetch(`/api/ratelimit`, {

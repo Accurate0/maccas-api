@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 reqwest = { workspace = true }
-reqwest_old = { workspace = true }
 reqwest-middleware = { workspace = true }
 tracing = { workspace = true }
 reqwest-retry = { workspace = true }
@@ -30,15 +29,15 @@ jwt = "0.16.0"
 hmac = "0.12.1"
 sha2 = "0.10.8"
 opentelemetry = { workspace = true }
-opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio"] }
-opentelemetry-stdout = { version = "0.4.0", features = ["trace"] }
-tracing-opentelemetry = "0.24.0"
+opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio"] }
+opentelemetry-stdout = { version = "0.26.0", features = ["trace"] }
+tracing-opentelemetry = "0.27.0"
 tracing-subscriber = "0.3.18"
-opentelemetry-otlp = { version = "0.16.0", features = [
+opentelemetry-otlp = { version = "0.26.0", features = [
     "http-proto",
     "reqwest-client",
     "logs",
     "reqwest-rustls",
 ] }
-opentelemetry-semantic-conventions = "0.15.0"
-opentelemetry-appender-tracing = { version = "0.4.0" }
+opentelemetry-semantic-conventions = { version = "0.26.0", features = ["semconv_experimental"] }
+opentelemetry-appender-tracing = { version = "0.26.0" }

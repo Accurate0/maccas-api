@@ -5,7 +5,11 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 
-	export let config: Omit<Config, 'id' | 'userId'> | null;
+	interface Props {
+		config: Omit<Config, 'id' | 'userId'> | null;
+	}
+
+	let { config }: Props = $props();
 
 	const configMissing = config === null || config.storeId === null || config.storeName === null;
 	const forceLocationTab = () => {

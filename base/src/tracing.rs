@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use opentelemetry::KeyValue;
+use opentelemetry::trace::TracerProvider;
+use opentelemetry::{global, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{Config as TraceConfig, Tracer};
 use opentelemetry_sdk::Resource;
-use opentelemetry_semantic_conventions::resource::DEPLOYMENT_ENVIRONMENT;
 use opentelemetry_semantic_conventions::resource::{
-    SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME, TELEMETRY_SDK_VERSION,
+    DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME,
+    TELEMETRY_SDK_VERSION,
 };
 use tracing::Level;
 use tracing_subscriber::filter::Targets;
@@ -35,7 +36,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         KeyValue::new(TELEMETRY_SDK_LANGUAGE, "rust".to_string()),
         KeyValue::new(SERVICE_NAME, name),
         KeyValue::new(
-            DEPLOYMENT_ENVIRONMENT,
+            DEPLOYMENT_ENVIRONMENT_NAME,
             if cfg!(debug_assertions) {
                 "development"
             } else {
@@ -48,17 +49,21 @@ pub fn external_tracer(name: &'static str) -> Tracer {
 
     let pipeline = opentelemetry_otlp::new_exporter()
         .http()
-        .with_http_client(reqwest_old::Client::new())
+        .with_http_client(reqwest::Client::new())
         .with_endpoint(INGEST_URL)
         .with_headers(headers)
         .with_timeout(Duration::from_secs(3));
 
-    opentelemetry_otlp::new_pipeline()
+    let tracer_provider = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(pipeline)
         .with_trace_config(trace_config)
         .install_batch(opentelemetry_sdk::runtime::Tokio)
-        .unwrap()
+        .unwrap();
+
+    global::set_tracer_provider(tracer_provider.clone());
+
+    tracer_provider.tracer_builder(name).build()
 }
 
 pub fn init(name: &'static str) {

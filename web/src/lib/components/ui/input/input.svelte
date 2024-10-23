@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { createBubbler } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import type { HTMLInputAttributes } from 'svelte/elements';
 	import { cn } from '$lib/utils';
 	import type { InputEvents } from '.';
@@ -6,9 +9,13 @@
 	type $$Props = HTMLInputAttributes;
 	type $$Events = InputEvents;
 
-	let className: $$Props['class'] = undefined;
-	export let value: $$Props['value'] = undefined;
-	export { className as class };
+	interface Props {
+		class?: $$Props['class'];
+		value?: $$Props['value'];
+		[key: string]: any;
+	}
+
+	let { class: className = undefined, value = $bindable(undefined), ...rest }: Props = $props();
 </script>
 
 <input
@@ -17,17 +24,17 @@
 		className
 	)}
 	bind:value
-	on:blur
-	on:change
-	on:click
-	on:focus
-	on:keydown
-	on:keypress
-	on:keyup
-	on:mouseover
-	on:mouseenter
-	on:mouseleave
-	on:paste
-	on:input
-	{...$$restProps}
+	onblur={bubble('blur')}
+	onchange={bubble('change')}
+	onclick={bubble('click')}
+	onfocus={bubble('focus')}
+	onkeydown={bubble('keydown')}
+	onkeypress={bubble('keypress')}
+	onkeyup={bubble('keyup')}
+	onmouseover={bubble('mouseover')}
+	onmouseenter={bubble('mouseenter')}
+	onmouseleave={bubble('mouseleave')}
+	onpaste={bubble('paste')}
+	oninput={bubble('input')}
+	{...rest}
 />

@@ -11,6 +11,7 @@ import { env } from '$env/dynamic/private';
 import { setError, superValidate } from 'sveltekit-superforms/server';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { schema } from './schema';
+import { zod } from 'sveltekit-superforms/adapters';
 
 export type LoginState = {
 	error: string | null;
@@ -36,14 +37,14 @@ const roleMap = {
 
 export const load = async (event) => {
 	await RateLimiter.cookieLimiter?.preflight(event);
-	const form = await superValidate(schema);
+	const form = await superValidate(zod(schema));
 	return { form };
 };
 
 export const actions = {
 	default: async (event) => {
 		const { request, fetch, cookies } = event;
-		const form = await superValidate(request, schema);
+		const form = await superValidate(request, zod(schema));
 
 		const { limited, retryAfter } = await RateLimiter.check(event);
 		console.log(`Rate limiter check: ${event.getClientAddress()} ${limited}`);

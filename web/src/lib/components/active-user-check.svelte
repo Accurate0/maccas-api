@@ -4,7 +4,11 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
-	export let isUserActive: boolean;
+	interface Props {
+		isUserActive: boolean;
+	}
+
+	let { isUserActive }: Props = $props();
 
 	const forceInactivePage = () => {
 		if (!isUserActive && $page.url.pathname !== '/inactive') {

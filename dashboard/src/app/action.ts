@@ -51,8 +51,9 @@ export const login = async (_: any, formData: FormData) => {
 
     const isPasswordCorrect = await bcrypt.compare(
       password,
-      user.passwordHash.toString()
+      user.passwordHash.toString(),
     );
+
     if (!isPasswordCorrect) {
       return {
         error: "Incorrect username or password",
@@ -70,7 +71,7 @@ export const login = async (_: any, formData: FormData) => {
         issuer: "Maccas Dashboard",
         audience: "Maccas API",
         subject: "Maccas API",
-      }
+      },
     );
 
     const expires = new Date(Date.now() + sevenDaysInMs);
@@ -83,7 +84,7 @@ export const login = async (_: any, formData: FormData) => {
       },
     });
 
-    cookies().set(SessionId, sessionId, {
+    (await cookies()).set(SessionId, sessionId, {
       path: "/",
       httpOnly: true,
       expires,
