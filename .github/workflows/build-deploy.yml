@@ -94,3 +94,12 @@ jobs:
       - name: Deploy to Coolify
         run: |
           curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}' --fail
+
+      - name: Add annotation in Axiom when a deployment happens
+        uses: axiomhq/annotation-action@v0.1.0
+        with:
+          axiomToken: ${{ secrets.AXIOM_API_TOKEN }}
+          datasets: ${{ secrets.AXIOM_DATASET_NAME }}
+          type: 'production-release'
+          title: 'Production deployment'
+          description: 'Commit ${{ github.event.head_commit.message }}'
