@@ -9,12 +9,19 @@ spec:
   selector:
     matchLabels:
       app: maccas-graphql
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
         app: maccas-graphql
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  name: maccas-graphql
+              topologyKey: kubernetes.io/hostname
       initContainers:
         - name: migration
           image: ghcr.io/accurate0/maccas-migration:latest
@@ -129,12 +136,19 @@ spec:
   selector:
     matchLabels:
       app: maccas-web
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
         app: maccas-web
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  name: maccas-web
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: maccas-web
           image: ghcr.io/accurate0/maccas-web:latest
