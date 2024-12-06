@@ -185,7 +185,7 @@ spec:
     spec:
       containers:
         - name: maccas-dashboard
-          image: ghcr.io/accurate0/maccas-web:latest
+          image: ghcr.io/accurate0/maccas-dashboard:latest
           imagePullPolicy: Always
           env:
             - name: API_BASE_URL
@@ -198,4 +198,4 @@ spec:
             - secretRef:
                 name: maccas-dashboard-managed-secrets
           ports:
-            - containerPort: 3000
+            - containerPort: 3001
