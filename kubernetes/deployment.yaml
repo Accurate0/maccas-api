@@ -15,6 +15,10 @@ spec:
       labels:
         app: maccas-graphql
     spec:
+      initContainers:
+        - name: migration
+          image: ghcr.io/accurate0/maccas-migration:latest
+          imagePullPolicy: Always
       containers:
         - name: maccas-graphql
           image: ghcr.io/accurate0/maccas-api:latest
@@ -49,6 +53,10 @@ spec:
       labels:
         app: maccas-event
     spec:
+      initContainers:
+        - name: migration
+          image: ghcr.io/accurate0/maccas-migration:latest
+          imagePullPolicy: Always
       containers:
         - name: maccas-event
           image: ghcr.io/accurate0/maccas-event:latest
@@ -78,6 +86,10 @@ spec:
       labels:
         app: maccas-batch
     spec:
+      initContainers:
+        - name: migration
+          image: ghcr.io/accurate0/maccas-migration:latest
+          imagePullPolicy: Always
       containers:
         - name: maccas-batch
           image: ghcr.io/accurate0/maccas-batch:latest
