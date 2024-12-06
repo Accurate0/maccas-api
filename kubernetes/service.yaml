@@ -66,4 +66,4 @@ spec:
     - name: web
       protocol: TCP
       port: 3001
-      targetPort: 3001
+      targetPort: 3000

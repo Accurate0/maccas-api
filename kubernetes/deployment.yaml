@@ -198,4 +198,4 @@ spec:
             - secretRef:
                 name: maccas-dashboard-managed-secrets
           ports:
-            - containerPort: 3001
+            - containerPort: 3000
