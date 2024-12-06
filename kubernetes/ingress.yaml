@@ -18,7 +18,59 @@ spec:
                 name: maccas-web
                 port:
                   name: web
+    - host: dashboard.maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-dashboard
+                port:
+                  name: web
+    - host: graphql.maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-graphql
+                port:
+                  name: api
+    - host: batch.maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-batch
+                port:
+                  name: api
+    - host: event.maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-event
+                port:
+                  name: api
   tls:
     - secretName: maccas-api-tls
       hosts:
         - maccas.one
+    - secretName: dashboard-maccas-api-tls
+      hosts:
+        - dashboard.maccas.one
+    - secretName: event-maccas-api-tls
+      hosts:
+        - event.maccas.one
+    - secretName: batch-maccas-api-tls
+      hosts:
+        - batch.maccas.one
+    - secretName: graphql-maccas-api-tls
+      hosts:
+        - graphql.maccas.one
