@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-graphql
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-graphql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-graphql
+    spec:
+      containers:
+        - name: maccas-graphql
+          image: ghcr.io/accurate0/maccas-api:latest
+          imagePullPolicy: Always
+          env:
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+            - name: BATCH_API_BASE
+              value: http://maccas-batch.maccas-api.svc.cluster.local:8002
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-event
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-event
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-event
+    spec:
+      containers:
+        - name: maccas-event
+          image: ghcr.io/accurate0/maccas-event:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-batch
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-batch
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-batch
+    spec:
+      containers:
+        - name: maccas-batch
+          image: ghcr.io/accurate0/maccas-batch:latest
+          imagePullPolicy: Always
+          env:
+            - name: SENSORDATA_API_BASE
+              value: http://localhost
+            - name: DISABLE_JOBS
+              value: create-account,activate-account
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-web
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-web
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-web
+    spec:
+      containers:
+        - name: maccas-web
+          image: ghcr.io/accurate0/maccas-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: ADDRESS_HEADER
+              value: CF-Connecting-IP
+            - name: OLD_API_BASE_URL
+              value: https://api.maccas.one/v1
+            - name: API_BASE_URL
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000
+          envFrom:
+            - secretRef:
+                name: maccas-web-managed-secrets
+          ports:
+            - containerPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-dashboard
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-dashboard
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-dashboard
+    spec:
+      containers:
+        - name: maccas-dashboard
+          image: ghcr.io/accurate0/maccas-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: API_BASE_URL
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+            - name: BATCH_API_BASE
+              value: http://maccas-batch.maccas-api.svc.cluster.local:8002
+          envFrom:
+            - secretRef:
+                name: maccas-dashboard-managed-secrets
+          ports:
+            - containerPort: 3001

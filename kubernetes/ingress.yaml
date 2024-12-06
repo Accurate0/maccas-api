@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: maccas-api
+  namespace: maccas-api
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-web
+                port:
+                  name: web
+  tls:
+    - secretName: maccas-api-tls
+      hosts:
+        - maccas.one
