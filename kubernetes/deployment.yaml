@@ -145,7 +145,7 @@ spec:
             - name: OLD_API_BASE_URL
               value: https://api.maccas.one/v1
             - name: API_BASE_URL
-              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
           envFrom:
             - secretRef:
                 name: maccas-web-managed-secrets
@@ -175,7 +175,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: API_BASE_URL
-              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
             - name: EVENT_API_BASE
               value: http://maccas-event.maccas-api.svc.cluster.local:8001
             - name: BATCH_API_BASE
