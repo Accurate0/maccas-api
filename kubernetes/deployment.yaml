@@ -19,6 +19,9 @@ spec:
         - name: migration
           image: ghcr.io/accurate0/maccas-migration:latest
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-migration-managed-secrets
       containers:
         - name: maccas-graphql
           image: ghcr.io/accurate0/maccas-api:latest
@@ -57,6 +60,9 @@ spec:
         - name: migration
           image: ghcr.io/accurate0/maccas-migration:latest
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-migration-managed-secrets
       containers:
         - name: maccas-event
           image: ghcr.io/accurate0/maccas-event:latest
@@ -90,6 +96,9 @@ spec:
         - name: migration
           image: ghcr.io/accurate0/maccas-migration:latest
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-migration-managed-secrets
       containers:
         - name: maccas-batch
           image: ghcr.io/accurate0/maccas-batch:latest
