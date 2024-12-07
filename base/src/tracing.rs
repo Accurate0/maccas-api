@@ -48,7 +48,6 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         .with_http()
         .with_http_client(reqwest::Client::new())
         .with_endpoint(INGEST_URL)
-        .with_protocol(opentelemetry_otlp::Protocol::HttpJson)
         .with_headers(headers)
         .with_timeout(Duration::from_secs(3))
         .build()
