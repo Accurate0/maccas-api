@@ -26,13 +26,13 @@ async-graphql = { version = "7.0.11", features = [
     "tracing",
 ] }
 
-serde = { version = "1.0.213", features = ["derive"] }
-serde_json = "1.0.132"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"
 rand = "0.8.5"
 chrono = "0.4.38"
 
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
 tracing-futures = "0.2.5"
 
 sea-orm = { version = "1.1", features = [
@@ -41,9 +41,9 @@ sea-orm = { version = "1.1", features = [
     "macros",
 ] }
 
-anyhow = "1.0.91"
+anyhow = "1.0.94"
 
-config = "0.14.0"
+config = "0.14.1"
 
 entity = { path = "./entity" }
 libmaccas = { path = "./libmaccas" }
@@ -55,34 +55,37 @@ event = { path = "./event" }
 batch = { path = "./batch" }
 sensordata = { path = "./sensordata/lib" }
 
-thiserror = "1.0.65"
+thiserror = "2.0.4"
 futures = "0.3.31"
 futures-util = "0.3.31"
 
 reqwest = { version = "0.12", features = ["json", "gzip", "native-tls"] }
-reqwest-middleware = { version = "0.3.3", features = ["json"] }
-reqwest-retry = "0.6.1"
-reqwest-tracing = { version = "0.5", features = ["opentelemetry_0_23"] }
+reqwest-middleware = { version = "0.4.0", features = ["json"] }
+reqwest-retry = "0.7.0"
+reqwest-tracing = { version = "0.5", features = ["opentelemetry_0_27"] }
 
 async-trait = "0.1.83"
 
-tokio = { version = "1.41.0", features = [
+tokio = { version = "1.42.0", features = [
     "macros",
     "rt-multi-thread",
     "signal",
     "sync",
 ] }
-tokio-util = "0.7.12"
-cron = "0.12.1"
+tokio-util = "0.7.13"
+cron = "0.13.0"
 uuid = { version = "1.11", features = ["v4"] }
-redis = { version = "0.27.5", features = [
+redis = { version = "0.27.6", features = [
     "tokio-comp",
     "aio",
     "connection-manager",
 ] }
-axum = { version = "0.7.7", features = ["macros"] }
-tower-http = { version = "0.6.1", features = ["trace", "cors"] }
+axum = { version = "0.7.9", features = ["macros"] }
+tower-http = { version = "0.6.2", features = ["trace", "cors"] }
 itertools = "0.13.0"
-opentelemetry = "0.26.0"
-http = "1.1.0"
+opentelemetry = "0.27.1"
+http = "1.2.0"
 
+[patch.crates-io]
+reqwest-tracing = { git = 'https://github.com/TrueLayer/reqwest-middleware.git' }
+reqwest-middleware = { git = 'https://github.com/TrueLayer/reqwest-middleware.git' }

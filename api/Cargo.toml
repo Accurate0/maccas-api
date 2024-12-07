@@ -34,4 +34,4 @@ redis = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }
-axum-tracing-opentelemetry = "0.21.1"
+axum-tracing-opentelemetry = "0.24.1"
