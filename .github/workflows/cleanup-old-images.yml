@@ -19,5 +19,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           image-names: "maccas-web maccas-dashboard maccas-migration maccas-api maccas-batch maccas-event"
           image-tags: "!latest"
-          keep-n-most-recent: 3
+          keep-n-most-recent: 10
           cut-off: 3d
