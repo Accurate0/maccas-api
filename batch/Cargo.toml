@@ -35,7 +35,7 @@ itertools = { workspace = true }
 sensordata = { workspace = true }
 imap = { version = "3.0.0-alpha.14", features = ["native-tls"] }
 mailparse = "0.15.0"
-regex = "1.11.1"
+regex = "1.11.0"
 
 [lib]
 name = "batch"

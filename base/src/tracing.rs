@@ -1,15 +1,16 @@
+use std::collections::HashMap;
+use std::time::Duration;
+
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::{global, KeyValue};
-use opentelemetry_otlp::{WithExportConfig, WithHttpConfig};
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::trace::Tracer;
+use opentelemetry_sdk::trace::{Config as TraceConfig, Tracer};
 use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource::{
     DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME,
     TELEMETRY_SDK_VERSION,
 };
-use std::collections::HashMap;
-use std::time::Duration;
 use tracing::Level;
 use tracing_subscriber::filter::Targets;
 use tracing_subscriber::layer::SubscriberExt;
@@ -44,23 +45,25 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         ),
     ];
 
-    let pipeline = opentelemetry_otlp::SpanExporter::builder()
-        .with_http()
+    let trace_config = TraceConfig::default().with_resource(Resource::new(tags));
+
+    let pipeline = opentelemetry_otlp::new_exporter()
+        .http()
         .with_http_client(reqwest::Client::new())
         .with_endpoint(INGEST_URL)
         .with_headers(headers)
-        .with_timeout(Duration::from_secs(3))
-        .build()
-        .unwrap();
+        .with_timeout(Duration::from_secs(3));
 
-    let tracer_provider = opentelemetry_sdk::trace::TracerProvider::builder()
-        .with_batch_exporter(pipeline, opentelemetry_sdk::runtime::Tokio)
-        .with_resource(Resource::new(tags))
-        .build();
+    let tracer_provider = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(pipeline)
+        .with_trace_config(trace_config)
+        .install_batch(opentelemetry_sdk::runtime::Tokio)
+        .unwrap();
 
     global::set_tracer_provider(tracer_provider.clone());
 
-    tracer_provider.tracer(name)
+    tracer_provider.tracer_builder(name).build()
 }
 
 pub fn init(name: &'static str) {

@@ -1,4 +1,4 @@
-use reqwest::{Proxy, Request, StatusCode};
+use reqwest::{Proxy, Request, Response, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Extension};
 use reqwest_retry::{
     default_on_request_failure, default_on_request_success, policies::ExponentialBackoff,
@@ -67,7 +67,7 @@ impl ReqwestOtelSpanBackend for TimeTrace {
 
     fn on_request_end(
         span: &Span,
-        outcome: &Result<reqwest::Response, reqwest_middleware::Error>,
+        outcome: &reqwest_middleware::Result<Response>,
         extension: &mut http::Extensions,
     ) {
         let time_elapsed = extension.get::<Instant>().unwrap().elapsed().as_millis() as i64;
