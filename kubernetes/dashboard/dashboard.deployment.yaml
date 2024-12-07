@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-dashboard
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-dashboard
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-dashboard
+    spec:
+      containers:
+        - name: maccas-dashboard
+          image: maccas-dashboard:latest
+          imagePullPolicy: Always
+          env:
+            - name: API_BASE_URL
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+            - name: BATCH_API_BASE
+              value: http://maccas-batch.maccas-api.svc.cluster.local:8002
+          envFrom:
+            - secretRef:
+                name: maccas-dashboard-managed-secrets
+          ports:
+            - containerPort: 3001

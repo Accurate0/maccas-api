@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-batch
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-batch
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-batch
+    spec:
+      initContainers:
+        - name: maccas-migration
+          image: maccas-migration:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-migration-managed-secrets
+      containers:
+        - name: maccas-batch
+          image: maccas-batch:latest
+          imagePullPolicy: Always
+          env:
+            - name: SENSORDATA_API_BASE
+              value: http://localhost
+            - name: DISABLE_JOBS
+              value: create-account,activate-account
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8002

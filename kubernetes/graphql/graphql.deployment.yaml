@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-graphql
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-graphql
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: maccas-graphql
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  name: maccas-graphql
+              topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: maccas-migration
+          image: maccas-migration:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: maccas-migration-managed-secrets
+      containers:
+        - name: maccas-graphql
+          image: maccas-api:latest
+          imagePullPolicy: Always
+          env:
+            - name: EVENT_API_BASE
+              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+            - name: BATCH_API_BASE
+              value: http://maccas-batch.maccas-api.svc.cluster.local:8002
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8000

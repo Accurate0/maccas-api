@@ -9,5 +9,6 @@ hidden
 hidden/*
 prisma.rs
 .env.local
+.env.git-sha
 *.sql
 *.apk

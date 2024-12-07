@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-web
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-web
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: maccas-web
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  name: maccas-web
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: maccas-web
+          image: maccas-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: ADDRESS_HEADER
+              value: CF-Connecting-IP
+            - name: OLD_API_BASE_URL
+              value: https://api.maccas.one/v1
+            - name: API_BASE_URL
+              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
+          envFrom:
+            - secretRef:
+                name: maccas-web-managed-secrets
+          ports:
+            - containerPort: 3000

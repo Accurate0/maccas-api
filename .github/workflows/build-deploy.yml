@@ -113,4 +113,3 @@ jobs:
 
           echo -n "$KUBE_CONFIG" | base64 -di > $HOME/.kube/config
           kubectl apply -f application.yaml
-
