@@ -26,6 +26,16 @@ spec:
         - name: maccas-event
           image: maccas-event:latest
           imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8001
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets
