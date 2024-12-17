@@ -8,6 +8,8 @@ COPY . /app
 WORKDIR /app
 
 FROM builder AS build
+RUN apk add openssl
+
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run db:generate
 RUN pnpm run build
