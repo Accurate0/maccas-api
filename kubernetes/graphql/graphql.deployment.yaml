@@ -20,7 +20,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  name: maccas-graphql
+                  app: maccas-graphql
               topologyKey: kubernetes.io/hostname
       initContainers:
         - name: maccas-migration

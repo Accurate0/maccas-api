@@ -13,6 +13,24 @@ jobs:
       packages: write
 
     steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch multi-platform package version SHAs
+        id: multi-arch-digests
+        run: |
+          web=$(docker manifest inspect ghcr.io/accurate0/maccas-web | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          api=$(docker manifest inspect ghcr.io/accurate0/maccas-api | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          dashboard=$(docker manifest inspect ghcr.io/accurate0/maccas-dashboard | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          migration=$(docker manifest inspect ghcr.io/accurate0/maccas-migration | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          batch=$(docker manifest inspect ghcr.io/accurate0/maccas-batch | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          event=$(docker manifest inspect ghcr.io/accurate0/maccas-event | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          echo "multi-arch-digests=$web,$api,$dashboard,$migration,$batch,$event" >> $GITHUB_OUTPUT
+
       - uses: snok/container-retention-policy@v3.0.0
         with:
           account: user
@@ -21,4 +39,4 @@ jobs:
           image-tags: "!latest"
           keep-n-most-recent: 10
           cut-off: 3d
-          skip-shas: true
+          skip-shas: ${{ steps.multi-arch-digests.outputs.multi-arch-digests }}
