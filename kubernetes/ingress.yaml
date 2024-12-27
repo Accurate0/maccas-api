@@ -4,7 +4,6 @@ metadata:
   name: maccas-api
   namespace: maccas-api
   annotations:
-    nginx.ingress.kubernetes.io/enable-modsecurity: "False"
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/configuration-snippet: |
       real_ip_header CF-Connecting-IP;
