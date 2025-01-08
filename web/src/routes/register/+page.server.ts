@@ -6,6 +6,7 @@ import { fail } from '@sveltejs/kit';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { schema } from './schema';
 import { RateLimiter } from '$lib/server/ratelimiter';
+import { zod } from 'sveltekit-superforms/adapters';
 
 export type RegisterState = {
 	error: string | null;
@@ -13,7 +14,7 @@ export type RegisterState = {
 
 export const load = async (event) => {
 	await RateLimiter.cookieLimiter?.preflight(event);
-	const form = await superValidate(schema);
+	const form = await superValidate(zod(schema));
 	return { form };
 };
 
@@ -21,7 +22,7 @@ export const actions = {
 	default: async (event) => {
 		const { request } = event;
 
-		const form = await superValidate(request, schema);
+		const form = await superValidate(request, zod(schema));
 		const { limited, retryAfter } = await RateLimiter.check(event);
 		console.log(`Rate limiter check: ${event.getClientAddress()} ${limited}`);
 
