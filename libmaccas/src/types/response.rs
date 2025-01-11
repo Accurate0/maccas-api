@@ -21,7 +21,7 @@ impl<T: Debug> Debug for ClientResponse<T> {
     }
 }
 
-impl<'a, T> ClientResponse<T>
+impl<T> ClientResponse<T>
 where
     T: for<'de> serde::Deserialize<'de> + Debug,
 {

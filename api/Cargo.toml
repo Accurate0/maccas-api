@@ -12,6 +12,7 @@ axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+tracing-opentelemetry = { workspace = true }
 tracing-futures = { workspace = true }
 sea-orm = { workspace = true }
 anyhow = { workspace = true }
@@ -34,4 +35,5 @@ redis = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }
-axum-tracing-opentelemetry = "0.21.1"
+opentelemetry_sdk = { workspace = true }
+axum-tracing-opentelemetry = "0.23.0"

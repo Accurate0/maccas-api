@@ -37,6 +37,10 @@ imap = { version = "3.0.0-alpha.14", features = ["native-tls"] }
 mailparse = "0.15.0"
 regex = "1.11.0"
 
+opentelemetry = { workspace = true }
+opentelemetry_sdk = { workspace = true }
+tracing-opentelemetry = { workspace = true }
+
 [lib]
 name = "batch"
 path = "src/lib.rs"

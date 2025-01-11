@@ -34,6 +34,7 @@ chrono = "0.4.38"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 tracing-futures = "0.2.5"
+tracing-opentelemetry = "0.27.0"
 
 sea-orm = { version = "1.1", features = [
     "sqlx-postgres",
@@ -84,5 +85,6 @@ axum = { version = "0.7.7", features = ["macros"] }
 tower-http = { version = "0.6.1", features = ["trace", "cors"] }
 itertools = "0.13.0"
 opentelemetry = "0.26.0"
+opentelemetry_sdk = "0.26.0"
 http = "1.1.0"
 

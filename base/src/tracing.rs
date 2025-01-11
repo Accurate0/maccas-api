@@ -61,9 +61,10 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         .install_batch(opentelemetry_sdk::runtime::Tokio)
         .unwrap();
 
-    global::set_tracer_provider(tracer_provider.clone());
+    let tracer = tracer_provider.tracer_builder(name).build();
+    global::set_tracer_provider(tracer_provider);
 
-    tracer_provider.tracer_builder(name).build()
+    tracer
 }
 
 pub fn init(name: &'static str) {

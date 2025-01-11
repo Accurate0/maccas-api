@@ -14,7 +14,7 @@ pub struct ClientResponse<T> {
 
 pub type ClientResult<T> = Result<T, ClientError>;
 
-impl<'a, T> ClientResponse<T>
+impl<T> ClientResponse<T>
 where
     T: for<'de> serde::Deserialize<'de> + Debug,
 {
