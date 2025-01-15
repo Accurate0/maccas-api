@@ -45,8 +45,8 @@ importers:
         specifier: 5.21.1
         version: 5.21.1(prisma@5.21.1)
       '@prisma/instrumentation':
-        specifier: ^5.21.1
-        version: 5.21.1
+        specifier: ^6.0.0
+        version: 6.2.1(@opentelemetry/api@1.9.0)
       '@sveltestack/svelte-query':
         specifier: ^1.6.0
         version: 1.6.0
@@ -1303,8 +1303,10 @@ packages:
   '@prisma/get-platform@5.21.1':
     resolution: {integrity: sha512-sRxjL3Igst3ct+e8ya/x//cDXmpLbZQ5vfps2N4tWl4VGKQAmym77C/IG/psSMsQKszc8uFC/q1dgmKFLUgXZQ==}
 
-  '@prisma/instrumentation@5.21.1':
-    resolution: {integrity: sha512-cjjor6hTqBhXULjYqr2Y9ZVQEhl9dNUgx0TkFPg88F1PFIuiktWoENW8GnsENN6aSJSrbgavBuf3XRNu9qzlrg==}
+  '@prisma/instrumentation@6.2.1':
+    resolution: {integrity: sha512-QrcWRAwNHXX4nHXB+Q94nfm701gPQsR4zkaxYV6qCiENopRi8yYvXt6FNIvxbuwEiWW5Zid6DoWwIsBKJ/5r5w==}
+    peerDependencies:
+      '@opentelemetry/api': ^1.8
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -4858,11 +4860,10 @@ snapshots:
     dependencies:
       '@prisma/debug': 5.21.1
 
-  '@prisma/instrumentation@5.21.1':
+  '@prisma/instrumentation@6.2.1(@opentelemetry/api@1.9.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/instrumentation': 0.53.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base': 1.26.0(@opentelemetry/api@1.9.0)
     transitivePeerDependencies:
       - supports-color
 
