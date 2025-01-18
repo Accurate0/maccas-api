@@ -11,12 +11,12 @@ const IMAGE_BASE_URL: &str =
 
 pub type S3BucketType = Box<s3::Bucket>;
 
-pub async fn save_image(basename: String, em: EventManager) -> Result<(), HandlerError> {
+pub async fn save_image(original_basename: String, em: EventManager) -> Result<(), HandlerError> {
     let bucket = em.get_state::<S3BucketType>();
     let http_client = em.get_state::<ClientWithMiddleware>();
 
     // jpg will be jpg.jpg, png will be png.jpg
-    let basename = format!("{basename}.jpg");
+    let basename = format!("{original_basename}.jpg");
 
     let head_result = bucket
         .head_object(&basename)
@@ -32,7 +32,7 @@ pub async fn save_image(basename: String, em: EventManager) -> Result<(), Handle
         return Ok(());
     }
 
-    let url = format!("{IMAGE_BASE_URL}/{basename}");
+    let url = format!("{IMAGE_BASE_URL}/{original_basename}");
     tracing::info!("fetching image: {}", url);
 
     let response = http_client.get(&url).send().await?.error_for_status()?;
