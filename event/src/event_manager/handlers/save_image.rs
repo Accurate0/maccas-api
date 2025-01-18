@@ -11,7 +11,11 @@ const IMAGE_BASE_URL: &str =
 
 pub type S3BucketType = Box<s3::Bucket>;
 
-pub async fn save_image(original_basename: String, em: EventManager) -> Result<(), HandlerError> {
+pub async fn save_image(
+    original_basename: String,
+    force: bool,
+    em: EventManager,
+) -> Result<(), HandlerError> {
     let bucket = em.get_state::<S3BucketType>();
     let http_client = em.get_state::<ClientWithMiddleware>();
 
@@ -27,7 +31,7 @@ pub async fn save_image(original_basename: String, em: EventManager) -> Result<(
         ))
         .await;
 
-    if head_result.is_ok() {
+    if head_result.is_ok() && !force {
         tracing::info!("image {} already exists in bucket", basename);
         return Ok(());
     }

@@ -93,7 +93,9 @@ pub async fn handle(event_manager: EventManager) {
                         )
                         .await
                     }
-                    Event::SaveImage { basename } => save_image(basename, event_manager).await,
+                    Event::SaveImage { basename, force } => {
+                        save_image(basename, force, event_manager).await
+                    }
                     Event::RefreshPoints { account_id } => {
                         refresh_points(account_id, event_manager).await
                     }

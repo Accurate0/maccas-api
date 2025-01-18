@@ -179,6 +179,7 @@ impl Job for RefreshJob {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
                     basename: offer.image_base_name.as_ref().clone(),
+                    force: *offer.migrated.as_ref(),
                 },
                 delay: Duration::from_secs(0),
             };
@@ -209,7 +210,10 @@ impl Job for RefreshJob {
         offer_details::Entity::insert_many(active_models)
             .on_conflict(
                 OnConflict::column(offer_details::Column::PropositionId)
-                    .update_column(offer_details::Column::RawData)
+                    .update_columns(vec![
+                        offer_details::Column::RawData,
+                        offer_details::Column::ImageBaseName,
+                    ])
                     .to_owned(),
             )
             .on_empty_do_nothing()

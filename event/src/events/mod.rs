@@ -13,6 +13,8 @@ pub enum Event {
     },
     SaveImage {
         basename: String,
+        #[serde(default)]
+        force: bool,
     },
     RefreshPoints {
         account_id: Uuid,

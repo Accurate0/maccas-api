@@ -39,6 +39,7 @@ impl Job for SaveImagesJob {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
                     basename: offer.image_base_name,
+                    force: true,
                 },
                 delay: Duration::from_secs(0),
             };
