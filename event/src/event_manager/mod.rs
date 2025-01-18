@@ -19,6 +19,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::instrument;
 
 mod handlers;
+pub use handlers::S3BucketType;
 
 #[derive(Error, Debug)]
 pub enum EventManagerError {

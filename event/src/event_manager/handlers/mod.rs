@@ -15,6 +15,8 @@ mod cleanup;
 mod refresh_points;
 mod save_image;
 
+pub use save_image::S3BucketType;
+
 #[derive(Error, Debug)]
 pub enum HandlerError {
     #[error("Serializer error has occurred: `{0}`")]
