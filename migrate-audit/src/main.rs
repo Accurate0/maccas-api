@@ -67,6 +67,7 @@ async fn insert_audit(
             short_name: Set(legacy_offer.short_name),
             image_base_name: Set(legacy_offer.image_base_name),
             raw_data: Set(None),
+            migrated: Set(true),
             ..Default::default()
         };
 

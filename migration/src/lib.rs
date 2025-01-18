@@ -43,6 +43,7 @@ mod m20240706_073116_add_event_hash;
 mod m20240706_085421_add_event_status_index;
 mod m20250118_071320_make_transaction_id_unique;
 mod m20250118_081138_add_migrated_flag_to_audit;
+mod m20250118_082248_add_migrated_to_offer_details;
 
 pub struct Migrator;
 
@@ -93,6 +94,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240706_085421_add_event_status_index::Migration),
             Box::new(m20250118_071320_make_transaction_id_unique::Migration),
             Box::new(m20250118_081138_add_migrated_flag_to_audit::Migration),
+            Box::new(m20250118_082248_add_migrated_to_offer_details::Migration),
         ]
     }
 }

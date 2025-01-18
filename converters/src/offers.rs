@@ -111,6 +111,7 @@ impl Database<OfferDetails> {
             updated_at: now,
             raw_data: Some(serde_json::to_value(offer)?),
             categories: None,
+            migrated: false,
         }))
     }
 }

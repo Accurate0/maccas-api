@@ -19,6 +19,7 @@ pub struct Model {
     #[sea_orm(column_type = "JsonBinary", nullable)]
     pub raw_data: Option<Json>,
     pub categories: Option<Vec<String>>,
+    pub migrated: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
