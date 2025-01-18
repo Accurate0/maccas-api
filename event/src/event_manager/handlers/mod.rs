@@ -4,9 +4,10 @@ use crate::event_manager::handlers::save_image::save_image;
 use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use converters::ConversionError;
 use event::Event;
+use futures::FutureExt;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
-use std::{num::TryFromIntError, time::Duration};
+use std::{num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
 use thiserror::Error;
 use tracing::{span, Instrument};
 
@@ -70,7 +71,7 @@ pub async fn handle(event_manager: EventManager) {
         let fut = async move {
             event_manager.set_event_running(event.id).await?;
 
-            let result = retry_async(backoff, || async {
+            let result = AssertUnwindSafe(retry_async(backoff, || async {
                 let event_manager = event_manager.clone();
                 let evt = event.evt.clone();
                 match evt {
@@ -95,26 +96,36 @@ pub async fn handle(event_manager: EventManager) {
                         refresh_points(account_id, event_manager).await
                     }
                 }
-            })
+            }))
+            .catch_unwind()
             .await;
 
             match result {
-                RetryResult::Ok { attempts, .. } => {
-                    tracing::info!("success: with {} attempts", attempts);
+                Ok(result) => match result {
+                    RetryResult::Ok { attempts, .. } => {
+                        tracing::info!("success: with {} attempts", attempts);
 
-                    event_manager
-                        .set_event_completed(event.id, attempts.try_into()?)
-                        .await?;
-                }
-                RetryResult::Err { attempts, value } => {
-                    tracing::error!("error: {} with {} attempts", value, attempts);
+                        event_manager
+                            .set_event_completed(event.id, attempts.try_into()?)
+                            .await?;
+                    }
+                    RetryResult::Err { attempts, value } => {
+                        tracing::error!("error: {} with {} attempts", value, attempts);
 
+                        event_manager
+                            .set_event_completed_in_error(
+                                event.id,
+                                &value.to_string(),
+                                attempts.try_into()?,
+                            )
+                            .await?;
+                    }
+                },
+                Err(panic_err) => {
+                    let err = format!("panic: {:?}", panic_err);
+                    tracing::error!("{}", err);
                     event_manager
-                        .set_event_completed_in_error(
-                            event.id,
-                            &value.to_string(),
-                            attempts.try_into()?,
-                        )
+                        .set_event_completed_in_error(event.id, &err, 99)
                         .await?;
                 }
             }

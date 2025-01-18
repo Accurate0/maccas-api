@@ -10,7 +10,7 @@ const IMAGE_BASE_URL: &str =
     "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
 
 pub async fn save_image(basename: String, em: EventManager) -> Result<(), HandlerError> {
-    let bucket = em.get_state::<s3::Bucket>();
+    let bucket = em.get_state::<Box<s3::Bucket>>();
     let http_client = em.get_state::<ClientWithMiddleware>();
 
     // jpg will be jpg.jpg, png will be png.jpg
