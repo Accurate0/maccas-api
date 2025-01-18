@@ -118,6 +118,7 @@ async fn insert_audit(
         created_at: Set(timestamp),
         updated_at: Set(timestamp),
         user_id: Set(uuid::Uuid::from_str(user_id).ok()),
+        migrated: Set(true),
         ..Default::default()
     };
 
