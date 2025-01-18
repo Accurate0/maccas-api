@@ -5,7 +5,7 @@ use opentelemetry::trace::TracerProvider;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::trace::{Config as TraceConfig, Tracer};
+use opentelemetry_sdk::trace::{BatchConfigBuilder, Config as TraceConfig, Tracer};
 use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource::{
     DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME,
@@ -46,6 +46,9 @@ pub fn external_tracer(name: &'static str) -> Tracer {
     ];
 
     let trace_config = TraceConfig::default().with_resource(Resource::new(tags));
+    let batch_config = BatchConfigBuilder::default()
+        .with_max_queue_size(20480)
+        .build();
 
     let pipeline = opentelemetry_otlp::new_exporter()
         .http()
@@ -58,6 +61,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         .tracing()
         .with_exporter(pipeline)
         .with_trace_config(trace_config)
+        .with_batch_config(batch_config)
         .install_batch(opentelemetry_sdk::runtime::Tokio)
         .unwrap();
 

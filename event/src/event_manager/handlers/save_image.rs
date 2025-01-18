@@ -13,6 +13,9 @@ pub async fn save_image(basename: String, em: EventManager) -> Result<(), Handle
     let bucket = em.get_state::<s3::Bucket>();
     let http_client = em.get_state::<ClientWithMiddleware>();
 
+    // jpg will be jpg.jpg, png will be png.jpg
+    let basename = format!("{basename}.jpg");
+
     let head_result = bucket
         .head_object(&basename)
         .instrument(tracing::span!(

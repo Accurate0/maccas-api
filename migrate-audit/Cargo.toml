@@ -1,0 +1,22 @@
+[package]
+name = "migrate-audit"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing = { workspace = true }
+sea-orm = { workspace = true }
+entity = { workspace = true }
+base = { workspace = true }
+uuid = { workspace = true }
+opentelemetry = { workspace = true }
+
+aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
+aws-sdk-dynamodb = "1.60.0"
+serde_dynamo = { version = "4.2.14", features = ["aws-sdk-dynamodb+1"] }

@@ -115,7 +115,7 @@ impl Offer {
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<String> {
         let basename = self.image_basename(context).await?;
-        Ok(format!("{IMAGE_BASE_URL}/{basename}"))
+        Ok(format!("{IMAGE_BASE_URL}/{basename}.jpg"))
     }
 
     pub async fn price(
