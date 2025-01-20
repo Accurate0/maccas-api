@@ -10,7 +10,6 @@ members = [
     "base",
     "event", 
     "sensordata/lib", 
-    "migrate-audit",
 ]
 
 [profile.release-strip]
