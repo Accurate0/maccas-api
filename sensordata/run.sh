@@ -8,7 +8,7 @@ command -v emulator > /dev/null && emulator=emulator || emulator=/android-sdk/em
 rm -f "$HOME"/.android/avd/test.avd/*.lock
 
 export QEMU_AUDIO_DRV=none
-$emulator -avd test -no-window -read-only -no-metrics &
+$emulator -avd test -no-window -read-only -no-metrics -memory 2048 &
 
 timeout 120 adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
