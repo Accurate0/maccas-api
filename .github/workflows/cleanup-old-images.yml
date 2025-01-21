@@ -29,13 +29,14 @@ jobs:
           migration=$(docker manifest inspect ghcr.io/accurate0/maccas-migration | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           batch=$(docker manifest inspect ghcr.io/accurate0/maccas-batch | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           event=$(docker manifest inspect ghcr.io/accurate0/maccas-event | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          echo "multi-arch-digests=$web,$api,$dashboard,$migration,$batch,$event" >> $GITHUB_OUTPUT
+          sensordata=$(docker manifest inspect ghcr.io/accurate0/maccas-sensordata | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          echo "multi-arch-digests=$web,$api,$dashboard,$migration,$batch,$event,$sensordata" >> $GITHUB_OUTPUT
 
       - uses: snok/container-retention-policy@v3.0.0
         with:
           account: user
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "maccas-web maccas-dashboard maccas-migration maccas-api maccas-batch maccas-event"
+          image-names: "maccas-web maccas-dashboard maccas-migration maccas-api maccas-batch maccas-event maccas-sensordata"
           image-tags: "!latest"
           keep-n-most-recent: 10
           cut-off: 3d
