@@ -65,7 +65,7 @@ ENV PATH ${PATH}:~/.bun/bin
 
 RUN pip install --break-system-packages frida-tools
 
-COPY com.mcdonalds.au.gma.apk app.apk
+ADD https://assets.anurag.sh/com.mcdonalds.au.gma.apk app.apk
 COPY getsensordata.js .
 COPY run.sh .
 COPY server.js .
