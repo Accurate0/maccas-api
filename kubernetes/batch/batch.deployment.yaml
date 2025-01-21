@@ -38,7 +38,7 @@ spec:
             timeoutSeconds: 1
           env:
             - name: SENSORDATA_API_BASE
-              value: http://localhost
+              value: http://maccas-sensordata.maccas-api.svc.cluster.local
             - name: DISABLE_JOBS
               value: create-account,activate-account
             - name: EVENT_API_BASE

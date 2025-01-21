@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccas-sensordata
+  namespace: maccas-api
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  selector:
+    matchLabels:
+      app: maccas-sensordata
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: maccas-sensordata
+    spec:
+      containers:
+        - name: maccas-sensordata
+          image: maccas-sensordata:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080

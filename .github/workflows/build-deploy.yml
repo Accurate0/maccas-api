@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [api, batch, dashboard, event, web, migration]
+        apps: [api, batch, dashboard, event, web, migration, sensordata]
 
     permissions:
       packages: write
@@ -66,7 +66,7 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       - name: Docker build
-        if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' }}
+        if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' || matrix.apps == 'sensordata' }}
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.apps }}
