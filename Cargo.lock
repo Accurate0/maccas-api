@@ -382,43 +382,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c042108f3ed77fd83760a5fd79b53be043192bb3b9dba91d8c574c0ada7850c8"
 
 [[package]]
-name = "api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-graphql",
- "async-graphql-axum",
- "async-trait",
- "axum",
- "axum-tracing-opentelemetry",
- "base",
- "batch",
- "chrono",
- "config",
- "entity",
- "event",
- "futures",
- "futures-util",
- "libmaccas",
- "opentelemetry 0.26.0",
- "opentelemetry_sdk 0.26.0",
- "places",
- "redis",
- "reqwest",
- "reqwest-middleware",
- "sea-orm",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-futures",
- "tracing-opentelemetry 0.27.0",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "arbitrary"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2043,6 +2006,43 @@ dependencies = [
  "futures-core",
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "graphql"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-graphql",
+ "async-graphql-axum",
+ "async-trait",
+ "axum",
+ "axum-tracing-opentelemetry",
+ "base",
+ "batch",
+ "chrono",
+ "config",
+ "entity",
+ "event",
+ "futures",
+ "futures-util",
+ "libmaccas",
+ "opentelemetry 0.26.0",
+ "opentelemetry_sdk 0.26.0",
+ "places",
+ "redis",
+ "reqwest",
+ "reqwest-middleware",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-futures",
+ "tracing-opentelemetry 0.27.0",
+ "tracing-subscriber",
 ]
 
 [[package]]

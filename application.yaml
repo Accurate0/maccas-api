@@ -13,7 +13,7 @@ spec:
     path: kubernetes
     kustomize:
       images:
-        - maccas-api=ghcr.io/accurate0/maccas-api:${ARGOCD_APP_REVISION}
+        - maccas-graphql=ghcr.io/accurate0/maccas-graphql:${ARGOCD_APP_REVISION}
         - maccas-migration=ghcr.io/accurate0/maccas-migration:${ARGOCD_APP_REVISION}
         - maccas-web=ghcr.io/accurate0/maccas-web:${ARGOCD_APP_REVISION}
         - maccas-event=ghcr.io/accurate0/maccas-event:${ARGOCD_APP_REVISION}

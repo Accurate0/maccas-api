@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [api, batch, dashboard, event, web, migration, sensordata]
+        apps: [graphql, batch, dashboard, event, web, migration, sensordata]
 
     permissions:
       packages: write
@@ -54,7 +54,7 @@ jobs:
           cache-target: /usr/local/cargo/registry/
 
       - name: Docker build
-        if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
+        if: ${{ matrix.apps  == 'graphql' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
         uses: docker/build-push-action@v5
         with:
           context: .

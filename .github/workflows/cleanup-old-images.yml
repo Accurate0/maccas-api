@@ -24,19 +24,19 @@ jobs:
         id: multi-arch-digests
         run: |
           web=$(docker manifest inspect ghcr.io/accurate0/maccas-web | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          api=$(docker manifest inspect ghcr.io/accurate0/maccas-api | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          graphql=$(docker manifest inspect ghcr.io/accurate0/maccas-graphql | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           dashboard=$(docker manifest inspect ghcr.io/accurate0/maccas-dashboard | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           migration=$(docker manifest inspect ghcr.io/accurate0/maccas-migration | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           batch=$(docker manifest inspect ghcr.io/accurate0/maccas-batch | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           event=$(docker manifest inspect ghcr.io/accurate0/maccas-event | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           sensordata=$(docker manifest inspect ghcr.io/accurate0/maccas-sensordata | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          echo "multi-arch-digests=$web,$api,$dashboard,$migration,$batch,$event,$sensordata" >> $GITHUB_OUTPUT
+          echo "multi-arch-digests=$web,$graphql,$dashboard,$migration,$batch,$event,$sensordata" >> $GITHUB_OUTPUT
 
       - uses: snok/container-retention-policy@v3.0.0
         with:
           account: user
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "maccas-web maccas-dashboard maccas-migration maccas-api maccas-batch maccas-event maccas-sensordata"
+          image-names: "maccas-web maccas-dashboard maccas-migration maccas-graphql maccas-batch maccas-event maccas-sensordata"
           image-tags: "!latest"
           keep-n-most-recent: 10
           cut-off: 3d

@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "api",
+    "graphql",
     "migration",
     "libmaccas",
     "places",
@@ -9,7 +9,7 @@ members = [
     "batch",
     "base",
     "event", 
-    "sensordata/lib", 
+    "sensordata/lib"
 ]
 
 [profile.release-strip]
