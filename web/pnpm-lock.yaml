@@ -42,8 +42,8 @@ importers:
         specifier: ^1.27.0
         version: 1.27.0
       '@prisma/client':
-        specifier: 5.21.1
-        version: 5.21.1(prisma@5.21.1)
+        specifier: 6.3.0
+        version: 6.3.0(prisma@5.21.1)(typescript@5.6.3)
       '@prisma/instrumentation':
         specifier: ^5.21.1
         version: 5.21.1
@@ -1279,13 +1279,16 @@ packages:
     resolution: {integrity: sha512-B4iV6QxW//Fn17+qF1EMZRmoThIUJlCtcO85yoRDJnMyHeAthjz4ig9OTkfGGXKtQhcdPX0me75gU5K9J897+w==}
     engines: {node: '>=18.16.0'}
 
-  '@prisma/client@5.21.1':
-    resolution: {integrity: sha512-3n+GgbAZYjaS/k0M03yQsQfR1APbr411r74foknnsGpmhNKBG49VuUkxIU6jORgvJPChoD4WC4PqoHImN1FP0w==}
-    engines: {node: '>=16.13'}
+  '@prisma/client@6.3.0':
+    resolution: {integrity: sha512-BY3Fi28PUSk447Bpv22LhZp4HgNPo7NsEN+EteM1CLDnLjig5863jpW+3c3HHLFmml+nB/eJv1CjSriFZ8z7Cg==}
+    engines: {node: '>=18.18'}
     peerDependencies:
       prisma: '*'
+      typescript: '>=5.1.0'
     peerDependenciesMeta:
       prisma:
+        optional: true
+      typescript:
         optional: true
 
   '@prisma/debug@5.21.1':
@@ -4833,9 +4836,10 @@ snapshots:
   '@poppinss/macroable@1.0.3':
     optional: true
 
-  '@prisma/client@5.21.1(prisma@5.21.1)':
+  '@prisma/client@6.3.0(prisma@5.21.1)(typescript@5.6.3)':
     optionalDependencies:
       prisma: 5.21.1
+      typescript: 5.6.3
 
   '@prisma/debug@5.21.1': {}
 
