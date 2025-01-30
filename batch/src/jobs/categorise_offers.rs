@@ -14,8 +14,8 @@ pub struct CategoriseOffersJob {
 }
 
 pub fn get_prompt(available_categories: &str, offer_details: &str) -> Vec<ChatMessage> {
-    [ChatMessage {
-
+    [
+        ChatMessage {
             role: "system".to_string(),
             content: "You are to categorise strings based on a preexisting category list, you must always response with valid JSON".to_string(),
         },
@@ -26,12 +26,12 @@ pub fn get_prompt(available_categories: &str, offer_details: &str) -> Vec<ChatMe
             {offer_details}
 
             You may select multiple categories, only if they match well however, single categories are preferred where possible.
-            Provide single values as arrays as well.
+            Provide single values as arrays as well. These names are from McDonald's, you must use your knowledge of their menu.
 
             If a name does not match any category, return an empty array value in the json instead.
             You must respond with a JSON dictionary that maps the name to the category selected."#,)
-        }]
-        .to_vec()
+        }
+    ].to_vec()
 }
 
 #[async_trait::async_trait]
