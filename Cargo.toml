@@ -12,6 +12,9 @@ members = [
     "sensordata/lib"
 ]
 
+[workspace.package]
+rust-version = "1.81.0"
+
 [profile.release-strip]
 inherits = "release"
 strip = "symbols"
