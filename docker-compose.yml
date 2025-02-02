@@ -1,8 +1,5 @@
-version: "3"
-
 services:
   sensordata:
-    restart: unless-stopped
     build:
       context: sensordata
     devices:
@@ -22,14 +19,14 @@ services:
     ports:
       - "3000:3000"
     links:
-      - "api:api"
+      - "graphql:graphql"
       - "db:database"
     depends_on:
-      - api
+      - graphql
       - db
     environment:
       - OLD_API_BASE_URL=https://api.maccas.one/v1
-      - API_BASE_URL=http://api:8000/v1
+      - API_BASE_URL=http://graphql:8000/v1
       - DATABASE_URL=postgres://postgres:test@database/maccas-web
       - AUTH_SECRET=111
       # svelte needs origin for csrf
@@ -43,27 +40,27 @@ services:
     ports:
       - "3001:3001"
     links:
-      - "api:api"
+      - "graphql:graphql"
       - "db:database"
       - "batch:batch"
       - "event:event"
     depends_on:
-      - api
+      - graphql
       - db
       - batch
       - event
     environment:
       - DATABASE_URL=postgres://postgres:test@database/maccas-dashboard
-      - API_BASE_URL=http://api:8000/v1
+      - API_BASE_URL=http://graphql:8000/v1
       - EVENT_API_BASE=http://event:8001
       - BATCH_API_BASE=http://batch:8002
       - AUTH_SECRET=111
 
-  api:
+  graphql:
     build:
       dockerfile: Dockerfile
       args:
-        - BINARY_NAME=api
+        - BINARY_NAME=graphql
     ports:
       - "8000:8000"
     links:
@@ -119,7 +116,6 @@ services:
     links:
       # - "sensordata:sensordata"
       - "db:database"
-    restart: unless-stopped
     depends_on:
       - db
       # db:

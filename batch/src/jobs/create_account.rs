@@ -10,7 +10,7 @@ use libmaccas::{
     ApiClient,
 };
 use rand::{
-    distributions::{Alphanumeric, DistString},
+    distr::{Alphanumeric, SampleString},
     rngs::StdRng,
     SeedableRng,
 };
@@ -55,7 +55,7 @@ impl Job for CreateAccountJob {
             .await?;
         client.set_login_token(&response.body.response.token);
 
-        let mut rng = StdRng::from_entropy();
+        let mut rng = StdRng::from_os_rng();
 
         let first_name = "Lachlan".to_owned();
         let last_name = "Wells".to_owned();
