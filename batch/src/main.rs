@@ -189,7 +189,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let app = Router::new()
         .route("/job", get(get_jobs))
-        .route("/job/:job_name", post(run_job))
+        .route("/job/{job_name}", post(run_job))
         .layer(middleware::from_fn_with_state(api_state.clone(), validate))
         .layer(cors)
         .layer(trace_layer)

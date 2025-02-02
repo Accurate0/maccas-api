@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 async-graphql = { workspace = true }
-async-graphql-axum = "7.0.11"
+async-graphql-axum = "7.0.14"
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
@@ -36,4 +36,4 @@ thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
-axum-tracing-opentelemetry = "0.23.0"
+axum-tracing-opentelemetry = "0.25.0"
