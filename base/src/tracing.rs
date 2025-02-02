@@ -1,16 +1,15 @@
-use std::collections::HashMap;
-use std::time::Duration;
-
+use http::{HeaderMap, HeaderValue};
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::{global, KeyValue};
-use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_otlp::{WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::trace::{BatchConfigBuilder, Config as TraceConfig, Tracer};
-use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::trace::{BatchConfigBuilder, BatchSpanProcessor, Tracer};
+use opentelemetry_sdk::{runtime, Resource};
 use opentelemetry_semantic_conventions::resource::{
     DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME,
     TELEMETRY_SDK_VERSION,
 };
+use std::time::Duration;
 use tracing::Level;
 use tracing_subscriber::filter::Targets;
 use tracing_subscriber::layer::SubscriberExt;
@@ -22,12 +21,18 @@ pub fn external_tracer(name: &'static str) -> Tracer {
     let token = std::env::var("AXIOM_TOKEN").expect("must have axiom token configured");
     let dataset_name = std::env::var("AXIOM_DATASET").expect("must have axiom dataset configured");
 
-    let mut headers = HashMap::with_capacity(3);
-    headers.insert("Authorization".to_string(), format!("Bearer {token}"));
-    headers.insert("X-Axiom-Dataset".to_string(), dataset_name);
+    let mut headers = HeaderMap::<HeaderValue>::with_capacity(3);
     headers.insert(
-        "User-Agent".to_string(),
-        format!("tracing-axiom/{}", env!("CARGO_PKG_VERSION")),
+        "Authorization",
+        HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
+    );
+    headers.insert(
+        "X-Axiom-Dataset",
+        HeaderValue::from_str(&dataset_name).unwrap(),
+    );
+    headers.insert(
+        "User-Agent",
+        HeaderValue::from_str(&format!("tracing-axiom/{}", env!("CARGO_PKG_VERSION"))).unwrap(),
     );
 
     let tags = vec![
@@ -45,27 +50,32 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         ),
     ];
 
-    let trace_config = TraceConfig::default().with_resource(Resource::new(tags));
     let batch_config = BatchConfigBuilder::default()
         .with_max_queue_size(20480)
         .build();
 
-    let pipeline = opentelemetry_otlp::new_exporter()
-        .http()
-        .with_http_client(reqwest::Client::new())
+    let span_exporter = opentelemetry_otlp::HttpExporterBuilder::default()
+        .with_http_client(
+            reqwest::ClientBuilder::new()
+                .default_headers(headers)
+                .build()
+                .unwrap(),
+        )
         .with_endpoint(INGEST_URL)
-        .with_headers(headers)
-        .with_timeout(Duration::from_secs(3));
-
-    let tracer_provider = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(pipeline)
-        .with_trace_config(trace_config)
-        .with_batch_config(batch_config)
-        .install_batch(opentelemetry_sdk::runtime::Tokio)
+        .with_timeout(Duration::from_secs(3))
+        .build_span_exporter()
         .unwrap();
 
-    let tracer = tracer_provider.tracer_builder(name).build();
+    let tracer_provider = opentelemetry_sdk::trace::TracerProvider::builder()
+        .with_span_processor(
+            BatchSpanProcessor::builder(span_exporter, runtime::Tokio)
+                .with_batch_config(batch_config)
+                .build(),
+        )
+        .with_resource(Resource::new(tags))
+        .build();
+
+    let tracer = tracer_provider.tracer(name);
     global::set_tracer_provider(tracer_provider);
 
     tracer
