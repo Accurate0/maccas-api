@@ -1,7 +1,6 @@
 @import 'material-symbols';
+@import 'tailwindcss/preflight';
 
-@tailwind base;
-@tailwind components;
 @tailwind utilities;
 
 @layer base {

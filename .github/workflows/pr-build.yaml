@@ -20,7 +20,7 @@ jobs:
 
       - name: Docker build
         if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
@@ -29,7 +29,7 @@ jobs:
 
       - name: Docker build
         if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.apps }}
           push: false

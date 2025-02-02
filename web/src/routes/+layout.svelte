@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '@fontsource-variable/open-sans';
-	import '../app.pcss';
+	import '../app.css';
 
 	import { goto, onNavigate } from '$app/navigation';
 	import { Toaster } from 'svelte-sonner';
