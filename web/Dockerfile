@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN corepack prepare pnpm@10.0.0 --activate
 
 COPY . /app
 WORKDIR /app
