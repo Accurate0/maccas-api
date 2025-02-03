@@ -40,7 +40,7 @@ FROM base AS runner
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN COREPACK_INTEGRITY_KEYS=0 corepack enable
 RUN apk add openssl
 
 ENV NODE_ENV production
