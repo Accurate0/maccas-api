@@ -41,6 +41,7 @@ WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack prepare pnpm@10.0.0 --activate
+RUN corepack enable
 RUN apk add openssl
 
 ENV NODE_ENV production
