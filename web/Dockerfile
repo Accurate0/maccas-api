@@ -2,8 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g corepack@latest
-RUN corepack enable && corepack prepare --activate
+RUN corepack enable
 
 COPY . /app
 WORKDIR /app

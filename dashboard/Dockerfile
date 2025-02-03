@@ -40,8 +40,7 @@ FROM base AS runner
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g corepack@latest
-RUN corepack enable && corepack prepare --activate
+RUN corepack enable
 RUN apk add openssl
 
 ENV NODE_ENV production
