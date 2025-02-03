@@ -2,8 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-RUN corepack prepare pnpm@latest-9 --activate
+RUN corepack prepare pnpm@10.0.0 --activate && corepack enable pnpm
 
 COPY . /app
 WORKDIR /app
@@ -18,7 +17,7 @@ RUN pnpm run build
 FROM node:20-alpine
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN corepack prepare pnpm@10.0.0 --activate && corepack enable pnpm
 RUN apk add openssl
 
 WORKDIR /app
