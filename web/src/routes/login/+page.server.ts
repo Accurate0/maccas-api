@@ -49,6 +49,16 @@ export const actions = {
 		const { limited, retryAfter } = await RateLimiter.check(event);
 		console.log(`Rate limiter check: ${event.getClientAddress()} ${limited}`);
 		if (limited) {
+			await prisma.notification.create({
+				data: {
+					content: `Rate limit reached by ${event.getClientAddress()}`,
+					context: { ipAddress: event.getClientAddress(), page: 'login' },
+					read: false,
+					priority: Priority.HIGH,
+					type: NotificationType.RATELIMIT_REACHED
+				}
+			});
+
 			return setError(
 				form,
 				'password',

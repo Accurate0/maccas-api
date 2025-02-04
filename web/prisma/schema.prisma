@@ -37,6 +37,7 @@ enum NotificationType {
     USER_CREATED
     USER_ACTIVATED
     USER_DEACTIVATED
+    RATELIMIT_REACHED
 }
 
 model Notification {
