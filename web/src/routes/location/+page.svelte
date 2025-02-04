@@ -8,7 +8,7 @@
 	import { flip } from 'svelte/animate';
 	import { Crosshair1 } from 'radix-icons-svelte';
 	import type { UpdateLocationBody } from '../api/location/schema';
-	import { invalidate } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 
 	let currentStoreName = $state($page.data?.config?.storeName);
@@ -86,7 +86,7 @@
 
 		if (response.ok) {
 			currentStoreName = newStoreName;
-			await invalidate('/location');
+			await invalidateAll();
 			toast('Location updated');
 		} else {
 			toast.error('Something went wrong');

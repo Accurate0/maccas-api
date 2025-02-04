@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
@@ -15,6 +16,12 @@
 	let { data }: Props = $props();
 	const { form, errors, submitting, enhance, message } = superForm(data.form, {
 		taintedMessage: false
+	});
+
+	$effect(() => {
+		if ($message === 'Account created') {
+			goto('/');
+		}
 	});
 </script>
 
@@ -56,9 +63,7 @@
 						<Alert.Root>
 							<ExclamationTriangle class="h-4 w-4" />
 							<Alert.Title>Message</Alert.Title>
-							<Alert.Description
-								>{$message} - <a href="/login">Click here to login</a></Alert.Description
-							>
+							<Alert.Description>{$message}</Alert.Description>
 						</Alert.Root>
 					</div>
 				{/if}

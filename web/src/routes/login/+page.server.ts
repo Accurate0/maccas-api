@@ -2,16 +2,14 @@ import { prisma } from '$lib/server/prisma';
 import type { Actions } from './$types';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
-import { randomBytes } from 'crypto';
-import { SessionId } from '$lib/server/session';
+import { NotificationType, Priority, Role } from '@prisma/client';
 import { fail, redirect } from '@sveltejs/kit';
-import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 import { setError, superValidate } from 'sveltekit-superforms/server';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { schema } from './schema';
 import { zod } from 'sveltekit-superforms/adapters';
+import { createSession } from '$lib/server/session';
 
 export type LoginState = {
 	error: string | null;
@@ -73,29 +71,6 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const createSession = async (userId: string, role: Role[]) => {
-			const sessionId = randomBytes(64).toString('base64');
-			const sevenDaysInMs = 604800000;
-			const expires = new Date(Date.now() + sevenDaysInMs);
-			const accessToken = jwt.sign({ userId, sessionId, role }, env.AUTH_SECRET, {
-				expiresIn: sevenDaysInMs / 1000,
-				issuer: 'Maccas Web',
-				audience: 'Maccas API',
-				subject: 'Maccas API'
-			});
-
-			await prisma.session.create({
-				data: {
-					userId,
-					id: sessionId,
-					expires,
-					accessToken
-				}
-			});
-
-			cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
-		};
-
 		const { username: usernameUntrimmed, password: passwordUntrimmed } = form.data;
 		const username = usernameUntrimmed.trim();
 		const password = passwordUntrimmed.trim();
@@ -114,7 +89,7 @@ export const actions = {
 				return setError(form, 'password', 'Invalid details');
 			}
 
-			await createSession(existingUser.id, existingUser.role);
+			await createSession(existingUser.id, existingUser.role, cookies);
 		} else {
 			// FIXME: will need to be old.api.maccas.one or something
 			const formData = new FormData();
@@ -172,7 +147,7 @@ export const actions = {
 				}
 			});
 
-			await createSession(existingUserId, [newRole]);
+			await createSession(existingUserId, [newRole], cookies);
 		}
 
 		redirect(303, '/');

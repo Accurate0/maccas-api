@@ -13,9 +13,8 @@
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import DealCode from '$lib/components/deal-code.svelte';
-	import { getContext } from 'svelte';
-	import type { Config } from '@prisma/client';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	interface Props {
 		data: PageData;
 	}
@@ -25,7 +24,7 @@
 	let filters = writable<Array<string> | undefined>();
 	let offerState: Writable<Record<string, Array<{ id: string }>>> = writable({});
 	let sortByAsc = $state(true);
-	const userConfig = getContext('userConfig') as Config;
+	const userConfig = $page.data.config;
 
 	const addOffer = (offerId: string, id: string) => {
 		// FIXME: :)

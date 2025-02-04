@@ -7,6 +7,7 @@ import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { schema } from './schema';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { zod } from 'sveltekit-superforms/adapters';
+import { createSession } from '$lib/server/session';
 
 export type RegisterState = {
 	error: string | null;
@@ -20,7 +21,7 @@ export const load = async (event) => {
 
 export const actions = {
 	default: async (event) => {
-		const { request } = event;
+		const { request, cookies } = event;
 
 		const form = await superValidate(request, zod(schema));
 		const { limited, retryAfter } = await RateLimiter.check(event);
@@ -30,7 +31,7 @@ export const actions = {
 			await prisma.notification.create({
 				data: {
 					content: `Rate limit reached by ${event.getClientAddress()}`,
-					context: { ipAddress: event.getClientAddress(), page: 'register'},
+					context: { ipAddress: event.getClientAddress(), page: 'register' },
 					read: false,
 					priority: Priority.HIGH,
 					type: NotificationType.RATELIMIT_REACHED
@@ -60,7 +61,7 @@ export const actions = {
 		const password = passwordUntrimmed.trim();
 		const passwordHash = await bcrypt.hash(password, 10);
 
-		await prisma.user.create({
+		const user = await prisma.user.create({
 			data: {
 				username: username.toLowerCase(),
 				passwordHash: Buffer.from(passwordHash),
@@ -78,6 +79,8 @@ export const actions = {
 				type: NotificationType.USER_CREATED
 			}
 		});
+
+		await createSession(user.id, user.role, cookies);
 
 		return message(form, 'Account created');
 	}
