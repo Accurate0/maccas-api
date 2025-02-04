@@ -6,9 +6,12 @@
 	import { toast } from 'svelte-sonner';
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { configStore } from '$lib/config';
 	import { Crosshair1 } from 'radix-icons-svelte';
 	import type { UpdateLocationBody } from '../api/location/schema';
+	import { invalidate } from '$app/navigation';
+	import { page } from '$app/stores';
+
+	let currentStoreName = $state($page.data?.config?.storeName);
 
 	let disabled = $state(false);
 	let optionsDisabled = $state(false);
@@ -80,9 +83,10 @@
 		optionsDisabled = true;
 		const body: UpdateLocationBody = { storeId };
 		const response = await fetch('/api/location', { method: 'POST', body: JSON.stringify(body) });
-		configStore.set({ storeName: newStoreName, storeId });
 
 		if (response.ok) {
+			currentStoreName = newStoreName;
+			await invalidate('/location');
 			toast('Location updated');
 		} else {
 			toast.error('Something went wrong');
@@ -96,6 +100,10 @@
 		<Card.Title>Search</Card.Title>
 	</Card.Header>
 	<Card.Content>
+		{#if currentStoreName}
+			<p class="pb-4 text-sm text-muted-foreground">Your current store is {currentStoreName}</p>
+		{/if}
+
 		<div class="flex gap-2">
 			<div class="w-full">
 				<Input

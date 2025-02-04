@@ -14,8 +14,7 @@
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
 	import type { LayoutServerData } from './$types';
-	import { configStore } from '$lib/config';
-	import ConfigToast from '$lib/components/config-toast.svelte';
+	import { setContext } from 'svelte';
 	import ActiveUserCheck from '$lib/components/active-user-check.svelte';
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -26,13 +25,11 @@
 	const queryClient = new QueryClient();
 
 	onNavigate((navigation) => {
-		// @ts-expect-error
 		if (!document.startViewTransition) {
 			return;
 		}
 
 		return new Promise((resolve) => {
-			// @ts-expect-error
 			document.startViewTransition(async () => {
 				resolve();
 				await navigation.complete;
@@ -41,11 +38,7 @@
 	});
 
 	const data = derived(page, (p) => p.data as LayoutServerData);
-	configStore.set($page.data.config);
-	const storeName = derived(
-		[configStore, page],
-		([$config, $layout]) => $config?.storeName ?? $layout.data.config?.storeName
-	);
+	setContext('userConfig', $page.data.config);
 </script>
 
 <svelte:head>
@@ -75,7 +68,6 @@
 <div class="flex h-full justify-center">
 	{#if !$data.hideAll}
 		<ActiveUserCheck isUserActive={$data.isUserActive ?? false} />
-		<ConfigToast config={$configStore ?? $data.config ?? null} />
 	{/if}
 	<QueryClientProvider client={queryClient}>
 		<div class="w-full">
@@ -109,13 +101,13 @@
 				</div>
 			</div>
 
-			{#if $storeName && !$data.hideAll && $page.url.pathname !== '/users'}
+			{#if $page.data?.config?.storeName && !$data.hideAll && !['/users', '/location'].find((l) => $page.url.pathname === l)}
 				<div class="m-4 grid grid-flow-row gap-4">
 					<Card.Root>
 						<div class="grid grid-flow-col justify-between">
 							<Card.Header class="grid justify-between">
 								<Card.Title>Store</Card.Title>
-								<Card.Description>{$storeName}</Card.Description>
+								<Card.Description>{$page.data.config.storeName}</Card.Description>
 							</Card.Header>
 						</div>
 					</Card.Root>

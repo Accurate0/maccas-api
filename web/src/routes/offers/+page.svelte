@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 
 	import * as Card from '$lib/components/ui/card';
+	import { toast } from 'svelte-sonner';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { writable, type Writable } from 'svelte/store';
@@ -12,6 +13,9 @@
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import DealCode from '$lib/components/deal-code.svelte';
+	import { getContext } from 'svelte';
+	import type { Config } from '@prisma/client';
+	import { goto } from '$app/navigation';
 	interface Props {
 		data: PageData;
 	}
@@ -21,6 +25,7 @@
 	let filters = writable<Array<string> | undefined>();
 	let offerState: Writable<Record<string, Array<{ id: string }>>> = writable({});
 	let sortByAsc = $state(true);
+	const userConfig = getContext('userConfig') as Config;
 
 	const addOffer = (offerId: string, id: string) => {
 		// FIXME: :)
@@ -148,7 +153,12 @@
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
 			{#if matchesFilter}
 				<Card.Root
-					on:click={() => {
+					on:click={async () => {
+						if (!userConfig) {
+							toast.error('A store location must be set');
+							await goto('/location');
+						}
+
 						if (($offerState[shortName]?.length ?? 0) < count) {
 							addOffer(shortName, crypto.randomUUID());
 						}
