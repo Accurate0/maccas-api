@@ -86,6 +86,7 @@
 			"@prisma/engines",
 			"protobufjs",
 			"sharp",
+			"bcrypt",
 			"prisma",
 			"@prisma/client",
 			"@sveltejs/kit"
