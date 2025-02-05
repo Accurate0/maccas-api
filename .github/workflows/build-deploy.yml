@@ -86,6 +86,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   deploy:
+    # needs: build
     uses: Accurate0/workflows/.github/workflows/deploy-app-k8s.yaml@main
     with:
       application-name: maccas-api
