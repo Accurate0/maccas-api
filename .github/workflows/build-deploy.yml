@@ -36,22 +36,19 @@ jobs:
           path: app-target
           key: ${{ runner.os }}-app-target-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.apps }}
 
-      - name: inject /app/target into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
-        with:
-          cache-source: app-target
-          cache-target: /app/${{ matrix.apps }}-build/target/
-
       - uses: actions/cache@v4
         with:
           path: cargo-registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.apps }}
 
-      - name: inject /usr/local/cargo/registry/ into docker
+      - name: inject /app/target into docker
         uses: reproducible-containers/buildkit-cache-dance@v3.1.2
         with:
-          cache-source: cargo-registry
-          cache-target: /usr/local/cargo/registry/
+          cache-map: |
+            {
+              "app-target": "/app/${{ matrix.apps }}-build/target/",
+              "cargo-registry": "/usr/local/cargo/registry"
+            }
 
       - name: Docker build
         if: ${{ matrix.apps  == 'graphql' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
@@ -105,11 +102,11 @@ jobs:
 
       - name: Deploy to k8s
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
-          if [ ! -d "$HOME/.kube" ]; then
-            mkdir -p $HOME/.kube
-          fi
-
-          echo -n "$KUBE_CONFIG" | base64 -di > $HOME/.kube/config
-          kubectl apply -f application.yaml
+          argocd app sync maccas-api  \
+            --revision ${{ github.sha }}
+            --apply-out-of-sync-only \
+            --server-side \
+            --output tree \
+            --server https://argocd.internal.anurag.sh >>  $GITHUB_STEP_SUMMARY
