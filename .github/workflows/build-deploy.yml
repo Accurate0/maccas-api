@@ -41,8 +41,7 @@ jobs:
           path: cargo-registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.apps }}
 
-      - name: inject /app/target into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.1.2
+      - uses: reproducible-containers/buildkit-cache-dance@v3.1.2
         with:
           cache-map: |
             {
@@ -65,6 +64,8 @@ jobs:
       - name: Docker build
         if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' || matrix.apps == 'sensordata' }}
         uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: ${{ matrix.apps }}
           push: true
