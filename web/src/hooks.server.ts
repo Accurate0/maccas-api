@@ -3,6 +3,7 @@ import type { Handle } from '@sveltejs/kit';
 import { setSession } from '$houdini';
 import { SessionId } from '$lib/server/session';
 import '$lib/server/opentelemetry';
+import '$lib/server/featureflag';
 import type { HandleFetch } from '@sveltejs/kit';
 import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
 import { IMAGE_CDN } from '$lib/server/constants';

@@ -8,6 +8,7 @@ import { schema } from './schema';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { zod } from 'sveltekit-superforms/adapters';
 import { createSession } from '$lib/server/session';
+import { featureFlagClient } from '$lib/server/featureflag';
 
 export type RegisterState = {
 	error: string | null;
@@ -60,13 +61,19 @@ export const actions = {
 
 		const password = passwordUntrimmed.trim();
 		const passwordHash = await bcrypt.hash(password, 10);
+		const isUserActive = await featureFlagClient.getBooleanValue(
+			'maccas-web-allow-active-registration',
+			false
+		);
+
+		console.log('evaluated ff for active:', isUserActive);
 
 		const user = await prisma.user.create({
 			data: {
 				username: username.toLowerCase(),
 				passwordHash: Buffer.from(passwordHash),
 				role: [Role.USER],
-				active: true
+				active: isUserActive
 			}
 		});
 

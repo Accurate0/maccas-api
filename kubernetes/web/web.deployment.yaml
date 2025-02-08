@@ -43,6 +43,8 @@ spec:
               value: https://api.maccas.one/v1
             - name: API_BASE_URL
               value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
+            - name: FLIPT_URL
+              value: http://flipt.flipt.svc.cluster.local:8080
           envFrom:
             - secretRef:
                 name: maccas-web-managed-secrets
