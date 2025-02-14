@@ -28,7 +28,7 @@ libmaccas = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true }
 state = "0.6.0"
-actix-web-opentelemetry = "0.20.1"
+actix-web-opentelemetry = "0.21.0"
 rust-s3 = "0.35.1"
 image = "0.25.5"
 
