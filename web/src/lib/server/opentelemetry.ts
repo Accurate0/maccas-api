@@ -13,7 +13,7 @@ import { env } from '$env/dynamic/private';
 const { PrismaInstrumentation } = primsa;
 
 const traceExporter = new OTLPTraceExporter({
-	url: 'http://signoz-otel-collector.tracing.svc.cluster.local:4318/v1/traces',
+	url: 'https://api.axiom.co/v1/traces',
 	headers: {
 		Authorization: `Bearer ${env.AXIOM_TOKEN}`,
 		'X-Axiom-Dataset': env.AXIOM_DATASET
@@ -22,7 +22,7 @@ const traceExporter = new OTLPTraceExporter({
 
 const otelSdk = new opentelemetry.NodeSDK({
 	resource: new Resource({
-		[SEMRESATTRS_SERVICE_NAME]: 'maccas-web',
+		[SEMRESATTRS_SERVICE_NAME]: 'web',
 		[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: NODE_ENV
 	}),
 	spanProcessors: [new BatchSpanProcessor(traceExporter)],
