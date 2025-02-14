@@ -15,7 +15,7 @@ use tracing_subscriber::filter::Targets;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-const INGEST_URL: &str = "http://signoz-otel-collector.tracing.svc.cluster.local:4318/v1/traces";
+const INGEST_URL: &str = "http://signoz-otel-collector.tracing.svc.cluster.local:4318";
 
 pub fn external_tracer(name: &'static str) -> Tracer {
     let token = std::env::var("AXIOM_TOKEN").expect("must have axiom token configured");
