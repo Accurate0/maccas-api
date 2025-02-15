@@ -40,4 +40,4 @@ opentelemetry-otlp = { version = "0.28.0", features = [
     "reqwest-rustls",
 ] }
 opentelemetry-semantic-conventions = { version = "0.28.0", features = ["semconv_experimental"] }
-opentelemetry-appender-tracing = { version = "0.28.0" }
+opentelemetry-appender-tracing = { version = "0.28.1" }
