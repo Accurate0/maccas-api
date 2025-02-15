@@ -4,7 +4,7 @@ use opentelemetry::{global, KeyValue};
 use opentelemetry_otlp::{WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{BatchConfigBuilder, BatchSpanProcessor, Tracer};
-use opentelemetry_sdk::{runtime, Resource};
+use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource::{
     DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_NAME,
     TELEMETRY_SDK_VERSION,
@@ -50,6 +50,8 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         ),
     ];
 
+    let resource = Resource::builder_empty().with_attributes(tags).build();
+
     let batch_config = BatchConfigBuilder::default()
         .with_max_queue_size(20480)
         .build();
@@ -66,13 +68,13 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         .build_span_exporter()
         .unwrap();
 
-    let tracer_provider = opentelemetry_sdk::trace::TracerProvider::builder()
+    let tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
         .with_span_processor(
-            BatchSpanProcessor::builder(span_exporter, runtime::Tokio)
+            BatchSpanProcessor::builder(span_exporter)
                 .with_batch_config(batch_config)
                 .build(),
         )
-        .with_resource(Resource::new(tags))
+        .with_resource(resource)
         .build();
 
     let tracer = tracer_provider.tracer(name);
