@@ -31,7 +31,6 @@ base = { workspace = true }
 futures = { workspace = true }
 futures-util = { workspace = true }
 reqwest-middleware = { workspace = true }
-redis = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }

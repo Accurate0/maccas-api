@@ -79,11 +79,6 @@ tokio = { version = "1.43.0", features = [
 tokio-util = "0.7.13"
 cron = "0.15.0"
 uuid = { version = "1.13", features = ["v4"] }
-redis = { version = "0.28.2", features = [
-    "tokio-comp",
-    "aio",
-    "connection-manager",
-] }
 axum = { version = "0.8.1", features = ["macros"] }
 tower-http = { version = "0.6.2", features = ["trace", "cors"] }
 itertools = "0.14.0"
