@@ -58,7 +58,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
 
     let span_exporter = opentelemetry_otlp::HttpExporterBuilder::default()
         .with_http_client(
-            reqwest::ClientBuilder::new()
+            reqwest::blocking::ClientBuilder::new()
                 .default_headers(headers)
                 .build()
                 .unwrap(),
