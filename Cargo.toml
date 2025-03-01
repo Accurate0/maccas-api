@@ -9,11 +9,11 @@ members = [
     "batch",
     "base",
     "event", 
-    "sensordata/lib"
+    "sensordata/lib", 
 ]
 
 [workspace.package]
-rust-version = "1.81.0"
+rust-version = "1.85.0"
 
 [profile.release-strip]
 inherits = "release"

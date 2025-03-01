@@ -136,6 +136,7 @@ impl Job for ActivateAccountJob {
                     let mut active_model = account.into_active_model();
                     active_model.access_token = Set(token_response.access_token);
                     active_model.refresh_token = Set(token_response.refresh_token);
+                    active_model.refresh_failure_count = Set(0);
 
                     active_model.update(context.database).await?;
                 }

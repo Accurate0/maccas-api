@@ -8,6 +8,7 @@ use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
 pub mod account_unlock;
+pub mod activate_existing_account;
 pub mod activate_account;
 pub mod categorise_offers;
 pub mod create_account;

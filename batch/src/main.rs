@@ -20,8 +20,8 @@ use axum::{
 };
 use base::shutdown::axum_shutdown_signal;
 use jobs::{
-    account_unlock::AccountUnlockJob, job_scheduler::JobScheduler,
-    recategorise_offers::RecategoriseOffersJob,
+    account_unlock::AccountUnlockJob, activate_existing_account::ActivateExistingAccount,
+    job_scheduler::JobScheduler, recategorise_offers::RecategoriseOffersJob,
 };
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
@@ -138,6 +138,19 @@ async fn main() -> Result<(), anyhow::Error> {
                 api_client: openai_api_client,
             },
             !disable_jobs.iter().any(|j| j == "recategorise-offers"),
+        )
+        .await;
+
+    scheduler
+        .add(
+            ActivateExistingAccount {
+                sensordata_api_base: settings.sensordata_api_base.clone(),
+                http_client: http_client.clone(),
+                mcdonalds_config: settings.mcdonalds.clone(),
+            },
+            !disable_jobs
+                .iter()
+                .any(|j| j == "activate-existing-account"),
         )
         .await;
 

@@ -40,7 +40,7 @@ spec:
             - name: SENSORDATA_API_BASE
               value: http://maccas-sensordata.maccas-api.svc.cluster.local
             - name: DISABLE_JOBS
-              value: create-account,activate-account
+              value: create-account,activate-account,activate-existing-account
             - name: EVENT_API_BASE
               value: http://maccas-event.maccas-api.svc.cluster.local:8001
           envFrom:

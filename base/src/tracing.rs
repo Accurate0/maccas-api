@@ -58,10 +58,14 @@ pub fn external_tracer(name: &'static str) -> Tracer {
 
     let span_exporter = opentelemetry_otlp::HttpExporterBuilder::default()
         .with_http_client(
-            reqwest::blocking::ClientBuilder::new()
-                .default_headers(headers)
-                .build()
-                .unwrap(),
+            std::thread::spawn(|| {
+                reqwest::blocking::ClientBuilder::new()
+                    .default_headers(headers)
+                    .build()
+                    .unwrap()
+            })
+            .join()
+            .unwrap(),
         )
         .with_endpoint(INGEST_URL)
         .with_timeout(Duration::from_secs(3))

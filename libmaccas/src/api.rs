@@ -56,7 +56,10 @@ impl ApiClient {
             .header("content-type", "application/json; charset=UTF-8")
             .header("mcd-clientid", client_id)
             .header("mcd-uuid", Self::get_uuid())
-            .header("user-agent", "MCDSDK/29.0.8 (Android; 33; en-AU) GMA/8.6.2")
+            .header(
+                "user-agent",
+                "MCDSDK/42.0.62 (Android; 34; en-US) GMA/9.102.5",
+            )
             .header("mcd-sourceapp", "GMA")
             .header("mcd-marketid", "AU")
     }
@@ -203,14 +206,19 @@ impl ApiClient {
 
     // POST https://ap-prod.api.mcd.com/exp/v1/customer/identity/email
     #[instrument(skip(self), fields(statusCode))]
-    pub async fn identity_email(
+    pub async fn identity_email<A>(
         &self,
         request: &EmailRequest,
-    ) -> ClientResult<ClientResponse<EmailResponse>> {
+        sensor_data: &A,
+    ) -> ClientResult<ClientResponse<EmailResponse>>
+    where
+        A: Display + ?Sized + Debug,
+    {
         let token = self.login_token.as_ref().context("no login token set")?;
 
         let request = self
             .get_default_request("exp/v1/customer/identity/email", Method::POST)
+            .header("x-acf-sensor-data", sensor_data.to_string())
             .bearer_auth(token)
             .json(&request);
 
