@@ -6,8 +6,7 @@ use reqwest_middleware::ClientWithMiddleware;
 use tokio::runtime::Handle;
 use tracing::{Instrument, Level};
 
-const IMAGE_BASE_URL: &str =
-    "https://au-prod-us-cds-oceofferimages.s3.amazonaws.com/oce3-au-prod/offers";
+const IMAGE_BASE_URL: &str = "https://images.au.vce.mcd.com";
 
 pub type S3BucketType = Box<s3::Bucket>;
 

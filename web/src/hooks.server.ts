@@ -6,7 +6,6 @@ import '$lib/server/opentelemetry';
 import '$lib/server/featureflag';
 import type { HandleFetch } from '@sveltejs/kit';
 import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
-import { IMAGE_CDN } from '$lib/server/constants';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// don't query db for this... public images...
@@ -67,10 +66,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 
 export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-	if (request.url.startsWith(IMAGE_CDN)) {
-		return fetch(request);
-	}
-
 	const tracer = opentelemetry.trace.getTracer('default');
 
 	return tracer.startActiveSpan(
