@@ -23,7 +23,7 @@ mod routes;
 mod settings;
 mod state;
 
-const BUCKET_NAME: &str = "maccas-api-images";
+const BUCKET_NAME: &str = "maccas-images";
 
 #[actix_web::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -42,7 +42,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let bucket = s3::Bucket::new(
         BUCKET_NAME,
         s3::Region::Custom {
-            region: "apac".to_owned(),
+            region: "".to_owned(),
             endpoint: settings.images_bucket.endpoint.clone(),
         },
         credentials,
