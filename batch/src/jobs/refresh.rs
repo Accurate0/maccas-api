@@ -4,12 +4,11 @@ use anyhow::Context as _;
 use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
-use event::{CreateEventResponse, Event};
+use event::{CreateEvent, CreateEventResponse, Event};
 use libmaccas::ApiClient;
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    prelude::Uuid,
     sea_query::{LockBehavior, LockType, OnConflict},
     ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
     QuerySelect, Set, TransactionTrait, TryIntoModel,
@@ -28,7 +27,43 @@ pub struct RefreshJob {
 
 #[derive(Serialize, Deserialize)]
 struct RefreshContext {
-    account_id: Uuid,
+    events_to_dispatch: Vec<CreateEvent>,
+}
+
+impl RefreshJob {
+    async fn create_events(
+        &self,
+        http_client: &ClientWithMiddleware,
+        token: &str,
+        events: &[CreateEvent],
+    ) -> Result<(), JobError> {
+        let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
+
+        // TODO: replace with bulk api
+        for event in events {
+            let request = http_client
+                .post(&request_url)
+                .json(&event)
+                .bearer_auth(token);
+
+            let response = request.send().await;
+
+            match response {
+                Ok(response) => match response.status() {
+                    StatusCode::CREATED => {
+                        let id = response.json::<CreateEventResponse>().await?.id;
+                        tracing::info!("created event with id {}", id);
+                    }
+                    status => {
+                        tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                    }
+                },
+                Err(e) => tracing::warn!("event request failed with {}", e),
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -56,12 +91,6 @@ impl Job for RefreshJob {
             .one(context.database)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
-
-        context
-            .set(RefreshContext {
-                account_id: account_to_refresh.id,
-            })
-            .await?;
 
         let account_id = account_to_refresh.id.to_owned();
         let current_failure_count = account_to_refresh.refresh_failure_count;
@@ -127,87 +156,61 @@ impl Job for RefreshJob {
         let offer_list = offers.body.response.unwrap_or_default();
         tracing::info!("{} offers found", offer_list.offers.len());
 
-        let proposition_id_futures = offer_list
-            .offers
-            .iter()
-            .map(|o| o.offer_proposition_id)
-            .map(|id| {
-                let api_client_cloned = api_client.clone();
+        let mut added_offers = vec![];
 
-                async move {
-                    let details = offer_details::Entity::find_by_id(id)
-                        .one(context.database)
-                        .await?;
+        let proposition_ids = offer_list.offers.iter().map(|o| o.offer_proposition_id);
 
-                    if details.is_none()
-                        || details.as_ref().and_then(|d| d.raw_data.as_ref()).is_none()
-                    {
-                        let offer_details = api_client_cloned.offer_details(&id).await?;
-                        if let Some(offer_details) = offer_details.body.response {
-                            return Ok(Some(
-                                converters::Database::convert_offer_details(&offer_details)?
-                                    .0
-                                    .into_active_model(),
-                            ));
-                        }
-                    }
+        for id in proposition_ids {
+            let api_client_cloned = api_client.clone();
 
-                    Ok::<Option<offer_details::ActiveModel>, anyhow::Error>(None)
+            // TODO: bad
+            let details = offer_details::Entity::find_by_id(id)
+                .one(context.database)
+                .await?;
+
+            if details.is_none() || details.as_ref().and_then(|d| d.raw_data.as_ref()).is_none() {
+                let offer_details = api_client_cloned.offer_details(&id).await?;
+                if let Some(offer_details) = offer_details.body.response {
+                    let active_model = converters::Database::convert_offer_details(&offer_details)?
+                        .0
+                        .into_active_model();
+                    added_offers.push(active_model);
                 }
-            })
-            .collect::<Vec<_>>();
-
-        let completed_futures = futures::future::join_all(proposition_id_futures).await;
-        let mut active_models = Vec::new();
-        for active_model in completed_futures {
-            match active_model {
-                Ok(m) => {
-                    if let Some(model) = m {
-                        active_models.push(model);
-                    }
-                }
-                Err(e) => tracing::error!("error fetching offer details: {}", e),
             }
         }
 
-        let http_client = get_http_client()?;
-        let token =
-            generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
-        let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
-
-        for offer in &active_models {
+        let mut events_to_dispatch = Vec::with_capacity(added_offers.len().saturating_mul(3));
+        for offer in &added_offers {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
                     basename: offer.image_base_name.as_ref().clone(),
                     force: *offer.migrated.as_ref(),
                 },
-                delay: Duration::from_secs(0),
+                delay: Duration::ZERO,
             };
 
-            let request = http_client
-                .post(&request_url)
-                .json(&save_image_event)
-                .bearer_auth(&token);
-
-            let response = request.send().await;
-
-            match response {
-                Ok(response) => match response.status() {
-                    StatusCode::CREATED => {
-                        let id = response.json::<CreateEventResponse>().await?.id;
-                        tracing::info!("created image event with id {}", id);
-                    }
-                    status => {
-                        tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                    }
+            let new_offer_event = event::CreateEvent {
+                event: event::Event::NewOfferFound {
+                    offer_proposition_id: *offer.proposition_id.as_ref(),
                 },
-                Err(e) => tracing::warn!("event request failed with {}", e),
-            }
+                delay: Duration::from_secs(15),
+            };
+
+            let refresh_points_event = event::CreateEvent {
+                event: Event::RefreshPoints { account_id },
+                delay: Duration::from_secs(30),
+            };
+
+            events_to_dispatch.push(save_image_event);
+            events_to_dispatch.push(new_offer_event);
+            events_to_dispatch.push(refresh_points_event);
         }
+
+        context.set(RefreshContext { events_to_dispatch }).await?;
 
         let txn = context.database.begin().await?;
 
-        offer_details::Entity::insert_many(active_models)
+        offer_details::Entity::insert_many(added_offers)
             .on_conflict(
                 OnConflict::column(offer_details::Column::PropositionId)
                     .update_columns(vec![
@@ -283,24 +286,12 @@ impl Job for RefreshJob {
             .await
             .context("must have a context")?;
 
-        let refresh_points_event = event::CreateEvent {
-            event: Event::RefreshPoints {
-                account_id: refresh_context.account_id,
-            },
-            delay: Duration::from_secs(0),
-        };
-
         let http_client = get_http_client()?;
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
-        let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
 
-        let request = http_client
-            .post(&request_url)
-            .json(&refresh_points_event)
-            .bearer_auth(&token);
-
-        request.send().await?.error_for_status()?;
+        self.create_events(&http_client, &token, &refresh_context.events_to_dispatch)
+            .await?;
 
         Ok(())
     }

@@ -19,6 +19,9 @@ pub enum Event {
     RefreshPoints {
         account_id: Uuid,
     },
+    NewOfferFound {
+        offer_proposition_id: i64,
+    },
 }
 
 impl fmt::Display for Event {
@@ -27,6 +30,7 @@ impl fmt::Display for Event {
             Event::Cleanup { .. } => write!(f, "Cleanup"),
             Event::SaveImage { .. } => write!(f, "SaveImage"),
             Event::RefreshPoints { .. } => write!(f, "RefreshPoints"),
+            Event::NewOfferFound { .. } => write!(f, "NewOfferFound"),
         }
     }
 }

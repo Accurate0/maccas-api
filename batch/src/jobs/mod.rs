@@ -1,15 +1,15 @@
 use self::error::JobError;
-use entity::jobs;
+use entity::job_history;
 use sea_orm::DatabaseTransaction;
-use sea_orm::{prelude::Uuid, ActiveModelTrait, EntityTrait, Set};
+use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use std::fmt::Debug;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
 pub mod account_unlock;
-pub mod activate_existing_account;
 pub mod activate_account;
+pub mod activate_existing_account;
 pub mod categorise_offers;
 pub mod create_account;
 pub mod error;
@@ -90,13 +90,16 @@ impl JobDetails {
 
 pub struct JobContext<'a> {
     database: &'a DatabaseTransaction,
-    id: Uuid,
+    execution_id: i32,
 }
 
 #[allow(unused)]
 impl<'a> JobContext<'a> {
-    pub fn new(database: &'a DatabaseTransaction, id: Uuid) -> Self {
-        Self { database, id }
+    pub fn new(database: &'a DatabaseTransaction, id: i32) -> Self {
+        Self {
+            database,
+            execution_id: id,
+        }
     }
 
     pub async fn get<T>(&self) -> Option<T>
@@ -104,7 +107,7 @@ impl<'a> JobContext<'a> {
         T: for<'de> serde::Deserialize<'de>,
     {
         serde_json::from_value::<T>(
-            jobs::Entity::find_by_id(self.id)
+            job_history::Entity::find_by_id(self.execution_id)
                 .one(self.database)
                 .await
                 .map(|e| e.map(|m| m.context))
@@ -120,8 +123,8 @@ impl<'a> JobContext<'a> {
     where
         T: serde::Serialize,
     {
-        jobs::ActiveModel {
-            id: Set(self.id),
+        job_history::ActiveModel {
+            id: Set(self.execution_id),
             context: Set(Some(serde_json::to_value(context)?)),
             ..Default::default()
         }
@@ -132,8 +135,8 @@ impl<'a> JobContext<'a> {
     }
 
     pub async fn reset(&self) -> Result<(), JobError> {
-        jobs::ActiveModel {
-            id: Set(self.id),
+        job_history::ActiveModel {
+            id: Set(self.execution_id),
             context: Set(None),
             ..Default::default()
         }

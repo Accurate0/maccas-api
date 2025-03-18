@@ -304,7 +304,7 @@ impl JobScheduler {
         let fut = async move {
             let result = async {
                 let txn = db.begin().await?;
-                let context = JobContext::new(&txn, job_id);
+                let context = JobContext::new(&txn, execution_id);
 
                 let cancellation_token = cancellation_token.child_token();
                 tracing::info!("triggered job {}", job.name());
@@ -319,7 +319,8 @@ impl JobScheduler {
             .instrument(tracing::span!(
                 Level::INFO,
                 "job::execute",
-                "otel.name" = format!("job::{}::execute", task_name)
+                "otel.name" = format!("job::{}::execute", task_name),
+                "execution_id" = execution_id
             ))
             .await?;
 
@@ -334,7 +335,7 @@ impl JobScheduler {
             if job_error.is_none() {
                 let post_result = async {
                     let txn = db.begin().await?;
-                    let post_context = JobContext::new(&txn, job_id);
+                    let post_context = JobContext::new(&txn, execution_id);
 
                     let cancellation_token = cancellation_token.child_token();
                     let result =
@@ -349,7 +350,8 @@ impl JobScheduler {
                 .instrument(tracing::span!(
                     Level::INFO,
                     "job::post::execute",
-                    "otel.name" = format!("job::{}::post::execute", task_name)
+                    "otel.name" = format!("job::{}::post::execute", task_name),
+                    "execution_id" = execution_id
                 ))
                 .await?;
 
@@ -370,17 +372,12 @@ impl JobScheduler {
 
             async {
                 let time_now = chrono::offset::Utc::now();
-                let current_context = entity::jobs::Entity::find_by_id(job_id)
-                    .one(&db)
-                    .await?
-                    .and_then(|j| j.context);
 
                 entity::job_history::ActiveModel {
                     id: Unchanged(execution_id),
                     error: Set(job_error.is_some()),
                     error_message: Set(job_error.clone()),
                     completed_at: Set(Some(time_now.naive_utc())),
-                    context: Set(current_context),
                     ..Default::default()
                 }
                 .update(&db)
@@ -400,7 +397,8 @@ impl JobScheduler {
             .instrument(tracing::span!(
                 Level::INFO,
                 "job::complete",
-                "otel.name" = format!("job::{}::complete", task_name)
+                "otel.name" = format!("job::{}::complete", task_name),
+                "execution_id" = execution_id
             ))
             .await?;
 

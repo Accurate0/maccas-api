@@ -5,6 +5,7 @@ use base::retry::{retry_async, ExponentialBackoff, RetryResult};
 use converters::ConversionError;
 use event::Event;
 use futures::FutureExt;
+use new_offer_found::new_offer_found;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
 use std::{num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
@@ -12,6 +13,7 @@ use thiserror::Error;
 use tracing::{span, Instrument};
 
 mod cleanup;
+mod new_offer_found;
 mod refresh_points;
 mod save_image;
 
@@ -99,6 +101,9 @@ pub async fn handle(event_manager: EventManager) {
                     Event::RefreshPoints { account_id } => {
                         refresh_points(account_id, event_manager).await
                     }
+                    Event::NewOfferFound {
+                        offer_proposition_id,
+                    } => new_offer_found(offer_proposition_id, event_manager).await,
                 }
             }))
             .catch_unwind()
