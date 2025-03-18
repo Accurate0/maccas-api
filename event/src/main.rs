@@ -1,7 +1,10 @@
 use crate::{
     event_manager::EventManager,
     jwt::{validator, validator_admin_only},
-    routes::{create_event::create_event, get_events::get_events, health::health},
+    routes::{
+        create_event::create_bulk_events, create_event::create_event, get_events::get_events,
+        health::health,
+    },
     settings::Settings,
     state::AppState,
 };
@@ -80,6 +83,14 @@ async fn main() -> Result<(), anyhow::Error> {
                 "/event",
                 web::post()
                     .to(create_event)
+                    .wrap(from_fn(validator))
+                    .wrap(RequestTracing::new())
+                    .wrap(Logger::default()),
+            )
+            .route(
+                "/event/bulk",
+                web::post()
+                    .to(create_bulk_events)
                     .wrap(from_fn(validator))
                     .wrap(RequestTracing::new())
                     .wrap(Logger::default()),

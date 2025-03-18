@@ -1,5 +1,7 @@
 mod events;
 
+pub use events::CreateBulkEvents;
+pub use events::CreateBulkEventsResponse;
 pub use events::CreateEvent;
 pub use events::CreateEventResponse;
 pub use events::Event;

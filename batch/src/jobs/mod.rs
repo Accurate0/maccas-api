@@ -95,10 +95,10 @@ pub struct JobContext<'a> {
 
 #[allow(unused)]
 impl<'a> JobContext<'a> {
-    pub fn new(database: &'a DatabaseTransaction, id: i32) -> Self {
+    pub fn new(database: &'a DatabaseTransaction, execution_id: i32) -> Self {
         Self {
             database,
-            execution_id: id,
+            execution_id,
         }
     }
 
@@ -112,8 +112,8 @@ impl<'a> JobContext<'a> {
                 .await
                 .map(|e| e.map(|m| m.context))
                 .ok()
-                .unwrap_or(None)
-                .unwrap_or(None)
+                .flatten()
+                .flatten()
                 .into(),
         )
         .ok()

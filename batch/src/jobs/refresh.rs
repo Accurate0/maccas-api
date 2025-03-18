@@ -4,7 +4,7 @@ use anyhow::Context as _;
 use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
-use event::{CreateEvent, CreateEventResponse, Event};
+use event::{CreateBulkEvents, CreateBulkEventsResponse, CreateEvent, Event};
 use libmaccas::ApiClient;
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
@@ -31,35 +31,36 @@ struct RefreshContext {
 }
 
 impl RefreshJob {
-    async fn create_events(
+    async fn create_bulk_events(
         &self,
         http_client: &ClientWithMiddleware,
         token: &str,
-        events: &[CreateEvent],
+        events: Vec<CreateEvent>,
     ) -> Result<(), JobError> {
-        let request_url = format!("{}/{}", self.event_api_base, event::CreateEvent::path());
+        let request_url = format!(
+            "{}/{}",
+            self.event_api_base,
+            event::CreateBulkEvents::path()
+        );
 
-        // TODO: replace with bulk api
-        for event in events {
-            let request = http_client
-                .post(&request_url)
-                .json(&event)
-                .bearer_auth(token);
+        let request = http_client
+            .post(&request_url)
+            .json(&CreateBulkEvents { events })
+            .bearer_auth(token);
 
-            let response = request.send().await;
+        let response = request.send().await;
 
-            match response {
-                Ok(response) => match response.status() {
-                    StatusCode::CREATED => {
-                        let id = response.json::<CreateEventResponse>().await?.id;
-                        tracing::info!("created event with id {}", id);
-                    }
-                    status => {
-                        tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                    }
-                },
-                Err(e) => tracing::warn!("event request failed with {}", e),
-            }
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    let id = response.json::<CreateBulkEventsResponse>().await?.ids;
+                    tracing::info!("created events with id {:?}", id);
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
         }
 
         Ok(())
@@ -290,7 +291,7 @@ impl Job for RefreshJob {
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
 
-        self.create_events(&http_client, &token, &refresh_context.events_to_dispatch)
+        self.create_bulk_events(&http_client, &token, refresh_context.events_to_dispatch)
             .await?;
 
         Ok(())

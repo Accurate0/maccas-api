@@ -116,20 +116,20 @@ services:
     ports:
       - "8002:8002"
     links:
-      - "sensordata:sensordata"
-      # - "db:database"
+      # - "sensordata:sensordata"
+      - "db:database"
     depends_on:
-      # - db
+      - db
       # db:
-      # condition: service_healthy
-      sensordata:
-        condition: service_healthy
+      #   condition: service_healthy
+      # sensordata:
+      #   condition: service_healthy
     environment:
-      # - DATABASE__URL=postgres://postgres:test@database/maccas
+      - DATABASE__URL=postgres://postgres:test@database/maccas
       - EVENT_API_BASE=http://event:8001
       - SENSORDATA_API_BASE=http://sensordata:8080/v1
       - AUTH_SECRET=111
-      - DISABLE_JOBS=activate-account,categorise-offers,recategorise-offers,account-unlock,save-images,refresh
+      - DISABLE_JOBS=create-account,activate-existing-account,activate-account,categorise-offers,recategorise-offers,account-unlock,save-images
     env_file:
       - .env.local
     healthcheck:

@@ -48,6 +48,17 @@ impl CreateEvent {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct CreateBulkEvents {
+    pub events: Vec<CreateEvent>,
+}
+
+impl CreateBulkEvents {
+    pub fn path() -> &'static str {
+        "event/bulk"
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct ExistingEvent {
     pub event: Event,
     pub remaining: Duration,
@@ -72,7 +83,32 @@ pub struct CreateEventResponse {
     pub id: Uuid,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct CreateBulkEventsResponse {
+    pub ids: Vec<Uuid>,
+}
+
 impl Responder for CreateEventResponse {
+    type Body = EitherBody<String>;
+
+    fn respond_to(self, _: &HttpRequest) -> HttpResponse<Self::Body> {
+        match serde_json::to_string(&self) {
+            Ok(body) => match HttpResponse::Created()
+                .content_type("application/json")
+                .message_body(body)
+            {
+                Ok(res) => res.map_into_left_body(),
+                Err(err) => HttpResponse::from_error(err).map_into_right_body(),
+            },
+
+            Err(err) => {
+                HttpResponse::from_error(JsonPayloadError::Serialize(err)).map_into_right_body()
+            }
+        }
+    }
+}
+
+impl Responder for CreateBulkEventsResponse {
     type Body = EitherBody<String>;
 
     fn respond_to(self, _: &HttpRequest) -> HttpResponse<Self::Body> {
