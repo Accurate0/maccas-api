@@ -87,7 +87,7 @@ pub async fn new_offer_found(
         .title("New Deal")
         .field(EmbedFieldBuilder::new("Name", details.name))
         .timestamp(
-            Timestamp::from_secs(Utc::now().timestamp())
+            Timestamp::from_secs(details.created_at.and_utc().timestamp())
                 .context("must have valid time")
                 .unwrap(),
         );
