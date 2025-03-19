@@ -180,7 +180,13 @@ impl Job for RefreshJob {
             }
         }
 
-        let mut events_to_dispatch = Vec::with_capacity(added_offers.len().saturating_mul(3));
+        let mut events_to_dispatch = Vec::with_capacity(1 + added_offers.len().saturating_mul(2));
+
+        events_to_dispatch.push(event::CreateEvent {
+            event: Event::RefreshPoints { account_id },
+            delay: Duration::from_secs(30),
+        });
+
         for offer in &added_offers {
             let save_image_event = event::CreateEvent {
                 event: Event::SaveImage {
@@ -197,14 +203,8 @@ impl Job for RefreshJob {
                 delay: Duration::from_secs(15),
             };
 
-            let refresh_points_event = event::CreateEvent {
-                event: Event::RefreshPoints { account_id },
-                delay: Duration::from_secs(30),
-            };
-
             events_to_dispatch.push(save_image_event);
             events_to_dispatch.push(new_offer_event);
-            events_to_dispatch.push(refresh_points_event);
         }
 
         context.set(RefreshContext { events_to_dispatch }).await?;
