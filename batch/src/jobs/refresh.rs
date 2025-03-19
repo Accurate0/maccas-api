@@ -287,6 +287,11 @@ impl Job for RefreshJob {
             .await
             .context("must have a context")?;
 
+        if refresh_context.events_to_dispatch.is_empty() {
+            tracing::info!("no events to dispatch");
+            return Ok(());
+        }
+
         let http_client = get_http_client()?;
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
