@@ -86,6 +86,7 @@ pub async fn new_offer_found(
         .color(0xDA291C)
         .description("**New Deal**")
         .field(EmbedFieldBuilder::new("Name", details.name))
+        .field(EmbedFieldBuilder::new("Description", details.description))
         .timestamp(
             Timestamp::from_secs(Utc::now().timestamp())
                 .context("must have valid time")
