@@ -3,6 +3,8 @@ use async_graphql::dataloader::*;
 use async_graphql::InputObject;
 use async_graphql::Object;
 use async_graphql::SimpleObject;
+use base::constants::IMAGE_BASE_URL;
+use base::constants::IMAGE_EXT;
 use entity::offer_details;
 use entity::offers;
 use sea_orm::prelude::{DateTime, Uuid};
@@ -17,8 +19,6 @@ pub struct OfferByIdInput {
 pub struct OfferByIdResponse {
     pub code: String,
 }
-
-const IMAGE_BASE_URL: &str = "https://images.maccas.one";
 
 pub struct Offer(pub offers::Model, pub Option<i64>);
 
@@ -115,7 +115,7 @@ impl Offer {
         context: &async_graphql::Context<'_>,
     ) -> async_graphql::Result<String> {
         let basename = self.image_basename(context).await?;
-        Ok(format!("{IMAGE_BASE_URL}/{basename}.jpg"))
+        Ok(format!("{IMAGE_BASE_URL}/{basename}.{IMAGE_EXT}"))
     }
 
     pub async fn price(

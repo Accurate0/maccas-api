@@ -27,6 +27,7 @@ converters = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true }
+open-feature = { workspace = true }
 state = "0.6.0"
 actix-web-opentelemetry = "0.21.0"
 rust-s3 = "0.35.1"
@@ -35,6 +36,8 @@ image = "0.25.5"
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 tracing-opentelemetry = { workspace = true }
+twilight-model = "0.16.0"
+twilight-util = { version = "0.16.0", features = ["builder"] }
 
 [lib]
 name = "event"

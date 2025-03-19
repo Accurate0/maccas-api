@@ -8,3 +8,6 @@ pub mod mc_donalds {
     pub const LOCATION_SEARCH_DISTANCE: u64 = 500;
     pub const STORE_UNIQUE_ID_TYPE: &str = "NSN";
 }
+
+pub const IMAGE_BASE_URL: &str = "https://images.maccas.one";
+pub const IMAGE_EXT: &str = "jpg";

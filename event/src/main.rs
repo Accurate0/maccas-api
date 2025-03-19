@@ -11,13 +11,14 @@ use crate::{
 use actix_web::middleware::from_fn;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_opentelemetry::RequestTracing;
-use base::http::get_http_client;
+use base::{feature_flag::FeatureFlagClient, http::get_http_client};
 use event_manager::S3BucketType;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tracing::log::LevelFilter;
 
+mod discord_webhook;
 mod error;
 mod event_manager;
 mod jwt;
@@ -33,6 +34,7 @@ async fn main() -> Result<(), anyhow::Error> {
     base::tracing::init("event");
 
     let settings = Settings::new()?;
+    let feature_flag_client = FeatureFlagClient::new().await;
 
     let credentials = s3::creds::Credentials::new(
         Some(&settings.images_bucket.access_key_id),
@@ -65,6 +67,7 @@ async fn main() -> Result<(), anyhow::Error> {
     event_manager.set_state::<Settings>(settings.clone());
     event_manager.set_state::<S3BucketType>(bucket);
     event_manager.set_state::<ClientWithMiddleware>(get_http_client()?);
+    event_manager.set_state::<FeatureFlagClient>(feature_flag_client);
 
     event_manager.reload_incomplete_events().await?;
     let (handle, cancellation_token) = event_manager.process_events();

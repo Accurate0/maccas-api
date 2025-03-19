@@ -85,4 +85,4 @@ itertools = "0.14.0"
 opentelemetry = "0.28.0"
 opentelemetry_sdk = "0.28.0"
 http = "1.2.0"
-
+open-feature = "0.2.5"
