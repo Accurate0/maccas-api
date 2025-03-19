@@ -84,7 +84,7 @@ pub async fn new_offer_found(
 
     let embed = EmbedBuilder::new()
         .color(0xDA291C)
-        .description("**New Deal**")
+        .title("New Deal")
         .field(EmbedFieldBuilder::new("Name", details.name))
         .timestamp(
             Timestamp::from_secs(Utc::now().timestamp())
