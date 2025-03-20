@@ -30,43 +30,6 @@ struct RefreshContext {
     events_to_dispatch: Vec<CreateEvent>,
 }
 
-impl RefreshJob {
-    async fn create_bulk_events(
-        &self,
-        http_client: &ClientWithMiddleware,
-        token: &str,
-        events: Vec<CreateEvent>,
-    ) -> Result<(), JobError> {
-        let request_url = format!(
-            "{}/{}",
-            self.event_api_base,
-            event::CreateBulkEvents::path()
-        );
-
-        let request = http_client
-            .post(&request_url)
-            .json(&CreateBulkEvents { events })
-            .bearer_auth(token);
-
-        let response = request.send().await;
-
-        match response {
-            Ok(response) => match response.status() {
-                StatusCode::CREATED => {
-                    let id = response.json::<CreateBulkEventsResponse>().await?.ids;
-                    tracing::info!("created events with id {:?}", id);
-                }
-                status => {
-                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                }
-            },
-            Err(e) => tracing::warn!("event request failed with {}", e),
-        }
-
-        Ok(())
-    }
-}
-
 #[async_trait::async_trait]
 impl Job for RefreshJob {
     fn name(&self) -> String {
@@ -296,8 +259,33 @@ impl Job for RefreshJob {
         let token =
             generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
 
-        self.create_bulk_events(&http_client, &token, refresh_context.events_to_dispatch)
-            .await?;
+        let request_url = format!(
+            "{}/{}",
+            self.event_api_base,
+            event::CreateBulkEvents::path()
+        );
+
+        let request = http_client
+            .post(&request_url)
+            .json(&CreateBulkEvents {
+                events: refresh_context.events_to_dispatch,
+            })
+            .bearer_auth(token);
+
+        let response = request.send().await;
+
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    let id = response.json::<CreateBulkEventsResponse>().await?.ids;
+                    tracing::info!("created events with id {:?}", id);
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
+        }
 
         Ok(())
     }
