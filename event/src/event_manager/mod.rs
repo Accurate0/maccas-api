@@ -106,7 +106,7 @@ impl EventManager {
 
         // mark other matching pending events as duplicate
         let duplicate_events = events::Entity::update_many()
-            .filter(events::Column::Hash.eq(event.hash))
+            .filter(events::Column::Hash.eq(&event.hash))
             // ignore newly added event :)
             .filter(events::Column::EventId.ne(event_id))
             .filter(events::Column::Status.eq(EventStatus::Pending))
@@ -119,6 +119,7 @@ impl EventManager {
 
         txn.commit().await?;
 
+        tracing::info!("created event: {event:?}");
         tracing::info!(
             "marked {} events as duplicates",
             duplicate_events.rows_affected

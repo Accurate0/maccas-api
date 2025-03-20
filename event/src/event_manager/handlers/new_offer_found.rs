@@ -5,7 +5,6 @@ use base::{
     constants::{IMAGE_BASE_URL, IMAGE_EXT},
     feature_flag::FeatureFlagClient,
 };
-use chrono::Utc;
 use entity::offer_details;
 use reqwest::header::CONTENT_TYPE;
 use reqwest_middleware::ClientWithMiddleware;
@@ -85,7 +84,7 @@ pub async fn new_offer_found(
     let embed = EmbedBuilder::new()
         .color(0xDA291C)
         .title("New Deal")
-        .field(EmbedFieldBuilder::new("Name", details.name))
+        .field(EmbedFieldBuilder::new("Name", details.short_name))
         .timestamp(
             Timestamp::from_secs(details.created_at.and_utc().timestamp())
                 .context("must have valid time")
