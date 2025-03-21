@@ -1,5 +1,4 @@
 import { GetOffersStore } from '$houdini';
-import { featureFlagClient } from '$lib/server/featureflag';
 
 export const load = async (event) => {
 	const index = new GetOffersStore();
@@ -7,9 +6,8 @@ export const load = async (event) => {
 		event
 	});
 
-	const showNewBadge = await featureFlagClient.getBooleanValue('maccas-web-show-new-badge', false, {
-		user_id: event.locals.session.userId ?? 'unknown'
-	});
+	const featureFlagClient = event.locals.featureFlagClient;
+	const showNewBadge = await featureFlagClient.getBooleanValue('maccas-web-show-new-badge', false);
 
 	return {
 		offers: data.then((c) => c.data?.offers),

@@ -16,6 +16,4 @@ if (token) {
 	await OpenFeature.setProviderAndWait(NOOP_PROVIDER);
 }
 
-const featureFlagClient = OpenFeature.getClient();
-
-export { featureFlagClient };
+export { OpenFeature as FeatureFlagClientFactory };

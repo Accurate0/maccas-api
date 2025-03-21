@@ -8,7 +8,6 @@ import { schema } from './schema';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { zod } from 'sveltekit-superforms/adapters';
 import { createSession } from '$lib/server/session';
-import { featureFlagClient } from '$lib/server/featureflag';
 
 export type RegisterState = {
 	error: string | null;
@@ -61,6 +60,7 @@ export const actions = {
 
 		const password = passwordUntrimmed.trim();
 		const passwordHash = await bcrypt.hash(password, 10);
+		const featureFlagClient = event.locals.featureFlagClient;
 		const isUserActive = await featureFlagClient.getBooleanValue(
 			'maccas-web-allow-active-registration',
 			false

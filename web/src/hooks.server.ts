@@ -6,6 +6,7 @@ import '$lib/server/opentelemetry';
 import '$lib/server/featureflag';
 import type { HandleFetch } from '@sveltejs/kit';
 import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
+import { FeatureFlagClientFactory } from '$lib/server/featureflag';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// don't query db for this... public images...
@@ -17,6 +18,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return tracer.startActiveSpan(
 		`${event.request.method.toUpperCase()} ${event.route.id}`,
 		async (span) => {
+			let evaluationContext = {};
 			if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
 				const sessionId = event.cookies.get(SessionId);
 				span.setAttribute('sessionId', sessionId ?? '(unknown)');
@@ -44,10 +46,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 					});
 				}
 
+				evaluationContext = { targetingKey: session.userId, user_id: session.userId };
 				event.locals.session = session;
 				setSession(event, { ...session });
 			}
 
+			event.locals.featureFlagClient = FeatureFlagClientFactory.getClient(evaluationContext);
 			const response = await resolve(event);
 			const isRedirect = response.status >= 300 && response.status < 400;
 
