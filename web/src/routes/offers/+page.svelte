@@ -7,7 +7,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
-	import { isFuture, isPast, parseJSON, formatDistanceToNow } from 'date-fns';
+	import { isFuture, isPast, parseJSON, formatDistanceToNow, differenceInDays } from 'date-fns';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
@@ -68,6 +68,11 @@
 
 	const removeOffer = async (offerId: string, id: string) => {
 		offerState.update((s) => ({ ...s, [offerId]: s[offerId].filter((o) => o.id !== id) }));
+	};
+
+	const isOfferNew = (offer: { validFrom: string }) => {
+		const from = parseJSON(offer.validFrom);
+		return differenceInDays(new Date(), from) <= 1;
 	};
 
 	const isOfferValid = (offer: { validTo: string; validFrom: string }) => {
@@ -150,6 +155,7 @@
 			{@const isValid = isOfferValid({ validFrom, validTo })}
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
+			{@const isNew = isOfferNew({ validFrom })}
 			{#if matchesFilter}
 				<Card.Root
 					on:click={async () => {
@@ -183,6 +189,11 @@
 								{/if}
 							</Card.Description>
 							<div class="flex flex-row self-end">
+								{#await data.showNewBadge then showNewBadge}
+									{#if showNewBadge && isNew}
+										<Badge class="mr-1 h-fit w-fit bg-red-800">New</Badge>
+									{/if}
+								{/await}
 								<Badge class="mr-1 h-fit w-fit"
 									>{count}{categories.length < 2 ? ' available' : ''}</Badge
 								>
