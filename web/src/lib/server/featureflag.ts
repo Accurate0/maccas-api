@@ -1,4 +1,4 @@
-import { NOOP_PROVIDER, OpenFeature } from '@openfeature/server-sdk';
+import { NOOP_PROVIDER, OpenFeature, type EvaluationContext } from '@openfeature/server-sdk';
 import { FliptProvider } from '@openfeature/flipt-provider';
 import { ClientTokenAuthentication } from '@flipt-io/flipt';
 import { env } from '$env/dynamic/private';
@@ -16,4 +16,4 @@ if (token) {
 	await OpenFeature.setProviderAndWait(NOOP_PROVIDER);
 }
 
-export { OpenFeature as FeatureFlagClientFactory };
+export { OpenFeature as FeatureFlagClientFactory, type EvaluationContext };
