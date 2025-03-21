@@ -7,6 +7,7 @@ import '$lib/server/featureflag';
 import type { HandleFetch } from '@sveltejs/kit';
 import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
 import { FeatureFlagClientFactory, type EvaluationContext } from '$lib/server/featureflag';
+import { env } from '$env/dynamic/private';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// don't query db for this... public images...
@@ -46,12 +47,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 					});
 				}
 
-				evaluationContext = { targetingKey: session.userId, user_id: session.userId };
+				evaluationContext = {
+					targetingKey: session.userId,
+					user_id: session.userId
+				};
 				event.locals.session = session;
 				setSession(event, { ...session });
 			}
 
-			event.locals.featureFlagClient = FeatureFlagClientFactory.getClient(evaluationContext);
+			event.locals.featureFlagClient = FeatureFlagClientFactory.getClient({
+				environment: env.NODE_ENV,
+				...evaluationContext
+			});
 			const response = await resolve(event);
 			const isRedirect = response.status >= 300 && response.status < 400;
 
