@@ -7,7 +7,14 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
-	import { isFuture, isPast, parseJSON, formatDistanceToNow, differenceInDays } from 'date-fns';
+	import {
+		isFuture,
+		isPast,
+		parseJSON,
+		formatDistanceToNow,
+		differenceInDays,
+		differenceInHours
+	} from 'date-fns';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
@@ -72,7 +79,7 @@
 
 	const isOfferNew = (offer: { validFrom: string }) => {
 		const from = parseJSON(offer.validFrom);
-		return differenceInDays(new Date(), from) <= 1;
+		return differenceInHours(new Date(), from) <= 24;
 	};
 
 	const isOfferValid = (offer: { validTo: string; validFrom: string }) => {
@@ -190,16 +197,25 @@
 							</Card.Description>
 							<div class="flex flex-row self-end">
 								{#await data.showNewBadge then showNewBadge}
-									{#if showNewBadge && isNew}
-										<Badge class="mr-1 h-fit w-fit bg-red-800">New</Badge>
+									{#if showNewBadge}
+										{#if isNew}
+											<Badge class="mr-1 h-fit w-fit bg-green-800">New</Badge>
+										{/if}
+
+										<Badge class="mr-1 h-fit w-fit">
+											{count} available
+										</Badge>
+									{:else}
+										<Badge class="mr-1 h-fit w-fit">
+											{count}{categories.length < 2 ? ' available' : ''}
+										</Badge>
+
+										{#each categories as category}
+											<Badge class="mr-1 h-fit w-fit">{category}</Badge>
+										{/each}
 									{/if}
+									{#if showNewBadge && isNew}{/if}
 								{/await}
-								<Badge class="mr-1 h-fit w-fit"
-									>{count}{categories.length < 2 ? ' available' : ''}</Badge
-								>
-								{#each categories as category}
-									<Badge class="mr-1 h-fit w-fit">{category}</Badge>
-								{/each}
 							</div>
 						</Card.Header>
 						<Card.Header class="pl-0">
