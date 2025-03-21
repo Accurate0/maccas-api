@@ -196,26 +196,23 @@
 								{/if}
 							</Card.Description>
 							<div class="flex flex-row self-end">
-								{#await data.showNewBadge then showNewBadge}
-									{#if showNewBadge}
-										{#if isNew}
-											<Badge class="mr-1 h-fit w-fit bg-green-800">New</Badge>
-										{/if}
-
-										<Badge class="mr-1 h-fit w-fit">
-											{count} available
-										</Badge>
-									{:else}
-										<Badge class="mr-1 h-fit w-fit">
-											{count}{categories.length < 2 ? ' available' : ''}
-										</Badge>
-
-										{#each categories as category}
-											<Badge class="mr-1 h-fit w-fit">{category}</Badge>
-										{/each}
+								{#if data.showNewBadge}
+									{#if isNew}
+										<Badge class="mr-1 h-fit w-fit bg-green-800">New</Badge>
 									{/if}
-									{#if showNewBadge && isNew}{/if}
-								{/await}
+
+									<Badge class="mr-1 h-fit w-fit">
+										{count} available
+									</Badge>
+								{:else}
+									<Badge class="mr-1 h-fit w-fit">
+										{count}{categories.length < 2 ? ' available' : ''}
+									</Badge>
+
+									{#each categories as category}
+										<Badge class="mr-1 h-fit w-fit">{category}</Badge>
+									{/each}
+								{/if}
 							</div>
 						</Card.Header>
 						<Card.Header class="pl-0">
