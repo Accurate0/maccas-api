@@ -20,6 +20,7 @@ pub struct OfferByIdResponse {
     pub code: String,
 }
 
+pub struct RecommendationOffer(pub i64);
 pub struct Offer(pub offers::Model, pub Option<i64>);
 
 impl Offer {
@@ -38,6 +39,13 @@ impl Offer {
             .await?
             .map(mapping)
             .ok_or(anyhow::Error::msg("no name found for this offer").into())
+    }
+}
+
+#[Object]
+impl RecommendationOffer {
+    pub async fn offer_proposition_id(&self) -> &i64 {
+        &self.0
     }
 }
 

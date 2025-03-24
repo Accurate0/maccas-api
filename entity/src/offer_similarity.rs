@@ -4,13 +4,13 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "stores")]
+#[sea_orm(table_name = "offer_similarity")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id: String,
-    pub name: String,
-    pub address: String,
-    pub created_at: DateTime,
+    pub offer_id: i64,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub other_offer_id: i64,
+    pub similarity: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

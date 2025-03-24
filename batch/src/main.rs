@@ -21,7 +21,8 @@ use axum::{
 use base::shutdown::axum_shutdown_signal;
 use jobs::{
     account_unlock::AccountUnlockJob, activate_existing_account::ActivateExistingAccount,
-    job_scheduler::JobScheduler, recategorise_offers::RecategoriseOffersJob,
+    generate_recommendations::GenerateRecommendationsJob, job_scheduler::JobScheduler,
+    recategorise_offers::RecategoriseOffersJob,
 };
 use reqwest::Method;
 use sea_orm::{ConnectOptions, Database};
@@ -78,6 +79,16 @@ async fn main() -> Result<(), anyhow::Error> {
                 mcdonalds_config: settings.mcdonalds.clone(),
             },
             !disable_jobs.iter().any(|j| j == "refresh"),
+        )
+        .await;
+
+    scheduler
+        .add(
+            GenerateRecommendationsJob {
+                auth_secret: settings.auth_secret.clone(),
+                event_api_base: settings.event_api_base.clone(),
+            },
+            !disable_jobs.iter().any(|j| j == "generate-recommendations"),
         )
         .await;
 

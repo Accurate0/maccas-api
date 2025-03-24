@@ -23,9 +23,9 @@ pub struct OffersMutation;
 
 #[Object]
 impl OffersMutation {
-    async fn add_offer<'a>(
+    async fn add_offer(
         &self,
-        ctx: &Context<'a>,
+        ctx: &Context<'_>,
         input: AddOfferInput,
     ) -> async_graphql::Result<AddOfferResponse> {
         let db = ctx.data::<DatabaseConnection>()?;
@@ -142,9 +142,9 @@ impl OffersMutation {
         })
     }
 
-    async fn remove_offer<'a>(
+    async fn remove_offer(
         &self,
-        ctx: &Context<'a>,
+        ctx: &Context<'_>,
         input: RemoveOfferInput,
     ) -> async_graphql::Result<Uuid> {
         let db = ctx.data::<DatabaseConnection>()?;

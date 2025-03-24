@@ -13,6 +13,7 @@ pub mod activate_existing_account;
 pub mod categorise_offers;
 pub mod create_account;
 pub mod error;
+pub mod generate_recommendations;
 pub mod job_scheduler;
 pub mod recategorise_offers;
 pub mod refresh;

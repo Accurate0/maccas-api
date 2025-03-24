@@ -1,6 +1,6 @@
 schema {
-	query: QueryRoot
-	mutation: MutationRoot
+  query: QueryRoot
+  mutation: MutationRoot
 }
 
 """
@@ -10,39 +10,39 @@ Indicates that an Input Object is a OneOf Input Object (and thus requires
 directive @oneOf on INPUT_OBJECT
 
 input AddOfferInput {
-	offerPropositionId: Int!
-	storeId: String!
+  offerPropositionId: Int!
+  storeId: String!
 }
 
 type AddOfferResponse {
-	code: String!
-	id: UUID!
+  code: String!
+  id: UUID!
 }
 
 input CoordinateSearchInput {
-	lat: Float!
-	lng: Float!
+  lat: Float!
+  lng: Float!
 }
 
 input FilterInput {
-	minimumCurrentPoints: Int!
+  minimumCurrentPoints: Int!
 }
 
 type HealthResponse {
-	batch: Boolean!
-	database: Boolean!
-	event: Boolean!
+  batch: Boolean!
+  database: Boolean!
+  event: Boolean!
 }
 
 type Location {
-	address: String!
-	name: String!
-	storeNumber: String!
+  address: String!
+  name: String!
+  storeNumber: String!
 }
 
 type MutationRoot {
-	addOffer(input: AddOfferInput!): AddOfferResponse!
-	removeOffer(input: RemoveOfferInput!): UUID!
+  addOffer(input: AddOfferInput!): AddOfferResponse!
+  removeOffer(input: RemoveOfferInput!): UUID!
 }
 
 """
@@ -55,65 +55,70 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 type Offer {
-	categories: [String!]!
-	count: Int!
-	creationDate: NaiveDateTime!
-	description: String!
-	id: UUID!
-	imageBasename: String! @deprecated(reason: "use image_url instead")
-	imageUrl: String!
-	name: String!
-	offerPropositionId: Int!
-	price: Float
-	shortName: String!
-	validFrom: NaiveDateTime!
-	validTo: NaiveDateTime!
+  categories: [String!]!
+  count: Int!
+  creationDate: NaiveDateTime!
+  description: String!
+  id: UUID!
+  imageBasename: String! @deprecated(reason: "use image_url instead")
+  imageUrl: String!
+  name: String!
+  offerPropositionId: Int!
+  price: Float
+  shortName: String!
+  validFrom: NaiveDateTime!
+  validTo: NaiveDateTime!
 }
 
 input OfferByIdInput {
-	id: UUID!
-	storeId: String!
+  id: UUID!
+  storeId: String!
 }
 
 type OfferByIdResponse {
-	code: String!
+  code: String!
 }
 
 type Points {
-	accountId: UUID!
-	code: String
-	currentPoints: Int!
-	lifetimePoints: Int!
+  accountId: UUID!
+  code: String
+  currentPoints: Int!
+  lifetimePoints: Int!
 }
 
 type QueriedLocation {
-	coordinate(input: CoordinateSearchInput!): [Location!]!
-	storeId(input: StoreIdInput!): Location!
-	text(input: TextSearchInput!): [Location!]!
+  coordinate(input: CoordinateSearchInput!): [Location!]!
+  storeId(input: StoreIdInput!): Location!
+  text(input: TextSearchInput!): [Location!]!
 }
 
 type QueryRoot {
-	categories: [String!]!
-	health: HealthResponse!
-	location: QueriedLocation!
-	offerById(input: OfferByIdInput!): OfferByIdResponse!
-	offers: [Offer!]!
-	points(filter: FilterInput): [Points!]!
-	pointsByAccountId(accountId: UUID!, storeId: String): Points!
-	upcomingOffers: [Offer!]!
+  categories: [String!]!
+  health: HealthResponse!
+  location: QueriedLocation!
+  offerById(input: OfferByIdInput!): OfferByIdResponse!
+  offers: [Offer!]!
+  points(filter: FilterInput): [Points!]!
+  pointsByAccountId(accountId: UUID!, storeId: String): Points!
+  recommendations: [RecommendationOffer!]!
+  upcomingOffers: [Offer!]!
+}
+
+type RecommendationOffer {
+  offerPropositionId: Int!
 }
 
 input RemoveOfferInput {
-	id: UUID!
-	storeId: String!
+  id: UUID!
+  storeId: String!
 }
 
 input StoreIdInput {
-	storeId: String!
+  storeId: String!
 }
 
 input TextSearchInput {
-	query: String!
+  query: String!
 }
 
 """

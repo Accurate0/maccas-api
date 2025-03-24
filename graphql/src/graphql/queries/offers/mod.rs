@@ -1,14 +1,15 @@
 use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
-use crate::{name_of, settings::Settings};
+use crate::{graphql::ValidatedClaims, name_of, settings::Settings};
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
-use entity::{accounts, offer_details, offers};
+use entity::{accounts, offer_details, offers, recommendations};
 use sea_orm::{
-    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, JoinType, Order,
-    QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
+    prelude::Uuid, ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult,
+    JoinType, Order, QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
+use types::RecommendationOffer;
 
 pub mod dataloader;
 mod types;
@@ -24,9 +25,9 @@ pub struct OffersQuery;
 
 #[Object]
 impl OffersQuery {
-    async fn offer_by_id<'a>(
+    async fn offer_by_id(
         &self,
-        ctx: &Context<'a>,
+        ctx: &Context<'_>,
         input: OfferByIdInput,
     ) -> async_graphql::Result<OfferByIdResponse> {
         let db = ctx.data::<DatabaseConnection>()?;
@@ -66,7 +67,7 @@ impl OffersQuery {
         })
     }
 
-    async fn upcoming_offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
+    async fn upcoming_offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let now = chrono::offset::Utc::now().naive_utc();
 
@@ -116,7 +117,32 @@ impl OffersQuery {
             .collect())
     }
 
-    async fn offers<'a>(&self, ctx: &Context<'a>) -> async_graphql::Result<Vec<Offer>> {
+    async fn recommendations(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<Vec<RecommendationOffer>> {
+        let claims = ctx.data_opt::<ValidatedClaims>().map(|c| c.0.clone());
+        if claims.is_none() {
+            return Ok(vec![]);
+        }
+
+        let claims = claims.unwrap();
+        let db = ctx.data::<DatabaseConnection>()?;
+        let recommendations = entity::recommendations::Entity::find()
+            .filter(recommendations::Column::UserId.eq(Uuid::from_str(&claims.user_id)?))
+            .one(db)
+            .await?
+            .map(|m| m.offer_proposition_ids)
+            .map(|m| m.into_iter().map(RecommendationOffer).collect())
+            .unwrap_or_default();
+
+        // TODO: need to populate similarity, when a recommendation is NOT available, look up most
+        // similar that is available, with max difference of x
+
+        Ok(recommendations)
+    }
+
+    async fn offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let all_locked_accounts = entity::account_lock::Entity::find()
             .all(db)

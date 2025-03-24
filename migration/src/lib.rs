@@ -45,6 +45,9 @@ mod m20250118_071320_make_transaction_id_unique;
 mod m20250118_081138_add_migrated_flag_to_audit;
 mod m20250118_082248_add_migrated_to_offer_details;
 mod m20250118_082450_make_transaction_id_not_unique;
+mod m20250324_091345_add_recommendations_table;
+mod m20250324_094047_update_recommendations_table_with_created_updated;
+mod m20250324_114233_add_offer_similarity_index;
 
 pub struct Migrator;
 
@@ -97,6 +100,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20250118_081138_add_migrated_flag_to_audit::Migration),
             Box::new(m20250118_082248_add_migrated_to_offer_details::Migration),
             Box::new(m20250118_082450_make_transaction_id_not_unique::Migration),
+            Box::new(m20250324_091345_add_recommendations_table::Migration),
+            Box::new(m20250324_094047_update_recommendations_table_with_created_updated::Migration),
+            Box::new(m20250324_114233_add_offer_similarity_index::Migration),
         ]
     }
 }
