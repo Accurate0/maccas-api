@@ -14,6 +14,23 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::offer_details::Entity",
+        from = "Column::OfferId",
+        to = "super::offer_details::Column::PropositionId",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    OfferDetails2,
+    #[sea_orm(
+        belongs_to = "super::offer_details::Entity",
+        from = "Column::OtherOfferId",
+        to = "super::offer_details::Column::PropositionId",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    OfferDetails1,
+}
 
 impl ActiveModelBehavior for ActiveModel {}
