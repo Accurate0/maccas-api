@@ -88,13 +88,23 @@
 
 		return isPast(from) && isFuture(to);
 	};
+
+	const isOfferRecommended = (
+		offerPropositionId: number,
+		recommendedList: Array<number> | undefined
+	) => {
+		return recommendedList?.includes(offerPropositionId) ?? false;
+	};
 </script>
 
 <div class="grid grid-flow-row gap-4">
-	{#await Promise.all([data.offers, data.categories])}
+	{#await Promise.all([data.offers, data.categories, data.recommendationIds])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
-			<Skeleton class="h-12 min-w-12 rounded-sm" />
+
+			{#if !data.isRecommendationsEnabled}
+				<Skeleton class="h-12 min-w-12 rounded-sm" />
+			{/if}
 		</div>
 		{#each Array(30) as _}
 			<Card.Root>
@@ -109,7 +119,7 @@
 				</div>
 			</Card.Root>
 		{/each}
-	{:then [offersList, categories]}
+	{:then [offersList, categories, recommendationIds]}
 		<div class="flex flex-row gap-2">
 			<Select.Root
 				selected={defaultSelected}
@@ -128,35 +138,44 @@
 					<Select.Item value="Other">Other</Select.Item>
 				</Select.Content>
 			</Select.Root>
-			<div>
-				<Button
-					on:click={() => (sortByAsc = !sortByAsc)}
-					variant="outline"
-					size="icon"
-					class="h-12 w-12"
-				>
-					{#if sortByAsc}
-						<ChevronDown />
-					{:else}
-						<ChevronUp />
-					{/if}
-					<span class="sr-only">Toggle price</span>
-				</Button>
-			</div>
+			{#if !data.isRecommendationsEnabled}
+				<div>
+					<Button
+						on:click={() => (sortByAsc = !sortByAsc)}
+						variant="outline"
+						size="icon"
+						class="h-12 w-12"
+					>
+						{#if sortByAsc}
+							<ChevronDown />
+						{:else}
+							<ChevronUp />
+						{/if}
+						<span class="sr-only">Toggle price</span>
+					</Button>
+				</div>
+			{/if}
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
-			if (!a.price) {
-				return 0;
-			}
+			if (data.isRecommendationsEnabled) {
+				if (!a.price) {
+					return 0;
+				}
 
-			if (!b.price) {
-				return 0;
-			}
+				if (!b.price) {
+					return 0;
+				}
 
-			if (sortByAsc) {
-				return a.price - b.price;
+				if (sortByAsc) {
+					return a.price - b.price;
+				} else {
+					return b.price - a.price;
+				}
 			} else {
-				return b.price - a.price;
+				const isARecommended = isOfferRecommended(a.offerPropositionId, recommendationIds) ? 1 : 0;
+				const isBRecommended = isOfferRecommended(b.offerPropositionId, recommendationIds) ? 1 : 0;
+
+				return isARecommended - isBRecommended;
 			}
 		}) as { shortName, count, imageUrl, offerPropositionId, validFrom, validTo, categories } (shortName)}
 			{@const isValid = isOfferValid({ validFrom, validTo })}

@@ -10,5 +10,9 @@ query GetOffers {
 		price
 	}
 
+	recommendations {
+		offerPropositionId
+	}
+
 	categories
 }
