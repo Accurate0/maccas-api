@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [graphql, batch, dashboard, event, web, migration]
+        apps:
+          [graphql, batch, dashboard, event, web, migration, recommendations]
 
     name: Build
     runs-on: ubuntu-latest
@@ -24,7 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Docker build
-        if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' }}
+        if: ${{ matrix.apps  == 'api' || matrix.apps  == 'batch' || matrix.apps  == 'event' || matrix.apps == 'migration' || matrix.apps == 'recommendations' }}
         uses: docker/build-push-action@v6
         with:
           context: .

@@ -9,7 +9,7 @@ members = [
     "batch",
     "base",
     "event", 
-    "sensordata/lib", 
+    "sensordata/lib", "recommendations", 
 ]
 
 [workspace.package]
@@ -41,6 +41,7 @@ tracing-opentelemetry = "0.29.0"
 
 sea-orm = { version = "1.1", features = [
     "sqlx-postgres",
+    "postgres-vector",
     "runtime-tokio-native-tls",
     "macros",
 ] }

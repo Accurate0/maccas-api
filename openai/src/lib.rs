@@ -4,6 +4,7 @@ use std::fmt::Debug;
 use tracing::instrument;
 use types::{
     ClientResponse, ClientResult, OpenAIChatCompletionRequest, OpenAIChatCompletionResponse,
+    OpenAIEmbeddingsRequest, OpenAIEmbeddingsResponse,
 };
 
 pub mod types;
@@ -46,6 +47,20 @@ impl ApiClient {
     ) -> ClientResult<ClientResponse<OpenAIChatCompletionResponse>> {
         let request = self
             .get_default_request("chat/completions", Method::POST)
+            .json(request);
+
+        let response = request.send().await?;
+        ClientResponse::from_response(response).await
+    }
+
+    // embeddings
+    #[instrument(skip(self), fields(statusCode))]
+    pub async fn embeddings(
+        &self,
+        request: &OpenAIEmbeddingsRequest,
+    ) -> ClientResult<ClientResponse<OpenAIEmbeddingsResponse>> {
+        let request = self
+            .get_default_request("embeddings", Method::POST)
             .json(request);
 
         let response = request.send().await?;

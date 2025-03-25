@@ -60,6 +60,16 @@ spec:
                 name: maccas-event
                 port:
                   name: api
+    - host: recommendations.maccas.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: maccas-recommendations
+                port:
+                  name: api
   tls:
     - secretName: maccas-api-tls
       hosts:
@@ -76,3 +86,6 @@ spec:
     - secretName: graphql-maccas-api-tls
       hosts:
         - graphql.maccas.one
+    - secretName: recommendations-maccas-api-tls
+      hosts:
+        - recommendations.maccas.one

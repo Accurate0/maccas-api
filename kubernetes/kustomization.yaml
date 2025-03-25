@@ -1,22 +1,24 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- batch/batch.deployment.yaml
-- dashboard/dashboard.deployment.yaml
-- event/event.deployment.yaml
-- graphql/graphql.deployment.yaml
-- web/web.deployment.yaml
-- api.secret.yaml
-- batch/batch.service.yaml
-- common.secret.yaml
-- dashboard/dashboard.secret.yaml
-- dashboard/dashboard.service.yaml
-- event/event.service.yaml
-- graphql/graphql.service.yaml
-- ingress.yaml
-- migration/migration.secret.yaml
-- namespace.yaml
-- web/web.secret.yaml
-- web/web.service.yaml
+  - batch/batch.deployment.yaml
+  - dashboard/dashboard.deployment.yaml
+  - event/event.deployment.yaml
+  - graphql/graphql.deployment.yaml
+  - web/web.deployment.yaml
+  - api.secret.yaml
+  - batch/batch.service.yaml
+  - common.secret.yaml
+  - dashboard/dashboard.secret.yaml
+  - dashboard/dashboard.service.yaml
+  - event/event.service.yaml
+  - recommendations/recommendations.service.yaml
+  - recommendations/recommendations.deployment.yaml
+  - graphql/graphql.service.yaml
+  - ingress.yaml
+  - migration/migration.secret.yaml
+  - namespace.yaml
+  - web/web.secret.yaml
+  - web/web.service.yaml
 # - sensordata/sensordata.deployment.yaml
 # - sensordata/sensordata.service.yaml

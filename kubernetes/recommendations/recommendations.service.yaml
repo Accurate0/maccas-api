@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: maccas-recommendations
+  namespace: maccas-api
+spec:
+  selector:
+    app: maccas-recommendations
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8003
+      targetPort: 8003

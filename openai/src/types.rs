@@ -33,11 +33,11 @@ where
 
 #[derive(Error, Debug)]
 pub enum ClientError {
-    #[error("request or middleware error")]
+    #[error("request or middleware error: {0}")]
     RequestOrMiddlewareError(#[from] reqwest_middleware::Error),
-    #[error("request error")]
+    #[error("request error: {0}")]
     RequestError(#[from] reqwest::Error),
-    #[error("serialization error")]
+    #[error("serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
     #[error("unknown error")]
     Unknown,
@@ -100,6 +100,39 @@ pub struct Usage {
     pub prompt_tokens: i64,
     #[serde(rename = "completion_tokens")]
     pub completion_tokens: i64,
+    #[serde(rename = "total_tokens")]
+    pub total_tokens: i64,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenAIEmbeddingsRequest {
+    pub input: String,
+    pub model: String,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenAIEmbeddingsResponse {
+    pub object: String,
+    pub data: Vec<Embedding>,
+    pub model: String,
+    pub usage: EmbeddingUsage,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Embedding {
+    pub object: String,
+    pub embedding: Vec<f32>,
+    pub index: i64,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmbeddingUsage {
+    #[serde(rename = "prompt_tokens")]
+    pub prompt_tokens: i64,
     #[serde(rename = "total_tokens")]
     pub total_tokens: i64,
 }

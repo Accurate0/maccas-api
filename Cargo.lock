@@ -3692,6 +3692,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0e8871b6d7ca78348c6cd29b911b94851f3429f0cd403130ca17f26c1fb91a6"
 dependencies = [
  "serde",
+ "sqlx",
 ]
 
 [[package]]
@@ -4189,6 +4190,36 @@ checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
+]
+
+[[package]]
+name = "recommendations"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base",
+ "chrono",
+ "config",
+ "entity",
+ "futures",
+ "itertools 0.14.0",
+ "libmaccas",
+ "openai",
+ "opentelemetry 0.28.0",
+ "opentelemetry_sdk 0.28.0",
+ "reqwest",
+ "reqwest-middleware",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "tokio-util",
+ "tower-http",
+ "tracing",
+ "tracing-opentelemetry 0.29.0",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -4761,6 +4792,7 @@ dependencies = [
  "chrono",
  "inherent",
  "ordered-float 3.9.2",
+ "pgvector",
  "rust_decimal",
  "sea-query-derive",
  "serde_json",
@@ -4776,6 +4808,7 @@ checksum = "b0019f47430f7995af63deda77e238c17323359af241233ec768aba1faea7608"
 dependencies = [
  "bigdecimal",
  "chrono",
+ "pgvector",
  "rust_decimal",
  "sea-query",
  "serde_json",
