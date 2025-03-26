@@ -36,7 +36,7 @@ pub async fn validate(
             let token = &auth_header.to_str()?.replace("Bearer ", "");
 
             let claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
-            if claims.role.contains(&Role::Admin) {
+            if claims.role.contains(&Role::Admin) || claims.role.contains(&Role::InternalService) {
                 tracing::info!("verified token with claims: {:?}", claims);
                 Ok(next.run(request).await)
             } else {
