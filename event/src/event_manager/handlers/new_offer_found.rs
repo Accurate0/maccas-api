@@ -95,7 +95,7 @@ pub async fn new_offer_found(
         match response {
             Ok(response) => match response.status() {
                 StatusCode::CREATED => {
-                    tracing::info!("started task");
+                    tracing::info!("generated embedding via recommendations service for {offer_proposition_id}");
                 }
                 status => {
                     tracing::warn!("event failed with {} - {}", status, response.text().await?);

@@ -45,7 +45,7 @@ impl Job for GenerateRecommendationsJob {
         match response {
             Ok(response) => match response.status() {
                 StatusCode::ACCEPTED => {
-                    tracing::info!("started task");
+                    tracing::info!("started generating embeddings task");
                 }
                 status => {
                     tracing::warn!("event failed with {} - {}", status, response.text().await?);
