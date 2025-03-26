@@ -22,9 +22,6 @@ pub enum Event {
     NewOfferFound {
         offer_proposition_id: i64,
     },
-    GenerateRecommendations {
-        user_id: Uuid,
-    },
 }
 
 impl fmt::Display for Event {
@@ -34,7 +31,6 @@ impl fmt::Display for Event {
             Event::SaveImage { .. } => write!(f, "SaveImage"),
             Event::RefreshPoints { .. } => write!(f, "RefreshPoints"),
             Event::NewOfferFound { .. } => write!(f, "NewOfferFound"),
-            Event::GenerateRecommendations { .. } => write!(f, "GenerateRecommendations"),
         }
     }
 }

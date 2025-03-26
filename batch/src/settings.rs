@@ -38,6 +38,7 @@ pub struct Settings {
     pub openai_api_key: String,
     pub sensordata_api_base: String,
     pub event_api_base: String,
+    pub recommendations_api_base: String,
 }
 
 impl Settings {

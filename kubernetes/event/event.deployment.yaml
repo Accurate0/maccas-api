@@ -39,6 +39,8 @@ spec:
           env:
             - name: FLIPT_URL
               value: http://flipt.flipt.svc.cluster.local:8080
+            - name: RECOMMENDATIONS_API_BASE
+              value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets

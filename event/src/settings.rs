@@ -32,6 +32,7 @@ pub struct Settings {
     pub auth_secret: String,
     pub mcdonalds: McDonalds,
     pub images_bucket: ImagesBucket,
+    pub recommendations_api_base: String,
 }
 
 impl Settings {

@@ -43,6 +43,8 @@ spec:
               value: create-account,activate-account,activate-existing-account
             - name: EVENT_API_BASE
               value: http://maccas-event.maccas-api.svc.cluster.local:8001
+            - name: RECOMMENDATIONS_API_BASE
+              value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
             - name: FLIPT_URL
               value: http://flipt.flipt.svc.cluster.local:8080
           envFrom:

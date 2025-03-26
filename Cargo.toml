@@ -55,6 +55,7 @@ libmaccas = { path = "./libmaccas" }
 places = { path = "./places" }
 openai = { path = "./openai" }
 base = { path = "./base" }
+recommendations = { path = "./recommendations" }
 converters = { path = "./converters" }
 event = { path = "./event" }
 batch = { path = "./batch" }

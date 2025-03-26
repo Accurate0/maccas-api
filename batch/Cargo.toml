@@ -23,6 +23,7 @@ tokio-util = { workspace = true }
 chrono = { workspace = true }
 futures = { workspace = true }
 base = { workspace = true }
+recommendations = { workspace = true }
 converters = { workspace = true }
 reqwest-middleware = { workspace = true }
 reqwest = { workspace = true }

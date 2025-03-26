@@ -1,12 +1,18 @@
 use super::HandlerError;
-use crate::{discord_webhook::DiscordWebhookMessage, event_manager::EventManager};
+use crate::{
+    discord_webhook::DiscordWebhookMessage, event_manager::EventManager, settings::Settings,
+};
 use anyhow::Context;
 use base::{
     constants::{IMAGE_BASE_URL, IMAGE_EXT},
     feature_flag::FeatureFlagClient,
+    http::get_http_client,
+    jwt::generate_internal_jwt,
 };
 use entity::offer_details;
+use recommendations::GenerateEmbeddingsFor;
 use reqwest::header::CONTENT_TYPE;
+use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{EntityTrait, QuerySelect};
 use tracing::instrument;
@@ -54,6 +60,8 @@ pub async fn new_offer_found(
     em: EventManager,
 ) -> Result<(), HandlerError> {
     let feature_flag_client = em.get_state::<FeatureFlagClient>();
+    let settings = em.get_state::<Settings>();
+
     let should_send_event = feature_flag_client
         .is_feature_enabled("maccas-event-new-offer-notification", false)
         .await;
@@ -61,6 +69,41 @@ pub async fn new_offer_found(
     let config = feature_flag_client
         .get_dynamic_config::<NewOfferConfig>("maccas-event-new-offer-config")
         .await;
+
+    let should_generate_embedding = feature_flag_client
+        .is_feature_enabled("maccas-api-enable-recommendations", false)
+        .await;
+
+    if should_generate_embedding {
+        let http_client = get_http_client()?;
+        let token = generate_internal_jwt(
+            settings.auth_secret.as_ref(),
+            "Maccas Event",
+            "Maccas Recommendations",
+        )?;
+
+        let request_url = format!(
+            "{}/{}",
+            settings.recommendations_api_base,
+            GenerateEmbeddingsFor::path(offer_proposition_id)
+        );
+
+        let request = http_client.post(&request_url).bearer_auth(token);
+
+        let response = request.send().await;
+
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    tracing::info!("started task");
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
+        }
+    }
 
     let should_notify = config.as_ref().is_some_and(|c| c.should_notify());
     if !should_send_event || config.is_none() || !should_notify {

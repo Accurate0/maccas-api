@@ -1,11 +1,13 @@
 use super::{EventManager, EventManagerError};
 use crate::event_manager::handlers::cleanup::cleanup;
 use crate::event_manager::handlers::save_image::save_image;
-use base::retry::{retry_async, ExponentialBackoff, RetryResult};
+use base::{
+    jwt::JwtValidationError,
+    retry::{retry_async, ExponentialBackoff, RetryResult},
+};
 use converters::ConversionError;
 use event::Event;
 use futures::FutureExt;
-use generate_recommendations::generate_recommendations;
 use new_offer_found::new_offer_found;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
@@ -14,7 +16,6 @@ use thiserror::Error;
 use tracing::{span, Instrument};
 
 mod cleanup;
-mod generate_recommendations;
 mod new_offer_found;
 mod refresh_points;
 mod save_image;
@@ -55,6 +56,8 @@ pub enum HandlerError {
     TryFromIntError(#[from] TryFromIntError),
     #[error("A ConversionError error occurred: `{0}`")]
     ConversionError(#[from] ConversionError),
+    #[error("A JwtValidation error occurred: `{0}`")]
+    JwtValidationError(#[from] JwtValidationError),
 }
 
 // TODO: make them event manager functions or some kind of trait setup :)
@@ -106,9 +109,6 @@ pub async fn handle(event_manager: EventManager) {
                     Event::NewOfferFound {
                         offer_proposition_id,
                     } => new_offer_found(offer_proposition_id, event_manager).await,
-                    Event::GenerateRecommendations { user_id } => {
-                        generate_recommendations(user_id, event_manager).await
-                    }
                 }
             }))
             .catch_unwind()

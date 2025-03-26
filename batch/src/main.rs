@@ -86,7 +86,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .add(
             GenerateRecommendationsJob {
                 auth_secret: settings.auth_secret.clone(),
-                event_api_base: settings.event_api_base.clone(),
+                recommendations_api_base: settings.recommendations_api_base.clone(),
             },
             !disable_jobs.iter().any(|j| j == "generate-recommendations"),
         )
