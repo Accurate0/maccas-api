@@ -57,7 +57,7 @@ impl RecommendationEngine {
 
     #[instrument(skip(self))]
     pub async fn generate_clusters(&self) -> Result<(), RecommendationError> {
-        let all_embeddings: Vec<(i64, [f32; 2])> = offer_embeddings::Entity::find()
+        let _all_embeddings: Vec<(i64, [f32; 2])> = offer_embeddings::Entity::find()
             .all(self.db())
             .await?
             .into_iter()
@@ -149,21 +149,26 @@ impl RecommendationEngine {
             .all(&self.db)
             .await?
             .into_iter()
-            .map(|od| (od.proposition_id, od.short_name))
-            .collect_vec();
+            .map(|od| (od.proposition_id, od.short_name));
 
         let chunk_size = 20;
         let mut current = 0;
         let total = offer_details.len();
 
-        for chunk in &offer_details.into_iter().chunks(chunk_size) {
-            let chunk_futures = chunk.into_iter().map(|(id, embedding_input)| async move {
-                if let Err(e) = self.refresh_embedding_for(id, embedding_input, false).await {
+        let mut ft = Vec::new();
+
+        for (id, embedding_text) in offer_details {
+            let future = Box::pin(async move {
+                if let Err(e) = self.refresh_embedding_for(id, embedding_text, false).await {
                     tracing::error!("{e}");
-                }
+                };
             });
 
-            futures::future::join_all(chunk_futures).await;
+            ft.push(future);
+        }
+
+        for ft in ft.chunks_mut(chunk_size) {
+            futures::future::join_all(ft).await;
 
             current += chunk_size;
             let percentage: f32 = (current as f32 / total as f32) * 100.0;

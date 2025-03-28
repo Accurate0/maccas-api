@@ -8,6 +8,7 @@ use axum::{
 use base::jwt::{self, JwtClaims, Role};
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct ValidatedClaims(pub JwtClaims);
 
 pub async fn validate(
