@@ -149,17 +149,23 @@ impl RecommendationEngine {
             .all(&self.db)
             .await?
             .into_iter()
-            .map(|od| (od.proposition_id, od.short_name));
+            .map(|od| (od.proposition_id, od.short_name))
+            .collect_vec();
 
+        let chunk_size = 20;
         let mut current = 0;
         let total = offer_details.len();
 
-        for (id, embedding_input) in offer_details {
-            if let Err(e) = self.refresh_embedding_for(id, embedding_input, false).await {
-                tracing::error!("{e}");
-            }
+        for chunk in &offer_details.into_iter().chunks(chunk_size) {
+            let chunk_futures = chunk.into_iter().map(|(id, embedding_input)| async move {
+                if let Err(e) = self.refresh_embedding_for(id, embedding_input, false).await {
+                    tracing::error!("{e}");
+                }
+            });
 
-            current += 1;
+            futures::future::join_all(chunk_futures).await;
+
+            current += chunk_size;
             let percentage: f32 = (current as f32 / total as f32) * 100.0;
             tracing::info!("progress: {}/{} -> {:.2}%", current, total, percentage);
         }
