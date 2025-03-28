@@ -50,6 +50,7 @@ mod m20250324_094047_update_recommendations_table_with_created_updated;
 mod m20250324_114233_add_offer_similarity_index;
 mod m20250324_114957_add_foreign_keys_for_offer_similarity;
 mod m20250325_105021_add_offer_embeddings_table;
+mod m20250328_165001_embedding_by_name;
 
 pub struct Migrator;
 
@@ -107,6 +108,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250324_114233_add_offer_similarity_index::Migration),
             Box::new(m20250324_114957_add_foreign_keys_for_offer_similarity::Migration),
             Box::new(m20250325_105021_add_offer_embeddings_table::Migration),
+            Box::new(m20250328_165001_embedding_by_name::Migration),
         ]
     }
 }

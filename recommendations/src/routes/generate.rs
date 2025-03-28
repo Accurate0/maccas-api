@@ -23,7 +23,7 @@ pub async fn generate_for(
 
     state
         .engine
-        .refresh_embedding_for(proposition_id, model.unwrap().short_name, true)
+        .refresh_embedding_for(model.unwrap().short_name, true)
         .await?;
 
     Ok(StatusCode::CREATED)
