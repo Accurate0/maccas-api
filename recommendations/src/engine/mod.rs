@@ -47,6 +47,9 @@ impl RecommendationEngine {
     }
 
     #[instrument(skip(self))]
+    pub async fn generate_clusters(&self) {}
+
+    #[instrument(skip(self))]
     pub async fn refresh_all_embeddings(&self) {
         let s = self.clone();
         tokio::spawn(async move {
@@ -66,6 +69,8 @@ impl RecommendationEngine {
         let request = OpenAIEmbeddingsRequest {
             input,
             model: "text-embedding-3-large".to_owned(),
+            // 2d???
+            dimensions: Some(2),
         };
 
         match self.openai_api_client.embeddings(&request).await {

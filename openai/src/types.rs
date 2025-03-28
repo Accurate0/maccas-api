@@ -108,6 +108,7 @@ pub struct Usage {
 #[serde(rename_all = "camelCase")]
 pub struct OpenAIEmbeddingsRequest {
     pub input: String,
+    pub dimensions: Option<i64>,
     pub model: String,
 }
 
