@@ -151,11 +151,11 @@ impl RecommendationEngine {
             .into_iter()
             .map(|od| (od.proposition_id, od.short_name));
 
-        let chunk_size = 20;
+        let chunk_size = 10;
         let mut current = 0;
         let total = offer_details.len();
 
-        let mut ft = Vec::new();
+        let mut future_list = Vec::new();
 
         for (id, embedding_text) in offer_details {
             let future = Box::pin(async move {
@@ -164,13 +164,14 @@ impl RecommendationEngine {
                 };
             });
 
-            ft.push(future);
+            future_list.push(future);
         }
 
-        for ft in ft.chunks_mut(chunk_size) {
-            futures::future::join_all(ft).await;
+        for future_chunk in future_list.chunks_mut(chunk_size) {
+            let size = future_chunk.len();
+            futures::future::join_all(future_chunk).await;
 
-            current += chunk_size;
+            current += size;
             let percentage: f32 = (current as f32 / total as f32) * 100.0;
             tracing::info!("progress: {}/{} -> {:.2}%", current, total, percentage);
         }
