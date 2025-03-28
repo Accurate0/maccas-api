@@ -10,7 +10,7 @@ use engine::RecommendationEngine;
 use jwt::validate;
 use reqwest::Method;
 use routes::{
-    generate::{generate, generate_for},
+    generate::{generate, generate_clusters, generate_for},
     health::health,
 };
 use sea_orm::{ConnectOptions, Database};
@@ -75,6 +75,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let app = Router::new()
         .route("/generate", post(generate))
+        .route("/generate/clusters", post(generate_clusters))
         .route("/generate/{id}", post(generate_for))
         .layer(middleware::from_fn_with_state(api_state.clone(), validate))
         .layer(cors)

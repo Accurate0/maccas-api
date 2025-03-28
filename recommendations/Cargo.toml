@@ -31,6 +31,7 @@ opentelemetry_sdk = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 linfa = "0.7.1"
 linfa-clustering = "0.7.1"
+ndarray = "0.15.0"
 
 [lib]
 name = "recommendations"

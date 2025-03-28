@@ -1,10 +1,13 @@
 use entity::{offer_details, offer_embeddings};
 use error::RecommendationError;
+use itertools::Itertools;
 use openai::types::OpenAIEmbeddingsRequest;
 use sea_orm::prelude::PgVector;
 use sea_orm::sea_query::{OnConflict, Query};
 use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
+use std::convert::TryInto;
 use std::{ops::Deref, sync::Arc};
+use tokio::runtime::Handle;
 use tracing::instrument;
 
 mod error;
@@ -46,8 +49,27 @@ impl RecommendationEngine {
         &self.db
     }
 
+    fn fixed_size<T, const N: usize>(v: Vec<T>) -> [T; N] {
+        v.try_into().unwrap_or_else(|v: Vec<T>| {
+            panic!("Expected a Vec of length {} but it was {}", N, v.len())
+        })
+    }
+
     #[instrument(skip(self))]
-    pub async fn generate_clusters(&self) {}
+    pub async fn generate_clusters(&self) -> Result<(), RecommendationError> {
+        let all_embeddings: Vec<(i64, [f32; 2])> = offer_embeddings::Entity::find()
+            .all(self.db())
+            .await?
+            .into_iter()
+            .map(|m| (m.proposition_id, Self::fixed_size(m.embeddings.to_vec())))
+            .collect_vec();
+
+        let rt = Handle::current();
+
+        rt.spawn_blocking(|| {}).await?;
+
+        Ok(())
+    }
 
     #[instrument(skip(self))]
     pub async fn refresh_all_embeddings(&self) -> Result<(), RecommendationError> {
@@ -65,7 +87,7 @@ impl RecommendationEngine {
             input,
             model: "text-embedding-3-large".to_owned(),
             // 2d???
-            dimensions: Some(2),
+            dimensions: None,
         };
 
         match self.openai_api_client.embeddings(&request).await {

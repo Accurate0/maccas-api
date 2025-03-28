@@ -4406,6 +4406,7 @@ dependencies = [
  "libmaccas",
  "linfa",
  "linfa-clustering",
+ "ndarray",
  "openai",
  "opentelemetry 0.28.0",
  "opentelemetry_sdk 0.28.0",

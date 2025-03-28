@@ -28,3 +28,7 @@ pub async fn generate_for(
 
     Ok(StatusCode::CREATED)
 }
+pub async fn generate_clusters(State(state): State<ApiState>) -> Result<StatusCode, AppError> {
+    state.engine.generate_clusters().await?;
+    Ok(StatusCode::NO_CONTENT)
+}
