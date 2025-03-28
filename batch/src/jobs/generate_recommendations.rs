@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::{error::JobError, Job, JobContext, JobType};
 use base::{http::get_http_client, jwt::generate_internal_jwt};
 use recommendations::GenerateEmbeddings;
@@ -38,13 +40,16 @@ impl Job for GenerateRecommendationsJob {
             GenerateEmbeddings::path()
         );
 
-        let request = http_client.post(&request_url).bearer_auth(token);
+        let request = http_client
+            .post(&request_url)
+            .bearer_auth(token)
+            .timeout(Duration::from_secs(10800));
 
         let response = request.send().await;
 
         match response {
             Ok(response) => match response.status() {
-                StatusCode::ACCEPTED => {
+                StatusCode::NO_CONTENT => {
                     tracing::info!("started generating embeddings task");
                 }
                 status => {

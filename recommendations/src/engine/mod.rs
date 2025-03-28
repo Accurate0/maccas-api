@@ -50,13 +50,8 @@ impl RecommendationEngine {
     pub async fn generate_clusters(&self) {}
 
     #[instrument(skip(self))]
-    pub async fn refresh_all_embeddings(&self) {
-        let s = self.clone();
-        tokio::spawn(async move {
-            if let Err(e) = s.refresh_all_embeddings_internal().await {
-                tracing::error!("{e}");
-            }
-        });
+    pub async fn refresh_all_embeddings(&self) -> Result<(), RecommendationError> {
+        self.refresh_all_embeddings_internal().await
     }
 
     #[instrument(skip(self))]
@@ -134,10 +129,17 @@ impl RecommendationEngine {
             .into_iter()
             .map(|od| (od.proposition_id, od.short_name));
 
+        let mut current = 0;
+        let total = offer_details.len();
+
         for (id, embedding_input) in offer_details {
             if let Err(e) = self.refresh_embedding_for(id, embedding_input, false).await {
                 tracing::error!("{e}");
             }
+
+            current += 1;
+            let percentage: f32 = (current as f32 / total as f32) * 100.0;
+            tracing::info!("progress: {}/{} -> {:.2}%", current, total, percentage);
         }
 
         Ok(())

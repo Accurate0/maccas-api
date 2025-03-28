@@ -5,8 +5,8 @@ use reqwest::StatusCode;
 use sea_orm::EntityTrait;
 
 pub async fn generate(State(state): State<ApiState>) -> Result<StatusCode, AppError> {
-    state.engine.refresh_all_embeddings().await;
-    Ok(StatusCode::ACCEPTED)
+    state.engine.refresh_all_embeddings().await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 pub async fn generate_for(
