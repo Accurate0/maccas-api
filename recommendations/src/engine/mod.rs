@@ -176,7 +176,7 @@ impl RecommendationEngine {
             .distinct_on([offer_details::Column::ShortName])
             .filter(
                 Condition::any().add(
-                    offer_details::Column::Name.not_in_subquery(
+                    offer_details::Column::ShortName.not_in_subquery(
                         Query::select()
                             .column(offer_embeddings::Column::Name)
                             .from(offer_embeddings::Entity)
