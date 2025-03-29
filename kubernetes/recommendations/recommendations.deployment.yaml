@@ -45,4 +45,27 @@ spec:
             - secretRef:
                 name: maccas-api-managed-secrets
           ports:
-            - containerPort: 8001
+            - containerPort: 8003
+        - name: maccas-clustering
+          image: maccas-clustering:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8004
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          env:
+            - name: CLUSTERING_API_BASE
+              value: http://maccas-recommendations.maccas-api.svc.cluster.local:8004
+          envFrom:
+            - secretRef:
+                name: maccas-common-managed-secrets
+            - secretRef:
+                name: maccas-api-managed-secrets
+          ports:
+            - containerPort: 8004

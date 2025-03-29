@@ -14,6 +14,14 @@ services:
       start_period: 90s
       timeout: 3s
 
+  clustering:
+    build:
+      context: clustering
+    ports:
+      - "8004:8004"
+    env_file:
+      - .env.local
+
   web:
     build:
       context: web
@@ -102,6 +110,33 @@ services:
       - .env.local
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 90s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  recommendations:
+    restart: unless-stopped
+    build:
+      dockerfile: Dockerfile
+      args:
+        - BINARY_NAME=recommendations
+    ports:
+      - "8003:8003"
+    links:
+      - "db:database"
+    depends_on:
+      db:
+        condition: service_healthy
+      clustering:
+        condition: service_started
+    environment:
+      - DATABASE__URL=postgres://postgres:test@database/maccas
+      - CLUSTERING_API_BASE=http://clustering:8004
+    env_file:
+      - .env.local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
       interval: 90s
       timeout: 10s
       retries: 3

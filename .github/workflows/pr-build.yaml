@@ -13,7 +13,16 @@ jobs:
       fail-fast: false
       matrix:
         apps:
-          [graphql, batch, dashboard, event, web, migration, recommendations]
+          [
+            graphql,
+            batch,
+            dashboard,
+            event,
+            web,
+            migration,
+            recommendations,
+            clustering,
+          ]
 
     name: Build
     runs-on: ubuntu-latest
@@ -34,7 +43,7 @@ jobs:
             BINARY_NAME=${{ matrix.apps }}
 
       - name: Docker build
-        if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' }}
+        if: ${{ matrix.apps  == 'dashboard' || matrix.apps  == 'web' || matrix.apps == 'clustering' }}
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.apps }}

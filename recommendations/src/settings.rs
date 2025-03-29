@@ -11,6 +11,7 @@ pub struct Settings {
     pub database: Database,
     pub auth_secret: String,
     pub openai_api_key: String,
+    pub clustering_api_base: String,
 }
 
 impl Settings {

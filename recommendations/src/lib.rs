@@ -23,4 +23,10 @@ impl GenerateEmbeddingsFor {
     }
 }
 
+pub struct GenerateClusters {}
 
+impl GenerateClusters {
+    pub fn path() -> &'static str {
+        "generate/clusters"
+    }
+}

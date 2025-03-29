@@ -1,13 +1,18 @@
+use crate::settings::Settings;
 use entity::{offer_details, offer_embeddings};
 use error::RecommendationError;
+use itertools::Itertools;
 use openai::types::OpenAIEmbeddingsRequest;
+use reqwest::Method;
 use sea_orm::prelude::PgVector;
 use sea_orm::sea_query::{OnConflict, Query};
 use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
+use types::{ClusteringRequest, ClusteringRequestEmbedding, ClusteringResponse};
 
 mod error;
+mod types;
 
 #[derive(Clone, Debug)]
 pub struct RecommendationEngine {
@@ -17,6 +22,7 @@ pub struct RecommendationEngine {
 #[derive(Debug)]
 pub struct EngineInner {
     db: DatabaseConnection,
+    settings: Settings,
     openai_api_client: openai::ApiClient,
 }
 
@@ -29,9 +35,14 @@ impl Deref for RecommendationEngine {
 }
 
 impl RecommendationEngine {
-    pub fn new(db: DatabaseConnection, openai_api_client: openai::ApiClient) -> Self {
+    pub fn new(
+        db: DatabaseConnection,
+        openai_api_client: openai::ApiClient,
+        settings: Settings,
+    ) -> Self {
         Self {
             inner: Arc::new(EngineInner {
+                settings,
                 db,
                 openai_api_client,
             }),
@@ -48,6 +59,31 @@ impl RecommendationEngine {
 
     #[instrument(skip(self))]
     pub async fn generate_clusters(&self) -> Result<(), RecommendationError> {
+        let embeddings = offer_embeddings::Entity::find()
+            .all(self.db())
+            .await?
+            .into_iter()
+            .map(|m| ClusteringRequestEmbedding {
+                name: m.name,
+                embedding: m.embeddings.to_vec(),
+            });
+
+        let http_client = base::http::get_http_client()?;
+        let url = format!("{}/clusters", self.settings.clustering_api_base);
+
+        let response = http_client
+            .request(Method::POST, url)
+            .json(&ClusteringRequest {
+                embeddings: embeddings.collect_vec(),
+            })
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<ClusteringResponse>()
+            .await?;
+
+        tracing::info!("{response:?}");
+
         Ok(())
     }
 

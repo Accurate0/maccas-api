@@ -11,3 +11,7 @@ spec:
       protocol: TCP
       port: 8003
       targetPort: 8003
+    - name: clustering
+      protocol: TCP
+      port: 8004
+      targetPort: 8004

@@ -47,7 +47,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let openai_api_client = openai::ApiClient::new(settings.openai_api_key.clone(), http_client);
 
     let db = Database::connect(opt).await?;
-    let engine = RecommendationEngine::new(db, openai_api_client);
+    let engine = RecommendationEngine::new(db, openai_api_client, settings.clone());
 
     let api_state = ApiState { settings, engine };
 

@@ -30,13 +30,15 @@ jobs:
           batch=$(docker manifest inspect ghcr.io/accurate0/maccas-batch | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           event=$(docker manifest inspect ghcr.io/accurate0/maccas-event | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           sensordata=$(docker manifest inspect ghcr.io/accurate0/maccas-sensordata | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          echo "multi-arch-digests=$web,$graphql,$dashboard,$migration,$batch,$event,$sensordata" >> $GITHUB_OUTPUT
+          recommendations=$(docker manifest inspect ghcr.io/accurate0/maccas-recommendations | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          clustering=$(docker manifest inspect ghcr.io/accurate0/maccas-clustering | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
+          echo "multi-arch-digests=$web,$graphql,$dashboard,$migration,$batch,$event,$sensordata,$recommendations,$clustering" >> $GITHUB_OUTPUT
 
       - uses: snok/container-retention-policy@v3.0.0
         with:
           account: user
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "maccas-web maccas-dashboard maccas-migration maccas-graphql maccas-batch maccas-event maccas-sensordata"
+          image-names: "maccas-web maccas-dashboard maccas-migration maccas-graphql maccas-batch maccas-event maccas-sensordata maccas-recommendations maccas-clustering"
           image-tags: "!latest"
           keep-n-most-recent: 10
           cut-off: 3d

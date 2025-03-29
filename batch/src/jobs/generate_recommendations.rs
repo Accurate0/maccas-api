@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use super::{error::JobError, Job, JobContext, JobType};
 use base::{http::get_http_client, jwt::generate_internal_jwt};
-use recommendations::GenerateEmbeddings;
+use recommendations::{GenerateClusters, GenerateEmbeddings};
 use reqwest::StatusCode;
 use tokio_util::sync::CancellationToken;
 
@@ -34,31 +34,33 @@ impl Job for GenerateRecommendationsJob {
             "Maccas Recommendations",
         )?;
 
-        let request_url = format!(
-            "{}/{}",
-            self.recommendations_api_base,
-            GenerateEmbeddings::path()
-        );
+        let paths = vec![GenerateEmbeddings::path(), GenerateClusters::path()];
 
-        let request = http_client
-            .post(&request_url)
-            .bearer_auth(token)
-            .timeout(Duration::from_secs(10800));
+        for path in paths {
+            let request_url = format!("{}/{}", self.recommendations_api_base, path);
+            let request = http_client
+                .post(&request_url)
+                .bearer_auth(&token)
+                .timeout(Duration::from_secs(10800));
 
-        let response = request.send().await;
+            let response = request.send().await;
 
-        match response {
-            Ok(response) => match response.status() {
-                StatusCode::NO_CONTENT => {
-                    tracing::info!("started generating embeddings task");
-                }
-                status => {
-                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                }
-            },
-            Err(e) => tracing::warn!("event request failed with {}", e),
+            match response {
+                Ok(response) => match response.status() {
+                    StatusCode::NO_CONTENT => {
+                        tracing::info!("called success for {path}");
+                    }
+                    status => {
+                        tracing::warn!(
+                            "recommendations failed with {} - {}",
+                            status,
+                            response.text().await?
+                        );
+                    }
+                },
+                Err(e) => tracing::warn!("recommendations request failed with {}", e),
+            }
         }
-
         Ok(())
     }
 }
