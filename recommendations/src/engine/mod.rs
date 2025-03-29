@@ -6,7 +6,7 @@ use openai::types::OpenAIEmbeddingsRequest;
 use reqwest::{Method, StatusCode};
 use sea_orm::prelude::PgVector;
 use sea_orm::sea_query::{OnConflict, Query};
-use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter, QuerySelect};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
 use types::{
@@ -173,6 +173,7 @@ impl RecommendationEngine {
 
     async fn refresh_all_embeddings_internal(&self) -> Result<(), RecommendationError> {
         let offer_details = offer_details::Entity::find()
+            .distinct_on([offer_details::Column::ShortName])
             .filter(
                 Condition::any().add(
                     offer_details::Column::Name.not_in_subquery(
