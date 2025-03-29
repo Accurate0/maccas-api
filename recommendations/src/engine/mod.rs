@@ -51,6 +51,7 @@ impl RecommendationEngine {
         }
     }
 
+    #[instrument(skip(self))]
     pub async fn is_healthy(&self) -> Result<bool, RecommendationError> {
         let is_db_ok = self.db.ping().await.ok().is_some();
 

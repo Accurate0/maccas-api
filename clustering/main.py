@@ -28,10 +28,11 @@ async def clusters(body: Embeddings):
     cluster_group = {}
 
     for (cluster_no, embeddings, name) in zip(hdb.labels_, embeddings, names):
-        if cluster_no not in cluster_group:
-            cluster_group[str(cluster_no)] = []
+        cluster_name = str(cluster_no)
+        if cluster_name not in cluster_group:
+            cluster_group[cluster_name] = []
 
-        cluster_group[str(cluster_no)].append(name)
+        cluster_group[cluster_name].append(name)
 
     return cluster_group
 
