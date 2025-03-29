@@ -6,8 +6,6 @@ use thiserror::Error;
 pub enum RecommendationError {
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
-    #[error("An shape error has occurred: `{0}`")]
-    ShapeError(#[from] ndarray::ShapeError),
     #[error("An join error has occurred: `{0}`")]
     JoinError(#[from] tokio::task::JoinError),
     #[error("A reqwest error occurred: `{0}`")]

@@ -1,9 +1,10 @@
 use crate::settings::Settings;
-use entity::{offer_details, offer_embeddings};
+use entity::{offer_details, offer_embeddings, offer_name_cluster_association};
 use error::RecommendationError;
 use itertools::Itertools;
 use openai::types::OpenAIEmbeddingsRequest;
 use reqwest::{Method, StatusCode};
+use sea_orm::ActiveValue::Set;
 use sea_orm::prelude::PgVector;
 use sea_orm::sea_query::{OnConflict, Query};
 use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter, QuerySelect};
@@ -108,7 +109,27 @@ impl RecommendationEngine {
             .json::<ClusteringResponse>()
             .await?;
 
-        tracing::info!("{response:?}");
+        let mut models = Vec::new();
+        for (cluster_id, names) in &response.0 {
+            for name in names {
+                let model = offer_name_cluster_association::ActiveModel {
+                    name: Set(name.to_owned()),
+                    cluster_id: Set(*cluster_id),
+                };
+
+                models.push(model);
+            }
+        }
+
+        tracing::info!("inserting {} associations", models.len());
+        offer_name_cluster_association::Entity::insert_many(models)
+            .on_conflict(
+                OnConflict::column(offer_name_cluster_association::Column::Name)
+                    .update_column(offer_name_cluster_association::Column::ClusterId)
+                    .to_owned(),
+            )
+            .exec_without_returning(self.db())
+            .await?;
 
         Ok(())
     }
