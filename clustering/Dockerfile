@@ -4,6 +4,8 @@ FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
 
+RUN apt-get update -y && apt-get install -y gcc
+
 WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
@@ -16,11 +18,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM python:${PYTHON_VERSION}-slim-bookworm
 
-# Copy the application from the builder
 COPY --from=builder --chown=app:app /app /app
 
-# Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Run the FastAPI application by default
 CMD ["fastapi", "run", "--host", "0.0.0.0", "--port", "8004", "/app/main.py"]

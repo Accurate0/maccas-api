@@ -11,5 +11,11 @@ pub struct ClusteringRequest {
     pub embeddings: Vec<ClusteringRequestEmbedding>,
 }
 
+impl ClusteringRequest {
+    pub fn path() -> &'static str {
+        "clusters"
+    }
+}
+
 #[derive(serde::Deserialize, Debug)]
 pub struct ClusteringResponse(pub HashMap<i64, Vec<String>>);

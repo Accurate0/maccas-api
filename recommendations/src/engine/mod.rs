@@ -69,7 +69,11 @@ impl RecommendationEngine {
             });
 
         let http_client = base::http::get_http_client()?;
-        let url = format!("{}/clusters", self.settings.clustering_api_base);
+        let url = format!(
+            "{}/{}",
+            self.settings.clustering_api_base,
+            ClusteringRequest::path()
+        );
 
         let response = http_client
             .request(Method::POST, url)
