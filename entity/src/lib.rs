@@ -13,7 +13,6 @@ pub mod offer_details;
 pub mod offer_embeddings;
 pub mod offer_history;
 pub mod offer_name_cluster_association;
-pub mod offer_similarity;
 pub mod offers;
 pub mod points;
 pub mod recommendations;

@@ -11,7 +11,6 @@ pub use super::offer_details::Entity as OfferDetails;
 pub use super::offer_embeddings::Entity as OfferEmbeddings;
 pub use super::offer_history::Entity as OfferHistory;
 pub use super::offer_name_cluster_association::Entity as OfferNameClusterAssociation;
-pub use super::offer_similarity::Entity as OfferSimilarity;
 pub use super::offers::Entity as Offers;
 pub use super::points::Entity as Points;
 pub use super::recommendations::Entity as Recommendations;
