@@ -22,8 +22,13 @@ async def clusters(body: Embeddings):
 
     embeddings = np.array(embeddings)
 
-    hdb = hdbscan.HDBSCAN(min_samples=3, min_cluster_size=3,
-                          cluster_selection_epsilon=0.5).fit(embeddings)
+    hdb = hdbscan.HDBSCAN(
+        min_samples=None,
+        alpha=0.93,
+        min_cluster_size=2,
+        cluster_selection_epsilon=0.56,
+        cluster_selection_method='leaf',
+        prediction_data=True).fit(embeddings)
 
     cluster_group = {}
 
