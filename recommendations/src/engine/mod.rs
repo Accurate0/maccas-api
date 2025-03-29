@@ -3,13 +3,15 @@ use entity::{offer_details, offer_embeddings};
 use error::RecommendationError;
 use itertools::Itertools;
 use openai::types::OpenAIEmbeddingsRequest;
-use reqwest::Method;
+use reqwest::{Method, StatusCode};
 use sea_orm::prelude::PgVector;
 use sea_orm::sea_query::{OnConflict, Query};
 use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
-use types::{ClusteringRequest, ClusteringRequestEmbedding, ClusteringResponse};
+use types::{
+    ClusteringHealthRequest, ClusteringRequest, ClusteringRequestEmbedding, ClusteringResponse,
+};
 
 mod error;
 mod types;
@@ -49,8 +51,27 @@ impl RecommendationEngine {
         }
     }
 
-    pub async fn is_healthy(&self) -> bool {
-        self.db.ping().await.ok().is_some()
+    pub async fn is_healthy(&self) -> Result<bool, RecommendationError> {
+        let is_db_ok = self.db.ping().await.ok().is_some();
+
+        let http_client = base::http::get_http_client()?;
+        let url = format!(
+            "{}/{}",
+            self.settings.clustering_api_base,
+            ClusteringHealthRequest::path()
+        );
+
+        let is_clustering_ok = http_client
+            .request(Method::GET, url)
+            .send()
+            .await?
+            .error_for_status()?
+            .status()
+            == StatusCode::NO_CONTENT;
+
+        tracing::info!("db: {is_db_ok}, clustering: {is_clustering_ok}");
+
+        Ok(is_db_ok && is_clustering_ok)
     }
 
     pub fn db(&self) -> &DatabaseConnection {

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-web:
+  build-other:
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +23,7 @@ jobs:
         BINARY_NAME=${{ matrix.apps }}
       use-rust-caching: false
 
-  build-backend:
+  build-rust:
     strategy:
       fail-fast: false
       matrix:
@@ -42,8 +42,8 @@ jobs:
 
   deploy:
     needs:
-      - build-web
-      - build-backend
+      - build-other
+      - build-rust
     uses: Accurate0/workflows/.github/workflows/deploy-app-k8s.yaml@main
     with:
       application-name: maccas-api

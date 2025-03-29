@@ -19,3 +19,10 @@ impl ClusteringRequest {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct ClusteringResponse(pub HashMap<i64, Vec<String>>);
+
+pub struct ClusteringHealthRequest;
+impl ClusteringHealthRequest {
+    pub fn path() -> &'static str {
+        "health"
+    }
+}
