@@ -1,7 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { createSession, SessionId } from '$lib/server/session.js';
 import { validateAdminUser } from '$lib/server/validateAdminUser';
-import { Role } from '@prisma/client';
 
 export async function POST(event) {
 	const {
@@ -20,10 +19,11 @@ export async function POST(event) {
 		return new Response(null, { status: 400 });
 	}
 
-	const { sessionId, expires } = await createSession(userToImpersonate.id, [
-		Role.ADMIN,
-		...userToImpersonate?.role
-	]);
+	const { sessionId, expires } = await createSession(
+		userToImpersonate.id,
+		userToImpersonate.role,
+		locals.session.userId
+	);
 
 	cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 

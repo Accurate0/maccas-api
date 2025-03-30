@@ -49,9 +49,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 					});
 				}
 
+				// evaluate the impersonator over the real user
 				evaluationContext = {
-					targetingKey: session.userId,
-					user_id: session.userId
+					targetingKey: session.impersonatorUserId ?? session.userId,
+					user_id: session.impersonatorUserId ?? session.userId
 				};
 				event.locals.session = session;
 				setSession(event, { ...session });

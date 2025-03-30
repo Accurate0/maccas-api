@@ -6,7 +6,11 @@ import { env } from '$env/dynamic/private';
 
 export const SessionId = 'session-id';
 
-export const createSession = async (userId: string, role: Role[]) => {
+export const createSession = async (
+	userId: string,
+	role: Role[],
+	impersonatingUserId: string | undefined = undefined
+) => {
 	const sessionId = randomBytes(64).toString('base64');
 	const sevenDaysInMs = 604800000;
 	const expires = new Date(Date.now() + sevenDaysInMs);
@@ -22,7 +26,8 @@ export const createSession = async (userId: string, role: Role[]) => {
 			userId,
 			id: sessionId,
 			expires,
-			accessToken
+			accessToken,
+			impersonatorUserId: impersonatingUserId
 		}
 	});
 

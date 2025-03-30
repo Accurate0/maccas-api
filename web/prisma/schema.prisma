@@ -22,7 +22,8 @@ model User {
     configId String? @unique
     config   Config? @relation(fields: [configId], references: [id], onDelete: Cascade)
 
-    Session Session[]
+    Session              Session[] @relation(name: "real_user")
+    impersonatedSessions Session[] @relation(name: "impersonating_user")
 
     @@map("users")
 }
@@ -68,7 +69,10 @@ model Session {
     createdAt   DateTime @default(now())
     accessToken String
     userId      String
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user        User     @relation(name: "real_user", fields: [userId], references: [id], onDelete: Cascade)
+
+    impersonatorUserId String?
+    impersonatorUser   User?   @relation(name: "impersonating_user", fields: [impersonatorUserId], references: [id])
 
     @@map("sessions")
 }
