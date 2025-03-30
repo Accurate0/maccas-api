@@ -7,14 +7,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { writable, type Writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
-	import {
-		isFuture,
-		isPast,
-		parseJSON,
-		formatDistanceToNow,
-		differenceInDays,
-		differenceInHours
-	} from 'date-fns';
+	import { isFuture, isPast, parseJSON, formatDistanceToNow, differenceInHours } from 'date-fns';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
 	import { ChevronDown, ChevronUp } from 'radix-icons-svelte';
@@ -120,6 +113,7 @@
 			</Card.Root>
 		{/each}
 	{:then [offersList, categories, recommendationIds]}
+		<div>{JSON.stringify(recommendationIds)}</div>
 		<div class="flex flex-row gap-2">
 			<Select.Root
 				selected={defaultSelected}
@@ -157,25 +151,18 @@
 			{/if}
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
-			if (data.isRecommendationsEnabled) {
-				if (!a.price) {
-					return 0;
-				}
+			if (!a.price) {
+				return 0;
+			}
 
-				if (!b.price) {
-					return 0;
-				}
+			if (!b.price) {
+				return 0;
+			}
 
-				if (sortByAsc) {
-					return a.price - b.price;
-				} else {
-					return b.price - a.price;
-				}
+			if (sortByAsc) {
+				return a.price - b.price;
 			} else {
-				const isARecommended = isOfferRecommended(a.offerPropositionId, recommendationIds) ? 1 : 0;
-				const isBRecommended = isOfferRecommended(b.offerPropositionId, recommendationIds) ? 1 : 0;
-
-				return isARecommended - isBRecommended;
+				return b.price - a.price;
 			}
 		}) as { shortName, count, imageUrl, offerPropositionId, validFrom, validTo, categories } (shortName)}
 			{@const isValid = isOfferValid({ validFrom, validTo })}

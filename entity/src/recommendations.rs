@@ -13,6 +13,7 @@ pub struct Model {
     pub offer_proposition_ids: Vec<i64>,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    pub names: Vec<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -88,7 +88,7 @@ impl RecommendationEngine {
         &self.db
     }
 
-    #[instrument(skip(self))]
+    #[instrument(skip(self, txn))]
     pub async fn generate_recommendations_for_user(
         &self,
         user_id: Uuid,
@@ -197,6 +197,7 @@ impl RecommendationEngine {
             .map(|m| m.cluster_id);
 
         let mut proposition_id_ordered = Vec::new();
+        let mut all_offer_names = Vec::new();
         // best to worst
         for cluster_id in top_5_cluster_scores {
             if let Some(offer_names) = cluster_id_to_names.get(&cluster_id) {
@@ -214,10 +215,28 @@ impl RecommendationEngine {
                     .collect_vec();
 
                 proposition_id_ordered.append(&mut proposition_ids);
+                all_offer_names.append(&mut offer_names.clone());
             } else {
                 tracing::warn!("cluster id missing: {cluster_id}");
             }
         }
+
+        recommendations_t::Entity::insert(recommendations_t::ActiveModel {
+            user_id: Set(user_id),
+            offer_proposition_ids: Set(proposition_id_ordered),
+            names: Set(all_offer_names),
+            ..Default::default()
+        })
+        .on_conflict(
+            OnConflict::column(recommendations_t::Column::UserId)
+                .update_columns([
+                    recommendations_t::Column::OfferPropositionIds,
+                    recommendations_t::Column::Names,
+                ])
+                .to_owned(),
+        )
+        .exec_without_returning(txn)
+        .await?;
 
         Ok(())
     }

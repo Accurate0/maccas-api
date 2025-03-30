@@ -5,19 +5,14 @@ use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offer_details, offers, recommendations};
 use sea_orm::{
-    prelude::Uuid, ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult,
-    JoinType, Order, QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
+    prelude::Uuid, ColumnTrait, Condition, DatabaseConnection, EntityTrait, JoinType, Order,
+    QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
 use std::{collections::HashMap, str::FromStr};
+use types::OfferCount;
 
 pub mod dataloader;
 mod types;
-
-#[derive(FromQueryResult, Debug)]
-struct OfferCount {
-    short_name: String,
-    count: i64,
-}
 
 #[derive(Default)]
 pub struct OffersQuery;

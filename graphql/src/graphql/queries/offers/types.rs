@@ -1,4 +1,6 @@
 use super::dataloader::OfferDetailsLoader;
+use crate::name_of;
+use anyhow::Context;
 use async_graphql::dataloader::*;
 use async_graphql::InputObject;
 use async_graphql::Object;
@@ -8,6 +10,15 @@ use base::constants::IMAGE_EXT;
 use entity::offer_details;
 use entity::offers;
 use sea_orm::prelude::{DateTime, Uuid};
+use sea_orm::ColumnTrait;
+use sea_orm::Condition;
+use sea_orm::DatabaseConnection;
+use sea_orm::EntityTrait;
+use sea_orm::FromQueryResult;
+use sea_orm::JoinType;
+use sea_orm::QueryFilter;
+use sea_orm::QuerySelect;
+use sea_orm::RelationTrait;
 
 #[derive(InputObject)]
 pub struct OfferByIdInput {
@@ -18,6 +29,12 @@ pub struct OfferByIdInput {
 #[derive(SimpleObject)]
 pub struct OfferByIdResponse {
     pub code: String,
+}
+
+#[derive(FromQueryResult, Debug)]
+pub struct OfferCount {
+    pub short_name: String,
+    pub count: i64,
 }
 
 pub struct Offer(pub offers::Model, pub Option<i64>);
@@ -76,9 +93,46 @@ impl Offer {
         &self.0.valid_to
     }
 
-    pub async fn count(&self) -> i64 {
-        // this is safe because we look ahead to see if this field exists
-        self.1.unwrap()
+    pub async fn count(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<i64> {
+        if self.1.is_none() {
+            let db = ctx.data::<DatabaseConnection>()?;
+
+            let all_locked_accounts = entity::account_lock::Entity::find()
+                .all(db)
+                .await?
+                .into_iter()
+                .map(|a| a.id);
+
+            let mut conditions = Condition::all();
+            for locked_account in all_locked_accounts {
+                conditions = conditions.add(offers::Column::AccountId.ne(locked_account));
+            }
+
+            let now = chrono::offset::Utc::now().naive_utc();
+
+            let conditions = conditions
+                .add(offers::Column::ValidTo.gt(now))
+                .add(offers::Column::ValidFrom.lt(now))
+                .add(offer_details::Column::ShortName.eq(self.short_name(ctx).await?));
+
+            let result = offers::Entity::find()
+                .select_only()
+                .join(JoinType::InnerJoin, offers::Relation::OfferDetails.def())
+                .column(offer_details::Column::ShortName)
+                .column_as(
+                    offer_details::Column::ShortName.count(),
+                    name_of!(count in OfferCount),
+                )
+                .filter(conditions.clone())
+                .into_model::<OfferCount>()
+                .one(db)
+                .await?
+                .context("must have found count")?;
+
+            Ok(result.count)
+        } else {
+            Ok(self.1.unwrap())
+        }
     }
 
     pub async fn short_name(
