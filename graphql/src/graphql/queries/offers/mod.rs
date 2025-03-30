@@ -126,8 +126,26 @@ impl OffersQuery {
             .map(|m| m.offer_proposition_ids)
             .unwrap_or_default();
 
+        let all_locked_accounts = entity::account_lock::Entity::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|a| a.id);
+
+        let mut conditions = Condition::all();
+        for locked_account in all_locked_accounts {
+            conditions = conditions.add(offers::Column::AccountId.ne(locked_account));
+        }
+
+        let now = chrono::offset::Utc::now().naive_utc();
+
+        let conditions = conditions
+            .add(offers::Column::ValidTo.gt(now))
+            .add(offers::Column::ValidFrom.lt(now))
+            .add(offers::Column::OfferPropositionId.is_in(recommendations));
+
         let offers = offers::Entity::find()
-            .filter(offers::Column::OfferPropositionId.is_in(recommendations))
+            .filter(conditions)
             .all(db)
             .await?
             .into_iter()

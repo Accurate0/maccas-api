@@ -123,6 +123,7 @@ impl Offer {
                     offer_details::Column::ShortName.count(),
                     name_of!(count in OfferCount),
                 )
+                .group_by(offer_details::Column::ShortName)
                 .filter(conditions.clone())
                 .into_model::<OfferCount>()
                 .one(db)

@@ -196,7 +196,7 @@ impl RecommendationEngine {
             .into_iter()
             .map(|m| m.cluster_id);
 
-        let mut proposition_id_ordered = Vec::new();
+        let mut proposition_id_ordered = HashSet::new();
         let mut all_offer_names = HashSet::new();
         // best to worst
         for cluster_id in top_5_cluster_scores {
@@ -206,7 +206,7 @@ impl RecommendationEngine {
                     filter_cond = filter_cond.add(offer_details::Column::ShortName.eq(offer_name));
                 }
 
-                let mut proposition_ids = offer_details::Entity::find()
+                let proposition_ids = offer_details::Entity::find()
                     .filter(filter_cond)
                     .all(txn)
                     .await?
@@ -214,7 +214,7 @@ impl RecommendationEngine {
                     .map(|m| m.proposition_id)
                     .collect_vec();
 
-                proposition_id_ordered.append(&mut proposition_ids);
+                proposition_id_ordered.extend(proposition_ids);
                 all_offer_names.extend(offer_names.clone());
             } else {
                 tracing::warn!("cluster id missing: {cluster_id}");
@@ -223,7 +223,7 @@ impl RecommendationEngine {
 
         recommendations_t::Entity::insert(recommendations_t::ActiveModel {
             user_id: Set(user_id),
-            offer_proposition_ids: Set(proposition_id_ordered),
+            offer_proposition_ids: Set(proposition_id_ordered.into_iter().collect()),
             names: Set(all_offer_names.into_iter().collect()),
             ..Default::default()
         })
