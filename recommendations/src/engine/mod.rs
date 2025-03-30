@@ -189,7 +189,7 @@ impl RecommendationEngine {
         let top_x_cluster_scores = offer_cluster_score::Entity::find()
             .order_by_desc(offer_cluster_score::Column::Score)
             .filter(offer_cluster_score::Column::UserId.eq(user_id))
-            .limit(5)
+            .limit(3)
             .all(txn)
             .await?
             .into_iter()
