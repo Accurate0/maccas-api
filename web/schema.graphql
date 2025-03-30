@@ -100,12 +100,8 @@ type QueryRoot {
   offers: [Offer!]!
   points(filter: FilterInput): [Points!]!
   pointsByAccountId(accountId: UUID!, storeId: String): Points!
-  recommendations: [RecommendationOffer!]!
+  recommendations: [Offer!]!
   upcomingOffers: [Offer!]!
-}
-
-type RecommendationOffer {
-  offerPropositionId: Int!
 }
 
 input RemoveOfferInput {

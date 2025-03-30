@@ -14,7 +14,7 @@ use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, DatabaseTransaction, EntityTrait, QueryFilter,
     QueryOrder, QuerySelect,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Mul};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
@@ -197,7 +197,7 @@ impl RecommendationEngine {
             .map(|m| m.cluster_id);
 
         let mut proposition_id_ordered = Vec::new();
-        let mut all_offer_names = Vec::new();
+        let mut all_offer_names = HashSet::new();
         // best to worst
         for cluster_id in top_5_cluster_scores {
             if let Some(offer_names) = cluster_id_to_names.get(&cluster_id) {
@@ -215,7 +215,7 @@ impl RecommendationEngine {
                     .collect_vec();
 
                 proposition_id_ordered.append(&mut proposition_ids);
-                all_offer_names.append(&mut offer_names.clone());
+                all_offer_names.extend(offer_names.clone());
             } else {
                 tracing::warn!("cluster id missing: {cluster_id}");
             }
@@ -224,7 +224,7 @@ impl RecommendationEngine {
         recommendations_t::Entity::insert(recommendations_t::ActiveModel {
             user_id: Set(user_id),
             offer_proposition_ids: Set(proposition_id_ordered),
-            names: Set(all_offer_names),
+            names: Set(all_offer_names.into_iter().collect()),
             ..Default::default()
         })
         .on_conflict(
