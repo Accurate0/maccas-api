@@ -150,8 +150,6 @@ impl RecommendationEngine {
                     score += score_for_deal;
                 }
 
-                tracing::info!("score for {name}: {score}");
-
                 cluster_score_map
                     .entry(*cluster_id)
                     .and_modify(|s| {
@@ -190,7 +188,8 @@ impl RecommendationEngine {
 
         let top_x_cluster_scores = offer_cluster_score::Entity::find()
             .order_by_desc(offer_cluster_score::Column::Score)
-            .limit(4)
+            .filter(offer_cluster_score::Column::UserId.eq(user_id))
+            .limit(5)
             .all(txn)
             .await?
             .into_iter()
@@ -200,7 +199,9 @@ impl RecommendationEngine {
         let mut all_offer_names = HashSet::new();
         // best to worst
         for cluster_id in top_x_cluster_scores {
+            tracing::info!("processing cluster_id: {cluster_id}");
             if let Some(offer_names) = cluster_id_to_names.get(&cluster_id) {
+                tracing::info!("with {} offer names", offer_names.len());
                 let mut filter_cond = Condition::any();
                 for offer_name in offer_names {
                     filter_cond = filter_cond.add(offer_details::Column::ShortName.eq(offer_name));
@@ -214,6 +215,7 @@ impl RecommendationEngine {
                     .map(|m| m.proposition_id)
                     .collect_vec();
 
+                tracing::info!("and {} proposition ids", proposition_ids.len());
                 proposition_id_ordered.extend(proposition_ids);
                 all_offer_names.extend(offer_names.clone());
             } else {
