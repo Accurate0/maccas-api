@@ -145,11 +145,15 @@ impl OffersQuery {
             .add(offers::Column::OfferPropositionId.is_in(recommendations));
 
         let offers = offers::Entity::find()
+            .distinct_on([offer_details::Column::ShortName])
+            .find_also_related(offer_details::Entity)
+            .order_by(offer_details::Column::ShortName, Order::Asc)
+            .order_by(offers::Column::ValidTo, Order::Asc)
             .filter(conditions)
             .all(db)
             .await?
             .into_iter()
-            .map(|o| Offer(o, None))
+            .map(|(model, _)| Offer(model, None))
             .collect::<Vec<_>>();
 
         Ok(offers)
