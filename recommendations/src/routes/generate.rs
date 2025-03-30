@@ -1,8 +1,12 @@
 use crate::types::{ApiState, AppError};
-use axum::extract::{Path, State};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use entity::offer_details;
+use recommendations::GenerateClusterScores;
 use reqwest::StatusCode;
-use sea_orm::EntityTrait;
+use sea_orm::{EntityTrait, TransactionTrait};
 
 pub async fn generate(State(state): State<ApiState>) -> Result<StatusCode, AppError> {
     state.engine.refresh_all_embeddings().await?;
@@ -30,5 +34,21 @@ pub async fn generate_for(
 }
 pub async fn generate_clusters(State(state): State<ApiState>) -> Result<StatusCode, AppError> {
     state.engine.generate_clusters().await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn generate_cluster_scores(
+    State(state): State<ApiState>,
+    Json(body): Json<GenerateClusterScores>,
+) -> Result<StatusCode, AppError> {
+    let txn = state.engine.db().begin().await?;
+    for user_id in body.user_ids {
+        state
+            .engine
+            .generate_recommendations_for_user(user_id, &txn)
+            .await?;
+    }
+    txn.commit().await?;
+
     Ok(StatusCode::NO_CONTENT)
 }

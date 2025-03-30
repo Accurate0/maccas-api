@@ -1,13 +1,21 @@
 use crate::settings::Settings;
-use entity::{offer_details, offer_embeddings, offer_name_cluster_association};
+use entity::{
+    offer_audit, offer_cluster_score, offer_details, offer_embeddings,
+    offer_name_cluster_association, recommendations as recommendations_t,
+};
 use error::RecommendationError;
 use itertools::Itertools;
 use openai::types::OpenAIEmbeddingsRequest;
 use reqwest::{Method, StatusCode};
 use sea_orm::ActiveValue::Set;
-use sea_orm::prelude::PgVector;
-use sea_orm::sea_query::{OnConflict, Query};
-use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter, QuerySelect};
+use sea_orm::prelude::{PgVector, Uuid};
+use sea_orm::sea_query::{LockBehavior, LockType, OnConflict, Query};
+use sea_orm::{
+    ColumnTrait, Condition, DatabaseConnection, DatabaseTransaction, EntityTrait, QueryFilter,
+    QueryOrder, QuerySelect,
+};
+use std::collections::HashMap;
+use std::ops::{Add, Mul};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
 use types::{
@@ -78,6 +86,140 @@ impl RecommendationEngine {
 
     pub fn db(&self) -> &DatabaseConnection {
         &self.db
+    }
+
+    #[instrument(skip(self))]
+    pub async fn generate_recommendations_for_user(
+        &self,
+        user_id: Uuid,
+        txn: &DatabaseTransaction,
+    ) -> Result<(), RecommendationError> {
+        // lock this users cluster scores
+        offer_cluster_score::Entity::find()
+            .filter(offer_cluster_score::Column::UserId.eq(user_id))
+            .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
+            .all(txn)
+            .await?;
+
+        // lock actual recommendation too
+        recommendations_t::Entity::find()
+            .filter(recommendations_t::Column::UserId.eq(user_id))
+            .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
+            .one(txn)
+            .await?;
+
+        let name_to_cluster_id = offer_name_cluster_association::Entity::find()
+            .all(txn)
+            .await?
+            .into_iter()
+            .map(|m| (m.name, m.cluster_id))
+            .collect::<HashMap<_, _>>();
+
+        let mut offers_used_mapping = HashMap::<_, Vec<_>>::new();
+        let offers_used = offer_audit::Entity::find()
+            .filter(offer_audit::Column::UserId.eq(user_id))
+            .find_also_related(offer_details::Entity)
+            .all(txn)
+            .await?;
+
+        for (audit, details) in offers_used {
+            let details = details.expect("must have details because foreign key");
+            offers_used_mapping
+                .entry(details.short_name)
+                .and_modify(|e| e.push(audit.clone()))
+                .or_insert(vec![audit.clone()]);
+        }
+
+        // 28 days
+        const HALF_LIFE: f64 = 0.975;
+        const BASE_SCORE: f64 = 100f64;
+        // tl;dr, for each offer name, generate a score based on days since last usage, each day
+        // back is multiplied by HALF_LIFE
+        let now = chrono::offset::Utc::now().naive_utc();
+
+        let mut cluster_score_map: HashMap<i64, f64> = HashMap::new();
+
+        for (name, audits) in offers_used_mapping {
+            let mut score = 0f64;
+            let cluster_id = name_to_cluster_id.get(&name);
+            if let Some(cluster_id) = cluster_id {
+                for audit in audits {
+                    let days_since = (now - audit.created_at).num_days();
+                    let score_for_deal =
+                        BASE_SCORE.mul(HALF_LIFE.powi(days_since.try_into().unwrap()));
+                    score += score_for_deal;
+                }
+
+                tracing::info!("score for {name}: {score}");
+
+                cluster_score_map
+                    .entry(*cluster_id)
+                    .and_modify(|s| {
+                        *s = s.add(score);
+                    })
+                    .or_insert(score);
+            }
+        }
+
+        let offer_cluster_score_models =
+            cluster_score_map
+                .into_iter()
+                .map(|(k, v)| offer_cluster_score::ActiveModel {
+                    user_id: Set(user_id),
+                    cluster_id: Set(k),
+                    score: Set(v),
+                    ..Default::default()
+                });
+
+        offer_cluster_score::Entity::delete_many()
+            .filter(offer_cluster_score::Column::UserId.eq(user_id))
+            .exec(txn)
+            .await?;
+
+        offer_cluster_score::Entity::insert_many(offer_cluster_score_models)
+            .exec_without_returning(txn)
+            .await?;
+
+        let mut cluster_id_to_names = HashMap::<i64, Vec<String>>::new();
+        for (k, v) in name_to_cluster_id {
+            cluster_id_to_names
+                .entry(v)
+                .and_modify(|e| e.push(k.to_owned()))
+                .or_insert(vec![k]);
+        }
+
+        let top_5_cluster_scores = offer_cluster_score::Entity::find()
+            .order_by_desc(offer_cluster_score::Column::Score)
+            .limit(5)
+            .all(txn)
+            .await?
+            .into_iter()
+            .map(|m| m.cluster_id);
+
+        let mut proposition_id_ordered = Vec::new();
+        // best to worst
+        for cluster_id in top_5_cluster_scores {
+            if let Some(offer_names) = cluster_id_to_names.get(&cluster_id) {
+                let mut filter_cond = Condition::any();
+                for offer_name in offer_names {
+                    filter_cond = filter_cond.add(offer_details::Column::ShortName.eq(offer_name));
+                }
+
+                let mut proposition_ids = offer_details::Entity::find()
+                    .filter(filter_cond)
+                    .all(txn)
+                    .await?
+                    .into_iter()
+                    .map(|m| m.proposition_id)
+                    .collect_vec();
+
+                proposition_id_ordered.append(&mut proposition_ids);
+            } else {
+                tracing::warn!("cluster id missing: {cluster_id}");
+            }
+        }
+
+        Ok(())
     }
 
     #[instrument(skip(self))]

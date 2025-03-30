@@ -7,6 +7,7 @@ pub use super::events::Entity as Events;
 pub use super::job_history::Entity as JobHistory;
 pub use super::jobs::Entity as Jobs;
 pub use super::offer_audit::Entity as OfferAudit;
+pub use super::offer_cluster_score::Entity as OfferClusterScore;
 pub use super::offer_details::Entity as OfferDetails;
 pub use super::offer_embeddings::Entity as OfferEmbeddings;
 pub use super::offer_history::Entity as OfferHistory;

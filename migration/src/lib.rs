@@ -53,6 +53,7 @@ mod m20250325_105021_add_offer_embeddings_table;
 mod m20250328_165001_embedding_by_name;
 mod m20250329_062350_offer_name_cluster_association;
 mod m20250329_081154_drop_offer_similarity;
+mod m20250330_105607_add_cluster_score_table_for_user;
 
 pub struct Migrator;
 
@@ -113,6 +114,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250328_165001_embedding_by_name::Migration),
             Box::new(m20250329_062350_offer_name_cluster_association::Migration),
             Box::new(m20250329_081154_drop_offer_similarity::Migration),
+            Box::new(m20250330_105607_add_cluster_score_table_for_user::Migration),
         ]
     }
 }

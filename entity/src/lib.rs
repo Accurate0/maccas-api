@@ -9,6 +9,7 @@ pub mod events;
 pub mod job_history;
 pub mod jobs;
 pub mod offer_audit;
+pub mod offer_cluster_score;
 pub mod offer_details;
 pub mod offer_embeddings;
 pub mod offer_history;

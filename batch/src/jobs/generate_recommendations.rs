@@ -2,8 +2,12 @@ use std::time::Duration;
 
 use super::{error::JobError, Job, JobContext, JobType};
 use base::{http::get_http_client, jwt::generate_internal_jwt};
-use recommendations::{GenerateClusters, GenerateEmbeddings};
+use entity::offer_audit;
+use itertools::Itertools;
+use recommendations::{GenerateClusterScores, GenerateClusters, GenerateEmbeddings};
 use reqwest::StatusCode;
+use reqwest_middleware::RequestBuilder;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
@@ -24,7 +28,7 @@ impl Job for GenerateRecommendationsJob {
 
     async fn execute(
         &self,
-        _context: &JobContext,
+        context: &JobContext,
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
         let http_client = get_http_client()?;
@@ -34,15 +38,7 @@ impl Job for GenerateRecommendationsJob {
             "Maccas Recommendations",
         )?;
 
-        let paths = vec![GenerateEmbeddings::path(), GenerateClusters::path()];
-
-        for path in paths {
-            let request_url = format!("{}/{}", self.recommendations_api_base, path);
-            let request = http_client
-                .post(&request_url)
-                .bearer_auth(&token)
-                .timeout(Duration::from_secs(10800));
-
+        async fn handle_response(path: &str, request: RequestBuilder) -> Result<(), JobError> {
             let response = request.send().await;
 
             match response {
@@ -59,8 +55,45 @@ impl Job for GenerateRecommendationsJob {
                     }
                 },
                 Err(e) => tracing::warn!("recommendations request failed with {}", e),
-            }
+            };
+
+            Ok(())
         }
+
+        // TODO: disable recommendations when computing
+        let paths = vec![GenerateEmbeddings::path(), GenerateClusters::path()];
+
+        for path in paths {
+            let request_url = format!("{}/{}", self.recommendations_api_base, path);
+            let request = http_client
+                .post(&request_url)
+                .bearer_auth(&token)
+                .timeout(Duration::from_secs(10800));
+            handle_response(path, request).await?;
+        }
+
+        let user_ids = offer_audit::Entity::find()
+            .filter(offer_audit::Column::UserId.is_not_null())
+            .distinct_on([offer_audit::Column::UserId])
+            .all(context.database)
+            .await?
+            .into_iter()
+            .map(|m| m.user_id.unwrap())
+            .collect_vec();
+
+        let request_url = format!(
+            "{}/{}",
+            self.recommendations_api_base,
+            GenerateClusterScores::path()
+        );
+
+        let request = http_client
+            .post(&request_url)
+            .bearer_auth(&token)
+            .json(&GenerateClusterScores { user_ids });
+
+        handle_response(GenerateClusterScores::path(), request).await?;
+
         Ok(())
     }
 }

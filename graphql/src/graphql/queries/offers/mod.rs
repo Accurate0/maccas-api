@@ -9,7 +9,6 @@ use sea_orm::{
     JoinType, Order, QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
 use std::{collections::HashMap, str::FromStr};
-use types::RecommendationOffer;
 
 pub mod dataloader;
 mod types;
@@ -117,10 +116,7 @@ impl OffersQuery {
             .collect())
     }
 
-    async fn recommendations(
-        &self,
-        ctx: &Context<'_>,
-    ) -> async_graphql::Result<Vec<RecommendationOffer>> {
+    async fn recommendations(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let claims = ctx.data_opt::<ValidatedClaims>().map(|c| c.0.clone());
         if claims.is_none() {
             return Ok(vec![]);
@@ -133,13 +129,17 @@ impl OffersQuery {
             .one(db)
             .await?
             .map(|m| m.offer_proposition_ids)
-            .map(|m| m.into_iter().map(RecommendationOffer).collect())
             .unwrap_or_default();
 
-        // TODO: need to populate similarity, when a recommendation is NOT available, look up most
-        // similar that is available, with max difference of x
+        let offers = offers::Entity::find()
+            .filter(offers::Column::OfferPropositionId.is_in(recommendations))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|o| Offer(o, None))
+            .collect::<Vec<_>>();
 
-        Ok(recommendations)
+        Ok(offers)
     }
 
     async fn offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {

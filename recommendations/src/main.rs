@@ -8,9 +8,12 @@ use axum::{
 use base::shutdown::axum_shutdown_signal;
 use engine::RecommendationEngine;
 use jwt::validate;
+use recommendations::{
+    GenerateClusterScores, GenerateClusters, GenerateEmbeddings, GenerateEmbeddingsFor,
+};
 use reqwest::Method;
 use routes::{
-    generate::{generate, generate_clusters, generate_for},
+    generate::{generate, generate_cluster_scores, generate_clusters, generate_for},
     health::health,
 };
 use sea_orm::{ConnectOptions, Database};
@@ -74,9 +77,13 @@ async fn main() -> Result<(), anyhow::Error> {
     let health = Router::new().route("/health", get(health));
 
     let app = Router::new()
-        .route("/generate", post(generate))
-        .route("/generate/clusters", post(generate_clusters))
-        .route("/generate/{id}", post(generate_for))
+        .route(&GenerateEmbeddings::template_path(), post(generate))
+        .route(&GenerateClusters::template_path(), post(generate_clusters))
+        .route(
+            &GenerateClusterScores::template_path(),
+            post(generate_cluster_scores),
+        )
+        .route(GenerateEmbeddingsFor::template_path(), post(generate_for))
         .layer(middleware::from_fn_with_state(api_state.clone(), validate))
         .layer(cors)
         .layer(trace_layer)
