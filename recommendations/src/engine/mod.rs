@@ -1,4 +1,5 @@
 use crate::settings::Settings;
+use entity::sea_orm_active_enums::Action;
 use entity::{
     offer_audit, offer_cluster_score, offer_details, offer_embeddings,
     offer_name_cluster_association, recommendations as recommendations_t,
@@ -116,8 +117,13 @@ impl RecommendationEngine {
             .collect::<HashMap<_, _>>();
 
         let mut offers_used_mapping = HashMap::<_, Vec<_>>::new();
+        // TODO: find and remove corresponding remove of these adds
+        let audit_filter_conditions = Condition::all()
+            .add(offer_audit::Column::UserId.eq(user_id))
+            .add(offer_audit::Column::Action.eq(Action::Add));
+
         let offers_used = offer_audit::Entity::find()
-            .filter(offer_audit::Column::UserId.eq(user_id))
+            .filter(audit_filter_conditions)
             .find_also_related(offer_details::Entity)
             .all(txn)
             .await?;
