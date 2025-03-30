@@ -113,7 +113,6 @@
 			</Card.Root>
 		{/each}
 	{:then [offersList, categories, recommendationIds]}
-		<div>{JSON.stringify(recommendationIds)}</div>
 		<div class="flex flex-row gap-2">
 			<Select.Root
 				selected={defaultSelected}
