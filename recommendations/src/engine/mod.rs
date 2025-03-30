@@ -188,9 +188,9 @@ impl RecommendationEngine {
                 .or_insert(vec![k]);
         }
 
-        let top_5_cluster_scores = offer_cluster_score::Entity::find()
+        let top_x_cluster_scores = offer_cluster_score::Entity::find()
             .order_by_desc(offer_cluster_score::Column::Score)
-            .limit(5)
+            .limit(3)
             .all(txn)
             .await?
             .into_iter()
@@ -199,7 +199,7 @@ impl RecommendationEngine {
         let mut proposition_id_ordered = HashSet::new();
         let mut all_offer_names = HashSet::new();
         // best to worst
-        for cluster_id in top_5_cluster_scores {
+        for cluster_id in top_x_cluster_scores {
             if let Some(offer_names) = cluster_id_to_names.get(&cluster_id) {
                 let mut filter_cond = Condition::any();
                 for offer_name in offer_names {
