@@ -23,7 +23,7 @@ impl Job for GenerateRecommendationsJob {
     }
 
     fn job_type(&self) -> JobType {
-        JobType::Manual
+        JobType::Schedule("0 0 0 * * *".parse().unwrap())
     }
 
     async fn execute(
