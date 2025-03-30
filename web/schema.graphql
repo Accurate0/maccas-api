@@ -65,6 +65,7 @@ type Offer {
   name: String!
   offerPropositionId: Int!
   price: Float
+  recommendationScore: Float!
   shortName: String!
   validFrom: NaiveDateTime!
   validTo: NaiveDateTime!

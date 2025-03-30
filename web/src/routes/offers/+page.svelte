@@ -82,16 +82,13 @@
 		return isPast(from) && isFuture(to);
 	};
 
-	const isOfferRecommended = (
-		offerPropositionId: number,
-		recommendedList: Array<number> | undefined
-	) => {
-		return recommendedList?.includes(offerPropositionId) ?? false;
+	const isOfferRecommended = (shortName: string, recommendedList: Array<string> | undefined) => {
+		return recommendedList?.includes(shortName) ?? false;
 	};
 </script>
 
 <div class="grid grid-flow-row gap-4">
-	{#await Promise.all([data.offers, data.categories, data.recommendationIds])}
+	{#await Promise.all([data.offers, data.categories, data.recommendations])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
 
@@ -112,7 +109,7 @@
 				</div>
 			</Card.Root>
 		{/each}
-	{:then [offersList, categories, recommendationIds]}
+	{:then [offersList, categories, recommendations]}
 		<div class="flex flex-row gap-2">
 			<Select.Root
 				selected={defaultSelected}
@@ -150,6 +147,12 @@
 			{/if}
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
+			if (data.isRecommendationsEnabled) {
+				const isOfferARecommended = isOfferRecommended(a.shortName, recommendations) ? 1 : 0;
+				const isOfferBRecommended = isOfferRecommended(b.shortName, recommendations) ? 1 : 0;
+				return isOfferBRecommended - isOfferARecommended;
+			} else {
+			}
 			if (!a.price) {
 				return 0;
 			}
@@ -168,6 +171,7 @@
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
 			{@const isNew = isOfferNew({ validFrom })}
+			{@const isRecommended = isOfferRecommended(shortName, recommendations)}
 			{#if matchesFilter}
 				<Card.Root
 					on:click={async () => {
@@ -201,23 +205,19 @@
 								{/if}
 							</Card.Description>
 							<div class="flex flex-row self-end">
-								{#if data.showNewBadge}
-									{#if isNew}
-										<Badge class="mr-1 h-fit w-fit bg-green-800">New</Badge>
-									{/if}
-
-									<Badge class="mr-1 h-fit w-fit">
-										{count} available
-									</Badge>
-								{:else}
-									<Badge class="mr-1 h-fit w-fit">
-										{count}{categories.length < 2 ? ' available' : ''}
-									</Badge>
-
-									{#each categories as category}
-										<Badge class="mr-1 h-fit w-fit">{category}</Badge>
-									{/each}
+								{#if isNew}
+									<Badge class="mr-1 h-fit w-fit bg-green-800">New</Badge>
 								{/if}
+
+								{#if data.isRecommendationsEnabled}
+									{#if isRecommended}
+										<Badge class="mr-1 h-fit w-fit bg-blue-800">Recommended</Badge>
+									{/if}
+								{/if}
+
+								<Badge class="mr-1 h-fit w-fit">
+									{count} available
+								</Badge>
 							</div>
 						</Card.Header>
 						<Card.Header class="pl-0">
