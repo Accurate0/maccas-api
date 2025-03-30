@@ -9,7 +9,7 @@ import { setError, superValidate } from 'sveltekit-superforms/server';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { schema } from './schema';
 import { zod } from 'sveltekit-superforms/adapters';
-import { createSession } from '$lib/server/session';
+import { createSession, SessionId } from '$lib/server/session';
 
 export type LoginState = {
 	error: string | null;
@@ -89,7 +89,8 @@ export const actions = {
 				return setError(form, 'password', 'Invalid details');
 			}
 
-			await createSession(existingUser.id, existingUser.role, cookies);
+			const { sessionId, expires } = await createSession(existingUser.id, existingUser.role);
+			cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 		} else {
 			// FIXME: will need to be old.api.maccas.one or something
 			const formData = new FormData();
@@ -147,7 +148,8 @@ export const actions = {
 				}
 			});
 
-			await createSession(existingUserId, [newRole], cookies);
+			const { sessionId, expires } = await createSession(existingUserId, [newRole]);
+			cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 		}
 
 		redirect(303, '/');

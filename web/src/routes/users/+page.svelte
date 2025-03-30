@@ -38,6 +38,18 @@
 			toast.error(await response.text());
 		}
 	};
+
+	const become = async (userId: string) => {
+		const response = await fetch(`/api/users/${userId}/become`, {
+			method: 'POST'
+		});
+
+		if (response.status === 204) {
+			toast('Identity changed');
+		} else {
+			toast.error(await response.text());
+		}
+	};
 </script>
 
 <div class="grid grid-flow-row gap-4">
@@ -109,9 +121,12 @@
 						<Switch
 							id="active"
 							checked={user.active}
-							onCheckedChange={(activate) => toggleActive(activate, user.id)}
+							onCheckedChange={(activate: boolean) => toggleActive(activate, user.id)}
 						/>
 						<Label for="active">Active</Label>
+					</Card.Header>
+					<Card.Header>
+						<Button id="become" on:click={() => become(user.id)}>Become</Button>
 					</Card.Header>
 				</div>
 			</Card.Root>

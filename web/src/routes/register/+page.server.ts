@@ -7,7 +7,7 @@ import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { schema } from './schema';
 import { RateLimiter } from '$lib/server/ratelimiter';
 import { zod } from 'sveltekit-superforms/adapters';
-import { createSession } from '$lib/server/session';
+import { createSession, SessionId } from '$lib/server/session';
 
 export type RegisterState = {
 	error: string | null;
@@ -87,7 +87,8 @@ export const actions = {
 			}
 		});
 
-		await createSession(user.id, user.role, cookies);
+		const { sessionId, expires } = await createSession(user.id, user.role);
+		cookies.set(SessionId, sessionId, { path: '/', httpOnly: true, expires });
 
 		return message(form, 'Account created');
 	}

@@ -34,7 +34,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 					});
 				}
 
-				const session = await prisma.session.findUnique({ where: { id: sessionId } });
+				const session = await prisma.session.findUnique({
+					where: { id: sessionId }
+				});
 				span.setAttribute('userId', session?.userId ?? '(unknown)');
 
 				if (!session || new Date() > session.expires) {
