@@ -8,12 +8,7 @@ use axum::{extract::State, http::HeaderMap, response::IntoResponse, Json};
 use base::jwt::{self, JwtClaims};
 
 pub async fn graphiql() -> impl IntoResponse {
-    if cfg!(debug_assertions) {
-        axum::response::Html(GraphiQLSource::build().endpoint("/v1/graphql").finish())
-            .into_response()
-    } else {
-        StatusCode::NOT_FOUND.into_response()
-    }
+    axum::response::Html(GraphiQLSource::build().endpoint("/v1/graphql").finish()).into_response()
 }
 
 pub struct ValidatedToken(pub String);
