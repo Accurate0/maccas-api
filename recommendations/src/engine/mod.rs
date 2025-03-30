@@ -190,7 +190,7 @@ impl RecommendationEngine {
 
         let top_x_cluster_scores = offer_cluster_score::Entity::find()
             .order_by_desc(offer_cluster_score::Column::Score)
-            .limit(3)
+            .limit(4)
             .all(txn)
             .await?
             .into_iter()
