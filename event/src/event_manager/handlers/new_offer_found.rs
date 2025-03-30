@@ -70,11 +70,7 @@ pub async fn new_offer_found(
         .get_dynamic_config::<NewOfferConfig>("maccas-event-new-offer-config")
         .await;
 
-    let should_generate_embedding = feature_flag_client
-        .is_feature_enabled("maccas-api-enable-recommendations", false)
-        .await;
-
-    if should_generate_embedding {
+    let embedding_fut = async move {
         let http_client = get_http_client()?;
         let token = generate_internal_jwt(
             settings.auth_secret.as_ref(),
@@ -102,7 +98,13 @@ pub async fn new_offer_found(
                 }
             },
             Err(e) => tracing::warn!("event request failed with {}", e),
-        }
+        };
+
+        Ok::<(), HandlerError>(())
+    };
+
+    if let Err(e) = embedding_fut.await {
+        tracing::error!("failed to produce embedding {e}");
     }
 
     let should_notify = config.as_ref().is_some_and(|c| c.should_notify());
