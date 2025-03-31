@@ -139,6 +139,7 @@ impl RecommendationEngine {
         // 28 days
         const HALF_LIFE: f64 = 0.975;
         const BASE_SCORE: f64 = 100f64;
+        const LAST_N_USAGES: usize = 10;
         // tl;dr, for each offer name, generate a score based on days since last usage, each day
         // back is multiplied by HALF_LIFE
         let now = chrono::offset::Utc::now().naive_utc();
@@ -149,11 +150,22 @@ impl RecommendationEngine {
             let mut score = 0f64;
             let cluster_id = name_to_cluster_id.get(&name);
             if let Some(cluster_id) = cluster_id {
-                for audit in &audits {
+                let valid_audits = audits
+                    .into_iter()
+                    .sorted_by(|a, b| {
+                        let a_days_since = (now - a.created_at).num_days();
+                        let b_days_since = (now - b.created_at).num_days();
+
+                        a_days_since.cmp(&b_days_since)
+                    })
+                    .take(LAST_N_USAGES)
+                    .collect_vec();
+
+                for audit in &valid_audits {
                     let days_since = (now - audit.created_at).num_days();
                     let score_for_deal = (BASE_SCORE
                         .mul(HALF_LIFE.powi(days_since.try_into().unwrap())))
-                    .div(audits.len() as f64);
+                    .div(valid_audits.len() as f64);
                     score += score_for_deal;
                 }
 
@@ -198,7 +210,7 @@ impl RecommendationEngine {
             .filter(
                 Condition::all()
                     .add(offer_cluster_score::Column::UserId.eq(user_id))
-                    .add(offer_cluster_score::Column::Score.gte(BASE_SCORE / 2f64)),
+                    .add(offer_cluster_score::Column::Score.gte(3f64)),
             )
             .limit(3)
             .all(txn)
