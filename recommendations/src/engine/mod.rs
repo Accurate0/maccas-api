@@ -16,7 +16,7 @@ use sea_orm::{
     QueryOrder, QuerySelect,
 };
 use std::collections::{HashMap, HashSet};
-use std::ops::{Add, Mul};
+use std::ops::{Add, Div, Mul};
 use std::{ops::Deref, sync::Arc};
 use tracing::instrument;
 use types::{
@@ -149,10 +149,11 @@ impl RecommendationEngine {
             let mut score = 0f64;
             let cluster_id = name_to_cluster_id.get(&name);
             if let Some(cluster_id) = cluster_id {
-                for audit in audits {
+                for audit in &audits {
                     let days_since = (now - audit.created_at).num_days();
-                    let score_for_deal =
-                        BASE_SCORE.mul(HALF_LIFE.powi(days_since.try_into().unwrap()));
+                    let score_for_deal = (BASE_SCORE
+                        .mul(HALF_LIFE.powi(days_since.try_into().unwrap())))
+                    .div(audits.len() as f64);
                     score += score_for_deal;
                 }
 
@@ -194,7 +195,11 @@ impl RecommendationEngine {
 
         let top_x_cluster_scores = offer_cluster_score::Entity::find()
             .order_by_desc(offer_cluster_score::Column::Score)
-            .filter(offer_cluster_score::Column::UserId.eq(user_id))
+            .filter(
+                Condition::all()
+                    .add(offer_cluster_score::Column::UserId.eq(user_id))
+                    .add(offer_cluster_score::Column::Score.gte(BASE_SCORE / 2f64)),
+            )
             .limit(3)
             .all(txn)
             .await?
