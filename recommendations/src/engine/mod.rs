@@ -210,7 +210,7 @@ impl RecommendationEngine {
             .filter(
                 Condition::all()
                     .add(offer_cluster_score::Column::UserId.eq(user_id))
-                    .add(offer_cluster_score::Column::Score.gte(3f64))
+                    .add(offer_cluster_score::Column::Score.gte(1f64))
                     .add(offer_cluster_score::Column::ClusterId.ne(-1)),
             )
             .limit(3)
