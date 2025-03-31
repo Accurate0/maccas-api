@@ -2,8 +2,7 @@ from fastapi import FastAPI, status
 from pydantic import BaseModel
 import numpy as np
 import hdbscan
-import pandas as pd
-from scipy.spatial.distance import cdist
+from sklearn.metrics.pairwise import cosine_distances
 
 app = FastAPI()
 
@@ -23,62 +22,65 @@ def cluster(embeddings: list[float], names: list[str]):
         min_samples=None,
         alpha=0.93,
         min_cluster_size=2,
+        max_cluster_size=15,
         cluster_selection_epsilon=0.56,
         cluster_selection_method='leaf',
         memory='/tmp').fit(embeddings)
 
-    remaining_embeddings = embeddings[hdb.labels_ == -1]
+    unclustered_indices = np.where(hdb.labels_ == -1)[0]
+    clustered_indices = np.where(hdb.labels_ != -1)[0]
+    final_labels = hdb.labels_.copy()
 
-    hdb_recluster = hdbscan.HDBSCAN(
-        min_samples=2,
-        alpha=1.0,
-        min_cluster_size=2,
-        cluster_selection_epsilon=0.2,
-        cluster_selection_method='eom',
-        memory='/tmp').fit(remaining_embeddings)
+    cluster_centroids = {}
+    for cluster_id in set(hdb.labels_):
+        if cluster_id != -1:
+            cluster_points = embeddings[clustered_indices][hdb.labels_[
+                clustered_indices] == cluster_id]
+            cluster_centroids[cluster_id] = np.mean(cluster_points, axis=0)
 
-    new_labels = hdb.labels_.astype(str)
-    reclustered_labels = hdb_recluster.labels_.astype(str)
-    reclustered_labels = ['r' + label if label !=
-                          '-1' else '-1' for label in reclustered_labels]
+    for unclustered_idx in unclustered_indices:
+        unclustered_embedding = embeddings[unclustered_idx]
+        min_distance = float('inf')
+        best_cluster = -1
 
-    max_initial_label = max([int(label)
-                            for label in hdb.labels_ if label != -1], default=-1)
-    reclustered_labels = hdb_recluster.labels_.astype(int)
-    reclustered_labels = [label + max_initial_label +
-                          1 if label != -1 else -1 for label in reclustered_labels]
+        for cluster_id, centroid in cluster_centroids.items():
+            if np.sum(final_labels == cluster_id) < 15:
+                distance = cosine_distances(
+                    [unclustered_embedding], [centroid])[0][0]
+                if distance < min_distance:
+                    min_distance = distance
+                    best_cluster = cluster_id
 
-    new_labels = hdb.labels_.astype(int)
-    new_labels[hdb.labels_ == -1] = reclustered_labels
+        if best_cluster != -1:
+            final_labels[unclustered_idx] = best_cluster
 
-    df = pd.DataFrame(embeddings, columns=[
-                      f'dim_{i}' for i in range(embeddings.shape[1])])
-    df['cluster'] = new_labels.astype(str)
-    df['id'] = names
+    for cluster_id in set(final_labels):
+        if cluster_id != -1:
+            cluster_indices = np.where(final_labels == cluster_id)[0]
+            if len(cluster_indices) > 15:
+                large_cluster_embeddings = embeddings[cluster_indices]
+                recluster_hdb = hdbscan.HDBSCAN(
+                    min_samples=2,
+                    alpha=1.0,
+                    min_cluster_size=2,
+                    cluster_selection_epsilon=0.2,
+                    cluster_selection_method='eom',
+                    memory='/tmp'
+                ).fit(large_cluster_embeddings)
 
-    def merge_close_clusters(df, distance_threshold=0.5):
-        cluster_centroids = (
-            df.drop(columns=['id'])  # Exclude non-numeric columns
-            .groupby('cluster')
-            .mean()
-            .reset_index()
-        )
-        distances = cdist(
-            cluster_centroids.iloc[:, 1:],  # Exclude the cluster column
-            cluster_centroids.iloc[:, 1:]
-        )
-        merge_map = {}
-        for i, row in enumerate(distances):
-            for j, dist in enumerate(row):
-                if i != j and dist < distance_threshold:
-                    merge_map[cluster_centroids.iloc[j]['cluster']
-                              ] = cluster_centroids.iloc[i]['cluster']
-        df['cluster'] = df['cluster'].replace(merge_map)
-        return df
+                max_label = max(final_labels)
+                reclustered_labels = recluster_hdb.labels_
+                reclustered_labels = [
+                    label + max_label + 1
+                    if label != -1 else -1
+                    for label in reclustered_labels
+                ]
 
-    df = merge_close_clusters(df)
+                # Update final labels with reclustered labels
+                for idx, new_label in zip(cluster_indices, reclustered_labels):
+                    final_labels[idx] = new_label
 
-    return df['cluster'].tolist()
+    return final_labels
 
 
 @app.post("/clusters")
