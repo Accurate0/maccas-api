@@ -213,7 +213,7 @@ impl RecommendationEngine {
                     .add(offer_cluster_score::Column::Score.gte(1f64))
                     .add(offer_cluster_score::Column::ClusterId.ne(-1)),
             )
-            .limit(3)
+            .limit(5)
             .all(txn)
             .await?
             .into_iter()
