@@ -209,12 +209,6 @@
 									<Badge class="mr-1 h-fit w-fit bg-green-800 dark:bg-green-300">New</Badge>
 								{/if}
 
-								{#if data.isRecommendationsEnabled}
-									{#if isRecommended}
-										<Badge class="mr-1 h-fit w-fit bg-blue-800 dark:bg-blue-300">Recommended</Badge>
-									{/if}
-								{/if}
-
 								<Badge class="mr-1 h-fit w-fit">
 									{count} available
 								</Badge>
