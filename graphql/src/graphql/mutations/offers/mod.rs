@@ -91,7 +91,7 @@ impl OffersMutation {
         let http_client = ctx.data::<ClientWithMiddleware>()?;
 
         let transaction_id = Uuid::new_v4();
-        entity::offer_audit::ActiveModel {
+        let audit_id = entity::offer_audit::ActiveModel {
             action: Set(Action::Add),
             proposition_id: Set(validated_proposition_id),
             user_id: Set(claims.and_then(|c| c.0.user_id.parse().ok())),
@@ -99,13 +99,15 @@ impl OffersMutation {
             ..Default::default()
         }
         .insert(db)
-        .await?;
+        .await?
+        .id;
 
         let cleanup_event = CreateEvent {
             event: Event::Cleanup {
                 offer_id,
                 transaction_id,
                 store_id: input.store_id,
+                audit_id,
                 // account.id
                 account_id: offer.account_id,
             },

@@ -55,6 +55,7 @@ mod m20250329_062350_offer_name_cluster_association;
 mod m20250329_081154_drop_offer_similarity;
 mod m20250330_105607_add_cluster_score_table_for_user;
 mod m20250330_121435_add_offer_names_column_for_recommendations;
+mod m20250401_091431_add_likely_used_to_audit;
 
 pub struct Migrator;
 
@@ -117,6 +118,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250329_081154_drop_offer_similarity::Migration),
             Box::new(m20250330_105607_add_cluster_score_table_for_user::Migration),
             Box::new(m20250330_121435_add_offer_names_column_for_recommendations::Migration),
+            Box::new(m20250401_091431_add_likely_used_to_audit::Migration),
         ]
     }
 }

@@ -3,13 +3,15 @@ use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context;
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
-use sea_orm::{ActiveModelTrait, EntityTrait, Set, TransactionTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
 use tracing::instrument;
 use uuid::Uuid;
 
 #[instrument(skip(em))]
 pub async fn cleanup(
     offer_id: Uuid,
+    // you can get transaction id from audit id
+    audit_id: i32,
     transaction_id: Uuid,
     store_id: String,
     account_id: Uuid,
@@ -82,7 +84,17 @@ pub async fn cleanup(
                 Err(e) => tracing::error!("error checking dealstack: {}", e),
             }
         } else {
-            tracing::info!("not found in deal stack, skipped");
+            tracing::info!("not found in deal stack, marking {transaction_id} as likely used");
+
+            let likely_used_update = entity::offer_audit::ActiveModel {
+                likely_used: Set(Some(true)),
+                ..Default::default()
+            };
+
+            entity::offer_audit::Entity::update(likely_used_update)
+                .filter(entity::offer_audit::Column::Id.eq(audit_id))
+                .exec(db)
+                .await?;
         }
 
         Ok::<(), HandlerError>(())

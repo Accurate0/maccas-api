@@ -87,12 +87,14 @@ pub async fn handle(event_manager: EventManager) {
                     Event::Cleanup {
                         offer_id,
                         transaction_id,
+                        audit_id,
                         store_id,
                         account_id,
                     } => {
                         // FIXME: too many args
                         cleanup(
                             offer_id,
+                            audit_id,
                             transaction_id,
                             store_id,
                             account_id,

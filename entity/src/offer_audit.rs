@@ -16,6 +16,7 @@ pub struct Model {
     pub updated_at: DateTime,
     pub user_id: Option<Uuid>,
     pub migrated: bool,
+    pub likely_used: Option<bool>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
