@@ -80,8 +80,6 @@ impl RecommendationEngine {
             .status()
             == StatusCode::NO_CONTENT;
 
-        tracing::info!("db: {is_db_ok}, clustering: {is_clustering_ok}");
-
         Ok(is_db_ok && is_clustering_ok)
     }
 
