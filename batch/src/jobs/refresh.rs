@@ -143,6 +143,10 @@ impl Job for RefreshJob {
             }
         }
 
+        if let Err(e) = api_client.clear_dealstack().await {
+            tracing::warn!("error clearing dealstack: {e}");
+        }
+
         let mut events_to_dispatch = Vec::with_capacity(1 + added_offers.len().saturating_mul(2));
 
         events_to_dispatch.push(event::CreateEvent {
