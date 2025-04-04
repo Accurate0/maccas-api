@@ -23,7 +23,7 @@ impl Job for GenerateRecommendationsJob {
     }
 
     fn job_type(&self) -> JobType {
-        JobType::Schedule("0 0 * * * * ".parse().unwrap())
+        JobType::Schedule("0 0 * * * *".parse().unwrap())
     }
 
     async fn execute(
@@ -44,7 +44,7 @@ impl Job for GenerateRecommendationsJob {
             match response {
                 Ok(response) => match response.status() {
                     StatusCode::NO_CONTENT => {
-                        tracing::info!("called success for {path}");
+                        tracing::info!("call success for {path}");
                     }
                     status => {
                         tracing::warn!(
