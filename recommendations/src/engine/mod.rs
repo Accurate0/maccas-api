@@ -131,7 +131,7 @@ impl RecommendationEngine {
             offers_used_mapping
                 .entry(details.short_name)
                 .and_modify(|e| e.push(audit.clone()))
-                .or_insert(vec![audit.clone()]);
+                .or_insert(vec![audit]);
         }
 
         // 28 days
@@ -338,8 +338,8 @@ impl RecommendationEngine {
         };
 
         match self.openai_api_client.embeddings(&request).await {
-            Ok(r) => {
-                let embedding = r.body.data.first();
+            Ok(mut r) => {
+                let embedding = r.body.data.pop();
                 if embedding.is_none() {
                     return Err(anyhow::Error::msg("no embedding returned").into());
                 }
@@ -347,7 +347,7 @@ impl RecommendationEngine {
                 let model = offer_embeddings::ActiveModel {
                     name: sea_orm::ActiveValue::Set(input),
                     embeddings: sea_orm::ActiveValue::Set(PgVector::from(
-                        embedding.unwrap().embedding.clone(),
+                        embedding.unwrap().embedding,
                     )),
                 };
 
