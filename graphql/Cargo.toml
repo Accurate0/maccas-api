@@ -35,4 +35,4 @@ thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
-axum-tracing-opentelemetry = "0.26.0"
+axum-tracing-opentelemetry = "0.28.0"
