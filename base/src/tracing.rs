@@ -18,6 +18,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 const INGEST_URL: &str = "https://api.axiom.co/v1/traces";
 
 pub fn external_tracer(name: &'static str) -> Tracer {
+    let ingest_url = std::env::var("INGEST_URL").unwrap_or_else(|_| INGEST_URL.to_string());
     let token = std::env::var("AXIOM_TOKEN").expect("must have axiom token configured");
     let dataset_name = std::env::var("AXIOM_DATASET").expect("must have axiom dataset configured");
 
@@ -32,7 +33,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
     );
     headers.insert(
         "User-Agent",
-        HeaderValue::from_str(&format!("tracing-axiom/{}", env!("CARGO_PKG_VERSION"))).unwrap(),
+        HeaderValue::from_str(&format!("maccas-api/{}", env!("CARGO_PKG_VERSION"))).unwrap(),
     );
 
     let tags = vec![
@@ -67,7 +68,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
             .join()
             .unwrap(),
         )
-        .with_endpoint(INGEST_URL)
+        .with_endpoint(ingest_url)
         .with_timeout(Duration::from_secs(3))
         .build_span_exporter()
         .unwrap();
