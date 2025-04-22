@@ -3,7 +3,10 @@ use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context;
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, offers, sea_orm_active_enums::Action};
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue::Unchanged, ColumnTrait, EntityTrait, QueryFilter, Set,
+    TransactionTrait,
+};
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -87,7 +90,9 @@ pub async fn cleanup(
             tracing::info!("not found in deal stack, marking {transaction_id} as likely used");
 
             let likely_used_update = entity::offer_audit::ActiveModel {
+                id: Unchanged(audit_id),
                 likely_used: Set(Some(true)),
+                transaction_id: Set(transaction_id),
                 ..Default::default()
             };
 
