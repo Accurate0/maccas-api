@@ -11,7 +11,7 @@ use futures::FutureExt;
 use new_offer_found::new_offer_found;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
-use std::{num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
+use std::{fmt::Display, num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
 use thiserror::Error;
 use tracing::{span, Instrument};
 
@@ -138,7 +138,20 @@ pub async fn handle(event_manager: EventManager) {
                     }
                 },
                 Err(panic_err) => {
-                    let err = format!("panic: {:?}", panic_err);
+                    let panic_message = {
+                        let displayable = panic_err
+                            .downcast_ref::<&dyn Display>()
+                            .map(|p| p.to_string());
+                        let stringable = panic_err
+                            .downcast_ref::<&dyn ToString>()
+                            .map(|p| p.to_string());
+
+                        displayable
+                            .or(stringable)
+                            .unwrap_or("no panic message found".to_string())
+                    };
+
+                    let err = format!("panic: {:?}", panic_message);
                     tracing::error!("{}", err);
                     event_manager
                         .set_event_completed_in_error(event.id, &err, 99)
