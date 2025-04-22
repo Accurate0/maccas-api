@@ -48,6 +48,8 @@ spec:
               value: http://maccas-event.maccas-api.svc.cluster.local:8001
             - name: BATCH_API_BASE
               value: http://maccas-batch.maccas-api.svc.cluster.local:8002
+            - name: RECOMMENDATIONS_API_BASE
+              value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
             - name: FLIPT_URL
               value: http://flipt.flipt.svc.cluster.local:8080
           envFrom:

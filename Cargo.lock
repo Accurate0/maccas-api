@@ -2060,6 +2060,7 @@ dependencies = [
  "opentelemetry 0.29.1",
  "opentelemetry_sdk 0.29.0",
  "places",
+ "recommendations",
  "reqwest",
  "reqwest-middleware",
  "sea-orm",

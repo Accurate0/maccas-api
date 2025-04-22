@@ -83,6 +83,7 @@ pub struct HealthResponse {
     database: bool,
     event: bool,
     batch: bool,
+    recommendations: bool,
 }
 
 pub async fn health(
@@ -95,6 +96,7 @@ pub async fn health(
           database
           event
           batch
+          recommendations
         }
       }
       "#,
