@@ -10,7 +10,10 @@ use async_graphql::{dataloader::DataLoader, EmptySubscription};
 use axum::{http::Method, routing::get, Router};
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use base::shutdown::axum_shutdown_signal;
-use graphql::{graphiql, queries::offers::dataloader::OfferDetailsLoader};
+use graphql::{
+    graphiql,
+    queries::offers::dataloader::{OfferCountDataLoader, OfferDetailsLoader},
+};
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
@@ -48,6 +51,12 @@ async fn main() -> Result<(), anyhow::Error> {
     .data(basic_http_client)
     .data(settings.clone())
     .data(db.clone())
+    .data(DataLoader::new(
+        OfferCountDataLoader {
+            database: db.clone(),
+        },
+        tokio::spawn,
+    ))
     .data(DataLoader::new(
         OfferDetailsLoader {
             database: db.clone(),

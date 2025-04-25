@@ -1,5 +1,5 @@
 use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
-use crate::{graphql::ValidatedClaims, name_of, settings::Settings};
+use crate::{graphql::ValidatedClaims, settings::Settings};
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
@@ -8,8 +8,7 @@ use sea_orm::{
     prelude::Uuid, ColumnTrait, Condition, DatabaseConnection, EntityTrait, JoinType, Order,
     QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
-use std::{collections::HashMap, str::FromStr};
-use types::OfferCount;
+use std::str::FromStr;
 
 pub mod dataloader;
 mod types;
@@ -67,47 +66,13 @@ impl OffersQuery {
 
         let conditions = Condition::all().add(offers::Column::ValidFrom.gt(now));
 
-        let count_map = if ctx.look_ahead().field("count").exists() {
-            Some(
-                offers::Entity::find()
-                    .select_only()
-                    .join(JoinType::InnerJoin, offers::Relation::OfferDetails.def())
-                    .column(offer_details::Column::ShortName)
-                    .column_as(
-                        offer_details::Column::ShortName.count(),
-                        name_of!(count in OfferCount),
-                    )
-                    .filter(conditions.clone())
-                    .group_by(offer_details::Column::ShortName)
-                    .into_model::<OfferCount>()
-                    .all(db)
-                    .await?
-                    .into_iter()
-                    .map(|o| (o.short_name, o.count))
-                    .collect::<HashMap<_, _>>(),
-            )
-        } else {
-            None
-        };
-
         Ok(offers::Entity::find()
             .find_also_related(offer_details::Entity)
             .filter(conditions)
             .all(db)
             .await?
             .into_iter()
-            .map(|(offer, offer_details)| {
-                let count = if let Some(offer_details) = offer_details {
-                    count_map
-                        .as_ref()
-                        .and_then(|c| c.get(&offer_details.short_name).copied())
-                        .unwrap_or(0)
-                } else {
-                    0
-                };
-
-                Offer(offer, Some(count))
-            })
+            .map(|(offer, _offer_details)| Offer(offer))
             .collect())
     }
 
@@ -153,7 +118,7 @@ impl OffersQuery {
             .all(db)
             .await?
             .into_iter()
-            .map(|(model, _)| Offer(model, None))
+            .map(|(model, _)| Offer(model))
             .collect::<Vec<_>>();
 
         Ok(offers)
@@ -178,29 +143,6 @@ impl OffersQuery {
             .add(offers::Column::ValidTo.gt(now))
             .add(offers::Column::ValidFrom.lt(now));
 
-        let count_map = if ctx.look_ahead().field("count").exists() {
-            Some(
-                offers::Entity::find()
-                    .select_only()
-                    .filter(conditions.clone())
-                    .join(JoinType::InnerJoin, offers::Relation::OfferDetails.def())
-                    .column(offer_details::Column::ShortName)
-                    .column_as(
-                        offer_details::Column::ShortName.count(),
-                        name_of!(count in OfferCount),
-                    )
-                    .group_by(offer_details::Column::ShortName)
-                    .into_model::<OfferCount>()
-                    .all(db)
-                    .await?
-                    .into_iter()
-                    .map(|o| (o.short_name, o.count))
-                    .collect::<HashMap<_, _>>(),
-            )
-        } else {
-            None
-        };
-
         Ok(offers::Entity::find()
             .distinct_on([offer_details::Column::ShortName])
             .find_also_related(offer_details::Entity)
@@ -210,18 +152,7 @@ impl OffersQuery {
             .all(db)
             .await?
             .into_iter()
-            .map(|(offer, offer_details)| {
-                let count = if let Some(offer_details) = offer_details {
-                    count_map
-                        .as_ref()
-                        .and_then(|c| c.get(&offer_details.short_name).copied())
-                        .unwrap_or(0)
-                } else {
-                    0
-                };
-
-                Offer(offer, Some(count))
-            })
+            .map(|(offer, _offer_details)| Offer(offer))
             .collect::<Vec<_>>())
     }
 }
