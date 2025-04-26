@@ -96,6 +96,7 @@ impl OffersMutation {
             proposition_id: Set(validated_proposition_id),
             user_id: Set(claims.and_then(|c| c.0.user_id.parse().ok())),
             transaction_id: Set(transaction_id),
+            store_id: Set(Some(input.store_id.clone())),
             ..Default::default()
         }
         .insert(db)

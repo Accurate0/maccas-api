@@ -17,6 +17,8 @@ pub struct Model {
     pub user_id: Option<Uuid>,
     pub migrated: bool,
     pub likely_used: Option<bool>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub store_id: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
