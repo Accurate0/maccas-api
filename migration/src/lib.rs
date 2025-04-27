@@ -57,6 +57,7 @@ mod m20250330_105607_add_cluster_score_table_for_user;
 mod m20250330_121435_add_offer_names_column_for_recommendations;
 mod m20250401_091431_add_likely_used_to_audit;
 mod m20250426_154447_add_store_id_to_audit;
+mod m20250427_101811_add_pgmq;
 
 pub struct Migrator;
 
@@ -121,6 +122,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250330_121435_add_offer_names_column_for_recommendations::Migration),
             Box::new(m20250401_091431_add_likely_used_to_audit::Migration),
             Box::new(m20250426_154447_add_store_id_to_audit::Migration),
+            Box::new(m20250427_101811_add_pgmq::Migration),
         ]
     }
 }

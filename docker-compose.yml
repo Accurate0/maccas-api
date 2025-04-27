@@ -189,11 +189,11 @@ services:
       - .env.local
 
   db:
-    image: pgvector/pgvector:pg16
+    image: ghcr.io/accurate0/cnpg-postgresql:16
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata2:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: maccas
@@ -205,4 +205,5 @@ services:
 
 volumes:
   pgdata:
+  pgdata2:
   dragonflydata:
