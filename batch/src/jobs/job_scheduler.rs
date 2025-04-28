@@ -1,16 +1,13 @@
-use super::{
-    error::JobError, IntrospectedJobDetails, Job, JobContext, JobDetails, JobState, JobType,
-    RunningState,
-};
+use super::{error::JobError, IntrospectedJobDetails, Job, JobContext, JobDetails, JobType};
 use anyhow::Context;
-use base::delay_queue::{DelayQueue, IntrospectionResult};
+use base::delay_queue::IntrospectionResult;
 use entity::jobs;
 use futures::FutureExt;
 use sea_orm::{
     prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, Set, TransactionTrait, Unchanged,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap, fmt::Debug, ops::ControlFlow, panic::AssertUnwindSafe, sync::Arc,
     time::Duration,
@@ -19,21 +16,21 @@ use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
 use tracing::{Instrument, Level};
 
+const JOB_QUEUE_NAME: &str = "batch_job_queue";
+
 // FIXME: confusing to have 2 params that mean opposite
-#[derive(Clone, Serialize)]
-pub(crate) enum Message {
+#[derive(Clone, Serialize, Deserialize)]
+pub(crate) enum JobMessage {
     JobFinished { name: String, queue_next: bool },
-    Init,
     RunJob { name: String, one_shot: bool },
 }
 
-impl Debug for Message {
+impl Debug for JobMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::JobFinished { name, .. } => {
                 write!(f, "JobFinished: {}", name)
             }
-            Self::Init => write!(f, "Init"),
             Self::RunJob { name, .. } => {
                 write!(f, "RunPending: {}", name)
             }
@@ -45,30 +42,34 @@ pub struct JobSchedulerInner {
     cancellation_token: CancellationToken,
     jobs: Arc<RwLock<HashMap<String, JobDetails>>>,
     db: DatabaseConnection,
-    task_queue: DelayQueue<Message>,
+    task_queue: delayqueue::DelayQueue<JobMessage>,
 }
 
 #[derive(Clone)]
 pub struct JobScheduler(Arc<JobSchedulerInner>);
 
 impl JobScheduler {
-    pub fn new(db: DatabaseConnection) -> Self {
-        JobScheduler(
+    pub async fn new(db: DatabaseConnection) -> Result<Self, JobError> {
+        let connection_pool = db.get_postgres_connection_pool().clone();
+        let task_queue =
+            delayqueue::DelayQueue::new(connection_pool, JOB_QUEUE_NAME.to_owned()).await?;
+
+        Ok(JobScheduler(
             JobSchedulerInner {
                 db,
                 cancellation_token: Default::default(),
                 jobs: Default::default(),
-                task_queue: Default::default(),
+                task_queue,
             }
             .into(),
-        )
+        ))
     }
 
     pub async fn introspect(
         &self,
     ) -> (
         Vec<IntrospectedJobDetails>,
-        Vec<IntrospectionResult<Message>>,
+        Vec<IntrospectionResult<JobMessage>>,
     ) {
         (
             self.0
@@ -78,13 +79,11 @@ impl JobScheduler {
                 .values()
                 .map(|j| IntrospectedJobDetails {
                     name: j.job.name(),
-                    state: match j.state {
-                        JobState::Stopped => super::IntrospectedJobState::Stopped,
-                        JobState::Running(_) => super::IntrospectedJobState::Running,
-                    },
+                    state: super::IntrospectedJobState::Stopped,
                 })
                 .collect(),
-            self.0.task_queue.introspect().await,
+            // FIXME: FIXME
+            vec![],
         )
     }
 
@@ -127,7 +126,7 @@ impl JobScheduler {
                 .await?;
         }
 
-        self.0.task_queue.push(Message::Init, Duration::ZERO).await;
+        self.init_jobs().await?;
 
         Ok(())
     }
@@ -139,32 +138,19 @@ impl JobScheduler {
         self.0
             .task_queue
             .push(
-                Message::RunJob {
+                JobMessage::RunJob {
                     name: job_to_run.job.name(),
                     one_shot: true,
                 },
                 Duration::ZERO,
             )
-            .await;
+            .await?;
 
         Ok(())
     }
 
     pub async fn shutdown(&self) {
-        let mut jobs = self.0.jobs.write().await;
-        let mut cancellation_futures = Vec::new();
-
-        for (_, job_details) in jobs.iter_mut() {
-            match job_details.state {
-                JobState::Stopped => {}
-                JobState::Running(ref mut state) => {
-                    state.cancellation_token.cancel();
-                    cancellation_futures.push(&mut state.handle)
-                }
-            }
-        }
-
-        futures::future::join_all(cancellation_futures).await;
+        let mut _jobs = self.0.jobs.write().await;
         tracing::info!("shutting down job scheduler");
         self.0.cancellation_token.cancel()
     }
@@ -181,7 +167,6 @@ impl JobScheduler {
         let mut jobs = self.0.jobs.write().await;
         match jobs.get_mut(name) {
             Some(job_details) => {
-                job_details.state = JobState::Stopped;
                 let job_model = jobs::Entity::find()
                     .filter(jobs::Column::Name.eq(name))
                     .one(&self.0.db)
@@ -220,13 +205,13 @@ impl JobScheduler {
                     self.0
                         .task_queue
                         .push(
-                            Message::RunJob {
+                            JobMessage::RunJob {
                                 name: job_model.name,
                                 one_shot: false,
                             },
                             time_until,
                         )
-                        .await;
+                        .await?;
                 }
             }
             None => tracing::error!(
@@ -249,33 +234,17 @@ impl JobScheduler {
 
         let job_details = jobs.get_mut(name).unwrap();
 
-        let cancellation_token = CancellationToken::new();
-        let cancellation_token_cloned = cancellation_token.clone();
+        let cancellation_token_cloned = self.0.cancellation_token.child_token();
 
-        let running = match job_details.state {
-            JobState::Stopped => false,
-            JobState::Running(ref s) => {
-                !s.handle.is_finished() && !s.cancellation_token.is_cancelled()
-            }
-        };
+        let _handle = self
+            .handle_start_new_job(
+                &job_model,
+                job_details,
+                queue_next,
+                cancellation_token_cloned,
+            )
+            .await?;
 
-        tracing::info!("should run: {}", !running);
-
-        if !running {
-            let handle = self
-                .handle_start_new_job(
-                    &job_model,
-                    job_details,
-                    queue_next,
-                    cancellation_token_cloned,
-                )
-                .await?;
-
-            job_details.state = JobState::Running(RunningState {
-                cancellation_token,
-                handle,
-            });
-        };
         Ok(())
     }
 
@@ -417,85 +386,93 @@ impl JobScheduler {
             .then(move |_| async move {
                 queue
                     .push(
-                        Message::JobFinished {
+                        JobMessage::JobFinished {
                             name: task_name,
                             queue_next,
                         },
                         Duration::ZERO,
                     )
-                    .await;
+                    .await?;
+                Ok::<(), JobError>(())
+            })
+            .then(|r| async {
+                if let Err(e) = r {
+                    tracing::error!("error in finishing job: {e}")
+                }
             }),
         );
 
         Ok(handle)
     }
 
-    async fn handle_message(&self, message: Message) -> Result<(), JobError> {
+    async fn init_jobs(&self) -> Result<(), JobError> {
+        let jobs = self.0.jobs.read().await;
+        tracing::info!("initializing scheduler with required tasks");
+        for (name, job_details) in jobs.iter() {
+            tracing::info!("task: {}", name);
+
+            if !job_details.enabled {
+                tracing::info!("skipping task");
+                continue;
+            }
+
+            let job_model = jobs::Entity::find()
+                .filter(jobs::Column::Name.eq(name.clone()))
+                .one(&self.0.db)
+                .await?
+                .unwrap();
+
+            let last_execution = job_model.last_execution;
+            let job_type = &job_details.job_type;
+            let time_now = chrono::offset::Utc::now();
+
+            // if no last execution, execute immediately
+            let next = match job_type {
+                JobType::Schedule(schedule) => match last_execution {
+                    Some(t) => schedule.after(&t.and_utc()).next(),
+                    None => Some(time_now),
+                }
+                .unwrap(),
+                JobType::Manual => {
+                    tracing::info!("job is manual, skipping");
+                    continue;
+                }
+            };
+
+            tracing::info!("time now: {}", time_now);
+            tracing::info!("next scheduled run: {}", next);
+
+            let time_until = if time_now >= next {
+                Duration::ZERO
+            } else {
+                (next - time_now).to_std()?
+            };
+
+            self.0
+                .task_queue
+                .push(
+                    JobMessage::RunJob {
+                        name: job_model.name,
+                        one_shot: false,
+                    },
+                    time_until,
+                )
+                .await?;
+        }
+
+        Ok::<(), JobError>(())
+    }
+
+    async fn handle_message(&self, message: JobMessage) -> Result<(), JobError> {
         match message {
-            Message::JobFinished { name, queue_next } => {
+            JobMessage::JobFinished { name, queue_next } => {
                 tracing::info!("received message for job finished: {}", name);
                 self.handle_job_finish(&name, queue_next).await?;
             }
 
-            Message::RunJob { name, one_shot } => {
+            JobMessage::RunJob { name, one_shot } => {
                 tracing::info!("run pending task {}", name);
                 self.handle_run_job(&name, !one_shot).await?;
-            }
-
-            Message::Init => {
-                let jobs = self.0.jobs.read().await;
-                tracing::info!("initializing scheduler with required tasks");
-                for (name, job_details) in jobs.iter() {
-                    tracing::info!("task: {}", name);
-
-                    if !job_details.enabled {
-                        tracing::info!("skipping task");
-                        continue;
-                    }
-
-                    let job_model = jobs::Entity::find()
-                        .filter(jobs::Column::Name.eq(name.clone()))
-                        .one(&self.0.db)
-                        .await?
-                        .unwrap();
-
-                    let last_execution = job_model.last_execution;
-                    let job_type = &job_details.job_type;
-                    let time_now = chrono::offset::Utc::now();
-
-                    // if no last execution, execute immediately
-                    let next = match job_type {
-                        JobType::Schedule(schedule) => match last_execution {
-                            Some(t) => schedule.after(&t.and_utc()).next(),
-                            None => Some(time_now),
-                        }
-                        .unwrap(),
-                        JobType::Manual => {
-                            tracing::info!("job is manual, skipping");
-                            continue;
-                        }
-                    };
-
-                    tracing::info!("time now: {}", time_now);
-                    tracing::info!("next scheduled run: {}", next);
-
-                    let time_until = if time_now >= next {
-                        Duration::ZERO
-                    } else {
-                        (next - time_now).to_std()?
-                    };
-
-                    self.0
-                        .task_queue
-                        .push(
-                            Message::RunJob {
-                                name: job_model.name,
-                                one_shot: false,
-                            },
-                            time_until,
-                        )
-                        .await;
-                }
             }
         }
 
@@ -511,11 +488,24 @@ impl JobScheduler {
                 tracing::info!("ticking cancelled");
                 Ok(ControlFlow::Break(()))
             },
-            Some(message) = task_queue.pop() => {
-                let msg = format!("{:?}", message);
-                let span = tracing::span!(Level::INFO, "job", msg);
-                self.handle_message(message).instrument(span).await?;
-                Ok(ControlFlow::Continue(()))
+            message = task_queue.read(Duration::from_secs(300)) => {
+                match message {
+                    Ok(Some(message)) => {
+                        let message_string = format!("{:?}", message.message);
+                        let span = tracing::span!(Level::INFO, "job", message = message_string, message_id = message.msg_id);
+                        self.handle_message(message.message).instrument(span).await?;
+                        self.0.task_queue.archive(message.msg_id).await?;
+                        Ok(ControlFlow::Continue(()))
+                    },
+                    Err(e) => {
+                        tracing::error!("error reading message: {e}");
+                        Ok(ControlFlow::Continue(()))
+                    },
+                    Ok(None) => {
+                        tracing::trace!("no message found");
+                        Ok(ControlFlow::Continue(()))
+                    },
+                }
             }
         }
     }

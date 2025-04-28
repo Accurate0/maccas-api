@@ -1,5 +1,5 @@
 use crate::{
-    jobs::{job_scheduler::Message, IntrospectedJobDetails},
+    jobs::{job_scheduler::JobMessage, IntrospectedJobDetails},
     types::{ApiState, AppError},
 };
 use axum::{
@@ -47,7 +47,7 @@ pub async fn get_jobs(
         task_queue: task_queue
             .into_iter()
             .filter_map(|x| match x.value {
-                Message::RunJob { name, .. } => Some(TaskQueueResult {
+                JobMessage::RunJob { name, .. } => Some(TaskQueueResult {
                     seconds_until_next: x.delay_util.as_secs(),
                     name,
                 }),

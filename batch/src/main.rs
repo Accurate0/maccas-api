@@ -55,7 +55,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging_level(LevelFilter::Trace);
 
     let db = Database::connect(opt).await?;
-    let scheduler = JobScheduler::new(db);
+    let scheduler = JobScheduler::new(db).await?;
 
     let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
         .basic_auth(&settings.proxy.username, &settings.proxy.password);
@@ -220,7 +220,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .merge(health)
         .with_state(api_state);
 
-    let addr = "[::]:8002".parse::<SocketAddr>().unwrap();
+    let port = std::env::var("PORT").unwrap_or("8002".to_owned());
+    let addr = format!("[::]:{port}").parse::<SocketAddr>().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("starting batch api server {addr}");
     let server = axum::serve(listener, app)

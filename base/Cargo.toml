@@ -42,4 +42,3 @@ opentelemetry-semantic-conventions = { version = "0.29.0", features = ["semconv_
 opentelemetry-appender-tracing = { version = "0.29.0" }
 open-feature = { workspace = true }
 open-feature-flipt = { git = "https://github.com/open-feature/rust-sdk-contrib.git" }
-

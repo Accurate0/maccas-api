@@ -9,7 +9,9 @@ members = [
     "batch",
     "base",
     "event", 
-    "sensordata/lib", "recommendations", 
+    "sensordata/lib", 
+    "recommendations", 
+    "delayqueue", 
 ]
 
 [workspace.package]
@@ -41,16 +43,21 @@ tracing-opentelemetry = "0.30.0"
 
 sea-orm = { version = "1.1", features = [
     "sqlx-postgres",
+    "with-chrono",
+    "with-json",
+    "macros",
+    "with-uuid",
     "postgres-vector",
     "runtime-tokio-native-tls",
     "macros",
-] }
+], default-features = false }
 
 anyhow = "1.0.95"
 
 config = "0.15.8"
 
 entity = { path = "./entity" }
+delayqueue = { path = "./delayqueue" }
 libmaccas = { path = "./libmaccas" }
 places = { path = "./places" }
 openai = { path = "./openai" }

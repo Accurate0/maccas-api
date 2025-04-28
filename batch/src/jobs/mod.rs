@@ -4,7 +4,6 @@ use sea_orm::DatabaseTransaction;
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use std::fmt::Debug;
 use std::sync::Arc;
-use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
 pub mod account_unlock;
@@ -40,19 +39,6 @@ pub trait Job: Send + Sync + Debug {
 }
 
 #[derive(Debug)]
-pub struct RunningState {
-    pub cancellation_token: CancellationToken,
-    pub handle: JoinHandle<()>,
-}
-
-#[derive(Debug, Default)]
-pub enum JobState {
-    #[default]
-    Stopped,
-    Running(RunningState),
-}
-
-#[derive(Debug)]
 pub enum JobType {
     Schedule(cron::Schedule),
     Manual,
@@ -61,7 +47,6 @@ pub enum JobType {
 #[derive(Debug)]
 pub struct JobDetails {
     pub job: Arc<dyn Job>,
-    pub state: JobState,
     pub enabled: bool,
     pub job_type: JobType,
 }
@@ -69,6 +54,7 @@ pub struct JobDetails {
 #[derive(Debug, Clone, serde::Serialize)]
 pub enum IntrospectedJobState {
     Stopped,
+    #[allow(dead_code)]
     Running,
 }
 
@@ -83,7 +69,6 @@ impl JobDetails {
         Self {
             job,
             job_type,
-            state: Default::default(),
             enabled,
         }
     }

@@ -9,12 +9,14 @@ use super::job_scheduler;
 pub enum JobError {
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
+    #[error("DelayQueue error has occurred: `{0}`")]
+    DelayQueue(#[from] delayqueue::DelayQueueError),
     #[error("Serialization error has occurred: `{0}`")]
     Serialization(#[from] serde_json::Error),
     #[error("Chrono error has occurred: `{0}`")]
     Chrono(#[from] chrono::OutOfRangeError),
     #[error("Send error has occurred: `{0}`")]
-    Send(#[from] SendError<job_scheduler::Message>),
+    Send(#[from] SendError<job_scheduler::JobMessage>),
     #[error("An unknown error occurred: `{0}`")]
     UnknownError(#[from] anyhow::Error),
     #[error("McDonald's client error occurred: `{0}`")]
