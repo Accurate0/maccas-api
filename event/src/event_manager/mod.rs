@@ -169,45 +169,6 @@ impl EventManager {
             .unwrap_or(false)
     }
 
-    #[instrument(skip(self))]
-    pub async fn reload_incomplete_events(&self) -> Result<(), EventManagerError> {
-        let incomplete_events = events::Entity::find()
-            .filter(events::Column::Status.eq(EventStatus::Pending))
-            .all(&self.inner.db)
-            .await?;
-        let now = chrono::offset::Utc::now().naive_utc();
-
-        tracing::info!("reloading {} incomplete events", incomplete_events.len());
-        for event in &incomplete_events {
-            tracing::info!("reloading incomplete event: {}", event.event_id);
-            let reload_event = async move {
-                let delay = event.should_be_completed_at - now;
-                tracing::info!("delay for this event is: {}", delay);
-
-                self.inner
-                    .event_queue
-                    .push(
-                        QueuedEvent {
-                            evt: serde_json::from_value(event.data.clone())?,
-                            id: event.id,
-                            trace_id: event.trace_id.to_owned().unwrap_or_default(),
-                        },
-                        // run immediately if its past the should be completed at
-                        delay.to_std().unwrap_or(Duration::ZERO),
-                    )
-                    .await?;
-
-                Ok::<(), EventManagerError>(())
-            };
-
-            if let Err(e) = reload_event.await {
-                tracing::error!("error while reloading event: {}", e);
-            }
-        }
-
-        Ok(())
-    }
-
     pub async fn acquire_permit(&self) -> OwnedSemaphorePermit {
         self.semaphore.clone().acquire_owned().await.unwrap()
     }

@@ -69,7 +69,6 @@ async fn main() -> Result<(), anyhow::Error> {
     event_manager.set_state::<ClientWithMiddleware>(get_http_client()?);
     event_manager.set_state::<FeatureFlagClient>(feature_flag_client);
 
-    event_manager.reload_incomplete_events().await?;
     let (handle, cancellation_token) = event_manager.process_events();
 
     let addr = "[::]:8001".parse::<SocketAddr>().unwrap();
