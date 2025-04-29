@@ -15,7 +15,6 @@ use thiserror::Error;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
-use tracing::instrument;
 
 mod handlers;
 pub use handlers::S3BucketType;
