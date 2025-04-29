@@ -172,7 +172,8 @@ pub async fn handle(event_manager: EventManager) {
         .instrument(span!(
             tracing::Level::INFO,
             "event",
-            "otel.name" = format!("event::{}", event_name)
+            "otel.name" = format!("event::{}", event_name),
+            "message_id" = msg.msg_id
         ));
 
         tokio::spawn(async move {
