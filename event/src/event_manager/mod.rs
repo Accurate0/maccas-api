@@ -1,4 +1,3 @@
-use base::delay_queue::DelayQueue;
 use entity::events;
 use entity::sea_orm_active_enums::{EventStatus, EventStatusEnum};
 use event::Event;
@@ -9,7 +8,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Set,
     TransactionTrait, Unchanged,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use state::TypeMap;
 use std::{sync::Arc, time::Duration};
 use thiserror::Error;
@@ -25,13 +24,15 @@ pub use handlers::S3BucketType;
 pub enum EventManagerError {
     #[error("Serializer error has occurred: `{0}`")]
     Serializer(#[from] serde_json::Error),
+    #[error("DelayQueue error has occurred: `{0}`")]
+    DelayQueue(#[from] delayqueue::DelayQueueError),
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
     #[error("Chrono out of range error has occurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct QueuedEvent {
     pub(crate) evt: Event,
     pub(crate) id: i32,
@@ -40,7 +41,7 @@ pub(crate) struct QueuedEvent {
 
 struct EventManagerInner {
     db: DatabaseConnection,
-    event_queue: DelayQueue<QueuedEvent>,
+    event_queue: delayqueue::DelayQueue<QueuedEvent>,
     state: TypeMap![Sync + Send],
 }
 
@@ -49,17 +50,34 @@ pub struct EventManager {
     inner: Arc<EventManagerInner>,
 }
 
+const EVENT_QUEUE_NAME: &str = "event_processing_queue";
+
 impl EventManager {
-    pub fn new(db: DatabaseConnection, max_concurrency: usize) -> Self {
-        Self {
+    pub async fn new(
+        db: DatabaseConnection,
+        max_concurrency: usize,
+    ) -> Result<Self, EventManagerError> {
+        let connection_pool = db.get_postgres_connection_pool().clone();
+        let event_queue =
+            delayqueue::DelayQueue::new(connection_pool, EVENT_QUEUE_NAME.to_owned()).await?;
+
+        Ok(Self {
             semaphore: Arc::new(Semaphore::new(max_concurrency)),
             inner: EventManagerInner {
                 db,
-                event_queue: Default::default(),
+                event_queue,
                 state: Default::default(),
             }
             .into(),
-        }
+        })
+    }
+
+    pub async fn archive(&self, message_id: i64) -> Result<bool, EventManagerError> {
+        self.inner
+            .event_queue
+            .archive(message_id)
+            .map_err(|e| e.into())
+            .await
     }
 
     pub fn db(&self) -> &DatabaseConnection {
@@ -135,7 +153,7 @@ impl EventManager {
                 },
                 delay,
             )
-            .await;
+            .await?;
 
         Ok(event_id)
     }
@@ -177,7 +195,7 @@ impl EventManager {
                         // run immediately if its past the should be completed at
                         delay.to_std().unwrap_or(Duration::ZERO),
                     )
-                    .await;
+                    .await?;
 
                 Ok::<(), EventManagerError>(())
             };

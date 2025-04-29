@@ -63,7 +63,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let db = Database::connect(opt).await?;
 
-    let event_manager = EventManager::new(db, 5);
+    let event_manager = EventManager::new(db, 5).await?;
     event_manager.set_state::<Settings>(settings.clone());
     event_manager.set_state::<S3BucketType>(bucket);
     event_manager.set_state::<ClientWithMiddleware>(get_http_client()?);

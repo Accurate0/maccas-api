@@ -66,7 +66,13 @@ pub async fn handle(event_manager: EventManager) {
     // FIXME: is this the best spot?
     let permit = event_manager.acquire_permit().await;
 
-    if let Some(event) = event_manager.inner.event_queue.pop().await {
+    if let Ok(Some(msg)) = event_manager
+        .inner
+        .event_queue
+        .read(Duration::from_secs(300))
+        .await
+    {
+        let event = msg.message;
         if !event_manager.should_run(event.id).await {
             tracing::info!("skipping event {} as it does not meet criteria", event.id);
             return;
@@ -115,6 +121,8 @@ pub async fn handle(event_manager: EventManager) {
             }))
             .catch_unwind()
             .await;
+
+            event_manager.archive(msg.msg_id).await?;
 
             match result {
                 Ok(result) => match result {

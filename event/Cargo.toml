@@ -18,6 +18,7 @@ sea-orm = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing = { workspace = true }
 base = { workspace = true }
+delayqueue = { workspace = true }
 recommendations = { workspace = true }
 config = { workspace = true }
 tokio-util = { workspace = true }
