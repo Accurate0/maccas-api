@@ -14,7 +14,7 @@ use std::{
 };
 use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
-use tracing::{Instrument, Level};
+use tracing::{instrument, Instrument, Level};
 
 const JOB_QUEUE_NAME: &str = "batch_job_queue";
 
@@ -101,6 +101,7 @@ impl JobExecutor {
         Ok(())
     }
 
+    #[instrument(skip(self))]
     pub async fn run_job(&self, name: &str) -> Result<(), JobError> {
         let jobs = self.0.jobs.read().await;
         let job_to_run = jobs.get(name).context("can't find job with name")?;

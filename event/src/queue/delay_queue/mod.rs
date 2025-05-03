@@ -3,6 +3,7 @@ use sea_orm::sqlx::{self, ConnectOptions, Pool, Postgres};
 use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, marker::PhantomData, sync::Arc, time::Duration};
 use thiserror::Error;
+use tracing::instrument;
 
 #[derive(Debug)]
 struct DelayQueueInner<T>
@@ -65,6 +66,7 @@ where
         })
     }
 
+    #[instrument(skip(self))]
     pub async fn push(&self, item: T, delay: Duration) -> Result<(), DelayQueueError> {
         self.inner
             .queue
@@ -94,6 +96,7 @@ where
         Ok(message)
     }
 
+    #[instrument(skip(self))]
     pub async fn archive(&self, message_id: i64) -> Result<bool, DelayQueueError> {
         Ok(self
             .inner

@@ -15,6 +15,7 @@ use thiserror::Error;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
+use tracing::instrument;
 
 mod handlers;
 pub use handlers::S3BucketType;
@@ -73,6 +74,7 @@ impl EventManager {
         })
     }
 
+    #[instrument(skip(self))]
     pub async fn archive(&self, message_id: i64) -> Result<bool, EventManagerError> {
         self.inner
             .event_queue
@@ -99,6 +101,7 @@ impl EventManager {
         self.inner.state.get::<T>()
     }
 
+    #[instrument(skip(self))]
     pub async fn create_event(
         &self,
         evt: Event,
