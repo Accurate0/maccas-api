@@ -162,7 +162,12 @@ impl JobExecutor {
         let db = self.0.db.clone();
         let job_id = job_model.id;
         let task_name = job_model.name.to_string();
-        let span = tracing::span!(parent: None, Level::INFO, "job", job_name = task_name, "otel.name" = format!("job::{}", task_name));
+        let span = tracing::span!(
+            Level::INFO,
+            "job",
+            job_name = task_name,
+            "otel.name" = format!("job::{}", task_name)
+        );
 
         let execution_id = entity::job_history::ActiveModel {
             job_name: Set(task_name.clone()),
