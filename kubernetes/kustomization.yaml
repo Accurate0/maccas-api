@@ -10,9 +10,8 @@ resources:
   - dashboard/dashboard.secret.yaml
   - dashboard/dashboard.service.yaml
   - event/event.service.yaml
-  - scheduler/scheduler.service.yaml
-  - scheduler/scheduler.service.yaml
-  - recommendations/recommendations.deployment.yaml
+  - scheduler/scheduler.deployment.yaml
+  - recommendations/recommendations.service.yaml
   - recommendations/recommendations.deployment.yaml
   - graphql/graphql.service.yaml
   - ingress.yaml
