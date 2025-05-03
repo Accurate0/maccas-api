@@ -35,11 +35,11 @@ where
 #[derive(Error, Debug)]
 pub enum DelayQueueError {
     #[error("serde parse error has occurred: `{0}`")]
-    SerdeError(#[from] serde_json::Error),
+    Serde(#[from] serde_json::Error),
     #[error("sqlx error has occurred: `{0}`")]
-    SqlxError(#[from] sqlx::Error),
+    Sqlx(#[from] sqlx::Error),
     #[error("pgmq error has occurred: `{0}`")]
-    PgmqError(#[from] pgmq::PgmqError),
+    Pgmq(#[from] pgmq::PgmqError),
 }
 
 impl<T> DelayQueue<T>
