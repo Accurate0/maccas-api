@@ -6,12 +6,10 @@ members = [
     "libmaccas",
     "places",
     "openai",
-    "batch",
     "base",
     "event", 
     "sensordata/lib", 
-    "recommendations", 
-    "delayqueue", 
+    "recommendations", "scheduler", 
 ]
 
 [workspace.package]
@@ -57,7 +55,6 @@ anyhow = "1.0.95"
 config = "0.15.8"
 
 entity = { path = "./entity" }
-delayqueue = { path = "./delayqueue" }
 libmaccas = { path = "./libmaccas" }
 places = { path = "./places" }
 openai = { path = "./openai" }
@@ -65,7 +62,7 @@ base = { path = "./base" }
 recommendations = { path = "./recommendations" }
 converters = { path = "./converters" }
 event = { path = "./event" }
-batch = { path = "./batch" }
+jobs = { path = "./jobs" }
 sensordata = { path = "./sensordata/lib" }
 
 thiserror = "2.0.11"
@@ -90,6 +87,7 @@ cron = "0.15.0"
 uuid = { version = "1.13", features = ["v4"] }
 axum = { version = "0.8.1", features = ["macros"] }
 tower-http = { version = "0.6.2", features = ["trace", "cors"] }
+tower = { version = "0.5.2", features = ["load-shed"] }
 itertools = "0.14.0"
 opentelemetry = "0.29.0"
 opentelemetry_sdk = "0.29.0"

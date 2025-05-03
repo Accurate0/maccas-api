@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, marker::PhantomData, sync::Arc, time::Duration};
 use thiserror::Error;
 
+#[derive(Debug)]
 struct DelayQueueInner<T>
 where
     T: Send + Debug,
@@ -13,6 +14,7 @@ where
     pub(crate) queue_name: String,
 }
 
+#[derive(Debug)]
 pub struct DelayQueue<T>
 where
     T: Send + Debug,
@@ -37,8 +39,6 @@ pub enum DelayQueueError {
     SqlxError(#[from] sqlx::Error),
     #[error("pgmq error has occurred: `{0}`")]
     PgmqError(#[from] pgmq::PgmqError),
-    #[error("unknown error")]
-    Unknown,
 }
 
 impl<T> DelayQueue<T>

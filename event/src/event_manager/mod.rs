@@ -24,7 +24,7 @@ pub enum EventManagerError {
     #[error("Serializer error has occurred: `{0}`")]
     Serializer(#[from] serde_json::Error),
     #[error("DelayQueue error has occurred: `{0}`")]
-    DelayQueue(#[from] delayqueue::DelayQueueError),
+    DelayQueue(#[from] crate::queue::DelayQueueError),
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
     #[error("Chrono out of range error has occurred: `{0}`")]
@@ -38,12 +38,14 @@ pub(crate) struct QueuedEvent {
     pub(crate) trace_id: String,
 }
 
+#[derive(Debug)]
 struct EventManagerInner {
     db: DatabaseConnection,
-    event_queue: delayqueue::DelayQueue<QueuedEvent>,
+    event_queue: crate::queue::DelayQueue<QueuedEvent>,
     state: TypeMap![Sync + Send],
 }
 
+#[derive(Debug)]
 pub struct EventManager {
     semaphore: Arc<Semaphore>,
     inner: Arc<EventManagerInner>,
@@ -58,7 +60,7 @@ impl EventManager {
     ) -> Result<Self, EventManagerError> {
         let connection_pool = db.get_postgres_connection_pool().clone();
         let event_queue =
-            delayqueue::DelayQueue::new(connection_pool, EVENT_QUEUE_NAME.to_owned()).await?;
+            crate::queue::DelayQueue::new(connection_pool, EVENT_QUEUE_NAME.to_owned()).await?;
 
         Ok(Self {
             semaphore: Arc::new(Semaphore::new(max_concurrency)),

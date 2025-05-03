@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use crate::settings::{Email, McDonalds};
 use anyhow::Context;
 use base::constants::mc_donalds;
@@ -27,10 +27,6 @@ pub struct ActivateAccountJob {
 impl Job for ActivateAccountJob {
     fn name(&self) -> String {
         "activate_account".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 */10 * * * *".parse().unwrap())
     }
 
     async fn execute(

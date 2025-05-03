@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use crate::settings::{Email, McDonalds};
 use base::{constants::mc_donalds, http::get_http_client};
 use entity::accounts;
@@ -31,10 +31,6 @@ pub struct CreateAccountJob {
 impl Job for CreateAccountJob {
     fn name(&self) -> String {
         "create_account".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 */2 * * * *".parse().unwrap())
     }
 
     // TODO: needs refreshed at datetime as well, since updated at is updated by updating tokens alone

@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use crate::settings::McDonalds;
 use base::{constants::mc_donalds, http::get_http_client};
 use entity::accounts;
@@ -19,10 +19,6 @@ pub struct ActivateExistingAccount {
 impl Job for ActivateExistingAccount {
     fn name(&self) -> String {
         "activate_existing_account".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 */2 * * * *".parse().unwrap())
     }
 
     async fn execute(

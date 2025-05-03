@@ -41,6 +41,8 @@ spec:
               value: http://flipt.flipt.svc.cluster.local:8080
             - name: RECOMMENDATIONS_API_BASE
               value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
+            - name: SENSORDATA_API_BASE
+              value: http://maccas-sensordata.maccas-api.svc.cluster.local
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets

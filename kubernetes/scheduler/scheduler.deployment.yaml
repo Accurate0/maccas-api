@@ -1,37 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: maccas-graphql
+  name: maccas-scheduler
   namespace: maccas-api
   annotations:
     secrets.infisical.com/auto-reload: "true"
 spec:
   selector:
     matchLabels:
-      app: maccas-graphql
-  replicas: 2
+      app: maccas-scheduler
+  replicas: 1
   template:
     metadata:
       labels:
-        app: maccas-graphql
+        app: maccas-scheduler
     spec:
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app: maccas-graphql
+                  app: maccas-scheduler
               topologyKey: kubernetes.io/hostname
-      initContainers:
-        - name: maccas-migration
-          image: maccas-migration:latest
-          imagePullPolicy: Always
-          envFrom:
-            - secretRef:
-                name: maccas-migration-managed-secrets
       containers:
-        - name: maccas-graphql
-          image: maccas-graphql:latest
+        - name: maccas-scheduler
+          image: maccas-scheduler:latest
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -46,14 +39,8 @@ spec:
           env:
             - name: EVENT_API_BASE
               value: http://maccas-event.maccas-api.svc.cluster.local:8001
-            - name: RECOMMENDATIONS_API_BASE
-              value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
-            - name: FLIPT_URL
-              value: http://flipt.flipt.svc.cluster.local:8080
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets
             - secretRef:
                 name: maccas-api-managed-secrets
-          ports:
-            - containerPort: 8000

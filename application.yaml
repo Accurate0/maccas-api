@@ -17,7 +17,7 @@ spec:
         - maccas-migration=ghcr.io/accurate0/maccas-migration:${ARGOCD_APP_REVISION}
         - maccas-web=ghcr.io/accurate0/maccas-web:${ARGOCD_APP_REVISION}
         - maccas-event=ghcr.io/accurate0/maccas-event:${ARGOCD_APP_REVISION}
-        - maccas-batch=ghcr.io/accurate0/maccas-batch:${ARGOCD_APP_REVISION}
+        - maccas-scheduler=ghcr.io/accurate0/maccas-scheduler:${ARGOCD_APP_REVISION}
         - maccas-dashboard=ghcr.io/accurate0/maccas-dashboard:${ARGOCD_APP_REVISION}
         - maccas-sensordata=ghcr.io/accurate0/maccas-sensordata:${ARGOCD_APP_REVISION}
         - maccas-recommendations=ghcr.io/accurate0/maccas-recommendations:${ARGOCD_APP_REVISION}

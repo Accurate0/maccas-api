@@ -16,6 +16,7 @@ pub struct Proxy {
 #[derive(Debug, Deserialize, Clone)]
 pub struct McDonalds {
     pub client_id: String,
+    pub client_secret: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -26,12 +27,23 @@ pub struct ImagesBucket {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Email {
+    pub address: String,
+    pub password: String,
+    pub server_address: String,
+    pub domain_name: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub database: Database,
     pub proxy: Proxy,
     pub auth_secret: String,
     pub mcdonalds: McDonalds,
     pub images_bucket: ImagesBucket,
+    pub email: Email,
+    pub openai_api_key: String,
+    pub sensordata_api_base: String,
     pub recommendations_api_base: String,
 }
 

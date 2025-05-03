@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use anyhow::Context;
 use itertools::Itertools;
 use openai::types::{
@@ -38,10 +38,6 @@ pub fn get_prompt(available_categories: &str, offer_details: &str) -> Vec<ChatMe
 impl Job for CategoriseOffersJob {
     fn name(&self) -> String {
         "categorise_offers".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 0 0 * * *".parse().unwrap())
     }
 
     async fn execute(

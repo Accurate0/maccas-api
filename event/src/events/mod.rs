@@ -5,6 +5,15 @@ use std::time::Duration;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub enum Event {
+    UnlockAllAccounts {},
+    ActivateAccount {},
+    ActivateExistingAccount {},
+    CategoriseOffers {},
+    CreateAccount {},
+    GenerateRecommendations {},
+    RecategoriseOffers {},
+    Refresh {},
+    SaveImages {},
     Cleanup {
         offer_id: Uuid,
         transaction_id: Uuid,
@@ -25,6 +34,27 @@ pub enum Event {
     },
 }
 
+impl MaybeJobScheduler for Event {
+    fn name(&self) -> Option<&'static str> {
+        match self {
+            Event::UnlockAllAccounts {} => Some("account_unlock"),
+            Event::ActivateAccount {} => Some("activate_account"),
+            Event::ActivateExistingAccount {} => Some("activate_existing_account"),
+            Event::CategoriseOffers {} => Some("categorise_offers"),
+            Event::CreateAccount {} => Some("create_account"),
+            Event::GenerateRecommendations {} => Some("generate_recommendations"),
+            Event::RecategoriseOffers {} => Some("recategorise_offers"),
+            Event::Refresh {} => Some("refresh"),
+            Event::SaveImages {} => Some("save_images"),
+            _ => None,
+        }
+    }
+}
+
+pub trait MaybeJobScheduler {
+    fn name(&self) -> Option<&'static str>;
+}
+
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -32,6 +62,15 @@ impl fmt::Display for Event {
             Event::SaveImage { .. } => write!(f, "SaveImage"),
             Event::RefreshPoints { .. } => write!(f, "RefreshPoints"),
             Event::NewOfferFound { .. } => write!(f, "NewOfferFound"),
+            Event::UnlockAllAccounts {} => write!(f, "UnlockAllAccounts "),
+            Event::ActivateAccount {} => write!(f, "ActivateAccount"),
+            Event::ActivateExistingAccount {} => write!(f, "ActivateExistingAccount"),
+            Event::CategoriseOffers {} => write!(f, "CategoriseOffers"),
+            Event::CreateAccount {} => write!(f, "CreateAccount"),
+            Event::GenerateRecommendations {} => write!(f, "GenerateRecommendations"),
+            Event::RecategoriseOffers {} => write!(f, "RecategoriseOffers"),
+            Event::Refresh {} => write!(f, "Refresh"),
+            Event::SaveImages {} => write!(f, "SaveImages"),
         }
     }
 }

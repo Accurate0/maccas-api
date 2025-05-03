@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use base::{http::get_http_client, jwt::generate_internal_jwt};
 use entity::offer_audit;
 use itertools::Itertools;
@@ -8,6 +6,7 @@ use recommendations::{GenerateClusterScores, GenerateClusters, GenerateEmbedding
 use reqwest::StatusCode;
 use reqwest_middleware::RequestBuilder;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
@@ -22,10 +21,6 @@ impl Job for GenerateRecommendationsJob {
         "generate_recommendations".to_owned()
     }
 
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 0 * * * *".parse().unwrap())
-    }
-
     async fn execute(
         &self,
         context: &JobContext,
@@ -34,7 +29,7 @@ impl Job for GenerateRecommendationsJob {
         let http_client = get_http_client()?;
         let token = generate_internal_jwt(
             self.auth_secret.as_ref(),
-            "Maccas Batch",
+            "Maccas Event",
             "Maccas Recommendations",
         )?;
 

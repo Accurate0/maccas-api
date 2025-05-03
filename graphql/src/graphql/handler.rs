@@ -82,7 +82,6 @@ pub async fn graphql_handler(
 pub struct HealthResponse {
     database: bool,
     event: bool,
-    batch: bool,
     recommendations: bool,
 }
 
@@ -95,7 +94,6 @@ pub async fn health(
         health {
           database
           event
-          batch
           recommendations
         }
       }
@@ -112,7 +110,7 @@ pub async fn health(
             .clone(),
     )?;
 
-    if health_response.database && health_response.event && health_response.batch {
+    if health_response.database && health_response.event && health_response.recommendations {
         Ok((StatusCode::OK, Json(health_response)))
     } else {
         Ok((StatusCode::SERVICE_UNAVAILABLE, Json(health_response)))

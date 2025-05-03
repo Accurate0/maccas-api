@@ -1,11 +1,14 @@
 use super::{EventManager, EventManagerError};
 use crate::event_manager::handlers::cleanup::cleanup;
 use crate::event_manager::handlers::save_image::save_image;
+use crate::jobs::error::JobError;
+use crate::jobs::job_scheduler::JobExecutor;
 use base::{
     jwt::JwtValidationError,
     retry::{retry_async, ExponentialBackoff, RetryResult},
 };
 use converters::ConversionError;
+use event::events::MaybeJobScheduler;
 use event::Event;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;
@@ -50,8 +53,10 @@ pub enum HandlerError {
     IOError(#[from] std::io::Error),
     #[error("A join error occurred: `{0}`")]
     TaskJoinError(#[from] tokio::task::JoinError),
-    #[error("An event manager error occurred: `{0}`")]
+    #[error("An  manager error occurred: `{0}`")]
     EventManagerError(#[from] EventManagerError),
+    #[error("A job error occurred: `{0}`")]
+    JobSchedulerError(#[from] JobError),
     #[error("A TryFromInt error occurred: `{0}`")]
     TryFromIntError(#[from] TryFromIntError),
     #[error("A ConversionError error occurred: `{0}`")]
@@ -85,6 +90,7 @@ pub async fn handle(event_manager: EventManager) {
 
         let fut = async move {
             event_manager.set_event_running(event.id).await?;
+            let job_scheduler = event_manager.get_state::<JobExecutor>();
 
             let result = AssertUnwindSafe(retry_async(backoff, || async {
                 let event_manager = event_manager.clone();
@@ -117,6 +123,15 @@ pub async fn handle(event_manager: EventManager) {
                     Event::NewOfferFound {
                         offer_proposition_id,
                     } => new_offer_found(offer_proposition_id, event_manager).await,
+                    event => {
+                        let name = event.name();
+                        if let Some(name) = name {
+                            job_scheduler.run_job(name).await.map_err(Into::into)
+                        } else {
+                            tracing::warn!("no name found for event: {event:?}");
+                            Ok(())
+                        }
+                    }
                 }
             }))
             .catch_unwind()

@@ -24,7 +24,6 @@ pub struct Settings {
     pub proxy: Proxy,
     pub mcdonalds: McDonalds,
     pub event_api_base: String,
-    pub batch_api_base: String,
     pub recommendations_api_base: String,
     pub auth_secret: String,
     pub places_api_key: String,

@@ -1,0 +1,19 @@
+[package]
+name = "scheduler"
+version = "0.1.0"
+edition = "2024"
+rust-version.workspace = true
+
+[dependencies]
+apalis = { version = "0.7.1", features = ["layers"] }
+apalis-cron = "0.7.1"
+tokio = { workspace = true }
+chrono = { workspace = true }
+tower = { workspace = true }
+base = { workspace = true }
+event = { workspace = true }
+config = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }
+reqwest-middleware = { workspace = true }
+tracing = { workspace = true }

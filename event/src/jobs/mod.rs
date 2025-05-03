@@ -1,3 +1,5 @@
+use crate::event_manager::EventManager;
+
 use self::error::JobError;
 use entity::job_history;
 use sea_orm::DatabaseTransaction;
@@ -21,7 +23,6 @@ pub mod save_images;
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {
     fn name(&self) -> String;
-    fn job_type(&self) -> JobType;
     async fn execute(
         &self,
         _context: &JobContext,
@@ -39,52 +40,33 @@ pub trait Job: Send + Sync + Debug {
 }
 
 #[derive(Debug)]
-pub enum JobType {
-    Schedule(cron::Schedule),
-    Manual,
-}
-
-#[derive(Debug)]
 pub struct JobDetails {
     pub job: Arc<dyn Job>,
-    pub enabled: bool,
-    pub job_type: JobType,
-}
-
-#[derive(Debug, Clone, serde::Serialize)]
-pub enum IntrospectedJobState {
-    Stopped,
-    #[allow(dead_code)]
-    Running,
-}
-
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct IntrospectedJobDetails {
-    pub name: String,
-    pub state: IntrospectedJobState,
 }
 
 impl JobDetails {
-    pub fn new(job: Arc<dyn Job>, job_type: JobType, enabled: bool) -> Self {
-        Self {
-            job,
-            job_type,
-            enabled,
-        }
+    pub fn new(job: Arc<dyn Job>) -> Self {
+        Self { job }
     }
 }
 
 pub struct JobContext<'a> {
     database: &'a DatabaseTransaction,
+    event_manager: EventManager,
     execution_id: i32,
 }
 
 #[allow(unused)]
 impl<'a> JobContext<'a> {
-    pub fn new(database: &'a DatabaseTransaction, execution_id: i32) -> Self {
+    pub fn new(
+        database: &'a DatabaseTransaction,
+        execution_id: i32,
+        event_manager: EventManager,
+    ) -> Self {
         Self {
             database,
             execution_id,
+            event_manager,
         }
     }
 

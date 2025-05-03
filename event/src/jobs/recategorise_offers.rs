@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use anyhow::Context;
 use entity::offer_details;
 use itertools::Itertools;
@@ -16,10 +16,6 @@ pub struct RecategoriseOffersJob {
 impl Job for RecategoriseOffersJob {
     fn name(&self) -> String {
         "recategorise_offers".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Manual
     }
 
     async fn execute(

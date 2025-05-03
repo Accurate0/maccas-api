@@ -1,12 +1,11 @@
-use super::{error::JobError, Job, JobContext, JobType};
-use crate::settings::McDonalds;
+use super::{error::JobError, Job, JobContext};
 use anyhow::Context as _;
-use base::{constants::mc_donalds, http::get_http_client, jwt::generate_internal_jwt};
+use base::constants::mc_donalds;
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
-use event::{CreateBulkEvents, CreateBulkEventsResponse, CreateEvent, Event};
+use event::Event;
 use libmaccas::ApiClient;
-use reqwest::StatusCode;
+use opentelemetry::trace::TraceContextExt;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     sea_query::{LockBehavior, LockType, OnConflict},
@@ -19,25 +18,19 @@ use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
 pub struct RefreshJob {
-    pub event_api_base: String,
     pub http_client: ClientWithMiddleware,
-    pub auth_secret: String,
-    pub mcdonalds_config: McDonalds,
+    pub mcdonalds_config: crate::settings::McDonalds,
 }
 
 #[derive(Serialize, Deserialize)]
 struct RefreshContext {
-    events_to_dispatch: Vec<CreateEvent>,
+    events_to_dispatch: Vec<Event>,
 }
 
 #[async_trait::async_trait]
 impl Job for RefreshJob {
     fn name(&self) -> String {
         "refresh".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 */3 * * * *".parse().unwrap())
     }
 
     // TODO: needs refreshed at datetime as well, since updated at is updated by updating tokens alone
@@ -149,25 +142,15 @@ impl Job for RefreshJob {
 
         let mut events_to_dispatch = Vec::with_capacity(1 + added_offers.len().saturating_mul(2));
 
-        events_to_dispatch.push(event::CreateEvent {
-            event: Event::RefreshPoints { account_id },
-            delay: Duration::from_secs(30),
-        });
-
+        events_to_dispatch.push(Event::RefreshPoints { account_id });
         for offer in &added_offers {
-            let save_image_event = event::CreateEvent {
-                event: Event::SaveImage {
-                    basename: offer.image_base_name.as_ref().clone(),
-                    force: *offer.migrated.as_ref(),
-                },
-                delay: Duration::ZERO,
+            let save_image_event = Event::SaveImage {
+                basename: offer.image_base_name.as_ref().clone(),
+                force: *offer.migrated.as_ref(),
             };
 
-            let new_offer_event = event::CreateEvent {
-                event: event::Event::NewOfferFound {
-                    offer_proposition_id: *offer.proposition_id.as_ref(),
-                },
-                delay: Duration::from_secs(15),
+            let new_offer_event = event::Event::NewOfferFound {
+                offer_proposition_id: *offer.proposition_id.as_ref(),
             };
 
             events_to_dispatch.push(save_image_event);
@@ -259,36 +242,17 @@ impl Job for RefreshJob {
             return Ok(());
         }
 
-        let http_client = get_http_client()?;
-        let token =
-            generate_internal_jwt(self.auth_secret.as_ref(), "Maccas Batch", "Maccas Event")?;
+        let trace_id = opentelemetry::Context::current()
+            .span()
+            .span_context()
+            .trace_id()
+            .to_string();
 
-        let request_url = format!(
-            "{}/{}",
-            self.event_api_base,
-            event::CreateBulkEvents::path()
-        );
-
-        let request = http_client
-            .post(&request_url)
-            .json(&CreateBulkEvents {
-                events: refresh_context.events_to_dispatch,
-            })
-            .bearer_auth(token);
-
-        let response = request.send().await;
-
-        match response {
-            Ok(response) => match response.status() {
-                StatusCode::CREATED => {
-                    let id = response.json::<CreateBulkEventsResponse>().await?.ids;
-                    tracing::info!("created events with id {:?}", id);
-                }
-                status => {
-                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
-                }
-            },
-            Err(e) => tracing::warn!("event request failed with {}", e),
+        for event in refresh_context.events_to_dispatch {
+            context
+                .event_manager
+                .create_event(event, Duration::from_secs(30), trace_id.clone())
+                .await?;
         }
 
         Ok(())

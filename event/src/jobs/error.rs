@@ -3,14 +3,18 @@ use sea_orm::DbErr;
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;
 
+use crate::event_manager::EventManagerError;
+
 use super::job_scheduler;
 
 #[derive(Error, Debug)]
 pub enum JobError {
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
+    #[error("EventManager error has occurred: `{0}`")]
+    EventManager(#[from] EventManagerError),
     #[error("DelayQueue error has occurred: `{0}`")]
-    DelayQueue(#[from] delayqueue::DelayQueueError),
+    DelayQueue(#[from] crate::queue::DelayQueueError),
     #[error("Serialization error has occurred: `{0}`")]
     Serialization(#[from] serde_json::Error),
     #[error("Chrono error has occurred: `{0}`")]

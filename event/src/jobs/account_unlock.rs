@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext, JobType};
+use super::{error::JobError, Job, JobContext};
 use entity::account_lock;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use tokio_util::sync::CancellationToken;
@@ -10,10 +10,6 @@ pub struct AccountUnlockJob;
 impl Job for AccountUnlockJob {
     fn name(&self) -> String {
         "account_unlock".to_owned()
-    }
-
-    fn job_type(&self) -> JobType {
-        JobType::Schedule("0 0 0 * * *".parse().unwrap())
     }
 
     // FIXME: this fixes the symptom but not the cause of the issue

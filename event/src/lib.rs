@@ -1,4 +1,4 @@
-mod events;
+pub mod events;
 
 pub use events::CreateBulkEvents;
 pub use events::CreateBulkEventsResponse;
