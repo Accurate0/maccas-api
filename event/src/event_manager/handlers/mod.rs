@@ -80,6 +80,10 @@ pub async fn handle(event_manager: EventManager) {
         let event = msg.message;
         if !event_manager.should_run(event.id).await {
             tracing::info!("skipping event {} as it does not meet criteria", event.id);
+            if let Err(e) = event_manager.archive(msg.msg_id).await {
+                tracing::warn!("error archiving event: {e}");
+            }
+
             return;
         }
 
