@@ -1,5 +1,4 @@
 pub mod constants;
-pub mod delay_queue;
 pub mod feature_flag;
 pub mod http;
 pub mod jwt;
