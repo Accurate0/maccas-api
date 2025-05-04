@@ -1,14 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - dashboard/dashboard.deployment.yaml
   - event/event.deployment.yaml
   - graphql/graphql.deployment.yaml
   - web/web.deployment.yaml
   - api.secret.yaml
   - common.secret.yaml
-  - dashboard/dashboard.secret.yaml
-  - dashboard/dashboard.service.yaml
   - event/event.service.yaml
   - scheduler/scheduler.deployment.yaml
   - recommendations/recommendations.service.yaml

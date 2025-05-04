@@ -1,5 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["group:recommended"],
-  "ignorePaths": ["web/package.json", "dashboard/package.json", "clustering/**"]
+  "ignorePaths": ["web/package.json", "clustering/**"]
 }

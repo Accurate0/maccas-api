@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [dashboard, web, sensordata, clustering]
+        apps: [web, sensordata, clustering]
 
     permissions:
       packages: write

@@ -25,20 +25,19 @@ jobs:
         run: |
           web=$(docker manifest inspect ghcr.io/accurate0/maccas-web | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           graphql=$(docker manifest inspect ghcr.io/accurate0/maccas-graphql | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          dashboard=$(docker manifest inspect ghcr.io/accurate0/maccas-dashboard | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           migration=$(docker manifest inspect ghcr.io/accurate0/maccas-migration | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           scheduler=$(docker manifest inspect ghcr.io/accurate0/maccas-scheduler | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           event=$(docker manifest inspect ghcr.io/accurate0/maccas-event | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           sensordata=$(docker manifest inspect ghcr.io/accurate0/maccas-sensordata | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           recommendations=$(docker manifest inspect ghcr.io/accurate0/maccas-recommendations | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           clustering=$(docker manifest inspect ghcr.io/accurate0/maccas-clustering | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
-          echo "multi-arch-digests=$web,$graphql,$dashboard,$migration,$scheduler,$event,$sensordata,$recommendations,$clustering" >> $GITHUB_OUTPUT
+          echo "multi-arch-digests=$web,$graphql,$migration,$scheduler,$event,$sensordata,$recommendations,$clustering" >> $GITHUB_OUTPUT
 
       - uses: snok/container-retention-policy@v3.0.0
         with:
           account: user
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: "maccas-web maccas-dashboard maccas-migration maccas-graphql maccas-scheduler maccas-event maccas-sensordata maccas-recommendations maccas-clustering"
+          image-names: "maccas-web maccas-migration maccas-graphql maccas-scheduler maccas-event maccas-sensordata maccas-recommendations maccas-clustering"
           image-tags: "!latest"
           keep-n-most-recent: 10
           cut-off: 3d
