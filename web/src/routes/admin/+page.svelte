@@ -72,11 +72,11 @@
 			</div>
 		</Card.Root>
 	{:then events}
-		<Card.Root class="p-4">
+		<Card.Root>
 			<div class="m-4 grid grid-flow-row gap-4">
 				<h4 class="text-sm font-semibold">Events</h4>
 			</div>
-			<div class="flex">
+			<div class="m-4 flex">
 				<Select.Root>
 					<Select.Trigger class="mr-4">
 						<Select.Value placeholder="Event" />
