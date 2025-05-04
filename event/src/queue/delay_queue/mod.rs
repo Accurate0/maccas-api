@@ -23,15 +23,6 @@ where
     inner: Arc<DelayQueueInner<T>>,
 }
 
-#[derive(Serialize)]
-pub struct IntrospectionResult<T>
-where
-    T: Serialize,
-{
-    pub delay_util: Duration,
-    pub value: T,
-}
-
 #[derive(Error, Debug)]
 pub enum DelayQueueError {
     #[error("serde parse error has occurred: `{0}`")]
