@@ -83,7 +83,7 @@
 								Location
 							</Tabs.Trigger>
 							{#if $data.isAdmin}
-								<Tabs.Trigger on:click={() => goto('/users')} value="users">Users</Tabs.Trigger>
+								<Tabs.Trigger on:click={() => goto('/admin')} value="admin">Admin</Tabs.Trigger>
 							{/if}
 						</Tabs.List>
 					{/if}

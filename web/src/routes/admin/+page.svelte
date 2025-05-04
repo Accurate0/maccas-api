@@ -9,6 +9,7 @@
 	import { ExclamationTriangle, Check, Cross1 } from 'radix-icons-svelte';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+	import * as Select from '$lib/components/ui/select';
 
 	interface Props {
 		data: PageData;
@@ -59,6 +60,39 @@
 			<Button on:click={resetRateLimit}>Reset rate limit</Button>
 		</Card.Content>
 	</Card.Root>
+
+	{#await data.events}
+		<Card.Root>
+			<div class="m-4 grid grid-flow-row gap-4">
+				<h4 class="text-sm font-semibold">Events</h4>
+			</div>
+
+			<div class="flex h-96 flex-col overflow-y-scroll">
+				<Skeleton class="m-4 mt-0 h-96 w-[inherit] rounded-xl" />
+			</div>
+		</Card.Root>
+	{:then events}
+		<Card.Root class="p-4">
+			<div class="m-4 grid grid-flow-row gap-4">
+				<h4 class="text-sm font-semibold">Events</h4>
+			</div>
+			<div class="flex">
+				<Select.Root>
+					<Select.Trigger class="mr-4">
+						<Select.Value placeholder="Event" />
+					</Select.Trigger>
+					<Select.Content>
+						{#each events as event}
+							<Select.Item value={event}>
+								{event}
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+				<Button>Run</Button>
+			</div>
+		</Card.Root>
+	{/await}
 
 	{#await data.notifications}
 		<Card.Root>
