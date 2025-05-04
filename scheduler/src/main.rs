@@ -41,6 +41,14 @@ create_trigger_fn!(
     trigger_categorise_offers
 );
 
+create_trigger_fn!(
+    CreateEvent {
+        event: ::event::Event::GenerateRecommendations {},
+        delay: Duration::from_secs(5),
+    },
+    trigger_generate_recommendations
+);
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     base::tracing::init("scheduler");
@@ -48,12 +56,15 @@ async fn main() -> anyhow::Result<()> {
     let refresh_worker = create_worker!("0 */3 * * * *", trigger_refresh);
     let account_unlock_worker = create_worker!("0 0 0 * * *", trigger_account_unlock);
     let categorise_offers_worker = create_worker!("0 0 0 * * *", trigger_categorise_offers);
+    let generate_recommendations_worker =
+        create_worker!("0 * * * * *", trigger_generate_recommendations);
 
     tracing::info!("scheduler started");
     Monitor::new()
         .register(refresh_worker)
         .register(account_unlock_worker)
         .register(categorise_offers_worker)
+        .register(generate_recommendations_worker)
         .run()
         .await
         .map_err(Into::into)
