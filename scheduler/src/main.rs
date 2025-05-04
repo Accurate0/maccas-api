@@ -57,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
     let account_unlock_worker = create_worker!("0 0 0 * * *", trigger_account_unlock);
     let categorise_offers_worker = create_worker!("0 0 0 * * *", trigger_categorise_offers);
     let generate_recommendations_worker =
-        create_worker!("0 * * * * *", trigger_generate_recommendations);
+        create_worker!("0 0 * * * *", trigger_generate_recommendations);
 
     tracing::info!("scheduler started");
     Monitor::new()
