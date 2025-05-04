@@ -14,8 +14,8 @@ use crate::{
     event_manager::EventManager,
     jwt::{validator, validator_admin_only},
     routes::{
-        create_event::create_bulk_events, create_event::create_event, get_events::get_events,
-        health::health,
+        create_event::create_bulk_events, create_event::create_event,
+        get_events::get_events_history, health::health,
     },
     settings::Settings,
     state::AppState,
@@ -26,6 +26,7 @@ use actix_web_opentelemetry::RequestTracing;
 use base::{feature_flag::FeatureFlagClient, http::get_http_client};
 use event_manager::S3BucketType;
 use reqwest_middleware::ClientWithMiddleware;
+use routes::get_events::get_events;
 use sea_orm::{ConnectOptions, Database};
 use std::{net::SocketAddr, time::Duration};
 use tokio_util::sync::CancellationToken;
@@ -201,6 +202,14 @@ async fn main() -> Result<(), anyhow::Error> {
             )
             .route(
                 "/event",
+                web::get()
+                    .to(get_events_history)
+                    .wrap(from_fn(validator_admin_only))
+                    .wrap(RequestTracing::new())
+                    .wrap(Logger::default()),
+            )
+            .route(
+                "/event/all",
                 web::get()
                     .to(get_events)
                     .wrap(from_fn(validator_admin_only))

@@ -2,8 +2,9 @@ use actix_web::{body::EitherBody, error::JsonPayloadError, HttpRequest, HttpResp
 use core::fmt;
 use sea_orm::prelude::Uuid;
 use std::time::Duration;
+use strum::VariantNames;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, VariantNames)]
 pub enum Event {
     UnlockAllAccounts {},
     ActivateAccount {},
@@ -105,9 +106,14 @@ pub struct ExistingEvent {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
-pub struct GetEventsResponse {
+pub struct GetEventsHistoryResponse {
     pub active_events: Vec<entity::events::Model>,
     pub historical_events: Vec<entity::events::Model>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct GetEventsResponse {
+    pub events: Vec<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]

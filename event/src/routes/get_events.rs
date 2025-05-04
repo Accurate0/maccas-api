@@ -1,18 +1,20 @@
 use crate::{error::EventError, state::AppState};
 use actix_web::web::{self, Json};
 use entity::{events, sea_orm_active_enums::EventStatus};
-use event::GetEventsResponse;
+use event::{events::GetEventsResponse, Event, GetEventsHistoryResponse};
+use itertools::Itertools;
 use sea_orm::{EntityTrait, QueryOrder, QuerySelect};
+use strum::VariantNames;
 
 #[derive(serde::Deserialize)]
 pub struct Filter {
     limit: Option<u64>,
 }
 
-pub async fn get_events(
+pub async fn get_events_history(
     state: web::Data<AppState>,
     query: web::Query<Filter>,
-) -> Result<Json<GetEventsResponse>, EventError> {
+) -> Result<Json<GetEventsHistoryResponse>, EventError> {
     let events = events::Entity::find()
         .order_by_desc(events::Column::CreatedAt)
         .limit(Some(query.limit.unwrap_or(50)))
@@ -30,8 +32,20 @@ pub async fn get_events(
         }
     }
 
-    Ok(Json(GetEventsResponse {
+    Ok(Json(GetEventsHistoryResponse {
         active_events,
         historical_events,
+    }))
+}
+
+pub async fn get_events(
+    _state: web::Data<AppState>,
+) -> Result<Json<GetEventsResponse>, EventError> {
+    Ok(Json(GetEventsResponse {
+        events: Event::VARIANTS
+            .iter()
+            .cloned()
+            .map(|s| s.to_owned())
+            .collect_vec(),
     }))
 }
