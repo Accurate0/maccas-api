@@ -164,6 +164,7 @@ impl JobExecutor {
         let job_id = job_model.id;
         let task_name = job_model.name.to_string();
         let span = tracing::span!(
+            parent: None,
             Level::INFO,
             "job",
             job_name = task_name,
