@@ -2,7 +2,7 @@ use super::{EventManager, EventManagerError};
 use crate::event_manager::handlers::cleanup::cleanup;
 use crate::event_manager::handlers::save_image::save_image;
 use crate::jobs::error::JobError;
-use crate::jobs::job_scheduler::JobExecutor;
+use crate::jobs::job_executor::JobExecutor;
 use base::{
     jwt::JwtValidationError,
     retry::{retry_async, ExponentialBackoff, RetryResult},

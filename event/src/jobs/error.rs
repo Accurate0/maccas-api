@@ -1,11 +1,9 @@
+use super::job_executor;
+use crate::event_manager::EventManagerError;
 use base::{http::HttpCreationError, jwt::JwtValidationError};
 use sea_orm::DbErr;
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;
-
-use crate::event_manager::EventManagerError;
-
-use super::job_scheduler;
 
 #[derive(Error, Debug)]
 pub enum JobError {
@@ -20,7 +18,7 @@ pub enum JobError {
     #[error("Chrono error has occurred: `{0}`")]
     Chrono(#[from] chrono::OutOfRangeError),
     #[error("Send error has occurred: `{0}`")]
-    Send(#[from] SendError<job_scheduler::JobMessage>),
+    Send(#[from] SendError<job_executor::JobMessage>),
     #[error("An unknown error occurred: `{0}`")]
     UnknownError(#[from] anyhow::Error),
     #[error("McDonald's client error occurred: `{0}`")]

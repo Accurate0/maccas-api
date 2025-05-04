@@ -1,13 +1,8 @@
 use crate::jobs::{
-    account_unlock::AccountUnlockJob,
-    activate_account::ActivateAccountJob,
-    activate_existing_account::ActivateExistingAccount,
-    categorise_offers::CategoriseOffersJob,
-    create_account::CreateAccountJob,
-    generate_recommendations::GenerateRecommendationsJob,
-    job_scheduler::{self, JobExecutor},
-    recategorise_offers::RecategoriseOffersJob,
-    refresh::RefreshJob,
+    account_unlock::AccountUnlockJob, activate_account::ActivateAccountJob,
+    activate_existing_account::ActivateExistingAccount, categorise_offers::CategoriseOffersJob,
+    create_account::CreateAccountJob, generate_recommendations::GenerateRecommendationsJob,
+    job_executor::JobExecutor, recategorise_offers::RecategoriseOffersJob, refresh::RefreshJob,
     save_images::SaveImagesJob,
 };
 use crate::{
@@ -25,6 +20,7 @@ use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_opentelemetry::RequestTracing;
 use base::{feature_flag::FeatureFlagClient, http::get_http_client};
 use event_manager::S3BucketType;
+use jobs::job_executor;
 use reqwest_middleware::ClientWithMiddleware;
 use routes::get_events::get_events;
 use sea_orm::{ConnectOptions, Database};
@@ -157,7 +153,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let job_executor_cancellation_token = CancellationToken::default();
 
     let event_manager = EventManager::new(db.clone(), 5).await?;
-    let job_scheduler = job_scheduler::JobExecutor::new(
+    let job_scheduler = job_executor::JobExecutor::new(
         db.clone(),
         event_manager.clone(),
         job_executor_cancellation_token.clone(),
