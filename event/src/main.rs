@@ -141,8 +141,8 @@ async fn main() -> Result<(), anyhow::Error> {
     )?;
 
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
-    opt.max_connections(100)
-        .min_connections(5)
+    opt.max_connections(20)
+        .min_connections(0)
         .connect_timeout(Duration::from_secs(8))
         .idle_timeout(Duration::from_secs(8))
         .sqlx_logging(true)
