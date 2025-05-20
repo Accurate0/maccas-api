@@ -4,6 +4,7 @@ query LocationByCoordinates($latitude: Float!, $longitude: Float!) {
 			name
 			storeNumber
 			address
+			distance
 		}
 	}
 }

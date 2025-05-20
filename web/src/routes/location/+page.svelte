@@ -2,21 +2,27 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
-	import type { LocationByText$result } from '$houdini';
+	import type { LocationByCoordinates$result, LocationByText$result } from '$houdini';
 	import { toast } from 'svelte-sonner';
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { Crosshair1 } from 'radix-icons-svelte';
 	import type { UpdateLocationBody } from '../api/location/schema';
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { LocalizedDistanceFormatter } from '@maptimy/platform-formatters';
 
 	let currentStoreName = $state($page.data?.config?.storeName);
 
 	let disabled = $state(false);
 	let optionsDisabled = $state(false);
 	let query: string = $state('');
-	let options: LocationByText$result['location']['text'] = $state([]);
+	let options: {
+		readonly name: string;
+		readonly storeNumber: string;
+		readonly address: string;
+		readonly distance?: number | null;
+	}[] = $state([]);
 
 	const positionOptions: PositionOptions = {
 		enableHighAccuracy: true,
@@ -62,7 +68,8 @@
 							method: 'GET'
 						});
 
-						options = (await response.json()) as LocationByText$result['location']['text'];
+						options =
+							(await response.json()) as LocationByCoordinates$result['location']['coordinate'];
 						disabled = false;
 					},
 					(err: GeolocationPositionError) => {
@@ -146,6 +153,10 @@
 								on:click={() => setLocation(location.storeNumber, location.name)}
 							>
 								{location.name}
+								{#if $page.data.shouldShowDistance && location.distance}
+									{@const distanceFormatter = LocalizedDistanceFormatter()}
+									({distanceFormatter.format(location.distance)})
+								{/if}
 							</Button>
 						</div>
 					{/each}

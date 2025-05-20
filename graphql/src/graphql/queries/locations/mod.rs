@@ -110,6 +110,7 @@ impl QueriedLocation {
                 name: model.name,
                 store_number: model.id,
                 address: model.address,
+                distance: None,
             }),
             None => {
                 let loader = ctx.data::<DataLoader<LocationLoader>>()?;

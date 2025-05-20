@@ -36,3 +36,4 @@ chrono = { workspace = true }
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 axum-tracing-opentelemetry = "0.28.0"
+geoutils = "0.5.1"

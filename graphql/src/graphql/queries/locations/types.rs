@@ -25,6 +25,7 @@ pub struct Location {
     pub name: String,
     pub store_number: String,
     pub address: String,
+    pub distance: Option<f64>,
 }
 
 #[derive(Clone)]

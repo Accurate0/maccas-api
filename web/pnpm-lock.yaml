@@ -14,6 +14,9 @@ importers:
       '@fontsource-variable/open-sans':
         specifier: ^5.1.0
         version: 5.1.0
+      '@maptimy/platform-formatters':
+        specifier: ^0.5.0
+        version: 0.5.0
       '@openfeature/flipt-provider':
         specifier: ^0.1.2
         version: 0.1.2(@flipt-io/flipt@1.2.0)(@openfeature/server-sdk@1.17.1(@openfeature/core@1.7.0))
@@ -246,6 +249,7 @@ packages:
 
   '@effect/schema@0.75.5':
     resolution: {integrity: sha512-TQInulTVCuF+9EIbJpyLP6dvxbQJMphrnRqgexm/Ze39rSjfhJuufF7XvU3SxTgg3HnL7B/kpORTJbHhlE6thw==}
+    deprecated: this package has been merged into the main effect package
     peerDependencies:
       effect: ^3.9.2
 
@@ -832,6 +836,14 @@ packages:
   '@mapbox/node-pre-gyp@1.0.11':
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
+
+  '@maptimy/platform-formatters@0.5.0':
+    resolution: {integrity: sha512-iHhJwwA7udtqxPQcuILIkbiRHNxrgQgw+mZk93ock30q9ujEsh3JuafMzQKpMIPguPK70zpUgUH2c2k3Wdi1UQ==}
+    peerDependencies:
+      react-native: '*'
+    peerDependenciesMeta:
+      react-native:
+        optional: true
 
   '@melt-ui/svelte@0.76.2':
     resolution: {integrity: sha512-7SbOa11tXUS95T3fReL+dwDs5FyJtCEqrqG3inRziDws346SYLsxOQ6HmX+4BkIsQh1R8U3XNa+EMmdMt38lMA==}
@@ -4197,6 +4209,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@maptimy/platform-formatters@0.5.0': {}
 
   '@melt-ui/svelte@0.76.2(svelte@5.0.5)':
     dependencies:

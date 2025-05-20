@@ -29,13 +29,14 @@ input FilterInput {
 }
 
 type HealthResponse {
-  batch: Boolean!
   database: Boolean!
   event: Boolean!
+  recommendations: Boolean!
 }
 
 type Location {
   address: String!
+  distance: Float
   name: String!
   storeNumber: String!
 }

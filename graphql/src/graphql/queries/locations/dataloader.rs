@@ -74,19 +74,35 @@ impl Loader<LocationRequest> for LocationLoader {
         Ok(location_map
             .into_iter()
             .map(|(loc, resp)| (loc, resp.body.response))
-            .map(|(loc, restaurants)| match restaurants {
-                Some(r) => (
-                    loc.clone(),
-                    r.restaurants
-                        .iter()
-                        .map(|r| Location {
-                            name: r.name.clone(),
-                            store_number: r.national_store_number.to_string(),
-                            address: r.address.address_line1.clone(),
-                        })
-                        .collect::<Vec<_>>(),
-                ),
-                None => (loc.clone(), vec![]),
+            .map(|(loc, restaurants)| {
+                let user_location = geoutils::Location::new(loc.lat, loc.long);
+                match restaurants {
+                    Some(r) => (
+                        loc.clone(),
+                        r.restaurants
+                            .iter()
+                            .map(|r| {
+                                let restaurant_location = geoutils::Location::new(
+                                    r.location.latitude,
+                                    r.location.longitude,
+                                );
+
+                                let distance = user_location
+                                    .distance_to(&restaurant_location)
+                                    .ok()
+                                    .map(|d| d.meters());
+
+                                Location {
+                                    name: r.name.clone(),
+                                    store_number: r.national_store_number.to_string(),
+                                    address: r.address.address_line1.clone(),
+                                    distance,
+                                }
+                            })
+                            .collect::<Vec<_>>(),
+                    ),
+                    None => (loc.clone(), vec![]),
+                }
             })
             .collect::<HashMap<_, _>>())
     }
@@ -146,6 +162,7 @@ impl Loader<String> for LocationLoader {
                     name: inner.restaurant.name,
                     store_number: inner.restaurant.national_store_number.to_string(),
                     address: inner.restaurant.address.address_line1,
+                    distance: None,
                 },
             )
         })
