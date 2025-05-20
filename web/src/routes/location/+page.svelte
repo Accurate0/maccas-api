@@ -13,6 +13,7 @@
 	import { LocalizedDistanceFormatter } from '@maptimy/platform-formatters';
 
 	let currentStoreName = $state($page.data?.config?.storeName);
+	const shouldShowDistance = $page.data.shouldShowDistance;
 
 	let disabled = $state(false);
 	let optionsDisabled = $state(false);
@@ -153,7 +154,7 @@
 								on:click={() => setLocation(location.storeNumber, location.name)}
 							>
 								{location.name}
-								{#if $page.data.shouldShowDistance && location.distance}
+								{#if shouldShowDistance && location.distance}
 									{@const distanceFormatter = LocalizedDistanceFormatter()}
 									({distanceFormatter.format(location.distance)})
 								{/if}
