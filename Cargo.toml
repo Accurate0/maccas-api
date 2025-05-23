@@ -89,7 +89,7 @@ axum = { version = "0.8.1", features = ["macros"] }
 tower-http = { version = "0.6.2", features = ["trace", "cors"] }
 tower = { version = "0.5.2", features = ["load-shed"] }
 itertools = "0.14.0"
-opentelemetry = "0.29.0"
-opentelemetry_sdk = "0.29.0"
+opentelemetry = "0.30.0"
+opentelemetry_sdk = "0.30.0"
 http = "1.2.0"
 open-feature = "0.2.5"
