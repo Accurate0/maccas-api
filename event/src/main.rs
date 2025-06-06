@@ -138,7 +138,8 @@ async fn main() -> Result<(), anyhow::Error> {
             endpoint: settings.images_bucket.endpoint.clone(),
         },
         credentials,
-    )?;
+    )?
+    .with_path_style();
 
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
     opt.max_connections(20)
