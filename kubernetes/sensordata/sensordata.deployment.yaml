@@ -24,17 +24,11 @@ spec:
                     operator: In
                     values:
                       - k8s-optiplex-5
-      volumes:
-        - name: android-device
-          hostPath:
-            path: /dev/bus/usb/001/019
+      hostNetwork: true
       containers:
         - name: maccas-sensordata
           image: maccas-sensordata:latest
           imagePullPolicy: Always
-          volumeMounts:
-            - mountPath: /dev/bus/usb/001/019
-              name: android-device
           securityContext:
             privileged: true
             allowPrivilegeEscalation: true
