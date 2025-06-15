@@ -35,7 +35,7 @@ RUN wget https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida
 
 RUN apt-get update && \
     apt-get dist-upgrade -y && \
-    apt-get install -y --no-install-recommends python3-pip && \
+    apt-get install -y --no-install-recommends python3-pip android-tools-adb android-tools-fastboot && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoremove -y && \
     apt-get clean
