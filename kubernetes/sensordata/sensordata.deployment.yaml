@@ -15,14 +15,28 @@ spec:
       labels:
         app: maccas-sensordata
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k8s-optiplex-5
+      volumes:
+        - name: android-device
+          hostPath:
+            path: /dev/bus/usb/001/019
       containers:
         - name: maccas-sensordata
           image: maccas-sensordata:latest
           imagePullPolicy: Always
-          resources:
-            limits:
-              squat.ai/kvm: "1"
+          volumeMounts:
+            - mountPath: /dev/bus/usb/001/019
+              name: android-device
           securityContext:
+            privileged: true
             allowPrivilegeEscalation: true
             capabilities:
               add:
