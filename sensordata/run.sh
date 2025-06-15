@@ -9,7 +9,7 @@ adb install app.apk
 adb push frida-server /data/local/tmp/frida-server
 
 adb shell chmod +x /data/local/tmp/frida-server
-adb shell "su -c 'pkill -f -9 frida-server && /data/local/tmp/frida-server &'" &
+adb shell 'su -c /data/local/tmp/frida-server &' &
 adb shell monkey -p com.mcdonalds.au.gma 1
 adb shell svc power stayon true
 
