@@ -1,12 +1,11 @@
-use std::time::Duration;
-
 use super::HandlerError;
 use crate::{event_manager::EventManager, jobs::shared, settings::Settings};
 use anyhow::Context;
+use base::http::get_proxied_maccas_http_client;
 use entity::accounts;
 use opentelemetry::trace::TraceContextExt;
-use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{EntityTrait, TransactionTrait};
+use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 use tracing::instrument;
 use uuid::Uuid;
@@ -16,7 +15,6 @@ pub async fn refresh_account(account_id: Uuid, em: EventManager) -> Result<(), H
     tracing::info!("refresh account for {}", account_id);
 
     let settings = em.get_state::<Settings>();
-    let http_client = em.get_state::<ClientWithMiddleware>();
     let db = em.db().begin().await?;
 
     let account = accounts::Entity::find_by_id(account_id)
@@ -24,9 +22,13 @@ pub async fn refresh_account(account_id: Uuid, em: EventManager) -> Result<(), H
         .await?
         .context("must find valid account")?;
 
+    let proxy = reqwest::Proxy::all(settings.proxy.url.clone())?
+        .basic_auth(&settings.proxy.username, &settings.proxy.password);
+    let http_client = get_proxied_maccas_http_client(proxy)?;
+
     let events_to_dispatch = shared::refresh_account(
         account,
-        http_client,
+        &http_client,
         &settings.mcdonalds,
         &db,
         CancellationToken::new(),
