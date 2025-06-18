@@ -57,16 +57,6 @@ impl Job for ActivateAccountJob {
 
         imap_session.select("INBOX")?;
 
-        let mut client = ApiClient::new(
-            mc_donalds::BASE_URL.to_string(),
-            self.http_client.clone(),
-            self.mcdonalds_config.client_id.clone(),
-        );
-
-        let response = client
-            .security_auth_token(&self.mcdonalds_config.client_secret)
-            .await?;
-        client.set_login_token(&response.body.response.token);
         let http_client = get_http_client()?;
 
         let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
@@ -124,6 +114,18 @@ impl Job for ActivateAccountJob {
                     .await?
                     .json::<SensorDataResponse>()
                     .await?;
+
+                let mut client = ApiClient::new(
+                    mc_donalds::BASE_URL.to_string(),
+                    self.http_client.clone(),
+                    self.mcdonalds_config.client_id.clone(),
+                );
+
+                let security_auth_token_response = client
+                    .security_auth_token(&self.mcdonalds_config.client_secret)
+                    .await?;
+
+                client.set_login_token(&security_auth_token_response.body.response.token);
 
                 let response = client
                     .activate_and_signin(
