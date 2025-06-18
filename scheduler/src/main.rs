@@ -69,7 +69,7 @@ create_trigger_fn!(
 async fn main() -> anyhow::Result<()> {
     base::tracing::init("scheduler");
 
-    let refresh_worker = create_worker!("0 */3 * * * *", trigger_refresh);
+    let refresh_worker = create_worker!("0 */2 * * * *", trigger_refresh);
     let account_unlock_worker = create_worker!("0 0 0 * * *", trigger_account_unlock);
     let categorise_offers_worker = create_worker!("0 0 0 * * *", trigger_categorise_offers);
     let generate_recommendations_worker =
