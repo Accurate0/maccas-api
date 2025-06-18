@@ -9,7 +9,7 @@ reqwest-middleware = { workspace = true }
 tracing = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 reqwest-retry = { workspace = true }
-reqwest-tracing = { workspace = true, features = ["opentelemetry_0_26"] }
+reqwest-tracing = { workspace = true, features = ["opentelemetry_0_30"] }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -27,18 +27,18 @@ libmaccas = { workspace = true }
 http = { workspace = true }
 jwt = "0.16.0"
 hmac = "0.12.1"
-sha2 = "0.10.8"
+sha2 = "0.10.9"
 opentelemetry = { workspace = true }
-opentelemetry_sdk = { version = "0.29.0", features = ["rt-tokio"] }
-opentelemetry-stdout = { version = "0.29.0", features = ["trace"] }
+opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
+opentelemetry-stdout = { version = "0.30.0", features = ["trace"] }
 tracing-subscriber = "0.3.19"
-opentelemetry-otlp = { version = "0.29.0", features = [
+opentelemetry-otlp = { version = "0.30.0", features = [
     "http-proto",
     "reqwest-client",
     "logs",
     "reqwest-rustls",
 ] }
-opentelemetry-semantic-conventions = { version = "0.29.0", features = ["semconv_experimental"] }
-opentelemetry-appender-tracing = { version = "0.29.0" }
+opentelemetry-semantic-conventions = { version = "0.30.0", features = ["semconv_experimental"] }
+opentelemetry-appender-tracing = { version = "0.30.1" }
 open-feature = { workspace = true }
 open-feature-flipt = { git = "https://github.com/open-feature/rust-sdk-contrib.git" }

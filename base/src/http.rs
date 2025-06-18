@@ -1,12 +1,12 @@
 use reqwest::{Proxy, Request, Response, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, Extension};
 use reqwest_retry::{
-    default_on_request_failure, default_on_request_success, policies::ExponentialBackoff,
-    RetryTransientMiddleware, Retryable, RetryableStrategy,
+    RetryTransientMiddleware, Retryable, RetryableStrategy, default_on_request_failure,
+    default_on_request_success, policies::ExponentialBackoff,
 };
 use reqwest_tracing::{
-    default_on_request_end, reqwest_otel_span, DisableOtelPropagation, ReqwestOtelSpanBackend,
-    TracingMiddleware,
+    DisableOtelPropagation, ReqwestOtelSpanBackend, TracingMiddleware, default_on_request_end,
+    reqwest_otel_span,
 };
 use std::time::{Duration, Instant};
 use thiserror::Error;

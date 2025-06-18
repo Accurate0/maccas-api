@@ -5,8 +5,8 @@ edition = "2024"
 rust-version.workspace = true
 
 [dependencies]
-apalis = { version = "0.7.1", features = ["layers"] }
-apalis-cron = "0.7.1"
+apalis = { version = "0.7.2", features = ["layers"] }
+apalis-cron = "0.7.2"
 tokio = { workspace = true }
 chrono = { workspace = true }
 tower = { workspace = true }

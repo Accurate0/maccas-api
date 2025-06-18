@@ -12,7 +12,7 @@ serde = { workspace = true }
 tokio = { workspace = true }
 actix-web = "4"
 futures = { workspace = true }
-actix-cors = "0.7.0"
+actix-cors = "0.7.1"
 serde_json = { workspace = true }
 chrono = { workspace = true }
 cron = { workspace = true }
@@ -37,10 +37,10 @@ rand = { workspace = true }
 state = "0.6.0"
 actix-web-opentelemetry = "0.22.0"
 rust-s3 = "0.35.1"
-image = "0.25.5"
+image = "0.25.6"
 sensordata = { workspace = true }
 imap = { version = "3.0.0-alpha.15", features = ["native-tls"] }
-mailparse = "0.16.0"
+mailparse = "0.16.1"
 regex = "1.11.1"
 
 opentelemetry = { workspace = true }
@@ -48,7 +48,7 @@ opentelemetry_sdk = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 twilight-model = "0.16.0"
 twilight-util = { version = "0.16.0", features = ["builder"] }
-pgmq = "0.30.0"
+pgmq = "0.30.1"
 strum = { version = "0.27.1", features = ["derive"] }
 
 [lib]
