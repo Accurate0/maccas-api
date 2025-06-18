@@ -14,6 +14,9 @@ pub enum Event {
     GenerateRecommendations {},
     RecategoriseOffers {},
     Refresh {},
+    RefreshAccount {
+        account_id: Uuid,
+    },
     SaveImages {},
     Cleanup {
         offer_id: Uuid,
@@ -72,6 +75,7 @@ impl fmt::Display for Event {
             Event::RecategoriseOffers {} => write!(f, "RecategoriseOffers"),
             Event::Refresh {} => write!(f, "Refresh"),
             Event::SaveImages {} => write!(f, "SaveImages"),
+            Event::RefreshAccount { .. } => write!(f, "RefreshAccount"),
         }
     }
 }

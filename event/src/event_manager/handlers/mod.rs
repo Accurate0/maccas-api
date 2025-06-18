@@ -12,6 +12,7 @@ use event::events::MaybeJobScheduler;
 use event::Event;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;
+use refresh_account::refresh_account;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
 use std::{fmt::Display, num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
@@ -20,6 +21,7 @@ use tracing::{span, Instrument};
 
 mod cleanup;
 mod new_offer_found;
+mod refresh_account;
 mod refresh_points;
 mod save_image;
 
@@ -123,6 +125,9 @@ pub async fn handle(event_manager: EventManager) {
                     }
                     Event::RefreshPoints { account_id } => {
                         refresh_points(account_id, event_manager).await
+                    }
+                    Event::RefreshAccount { account_id } => {
+                        refresh_account(account_id, event_manager).await
                     }
                     Event::NewOfferFound {
                         offer_proposition_id,

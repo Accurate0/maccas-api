@@ -19,6 +19,7 @@ pub mod job_executor;
 pub mod recategorise_offers;
 pub mod refresh;
 pub mod save_images;
+pub mod shared;
 
 #[async_trait::async_trait]
 pub trait Job: Send + Sync + Debug {

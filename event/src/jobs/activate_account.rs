@@ -1,19 +1,24 @@
+use std::{collections::HashSet, time::Duration};
+
 use super::{error::JobError, Job, JobContext};
 use crate::settings::{Email, McDonalds};
 use anyhow::Context;
 use base::constants::mc_donalds;
 use base::http::get_http_client;
 use entity::accounts;
+use event::Event;
 use libmaccas::{
     types::request::{ActivateAndSignInRequest, ActivationDevice, ClientInfo},
     ApiClient,
 };
 use mailparse::MailHeaderMap;
+use opentelemetry::trace::TraceContextExt;
 use regex::Regex;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, Set};
 use sensordata::{SensorDataRequest, SensorDataResponse};
 use tokio_util::sync::CancellationToken;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct ActivateAccountJob {
@@ -21,6 +26,11 @@ pub struct ActivateAccountJob {
     pub sensordata_api_base: String,
     pub mcdonalds_config: McDonalds,
     pub email_config: Email,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ActivateAccountContext {
+    pub activated_accounts: HashSet<Uuid>,
 }
 
 #[async_trait::async_trait]
@@ -60,6 +70,10 @@ impl Job for ActivateAccountJob {
         let http_client = get_http_client()?;
 
         let all_unseen_emails = imap_session.uid_search("(UNSEEN)")?;
+        let re = Regex::new(r"ml=([a-zA-Z0-9]+)").unwrap();
+
+        let mut activated_accounts = HashSet::new();
+
         for message_uid in all_unseen_emails.iter() {
             let messages = imap_session.uid_fetch(message_uid.to_string(), "RFC822")?;
             let message = messages.get(0).context("should have at least one")?;
@@ -67,7 +81,6 @@ impl Job for ActivateAccountJob {
 
             let parsed_email = mailparse::parse_mail(body)?;
             let body: &String = &parsed_email.get_body()?;
-            let re = Regex::new(r"ml=([a-zA-Z0-9]+)").unwrap();
             let mut magic_link = None;
             for cap in re.captures_iter(body) {
                 tracing::info!("capture: {:?}", cap);
@@ -129,15 +142,48 @@ impl Job for ActivateAccountJob {
                     .await?;
 
                 if let Some(token_response) = response.body.response {
+                    let account_id = account.id;
                     let mut active_model = account.into_active_model();
                     active_model.access_token = Set(token_response.access_token);
                     active_model.refresh_token = Set(token_response.refresh_token);
                     active_model.refresh_failure_count = Set(0);
 
                     active_model.update(context.database).await?;
+                    activated_accounts.insert(account_id);
                 }
             }
         }
+
+        context
+            .set(ActivateAccountContext { activated_accounts })
+            .await?;
+
+        Ok(())
+    }
+
+    async fn post_execute(
+        &self,
+        context: &JobContext,
+        _cancellation_token: CancellationToken,
+    ) -> Result<(), JobError> {
+        if let Some(ActivateAccountContext { activated_accounts }) = context.get().await {
+            let trace_id = opentelemetry::Context::current()
+                .span()
+                .span_context()
+                .trace_id()
+                .to_string();
+
+            for activated_account in activated_accounts {
+                let event = Event::RefreshAccount {
+                    account_id: activated_account,
+                };
+
+                context
+                    .event_manager
+                    .create_event(event, Duration::from_secs(5), trace_id.clone())
+                    .await?;
+            }
+        };
         Ok(())
     }
 }
