@@ -1,5 +1,5 @@
 use pgmq::PGMQueueExt;
-use sea_orm::sqlx::{self, ConnectOptions, Pool, Postgres};
+use sea_orm::sqlx::{self, Pool, Postgres};
 use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, marker::PhantomData, sync::Arc, time::Duration};
 use thiserror::Error;
@@ -38,12 +38,6 @@ where
     T: Send + Debug + Clone + Serialize + for<'de> Deserialize<'de>,
 {
     pub async fn new(pool: Pool<Postgres>, queue_name: String) -> Result<Self, DelayQueueError> {
-        let connection_options = pool
-            .connect_options()
-            .as_ref()
-            .clone()
-            .disable_statement_logging();
-        let pool = Pool::<Postgres>::connect_with(connection_options).await?;
         let queue: PGMQueueExt = PGMQueueExt::new_with_pool(pool).await;
         queue.create(&queue_name).await?;
 

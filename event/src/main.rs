@@ -16,7 +16,7 @@ use crate::{
     state::AppState,
 };
 use actix_web::middleware::from_fn;
-use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web::{App, HttpServer, middleware::Logger, web};
 use actix_web_opentelemetry::RequestTracing;
 use base::{feature_flag::FeatureFlagClient, http::get_http_client};
 use event_manager::S3BucketType;
@@ -142,18 +142,19 @@ async fn main() -> Result<(), anyhow::Error> {
     .with_path_style();
 
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
-    opt.max_connections(20)
+    opt.max_connections(30)
         .min_connections(0)
         .connect_timeout(Duration::from_secs(8))
-        .idle_timeout(Duration::from_secs(8))
+        .idle_timeout(Duration::from_secs(30))
         .sqlx_logging(true)
-        .sqlx_logging_level(LevelFilter::Trace);
+        .sqlx_logging_level(LevelFilter::Trace)
+        .sqlx_slow_statements_logging_settings(LevelFilter::Off, Duration::from_secs(60));
 
     let db = Database::connect(opt).await?;
 
     let job_executor_cancellation_token = CancellationToken::default();
 
-    let event_manager = EventManager::new(db.clone(), 5).await?;
+    let event_manager = EventManager::new(db.clone(), 10).await?;
     let job_scheduler = job_executor::JobExecutor::new(
         db.clone(),
         event_manager.clone(),
