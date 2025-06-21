@@ -1,7 +1,6 @@
-ARG RUST_VERSION=1.87.0
 ARG BINARY_NAME
 
-FROM rust:${RUST_VERSION}-slim-bookworm AS builder
+FROM rust:1.87.0-slim-bookworm AS builder
 ARG BINARY_NAME
 
 RUN apt-get update -y && apt-get install -y pkg-config libssl-dev
