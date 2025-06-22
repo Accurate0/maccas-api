@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
@@ -63,7 +64,17 @@
 						</Alert.Root>
 					</div>
 				{/if}
-				<Button type="submit" disabled={$submitting} aria-disabled={$submitting}>Login</Button>
+				<div class="flex justify-between">
+					<Button type="submit" disabled={$submitting} aria-disabled={$submitting}>Login</Button>
+					<Button
+						variant="outline"
+						on:click={async (e) => {
+							goto('/register');
+						}}
+						disabled={$submitting}
+						aria-disabled={$submitting}>Register</Button
+					>
+				</div>
 			</div>
 		</Card.Footer>
 	</form>
