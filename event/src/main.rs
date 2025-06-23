@@ -146,7 +146,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .min_connections(0)
         .connect_timeout(Duration::from_secs(8))
         .idle_timeout(Duration::from_secs(30))
-        .sqlx_logging(true)
+        .sqlx_logging(false)
         .sqlx_logging_level(LevelFilter::Trace)
         .sqlx_slow_statements_logging_settings(LevelFilter::Off, Duration::from_secs(60));
 
