@@ -9,12 +9,12 @@ use base::{
     http::get_http_client,
     jwt::generate_internal_jwt,
 };
-use entity::offer_details;
+use entity::{offer_details, offers};
 use recommendations::GenerateEmbeddingsFor;
-use reqwest::header::CONTENT_TYPE;
 use reqwest::StatusCode;
+use reqwest::header::CONTENT_TYPE;
 use reqwest_middleware::ClientWithMiddleware;
-use sea_orm::{EntityTrait, QuerySelect};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use tracing::instrument;
 use twilight_model::util::Timestamp;
 use twilight_util::builder::embed::{EmbedBuilder, EmbedFieldBuilder, ImageSource};
@@ -30,27 +30,50 @@ impl TryFrom<open_feature::StructValue> for NewOfferConfig {
             .as_array()
             .context("must be array")?;
 
-        let is_all_string = discord_urls.iter().all(|u| u.is_str());
-        if !is_all_string {
-            return Err(anyhow::Error::msg("all urls are not strings"));
-        }
+        let external_urls = value
+            .fields
+            .get("external_urls")
+            .context("must have urls field")?
+            .as_array()
+            .context("must be array")?;
 
-        Ok(Self {
-            discord_urls: discord_urls
-                .iter()
-                .map(|u| u.as_str().unwrap().to_owned())
-                .collect(),
-        })
+        let is_all_discord_string = discord_urls.iter().all(|u| u.is_str());
+        let is_all_external_string = external_urls.iter().all(|u| u.is_str());
+        if is_all_discord_string && is_all_external_string {
+            Ok(Self {
+                discord_urls: discord_urls
+                    .iter()
+                    .map(|u| u.as_str().unwrap().to_owned())
+                    .collect(),
+                external_urls: external_urls
+                    .iter()
+                    .map(|u| u.as_str().unwrap().to_owned())
+                    .collect(),
+            })
+        } else {
+            Err(anyhow::Error::msg("all urls are not strings"))
+        }
     }
+}
+
+#[derive(serde::Serialize)]
+struct ExternalUrlPayload {
+    details: offer_details::Model,
+    offer: offers::Model,
 }
 
 struct NewOfferConfig {
     discord_urls: Vec<String>,
+    external_urls: Vec<String>,
 }
 
 impl NewOfferConfig {
-    pub fn should_notify(&self) -> bool {
+    pub fn should_notify_discord(&self) -> bool {
         !self.discord_urls.is_empty()
+    }
+
+    pub fn should_notify_external(&self) -> bool {
+        !self.external_urls.is_empty()
     }
 }
 
@@ -91,7 +114,9 @@ pub async fn new_offer_found(
         match response {
             Ok(response) => match response.status() {
                 StatusCode::CREATED => {
-                    tracing::info!("generated embedding via recommendations service for {offer_proposition_id}");
+                    tracing::info!(
+                        "generated embedding via recommendations service for {offer_proposition_id}"
+                    );
                 }
                 status => {
                     tracing::warn!("event failed with {} - {}", status, response.text().await?);
@@ -107,7 +132,9 @@ pub async fn new_offer_found(
         tracing::error!("failed to produce embedding {e}");
     }
 
-    let should_notify = config.as_ref().is_some_and(|c| c.should_notify());
+    let should_notify = config
+        .as_ref()
+        .is_some_and(|c| c.should_notify_discord() || c.should_notify_external());
     if !should_send_event || config.is_none() || !should_notify {
         tracing::warn!("notification disabled or no urls configured");
         return Ok(());
@@ -129,7 +156,7 @@ pub async fn new_offer_found(
     let embed = EmbedBuilder::new()
         .color(0xDA291C)
         .title("New Deal")
-        .field(EmbedFieldBuilder::new("Name", details.short_name))
+        .field(EmbedFieldBuilder::new("Name", &details.short_name))
         .timestamp(
             Timestamp::from_secs(details.created_at.and_utc().timestamp())
                 .context("must have valid time")
@@ -158,6 +185,28 @@ pub async fn new_offer_found(
             .post(discord_url)
             .header(CONTENT_TYPE, "application/json")
             .json(webhook_message)
+            .send()
+            .await?;
+    }
+
+    let example_offer = offers::Entity::find()
+        .filter(offers::Column::OfferPropositionId.eq(offer_proposition_id))
+        .order_by_desc(offers::Column::CreatedAt)
+        .limit(1)
+        .one(db)
+        .await?
+        .context("no matching offer found")?;
+
+    let external_url_payload = ExternalUrlPayload {
+        details,
+        offer: example_offer,
+    };
+
+    for external_url in config.external_urls {
+        http_client
+            .post(external_url)
+            .header(CONTENT_TYPE, "application/json")
+            .json(&external_url_payload)
             .send()
             .await?;
     }
