@@ -6,13 +6,15 @@ use crate::{
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
 use base::constants::mc_donalds::OFFSET;
-use entity::{accounts, offers, sea_orm_active_enums::Action};
+use entity::{accounts, concurrent_active_deals, offers, sea_orm_active_enums::Action};
 use event::{CreateEvent, CreateEventResponse, Event};
 use reqwest::StatusCode;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    prelude::Uuid, ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait,
-    QueryFilter, Set, TransactionTrait,
+    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter,
+    QuerySelect, Set, TransactionTrait,
+    prelude::{Expr, Uuid},
+    sea_query::OnConflict,
 };
 use std::time::Duration;
 
@@ -23,12 +25,30 @@ pub struct OffersMutation;
 
 #[Object]
 impl OffersMutation {
+    const CONCURRENT_OFFERS_LIMIT: i32 = 5;
     async fn add_offer(
         &self,
         ctx: &Context<'_>,
         input: AddOfferInput,
     ) -> async_graphql::Result<AddOfferResponse> {
         let db = ctx.data::<DatabaseConnection>()?;
+
+        let claims = ctx.data_opt::<ValidatedClaims>();
+        let user_id = claims.and_then(|c| c.0.user_id.parse::<Uuid>().ok());
+        if let Some(user_id) = user_id {
+            let current_deal_count = concurrent_active_deals::Entity::find()
+                .filter(concurrent_active_deals::Column::UserId.eq(user_id))
+                .limit(1)
+                .one(db)
+                .await?;
+
+            tracing::info!("current active deals for {user_id}: {current_deal_count:?}");
+            if let Some(current_deal_count) = current_deal_count {
+                if current_deal_count.count + 1 > Self::CONCURRENT_OFFERS_LIMIT {
+                    return Err(async_graphql::Error::new("cannot have more offers active"));
+                }
+            }
+        }
 
         let all_locked_accounts = entity::account_lock::Entity::find()
             .all(db)
@@ -60,7 +80,6 @@ impl OffersMutation {
         .insert(db)
         .await?;
 
-        let claims = ctx.data_opt::<ValidatedClaims>();
         let offer_id = offer.id;
         let validated_proposition_id = input.offer_proposition_id;
         let settings = ctx.data::<Settings>()?;
@@ -103,12 +122,36 @@ impl OffersMutation {
         .await?
         .id;
 
+        if let Some(user_id) = user_id {
+            let active_deals_model = concurrent_active_deals::ActiveModel {
+                user_id: Set(user_id),
+                count: Set(1),
+            };
+
+            concurrent_active_deals::Entity::insert(active_deals_model)
+                .on_conflict(
+                    OnConflict::column(concurrent_active_deals::Column::UserId)
+                        .value(
+                            concurrent_active_deals::Column::Count,
+                            Expr::column((
+                                concurrent_active_deals::Entity,
+                                concurrent_active_deals::Column::Count,
+                            ))
+                            .add(Expr::value(1)),
+                        )
+                        .to_owned(),
+                )
+                .exec(db)
+                .await?;
+        }
+
         let cleanup_event = CreateEvent {
             event: Event::Cleanup {
                 offer_id,
                 transaction_id,
                 store_id: input.store_id,
                 audit_id,
+                user_id: claims.and_then(|c| c.0.user_id.parse().ok()),
                 // account.id
                 account_id: offer.account_id,
             },

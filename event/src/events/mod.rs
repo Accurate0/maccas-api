@@ -1,4 +1,4 @@
-use actix_web::{body::EitherBody, error::JsonPayloadError, HttpRequest, HttpResponse, Responder};
+use actix_web::{HttpRequest, HttpResponse, Responder, body::EitherBody, error::JsonPayloadError};
 use core::fmt;
 use sea_orm::prelude::Uuid;
 use std::time::Duration;
@@ -24,6 +24,7 @@ pub enum Event {
         audit_id: i32,
         store_id: String,
         account_id: Uuid,
+        user_id: Option<Uuid>,
     },
     SaveImage {
         basename: String,

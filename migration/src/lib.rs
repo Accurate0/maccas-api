@@ -58,6 +58,7 @@ mod m20250330_121435_add_offer_names_column_for_recommendations;
 mod m20250401_091431_add_likely_used_to_audit;
 mod m20250426_154447_add_store_id_to_audit;
 mod m20250427_101811_add_pgmq;
+mod m20250703_121907_add_concurrent_active_deals;
 
 pub struct Migrator;
 
@@ -123,6 +124,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250401_091431_add_likely_used_to_audit::Migration),
             Box::new(m20250426_154447_add_store_id_to_audit::Migration),
             Box::new(m20250427_101811_add_pgmq::Migration),
+            Box::new(m20250703_121907_add_concurrent_active_deals::Migration),
         ]
     }
 }

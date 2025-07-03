@@ -2,10 +2,10 @@ use super::HandlerError;
 use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context;
 use base::constants::mc_donalds::OFFSET;
-use entity::{accounts, offers, sea_orm_active_enums::Action};
+use entity::{accounts, concurrent_active_deals, offers, sea_orm_active_enums::Action};
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Unchanged, ColumnTrait, EntityTrait, QueryFilter, Set,
-    TransactionTrait,
+    TransactionTrait, prelude::Expr, sea_query::OnConflict,
 };
 use tracing::instrument;
 use uuid::Uuid;
@@ -18,6 +18,7 @@ pub async fn cleanup(
     transaction_id: Uuid,
     store_id: String,
     account_id: Uuid,
+    user_id: Option<Uuid>,
     em: EventManager,
 ) -> Result<(), HandlerError> {
     tracing::info!("cleanup for {}", offer_id);
@@ -98,6 +99,29 @@ pub async fn cleanup(
 
             entity::offer_audit::Entity::update(likely_used_update)
                 .filter(entity::offer_audit::Column::Id.eq(audit_id))
+                .exec(db)
+                .await?;
+        }
+
+        if let Some(user_id) = user_id {
+            let active_deals_model = concurrent_active_deals::ActiveModel {
+                user_id: Set(user_id),
+                count: Set(0),
+            };
+
+            concurrent_active_deals::Entity::insert(active_deals_model)
+                .on_conflict(
+                    OnConflict::column(concurrent_active_deals::Column::UserId)
+                        .value(
+                            concurrent_active_deals::Column::Count,
+                            Expr::column((
+                                concurrent_active_deals::Entity,
+                                concurrent_active_deals::Column::Count,
+                            ))
+                            .sub(Expr::value(1)),
+                        )
+                        .to_owned(),
+                )
                 .exec(db)
                 .await?;
         }

@@ -5,11 +5,11 @@ use crate::jobs::error::JobError;
 use crate::jobs::job_executor::JobExecutor;
 use base::{
     jwt::JwtValidationError,
-    retry::{retry_async, ExponentialBackoff, RetryResult},
+    retry::{ExponentialBackoff, RetryResult, retry_async},
 };
 use converters::ConversionError;
-use event::events::MaybeJobScheduler;
 use event::Event;
+use event::events::MaybeJobScheduler;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;
 use refresh_account::refresh_account;
@@ -17,7 +17,7 @@ use refresh_points::refresh_points;
 use sea_orm::DbErr;
 use std::{fmt::Display, num::TryFromIntError, panic::AssertUnwindSafe, time::Duration};
 use thiserror::Error;
-use tracing::{span, Instrument};
+use tracing::{Instrument, span};
 
 mod cleanup;
 mod new_offer_found;
@@ -108,6 +108,7 @@ pub async fn handle(event_manager: EventManager) {
                         audit_id,
                         store_id,
                         account_id,
+                        user_id,
                     } => {
                         // FIXME: too many args
                         cleanup(
@@ -116,6 +117,7 @@ pub async fn handle(event_manager: EventManager) {
                             transaction_id,
                             store_id,
                             account_id,
+                            user_id,
                             event_manager,
                         )
                         .await
