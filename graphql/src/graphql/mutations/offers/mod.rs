@@ -246,6 +246,30 @@ impl OffersMutation {
             .await?;
         }
 
+        let user_id = claims.and_then(|c| c.0.user_id.parse::<Uuid>().ok());
+        if let Some(user_id) = user_id {
+            let active_deals_model = concurrent_active_deals::ActiveModel {
+                user_id: Set(user_id),
+                count: Set(0),
+            };
+
+            concurrent_active_deals::Entity::insert(active_deals_model)
+                .on_conflict(
+                    OnConflict::column(concurrent_active_deals::Column::UserId)
+                        .value(
+                            concurrent_active_deals::Column::Count,
+                            Expr::column((
+                                concurrent_active_deals::Entity,
+                                concurrent_active_deals::Column::Count,
+                            ))
+                            .sub(Expr::value(1)),
+                        )
+                        .to_owned(),
+                )
+                .exec(db)
+                .await?;
+        }
+
         Ok(input.id)
     }
 }
