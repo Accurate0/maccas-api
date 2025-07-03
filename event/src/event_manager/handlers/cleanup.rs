@@ -114,11 +114,14 @@ pub async fn cleanup(
                     OnConflict::column(concurrent_active_deals::Column::UserId)
                         .value(
                             concurrent_active_deals::Column::Count,
-                            Expr::column((
-                                concurrent_active_deals::Entity,
-                                concurrent_active_deals::Column::Count,
-                            ))
-                            .sub(Expr::value(1)),
+                            Expr::cust_with_expr(
+                                "GREATEST($1, 0)",
+                                Expr::column((
+                                    concurrent_active_deals::Entity,
+                                    concurrent_active_deals::Column::Count,
+                                ))
+                                .sub(Expr::value(1)),
+                            ),
                         )
                         .to_owned(),
                 )
