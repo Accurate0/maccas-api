@@ -18,3 +18,4 @@ resources:
   - web/web.service.yaml
   - sensordata/sensordata.deployment.yaml
   - sensordata/sensordata.service.yaml
+  - sensordata/pvc.yaml

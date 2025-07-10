@@ -181,12 +181,15 @@ pub async fn new_offer_found(
     let http_client = em.get_state::<ClientWithMiddleware>();
 
     for discord_url in config.discord_urls {
-        http_client
+        if let Err(e) = http_client
             .post(discord_url)
             .header(CONTENT_TYPE, "application/json")
             .json(webhook_message)
             .send()
-            .await?;
+            .await
+        {
+            tracing::warn!("error in discord webhook: {e}");
+        };
     }
 
     let example_offer = offers::Entity::find()
@@ -203,12 +206,15 @@ pub async fn new_offer_found(
     };
 
     for external_url in config.external_urls {
-        http_client
+        if let Err(e) = http_client
             .post(external_url)
             .header(CONTENT_TYPE, "application/json")
             .json(&external_url_payload)
             .send()
-            .await?;
+            .await
+        {
+            tracing::warn!("error in external url: {e}");
+        };
     }
 
     Ok(())

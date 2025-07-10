@@ -27,10 +27,17 @@ spec:
                     values:
                       - k8s-optiplex-5
       hostNetwork: true
+      volumes:
+        - name: sensordata-volume
+          persistentVolumeClaim:
+            claimName: sensordata-android-pvc
       containers:
         - name: maccas-sensordata
           image: maccas-sensordata:latest
           imagePullPolicy: Always
+          volumeMounts:
+            - name: sensordata-volume
+              mountPath: /root/.android
           securityContext:
             privileged: true
             allowPrivilegeEscalation: true
