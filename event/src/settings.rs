@@ -45,6 +45,7 @@ pub struct Settings {
     pub openai_api_key: String,
     pub sensordata_api_base: String,
     pub recommendations_api_base: String,
+    pub external_webhook_secret: String,
 }
 
 impl Settings {

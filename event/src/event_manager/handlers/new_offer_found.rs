@@ -11,8 +11,8 @@ use base::{
 };
 use entity::{offer_details, offers};
 use recommendations::GenerateEmbeddingsFor;
-use reqwest::StatusCode;
 use reqwest::header::CONTENT_TYPE;
+use reqwest::{StatusCode, header::HeaderValue};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use tracing::instrument;
@@ -209,6 +209,10 @@ pub async fn new_offer_found(
         if let Err(e) = http_client
             .post(external_url)
             .header(CONTENT_TYPE, "application/json")
+            .header(
+                "X-Maccas-External-Secret",
+                &settings.external_webhook_secret,
+            )
             .json(&external_url_payload)
             .send()
             .await
