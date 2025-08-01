@@ -74,8 +74,8 @@ async fn main() -> anyhow::Result<()> {
     let categorise_offers_worker = create_worker!("0 0 0 * * *", trigger_categorise_offers);
     let generate_recommendations_worker =
         create_worker!("0 0 * * * *", trigger_generate_recommendations);
-    let create_account_worker = create_worker!("0 */15 * * * *", trigger_create_account);
-    let activate_account_worker = create_worker!("0 */5 * * * *", trigger_activate_account);
+    let _create_account_worker = create_worker!("0 */15 * * * *", trigger_create_account);
+    let _activate_account_worker = create_worker!("0 */5 * * * *", trigger_activate_account);
 
     tracing::info!("scheduler started");
     Monitor::new()
@@ -83,8 +83,8 @@ async fn main() -> anyhow::Result<()> {
         .register(account_unlock_worker)
         .register(categorise_offers_worker)
         .register(generate_recommendations_worker)
-        .register(create_account_worker)
-        .register(activate_account_worker)
+        // .register(create_account_worker)
+        // .register(activate_account_worker)
         .run()
         .await
         .map_err(Into::into)
