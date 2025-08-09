@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: maccas-graphql
+  namespace: maccas-api
 spec:
   replicas: 3
   selector:
@@ -14,27 +15,47 @@ spec:
     scaleDown: progressively
   strategy:
     canary:
-      analysis:
-        templates:
-          - templateName: nginx-success-rate
-            clusterScope: true
-        startingStep: 2
-        args:
-          - name: service-name
-            value: maccas-graphql-canary
-
       steps:
         - setWeight: 20
         - pause: { duration: 10m }
+
+        - analysis:
+            templates:
+              - templateName: nginx-success-rate
+                clusterScope: true
+            args:
+              - name: service-name
+                value: maccas-graphql
+
         - setWeight: 40
         - pause: { duration: 10m }
+
+        - analysis:
+            templates:
+              - templateName: nginx-success-rate
+                clusterScope: true
+            args:
+              - name: service-name
+                value: maccas-graphql
+
         - setWeight: 60
-        - pause: { duration: 1m }
+        - pause: { duration: 10m }
+
+        - analysis:
+            templates:
+              - templateName: nginx-success-rate
+                clusterScope: true
+            args:
+              - name: service-name
+                value: maccas-graphql
+
         - setWeight: 80
-        - pause: { duration: 1m }
+        - pause: { duration: 5m }
 
       canaryService: maccas-graphql-canary
       stableService: maccas-graphql
       trafficRouting:
         nginx:
           stableIngress: maccas-graphql
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
