@@ -18,7 +18,7 @@ spec:
       stableService: maccas-graphql
       trafficRouting:
         nginx:
-        stableIngress: nginx
+          stableIngress: nginx
       steps:
         - setWeight: 20
         - pause: { duration: 10s }
