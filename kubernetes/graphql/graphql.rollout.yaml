@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: graphql-rollout
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: maccas-graphql
+  workloadRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: maccas-graphql
+    scaleDown: progressively
+  strategy:
+    canary:
+      canaryService: maccas-graphql-canary
+      stableService: maccas-graphql
+      stableIngress: nginx
+      steps:
+        - setWeight: 20
+        - pause: { duration: 10s }
