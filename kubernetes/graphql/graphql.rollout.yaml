@@ -14,17 +14,27 @@ spec:
     scaleDown: progressively
   strategy:
     canary:
+      analysis:
+        templates:
+          - templateName: nginx-success-rate
+            clusterScope: true
+        startingStep: 1
+        args:
+          - name: service-name
+            value: maccas-graphql-canary
+
+      steps:
+        - setWeight: 20
+        - pause: { duration: 10m }
+        - setWeight: 40
+        - pause: { duration: 10m }
+        - setWeight: 60
+        - pause: { duration: 1m }
+        - setWeight: 80
+        - pause: { duration: 1m }
+
       canaryService: maccas-graphql-canary
       stableService: maccas-graphql
       trafficRouting:
         nginx:
           stableIngress: maccas-graphql
-      steps:
-        - setWeight: 20
-        - pause: { duration: 5m }
-        - analysis:
-            templates:
-              - templateName: nginx-success-rate
-            args:
-              - name: service-name
-                value: maccas-graphql-canary
