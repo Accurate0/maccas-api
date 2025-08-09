@@ -16,7 +16,7 @@ spec:
     canary:
       canaryService: maccas-graphql-canary
       stableService: maccas-graphql
-      stableIngress: nginx
       steps:
         - setWeight: 20
         - pause: { duration: 10s }
+      stableIngress: nginx
