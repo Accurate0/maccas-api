@@ -21,4 +21,10 @@ spec:
           stableIngress: maccas-graphql
       steps:
         - setWeight: 20
-        - pause: { duration: 10s }
+        - pause: { duration: 5m }
+        - analysis:
+            templates:
+              - templateName: nginx-success-rate
+            args:
+              - name: service-name
+                value: maccas-graphql-canary
