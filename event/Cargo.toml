@@ -48,7 +48,7 @@ opentelemetry_sdk = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 twilight-model = "0.16.0"
 twilight-util = { version = "0.16.0", features = ["builder"] }
-pgmq = "0.30.1"
+pgmq = "0.31.0"
 strum = { version = "0.27.1", features = ["derive"] }
 
 [lib]
