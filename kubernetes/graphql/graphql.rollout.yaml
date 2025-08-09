@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: graphql-rollout
+  name: maccas-graphql-rollout
 spec:
   replicas: 3
   selector:
