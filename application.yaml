@@ -13,15 +13,15 @@ spec:
     path: kubernetes
     kustomize:
       images:
-        - maccas-graphql=ghcr.io/accurate0/maccas-graphql:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-migration=ghcr.io/accurate0/maccas-migration:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-web=ghcr.io/accurate0/maccas-web:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-event=ghcr.io/accurate0/maccas-event:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-scheduler=ghcr.io/accurate0/maccas-scheduler:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-dashboard=ghcr.io/accurate0/maccas-dashboard:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-sensordata=ghcr.io/accurate0/maccas-sensordata:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-recommendations=ghcr.io/accurate0/maccas-recommendations:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
-        - maccas-clustering=ghcr.io/accurate0/maccas-clustering:499a3efc9eebde0183c930fb2b1aa4c377cc0ec9
+        - maccas-graphql=ghcr.io/accurate0/maccas-graphql:${ARGOCD_APP_REVISION}
+        - maccas-migration=ghcr.io/accurate0/maccas-migration:${ARGOCD_APP_REVISION}
+        - maccas-web=ghcr.io/accurate0/maccas-web:${ARGOCD_APP_REVISION}
+        - maccas-event=ghcr.io/accurate0/maccas-event:${ARGOCD_APP_REVISION}
+        - maccas-scheduler=ghcr.io/accurate0/maccas-scheduler:${ARGOCD_APP_REVISION}
+        - maccas-dashboard=ghcr.io/accurate0/maccas-dashboard:${ARGOCD_APP_REVISION}
+        - maccas-sensordata=ghcr.io/accurate0/maccas-sensordata:${ARGOCD_APP_REVISION}
+        - maccas-recommendations=ghcr.io/accurate0/maccas-recommendations:${ARGOCD_APP_REVISION}
+        - maccas-clustering=ghcr.io/accurate0/maccas-clustering:${ARGOCD_APP_REVISION}
 
   destination:
     server: https://kubernetes.default.svc
