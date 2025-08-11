@@ -15,13 +15,14 @@ spec:
       labels:
         app: maccas-web
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app: maccas-web
-              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: maccas-graphql
+          whenUnsatisfiable: ScheduleAnyway
+
       containers:
         - name: maccas-web
           image: maccas-web:latest
