@@ -10,9 +10,5 @@ query GetOffers {
 		price
 	}
 
-	recommendations {
-		shortName
-	}
-
 	categories
 }

@@ -6,16 +6,8 @@ export const load = async (event) => {
 		event
 	});
 
-	const featureFlagClient = event.locals.featureFlagClient;
-	const isRecommendationsEnabled = await featureFlagClient.getBooleanValue(
-		'maccas-web-add-recommendations',
-		false
-	);
-
 	return {
 		offers: data.then((c) => c.data?.offers),
-		categories: data.then((c) => c.data?.categories),
-		recommendations: data.then((c) => c.data?.recommendations.map((r) => r.shortName)),
-		isRecommendationsEnabled
+		categories: data.then((c) => c.data?.categories)
 	};
 };

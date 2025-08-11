@@ -81,20 +81,13 @@
 
 		return isPast(from) && isFuture(to);
 	};
-
-	const isOfferRecommended = (shortName: string, recommendedList: Array<string> | undefined) => {
-		return recommendedList?.includes(shortName) ?? false;
-	};
 </script>
 
 <div class="grid grid-flow-row gap-4">
 	{#await Promise.all([data.offers, data.categories, data.recommendations])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
-
-			{#if !data.isRecommendationsEnabled}
-				<Skeleton class="h-12 min-w-12 rounded-sm" />
-			{/if}
+			<Skeleton class="h-12 min-w-12 rounded-sm" />
 		</div>
 		{#each Array(30) as _}
 			<Card.Root>
@@ -109,7 +102,7 @@
 				</div>
 			</Card.Root>
 		{/each}
-	{:then [offersList, categories, recommendations]}
+	{:then [offersList, categories]}
 		<div class="flex flex-row gap-2">
 			<Select.Root
 				selected={defaultSelected}
@@ -128,31 +121,23 @@
 					<Select.Item value="Other">Other</Select.Item>
 				</Select.Content>
 			</Select.Root>
-			{#if !data.isRecommendationsEnabled}
-				<div>
-					<Button
-						on:click={() => (sortByAsc = !sortByAsc)}
-						variant="outline"
-						size="icon"
-						class="h-12 w-12"
-					>
-						{#if sortByAsc}
-							<ChevronDown />
-						{:else}
-							<ChevronUp />
-						{/if}
-						<span class="sr-only">Toggle price</span>
-					</Button>
-				</div>
-			{/if}
+			<div>
+				<Button
+					on:click={() => (sortByAsc = !sortByAsc)}
+					variant="outline"
+					size="icon"
+					class="h-12 w-12"
+				>
+					{#if sortByAsc}
+						<ChevronDown />
+					{:else}
+						<ChevronUp />
+					{/if}
+					<span class="sr-only">Toggle price</span>
+				</Button>
+			</div>
 		</div>
 		{#each (offersList ?? []).sort((a, b) => {
-			if (data.isRecommendationsEnabled) {
-				const isOfferARecommended = isOfferRecommended(a.shortName, recommendations) ? 1 : 0;
-				const isOfferBRecommended = isOfferRecommended(b.shortName, recommendations) ? 1 : 0;
-				return isOfferBRecommended - isOfferARecommended;
-			} else {
-			}
 			if (!a.price) {
 				return 0;
 			}
@@ -171,7 +156,6 @@
 			{@const validInFuture = isFuture(parseJSON(validFrom))}
 			{@const matchesFilter = checkIfFilterMatch(categories, $filters)}
 			{@const isNew = isOfferNew({ validFrom })}
-			{@const isRecommended = isOfferRecommended(shortName, recommendations)}
 			{#if matchesFilter}
 				<Card.Root
 					on:click={async () => {
