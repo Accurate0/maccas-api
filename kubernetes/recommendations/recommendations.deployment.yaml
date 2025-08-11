@@ -35,7 +35,7 @@ spec:
             initialDelaySeconds: 3
             periodSeconds: 30
             successThreshold: 1
-            timeoutSeconds: 1
+            timeoutSeconds: 5
           env:
             - name: FLIPT_URL
               value: http://flipt.flipt.svc.cluster.local:8080
