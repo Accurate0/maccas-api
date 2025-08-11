@@ -20,7 +20,7 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              app: maccas-graphql
+              app: maccas-web
           whenUnsatisfiable: ScheduleAnyway
 
       containers:
