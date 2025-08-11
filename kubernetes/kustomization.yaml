@@ -18,6 +18,7 @@ resources:
   - namespace.yaml
   - web/web.secret.yaml
   - web/web.service.yaml
+  - web/web.rollout.yaml
   - sensordata/sensordata.deployment.yaml
   - sensordata/sensordata.service.yaml
   - sensordata/pvc.yaml

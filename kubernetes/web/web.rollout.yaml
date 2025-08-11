@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: maccas-graphql
+  name: maccas-web
   namespace: maccas-api
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: maccas-graphql
+      app: maccas-web
   workloadRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: maccas-graphql
+    name: maccas-web
     scaleDown: progressively
   strategy:
     canary:
@@ -52,10 +52,10 @@ spec:
         - setWeight: 80
         - pause: { duration: 5m }
 
-      canaryService: maccas-graphql-canary
-      stableService: maccas-graphql
+      canaryService: maccas-web-canary
+      stableService: maccas-web
       trafficRouting:
         nginx:
-          stableIngress: maccas-graphql
+          stableIngress: maccas-web
           additionalIngressAnnotations:
             canary-by-header: X-Canary
