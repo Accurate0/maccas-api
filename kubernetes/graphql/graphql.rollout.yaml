@@ -8,6 +8,7 @@ spec:
   selector:
     matchLabels:
       app: maccas-graphql
+  revisionHistoryLimit: 5
   workloadRef:
     apiVersion: apps/v1
     kind: Deployment
