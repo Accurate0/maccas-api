@@ -12,7 +12,6 @@ resources:
   - recommendations/recommendations.deployment.yaml
   - graphql/graphql.service.yaml
   - graphql/graphql.ingress.yaml
-  - graphql/graphql.rollout.yaml
   - ingress.yaml
   - migration/migration.secret.yaml
   - namespace.yaml
