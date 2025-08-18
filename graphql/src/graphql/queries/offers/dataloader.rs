@@ -6,6 +6,7 @@ use sea_orm::{
     QuerySelect, RelationTrait,
 };
 use std::{collections::HashMap, sync::Arc};
+use tracing::instrument;
 
 pub struct OfferDetailsLoader {
     pub database: DatabaseConnection,
@@ -15,6 +16,7 @@ impl Loader<i64> for OfferDetailsLoader {
     type Value = offer_details::Model;
     type Error = Arc<DbErr>;
 
+    #[instrument(name = "OfferDetailsLoader::load", skip(self, keys))]
     async fn load(&self, keys: &[i64]) -> Result<HashMap<i64, Self::Value>, Self::Error> {
         Ok(offer_details::Entity::find()
             .filter(offer_details::Column::PropositionId.is_in(keys.iter().copied()))
@@ -35,6 +37,7 @@ impl Loader<String> for OfferCountDataLoader {
     type Value = i64;
     type Error = Arc<DbErr>;
 
+    #[instrument(name = "OfferCountDataLoader::load", skip(self, names))]
     async fn load(&self, names: &[String]) -> Result<HashMap<String, Self::Value>, Self::Error> {
         let db = &self.database;
         let all_locked_accounts = entity::account_lock::Entity::find()
