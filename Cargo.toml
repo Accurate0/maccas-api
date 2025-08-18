@@ -27,7 +27,7 @@ async-graphql = { version = "7.0.16", features = [
     "log",
     "opentelemetry",
     # FIXME:https://github.com/async-graphql/async-graphql/issues/1726
-    # "tracing"
+    "tracing"
 ] }
 
 serde = { version = "1.0.219", features = ["derive"] }

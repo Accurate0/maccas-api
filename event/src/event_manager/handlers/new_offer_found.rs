@@ -11,8 +11,8 @@ use base::{
 };
 use entity::{offer_details, offers};
 use recommendations::GenerateEmbeddingsFor;
+use reqwest::StatusCode;
 use reqwest::header::CONTENT_TYPE;
-use reqwest::{StatusCode, header::HeaderValue};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use tracing::instrument;
