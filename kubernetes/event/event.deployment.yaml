@@ -38,7 +38,7 @@ spec:
             timeoutSeconds: 1
           env:
             - name: FLIPT_URL
-              value: http://flipt.flipt.svc.cluster.local:8080
+              value: http://flipt-v2.flipt-v2.svc.cluster.local:8080
             - name: RECOMMENDATIONS_API_BASE
               value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
             - name: SENSORDATA_API_BASE
