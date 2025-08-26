@@ -78,6 +78,10 @@ impl Loader<i64> for OfferDetailsLoader {
             }
         }
 
+        tracing::Span::current()
+            .record("cached", cache_values.len())
+            .record("db", check_db_for.len());
+
         tracing::info!(
             "cached count: {}, checking db count: {}",
             cache_values.len(),
