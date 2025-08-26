@@ -4,6 +4,7 @@ use prost::bytes::Bytes;
 use redis::{AsyncCommands, ToRedisArgs};
 
 pub use prost_types::Timestamp as ProtobufTimestamp;
+use tracing::instrument;
 
 pub mod maccas {
     pub mod caching {
@@ -68,6 +69,7 @@ impl OfferDetailsCache {
         Self { redis }
     }
 
+    #[instrument(name = "OfferDetailsCache::set", skip(self, details))]
     pub async fn set(
         &self,
         details: maccas::caching::OfferDetails,
@@ -83,6 +85,7 @@ impl OfferDetailsCache {
         Ok(())
     }
 
+    #[instrument(name = "OfferDetailsCache::get_all", skip(self, ids))]
     pub async fn get_all(
         &self,
         ids: &[i64],

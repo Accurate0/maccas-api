@@ -1133,6 +1133,7 @@ dependencies = [
  "prost-types",
  "redis",
  "thiserror 2.0.16",
+ "tracing",
 ]
 
 [[package]]
