@@ -13,7 +13,9 @@ use event::Event;
 use event::events::MaybeJobScheduler;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;
-use populate_offer_details_cache::populate_offer_details_cache;
+use populate_offer_details_cache::{
+    populate_offer_details_cache, populate_offer_details_cache_for,
+};
 use refresh_account::refresh_account;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
@@ -109,6 +111,11 @@ pub async fn handle(event_manager: EventManager) {
                 match evt {
                     Event::PopulateOfferDetailsCache => {
                         populate_offer_details_cache(event_manager).await
+                    }
+                    Event::PopulateOfferDetailsCacheFor {
+                        offer_proposition_id,
+                    } => {
+                        populate_offer_details_cache_for(offer_proposition_id, event_manager).await
                     }
                     Event::Cleanup {
                         offer_id,
