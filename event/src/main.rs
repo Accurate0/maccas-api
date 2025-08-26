@@ -19,6 +19,7 @@ use actix_web::middleware::from_fn;
 use actix_web::{App, HttpServer, middleware::Logger, web};
 use actix_web_opentelemetry::RequestTracing;
 use base::{feature_flag::FeatureFlagClient, http::get_http_client};
+use caching::{OfferDetailsCache, Redis};
 use event_manager::S3BucketType;
 use jobs::job_executor;
 use reqwest_middleware::ClientWithMiddleware;
@@ -141,6 +142,15 @@ async fn main() -> Result<(), anyhow::Error> {
     )?
     .with_path_style();
 
+    let offer_details_cache =
+        if let Some(ref redis_connection_string) = settings.redis_connection_string {
+            tracing::info!("redis connection string provided, connecting...");
+            let redis = Redis::new(&redis_connection_string).await?;
+            Some(OfferDetailsCache::new(redis))
+        } else {
+            None
+        };
+
     let mut opt = ConnectOptions::new(settings.database.url.to_owned());
     opt.max_connections(30)
         .min_connections(0)
@@ -163,6 +173,9 @@ async fn main() -> Result<(), anyhow::Error> {
     .await?;
     let job_executor = init_job_executor(job_scheduler, settings.clone()).await?;
 
+    if let Some(offer_details_cache) = offer_details_cache {
+        event_manager.set_state::<OfferDetailsCache>(offer_details_cache);
+    }
     event_manager.set_state::<Settings>(settings.clone());
     event_manager.set_state::<JobExecutor>(job_executor.clone());
     event_manager.set_state::<S3BucketType>(bucket);

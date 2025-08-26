@@ -1,12 +1,13 @@
-use super::{error::JobError, shared, Job, JobContext};
+use super::{Job, JobContext, error::JobError, shared};
 use anyhow::Context as _;
+use caching::OfferDetailsCache;
 use entity::accounts;
 use event::Event;
 use opentelemetry::trace::TraceContextExt;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    sea_query::{LockBehavior, LockType},
     ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect,
+    sea_query::{LockBehavior, LockType},
 };
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -45,11 +46,13 @@ impl Job for RefreshJob {
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 
+        let caching = context.event_manager.try_get_state::<OfferDetailsCache>();
         let events_to_dispatch = shared::refresh_account(
             account_to_refresh,
             &self.http_client,
             &self.mcdonalds_config,
             context.database,
+            caching,
             cancellation_token,
         )
         .await?;

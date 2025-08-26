@@ -94,6 +94,13 @@ impl EventManager {
         self.inner.state.set(state);
     }
 
+    pub fn try_get_state<T>(&self) -> Option<&T>
+    where
+        T: Send + Sync + 'static,
+    {
+        self.inner.state.try_get::<T>()
+    }
+
     pub fn get_state<T>(&self) -> &T
     where
         T: Send + Sync + 'static,

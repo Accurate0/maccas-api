@@ -1,22 +1,57 @@
+use super::error::JobError;
 use base::constants::mc_donalds;
+use caching::{OfferDetailsCache, maccas};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
 use event::Event;
 use libmaccas::ApiClient;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
-    IntoActiveModel, QueryFilter, Set, TransactionTrait, TryIntoModel,
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveModel,
+    QueryFilter, Set, TransactionTrait, TryIntoModel, sea_query::OnConflict,
 };
 use tokio_util::sync::CancellationToken;
 
-use super::error::JobError;
+pub fn offer_details_model_to_cache(
+    details: &entity::offer_details::Model,
+) -> maccas::caching::OfferDetails {
+    maccas::caching::OfferDetails {
+        proposition_id: details.proposition_id,
+        name: details.name.clone(),
+        description: details.description.clone(),
+        price: details.price,
+        short_name: details.short_name.clone(),
+        image_base_name: details.image_base_name.clone(),
+        created_at: Some(caching::ProtobufTimestamp {
+            seconds: details.created_at.and_utc().timestamp(),
+            nanos: details
+                .created_at
+                .and_utc()
+                .timestamp_subsec_nanos()
+                .try_into()
+                .unwrap_or_default(),
+        }),
+        updated_at: Some(caching::ProtobufTimestamp {
+            seconds: details.updated_at.and_utc().timestamp(),
+            nanos: details
+                .updated_at
+                .and_utc()
+                .timestamp_subsec_nanos()
+                .try_into()
+                .unwrap_or_default(),
+        }),
+
+        categories: details.categories.clone().unwrap_or_default(),
+        migrated: details.migrated,
+    }
+}
 
 pub async fn refresh_account(
     account_to_refresh: entity::accounts::Model,
     http_client: &ClientWithMiddleware,
     mcdonalds_config: &crate::settings::McDonalds,
     db: &DatabaseTransaction,
+    caching: Option<&OfferDetailsCache>,
     _cancellation_token: CancellationToken,
 ) -> Result<Vec<Event>, JobError> {
     let account_id = account_to_refresh.id.to_owned();
@@ -96,11 +131,22 @@ pub async fn refresh_account(
         if details.is_none() || details.as_ref().and_then(|d| d.raw_data.as_ref()).is_none() {
             let offer_details = api_client_cloned.offer_details(&id).await?;
             if let Some(offer_details) = offer_details.body.response {
-                let active_model = converters::Database::convert_offer_details(&offer_details)?
-                    .0
-                    .into_active_model();
+                let active_model = converters::Database::convert_offer_details(&offer_details)?.0;
                 added_offers.push(active_model);
             }
+        } else {
+            let details = details.unwrap();
+            if let Some(caching) = caching {
+                caching.set(offer_details_model_to_cache(&details)).await?;
+            }
+        }
+    }
+
+    if let Some(caching) = caching {
+        for added_offer in &added_offers {
+            caching
+                .set(offer_details_model_to_cache(added_offer))
+                .await?;
         }
     }
 
@@ -113,12 +159,12 @@ pub async fn refresh_account(
     events_to_dispatch.push(Event::RefreshPoints { account_id });
     for offer in &added_offers {
         let save_image_event = Event::SaveImage {
-            basename: offer.image_base_name.as_ref().clone(),
-            force: *offer.migrated.as_ref(),
+            basename: offer.image_base_name.clone(),
+            force: offer.migrated,
         };
 
         let new_offer_event = event::Event::NewOfferFound {
-            offer_proposition_id: *offer.proposition_id.as_ref(),
+            offer_proposition_id: offer.proposition_id,
         };
 
         events_to_dispatch.push(save_image_event);
@@ -127,6 +173,7 @@ pub async fn refresh_account(
 
     let txn = db.begin().await?;
 
+    let added_offers = added_offers.into_iter().map(|m| m.into_active_model());
     offer_details::Entity::insert_many(added_offers)
         .on_conflict(
             OnConflict::column(offer_details::Column::PropositionId)

@@ -27,6 +27,7 @@ pub struct Settings {
     pub recommendations_api_base: String,
     pub auth_secret: String,
     pub places_api_key: String,
+    pub redis_connection_string: Option<String>,
 }
 
 impl Settings {

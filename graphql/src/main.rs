@@ -1,15 +1,16 @@
 use crate::{
     graphql::{
-        graphql_handler, health, queries::locations::dataloader::LocationLoader, self_health,
-        FinalSchema, MutationRoot, QueryRoot,
+        FinalSchema, MutationRoot, QueryRoot, graphql_handler, health,
+        queries::locations::dataloader::LocationLoader, self_health,
     },
     settings::Settings,
     types::ApiState,
 };
-use async_graphql::{dataloader::DataLoader, EmptySubscription};
-use axum::{http::Method, routing::get, Router};
+use async_graphql::{EmptySubscription, dataloader::DataLoader};
+use axum::{Router, http::Method, routing::get};
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use base::shutdown::axum_shutdown_signal;
+use caching::{OfferDetailsCache, Redis};
 use graphql::{
     graphiql,
     queries::offers::dataloader::{OfferCountDataLoader, OfferDetailsLoader},
@@ -37,6 +38,15 @@ async fn main() -> Result<(), anyhow::Error> {
         .sqlx_logging(true)
         .sqlx_logging_level(LevelFilter::Trace);
 
+    let offer_details_caching =
+        if let Some(ref redis_connection_string) = settings.redis_connection_string {
+            tracing::info!("redis connection string provided, connecting...");
+            let redis = Redis::new(&redis_connection_string).await?;
+            Some(OfferDetailsCache::new(redis))
+        } else {
+            None
+        };
+
     let db = Database::connect(opt).await?;
     let http_client = base::http::get_http_client()?;
     let basic_http_client = base::http::get_basic_http_client()?;
@@ -60,6 +70,7 @@ async fn main() -> Result<(), anyhow::Error> {
     .data(DataLoader::new(
         OfferDetailsLoader {
             database: db.clone(),
+            cache: offer_details_caching,
         },
         tokio::spawn,
     ))

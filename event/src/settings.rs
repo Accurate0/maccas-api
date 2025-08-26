@@ -46,6 +46,7 @@ pub struct Settings {
     pub sensordata_api_base: String,
     pub recommendations_api_base: String,
     pub external_webhook_secret: String,
+    pub redis_connection_string: Option<String>,
 }
 
 impl Settings {

@@ -2,6 +2,7 @@ use super::HandlerError;
 use crate::{event_manager::EventManager, jobs::shared, settings::Settings};
 use anyhow::Context;
 use base::http::get_proxied_maccas_http_client;
+use caching::OfferDetailsCache;
 use entity::accounts;
 use opentelemetry::trace::TraceContextExt;
 use sea_orm::{EntityTrait, TransactionTrait};
@@ -26,11 +27,13 @@ pub async fn refresh_account(account_id: Uuid, em: EventManager) -> Result<(), H
         .basic_auth(&settings.proxy.username, &settings.proxy.password);
     let http_client = get_proxied_maccas_http_client(proxy)?;
 
+    let caching = em.try_get_state::<OfferDetailsCache>();
     let events_to_dispatch = shared::refresh_account(
         account,
         &http_client,
         &settings.mcdonalds,
         &db,
+        caching,
         CancellationToken::new(),
     )
     .await?;

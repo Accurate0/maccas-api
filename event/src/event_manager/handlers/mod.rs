@@ -7,11 +7,13 @@ use base::{
     jwt::JwtValidationError,
     retry::{ExponentialBackoff, RetryResult, retry_async},
 };
+use caching::OfferDetailsCacheError;
 use converters::ConversionError;
 use event::Event;
 use event::events::MaybeJobScheduler;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;
+use populate_offer_details_cache::populate_offer_details_cache;
 use refresh_account::refresh_account;
 use refresh_points::refresh_points;
 use sea_orm::DbErr;
@@ -21,6 +23,7 @@ use tracing::{Instrument, span};
 
 mod cleanup;
 mod new_offer_found;
+mod populate_offer_details_cache;
 mod refresh_account;
 mod refresh_points;
 mod save_image;
@@ -33,6 +36,8 @@ pub enum HandlerError {
     Serializer(#[from] serde_json::Error),
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
+    #[error(transparent)]
+    OfferDetailsCacheError(#[from] OfferDetailsCacheError),
     #[error("Chrono out of range error has occurred: `{0}`")]
     OutOfRangeError(#[from] chrono::OutOfRangeError),
     #[error("An unknown error occurred: `{0}`")]
@@ -102,6 +107,9 @@ pub async fn handle(event_manager: EventManager) {
                 let event_manager = event_manager.clone();
                 let evt = event.evt.clone();
                 match evt {
+                    Event::PopulateOfferDetailsCache => {
+                        populate_offer_details_cache(event_manager).await
+                    }
                     Event::Cleanup {
                         offer_id,
                         transaction_id,

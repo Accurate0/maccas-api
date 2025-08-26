@@ -29,6 +29,7 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 converters = { workspace = true }
 libmaccas = { workspace = true }
+caching = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true }
 open-feature = { workspace = true }

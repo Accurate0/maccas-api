@@ -1,6 +1,7 @@
 use super::job_executor;
 use crate::event_manager::EventManagerError;
 use base::{http::HttpCreationError, jwt::JwtValidationError};
+use caching::OfferDetailsCacheError;
 use sea_orm::DbErr;
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;
@@ -9,6 +10,8 @@ use tokio::sync::mpsc::error::SendError;
 pub enum JobError {
     #[error("Database error has occurred: `{0}`")]
     Database(#[from] DbErr),
+    #[error(transparent)]
+    OfferDetailsCacheError(#[from] OfferDetailsCacheError),
     #[error("EventManager error has occurred: `{0}`")]
     EventManager(#[from] EventManagerError),
     #[error("DelayQueue error has occurred: `{0}`")]

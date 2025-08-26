@@ -9,7 +9,7 @@ members = [
     "base",
     "event", 
     "sensordata/lib", 
-    "recommendations", "scheduler", 
+    "recommendations", "scheduler", "caching", 
 ]
 
 [workspace.package]
@@ -57,6 +57,7 @@ anyhow = "1.0.98"
 config = "0.15.11"
 
 entity = { path = "./entity" }
+caching = { path = "./caching" }
 libmaccas = { path = "./libmaccas" }
 places = { path = "./places" }
 openai = { path = "./openai" }

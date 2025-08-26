@@ -37,6 +37,7 @@ pub enum Event {
     NewOfferFound {
         offer_proposition_id: i64,
     },
+    PopulateOfferDetailsCache,
 }
 
 impl MaybeJobScheduler for Event {
@@ -77,6 +78,7 @@ impl fmt::Display for Event {
             Event::Refresh {} => write!(f, "Refresh"),
             Event::SaveImages {} => write!(f, "SaveImages"),
             Event::RefreshAccount { .. } => write!(f, "RefreshAccount"),
+            Event::PopulateOfferDetailsCache => write!(f, "PopulateOfferDetailsCache"),
         }
     }
 }

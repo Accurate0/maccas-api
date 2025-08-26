@@ -51,6 +51,8 @@ spec:
               value: http://maccas-recommendations.maccas-api.svc.cluster.local:8003
             - name: FLIPT_URL
               value: http://flipt-v2.flipt-v2.svc.cluster.local:8080
+            - name: REDIS_CONNECTION_STRING
+              value: redis://node.valkey.svc.cluster.local
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets

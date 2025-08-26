@@ -1,5 +1,7 @@
 use crate::{graphql::queries::offers::types::OfferCount, name_of};
 use async_graphql::dataloader::Loader;
+use caching::OfferDetailsCache;
+use chrono::DateTime;
 use entity::{offer_details, offers};
 use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, JoinType, QueryFilter,
@@ -10,22 +12,90 @@ use tracing::instrument;
 
 pub struct OfferDetailsLoader {
     pub database: DatabaseConnection,
+    pub cache: Option<OfferDetailsCache>,
 }
 
 impl Loader<i64> for OfferDetailsLoader {
     type Value = offer_details::Model;
-    type Error = Arc<DbErr>;
+    type Error = Arc<anyhow::Error>;
 
     #[instrument(name = "OfferDetailsLoader::load", skip(self, keys))]
     async fn load(&self, keys: &[i64]) -> Result<HashMap<i64, Self::Value>, Self::Error> {
-        Ok(offer_details::Entity::find()
-            .filter(offer_details::Column::PropositionId.is_in(keys.iter().copied()))
+        let cached_values = if let Some(ref cache) = self.cache {
+            cache.get_all(keys).await.map_err(anyhow::Error::from)?
+        } else {
+            vec![]
+        };
+
+        let mut check_db_for = vec![];
+        let mut cache_values = HashMap::new();
+        let now = chrono::offset::Utc::now().naive_utc();
+
+        for (id, value) in keys.iter().zip(cached_values) {
+            match value {
+                Some(v) => {
+                    let db_value = offer_details::Model {
+                        proposition_id: v.proposition_id,
+                        name: v.name,
+                        description: v.description,
+                        price: v.price,
+                        short_name: v.short_name,
+                        image_base_name: v.image_base_name,
+                        created_at: if let Some(created_at) = v.created_at {
+                            DateTime::from_timestamp(
+                                created_at.seconds,
+                                created_at.nanos.try_into().unwrap_or_default(),
+                            )
+                            .unwrap_or_default()
+                            .naive_utc()
+                        } else {
+                            now
+                        },
+                        updated_at: if let Some(updated_at) = v.updated_at {
+                            DateTime::from_timestamp(
+                                updated_at.seconds,
+                                updated_at.nanos.try_into().unwrap_or_default(),
+                            )
+                            .unwrap_or_default()
+                            .naive_utc()
+                        } else {
+                            now
+                        },
+                        raw_data: None,
+                        categories: if v.categories.is_empty() {
+                            None
+                        } else {
+                            Some(v.categories)
+                        },
+                        migrated: v.migrated,
+                    };
+
+                    cache_values.insert(*id, db_value);
+                }
+                None => {
+                    check_db_for.push(*id);
+                }
+            }
+        }
+
+        tracing::info!(
+            "cached count: {}, checking db count: {}",
+            cache_values.len(),
+            check_db_for.len()
+        );
+
+        let db_values = offer_details::Entity::find()
+            .filter(offer_details::Column::PropositionId.is_in(check_db_for))
             .all(&self.database)
             .await
-            .map_err(Arc::new)?
+            .map_err(anyhow::Error::from)?
             .into_iter()
             .map(|o| (o.proposition_id, o))
-            .collect::<HashMap<_, _>>())
+            .collect::<HashMap<_, _>>();
+
+        cache_values.extend(db_values);
+
+        Ok(cache_values)
     }
 }
 

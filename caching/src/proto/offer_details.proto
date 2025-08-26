@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package maccas.caching;
+
+message OfferDetails {
+  int64 proposition_id = 1;
+  string name = 2;
+  string description = 3;
+  optional double price = 4;
+  string short_name = 5;
+  string image_base_name = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  repeated string categories = 9;
+  // unused, only to match DB
+  bool migrated = 10;
+}
