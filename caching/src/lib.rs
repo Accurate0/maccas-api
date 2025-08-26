@@ -34,13 +34,13 @@ impl Redis {
         Ok(Self { pool })
     }
 
-    pub async fn set<K, V>(&self, k: K, v: V) -> Result<(), RedisError>
+    pub async fn set_ex<K, V>(&self, k: K, v: V) -> Result<(), RedisError>
     where
         K: ToRedisArgs + Send + Sync,
         V: ToRedisArgs + Send + Sync,
     {
         let mut conn = self.pool.get().await?;
-        conn.set(k, v).await.map_err(RedisError::from)
+        conn.set_ex(k, v, 86400).await.map_err(RedisError::from)
     }
 
     pub async fn mget<K>(&self, k: K) -> Result<Vec<Option<Bytes>>, RedisError>
@@ -63,7 +63,7 @@ pub struct OfferDetailsCache {
 }
 
 impl OfferDetailsCache {
-    const PREFIX: &str = "maccas:offer_details:";
+    const PREFIX: &str = "maccas:offer_details";
 
     pub fn new(redis: Redis) -> Self {
         Self { redis }
@@ -77,7 +77,7 @@ impl OfferDetailsCache {
         let bytes = details.encode_to_vec();
         let _ = self
             .redis
-            .set(
+            .set_ex(
                 format!("{}:{}", Self::PREFIX, details.proposition_id),
                 bytes,
             )
