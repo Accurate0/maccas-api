@@ -75,12 +75,13 @@ impl OfferDetailsCache {
         details: maccas::caching::OfferDetails,
     ) -> Result<(), OfferDetailsCacheError> {
         let bytes = details.encode_to_vec();
-        self.redis
+        let _ = self
+            .redis
             .set(
                 format!("{}:{}", Self::PREFIX, details.proposition_id),
                 bytes,
             )
-            .await?;
+            .await;
 
         Ok(())
     }
@@ -97,7 +98,8 @@ impl OfferDetailsCache {
                     .map(|id| format!("{}:{}", Self::PREFIX, id))
                     .collect::<Vec<_>>(),
             )
-            .await?
+            .await
+            .unwrap_or_default()
             .into_iter()
             .map(|b| {
                 if let Some(b) = b {
