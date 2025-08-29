@@ -155,18 +155,18 @@ impl Loader<i64> for OfferDetailsLoader {
                 .await
                 .inspect_err(|e| tracing::error!("error refreshing cache: {e}"))
             });
+
+            let db_values = offer_details::Entity::find()
+                .filter(offer_details::Column::PropositionId.is_in(check_db_for))
+                .all(&self.database)
+                .await
+                .map_err(anyhow::Error::from)?
+                .into_iter()
+                .map(|o| (o.proposition_id, o))
+                .collect::<HashMap<_, _>>();
+
+            cache_values.extend(db_values);
         }
-
-        let db_values = offer_details::Entity::find()
-            .filter(offer_details::Column::PropositionId.is_in(check_db_for))
-            .all(&self.database)
-            .await
-            .map_err(anyhow::Error::from)?
-            .into_iter()
-            .map(|o| (o.proposition_id, o))
-            .collect::<HashMap<_, _>>();
-
-        cache_values.extend(db_values);
 
         Ok(cache_values)
     }
