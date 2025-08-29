@@ -36,5 +36,5 @@ thiserror = { workspace = true }
 chrono = { workspace = true }
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
-axum-tracing-opentelemetry = "0.29.0"
+axum-tracing-opentelemetry = "0.30.0"
 geoutils = "0.5.1"
