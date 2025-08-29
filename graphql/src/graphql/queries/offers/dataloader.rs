@@ -64,6 +64,47 @@ impl OfferDetailsLoader {
 
         Ok(())
     }
+
+    pub fn convert_from_cache_to_db(
+        cached_value: caching::maccas::caching::OfferDetails,
+        now: chrono::NaiveDateTime,
+    ) -> offer_details::Model {
+        offer_details::Model {
+            proposition_id: cached_value.proposition_id,
+            name: cached_value.name,
+            description: cached_value.description,
+            price: cached_value.price,
+            short_name: cached_value.short_name,
+            image_base_name: cached_value.image_base_name,
+            created_at: if let Some(created_at) = cached_value.created_at {
+                DateTime::from_timestamp(
+                    created_at.seconds,
+                    created_at.nanos.try_into().unwrap_or_default(),
+                )
+                .unwrap_or_default()
+                .naive_utc()
+            } else {
+                now
+            },
+            updated_at: if let Some(updated_at) = cached_value.updated_at {
+                DateTime::from_timestamp(
+                    updated_at.seconds,
+                    updated_at.nanos.try_into().unwrap_or_default(),
+                )
+                .unwrap_or_default()
+                .naive_utc()
+            } else {
+                now
+            },
+            raw_data: None,
+            categories: if cached_value.categories.is_empty() {
+                None
+            } else {
+                Some(cached_value.categories)
+            },
+            migrated: cached_value.migrated,
+        }
+    }
 }
 
 impl Loader<i64> for OfferDetailsLoader {
@@ -85,43 +126,7 @@ impl Loader<i64> for OfferDetailsLoader {
         for (id, value) in keys.iter().zip(cached_values) {
             match value {
                 Some(v) => {
-                    let db_value = offer_details::Model {
-                        proposition_id: v.proposition_id,
-                        name: v.name,
-                        description: v.description,
-                        price: v.price,
-                        short_name: v.short_name,
-                        image_base_name: v.image_base_name,
-                        created_at: if let Some(created_at) = v.created_at {
-                            DateTime::from_timestamp(
-                                created_at.seconds,
-                                created_at.nanos.try_into().unwrap_or_default(),
-                            )
-                            .unwrap_or_default()
-                            .naive_utc()
-                        } else {
-                            now
-                        },
-                        updated_at: if let Some(updated_at) = v.updated_at {
-                            DateTime::from_timestamp(
-                                updated_at.seconds,
-                                updated_at.nanos.try_into().unwrap_or_default(),
-                            )
-                            .unwrap_or_default()
-                            .naive_utc()
-                        } else {
-                            now
-                        },
-                        raw_data: None,
-                        categories: if v.categories.is_empty() {
-                            None
-                        } else {
-                            Some(v.categories)
-                        },
-                        migrated: v.migrated,
-                    };
-
-                    cache_values.insert(*id, db_value);
+                    cache_values.insert(*id, Self::convert_from_cache_to_db(v, now));
                 }
                 None => {
                     check_db_for.push(*id);
