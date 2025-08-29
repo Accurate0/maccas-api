@@ -139,21 +139,23 @@ impl Loader<i64> for OfferDetailsLoader {
             check_db_for.len()
         );
 
-        let check_db_for_background = check_db_for.clone();
-        let event_api_base = self.settings.event_api_base.clone();
-        let auth_secret = self.settings.auth_secret.clone();
-        let http_client = self.http_client.clone();
+        if !check_db_for.is_empty() {
+            let check_db_for_background = check_db_for.clone();
+            let event_api_base = self.settings.event_api_base.clone();
+            let auth_secret = self.settings.auth_secret.clone();
+            let http_client = self.http_client.clone();
 
-        tokio::spawn(async move {
-            Self::trigger_cache_in_background(
-                &auth_secret,
-                &event_api_base,
-                http_client,
-                check_db_for_background,
-            )
-            .await
-            .inspect_err(|e| tracing::error!("error refreshing cache: {e}"))
-        });
+            tokio::spawn(async move {
+                Self::trigger_cache_in_background(
+                    &auth_secret,
+                    &event_api_base,
+                    http_client,
+                    check_db_for_background,
+                )
+                .await
+                .inspect_err(|e| tracing::error!("error refreshing cache: {e}"))
+            });
+        }
 
         let db_values = offer_details::Entity::find()
             .filter(offer_details::Column::PropositionId.is_in(check_db_for))
