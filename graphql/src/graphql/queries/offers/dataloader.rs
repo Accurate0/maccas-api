@@ -1,18 +1,69 @@
-use crate::{graphql::queries::offers::types::OfferCount, name_of};
+use crate::{graphql::queries::offers::types::OfferCount, name_of, settings::Settings};
 use async_graphql::dataloader::Loader;
+use base::jwt::generate_internal_jwt;
 use caching::OfferDetailsCache;
 use chrono::DateTime;
 use entity::{offer_details, offers};
+use event::{CreateBulkEvents, CreateBulkEventsResponse, CreateEvent, Event};
+use reqwest::StatusCode;
+use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, DbErr, EntityTrait, JoinType, QueryFilter,
     QuerySelect, RelationTrait,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tracing::instrument;
 
 pub struct OfferDetailsLoader {
     pub database: DatabaseConnection,
+    pub http_client: ClientWithMiddleware,
+    pub settings: Settings,
     pub cache: Option<OfferDetailsCache>,
+}
+
+impl OfferDetailsLoader {
+    pub async fn trigger_cache_in_background(
+        auth_secret: &str,
+        event_api_base: &str,
+        http_client: ClientWithMiddleware,
+        proposition_ids: Vec<i64>,
+    ) -> Result<(), anyhow::Error> {
+        tracing::info!("trigger cache for {proposition_ids:?}");
+        let events = proposition_ids
+            .iter()
+            .map(|id| CreateEvent {
+                event: Event::PopulateOfferDetailsCacheFor {
+                    offer_proposition_id: *id,
+                },
+                delay: Duration::from_secs(0),
+            })
+            .collect();
+
+        let request_url = format!("{}/{}", event_api_base, CreateBulkEvents::path());
+        let token = generate_internal_jwt(auth_secret.as_ref(), "Maccas API", "Maccas Event")?;
+
+        let request = http_client
+            .post(request_url)
+            .json(&CreateBulkEvents { events })
+            .bearer_auth(token);
+
+        let response = request.send().await;
+
+        match response {
+            Ok(response) => match response.status() {
+                StatusCode::CREATED => {
+                    let ids = response.json::<CreateBulkEventsResponse>().await?.ids;
+                    tracing::info!("created cache event with id {:?}", ids);
+                }
+                status => {
+                    tracing::warn!("event failed with {} - {}", status, response.text().await?);
+                }
+            },
+            Err(e) => tracing::warn!("event request failed with {}", e),
+        }
+
+        Ok(())
+    }
 }
 
 impl Loader<i64> for OfferDetailsLoader {
@@ -87,6 +138,22 @@ impl Loader<i64> for OfferDetailsLoader {
             cache_values.len(),
             check_db_for.len()
         );
+
+        let check_db_for_background = check_db_for.clone();
+        let event_api_base = self.settings.event_api_base.clone();
+        let auth_secret = self.settings.auth_secret.clone();
+        let http_client = self.http_client.clone();
+
+        tokio::spawn(async move {
+            Self::trigger_cache_in_background(
+                &auth_secret,
+                &event_api_base,
+                http_client,
+                check_db_for_background,
+            )
+            .await
+            .inspect_err(|e| tracing::error!("error refreshing cache: {e}"))
+        });
 
         let db_values = offer_details::Entity::find()
             .filter(offer_details::Column::PropositionId.is_in(check_db_for))

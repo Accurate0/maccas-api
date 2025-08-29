@@ -56,7 +56,7 @@ async fn main() -> Result<(), anyhow::Error> {
         MutationRoot::default(),
         EmptySubscription,
     )
-    .data(http_client)
+    .data(http_client.clone())
     // this client is special, it contains no tracing or retry
     .data(basic_http_client)
     .data(settings.clone())
@@ -69,6 +69,8 @@ async fn main() -> Result<(), anyhow::Error> {
     ))
     .data(DataLoader::new(
         OfferDetailsLoader {
+            settings: settings.clone(),
+            http_client,
             database: db.clone(),
             cache: offer_details_caching,
         },
