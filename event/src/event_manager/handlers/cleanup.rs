@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use super::HandlerError;
 use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context;
 use base::constants::mc_donalds::OFFSET;
 use entity::{accounts, concurrent_active_deals, offers, sea_orm_active_enums::Action};
+use opentelemetry::trace::TraceContextExt;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Unchanged, ColumnTrait, EntityTrait, QueryFilter, Set,
     TransactionTrait, prelude::Expr, sea_query::OnConflict,
@@ -137,6 +140,20 @@ pub async fn cleanup(
     entity::account_lock::Entity::delete_by_id(account_id)
         .exec(db)
         .await?;
+
+    let trace_id = opentelemetry::Context::current()
+        .span()
+        .span_context()
+        .trace_id()
+        .to_string();
+
+    let _ = em
+        .create_event(
+            event::Event::RefreshAccount { account_id },
+            Duration::from_secs(10),
+            trace_id,
+        )
+        .await;
 
     result
 }
