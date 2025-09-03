@@ -42,7 +42,6 @@ use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
 
 mod discord_webhook;
-mod error;
 mod event_manager;
 mod graphql;
 mod jobs;

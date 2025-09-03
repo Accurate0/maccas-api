@@ -1,15 +1,16 @@
 use async_graphql::{
+    Response, ServerError, ServerResult, ValidationResult, Value, Variables,
     extensions::{
         Extension, ExtensionContext, ExtensionFactory, NextExecute, NextParseQuery, NextRequest,
         NextResolve, NextValidation, ResolveInfo,
     },
     parser::types::ExecutableDocument,
-    Response, ServerError, ServerResult, ValidationResult, Value, Variables,
 };
 use futures_util::TryFutureExt;
 use std::sync::Arc;
 use tracing_futures::Instrument;
 
+#[allow(unused)]
 pub struct Tracing;
 
 impl ExtensionFactory for Tracing {
@@ -18,6 +19,7 @@ impl ExtensionFactory for Tracing {
     }
 }
 
+#[allow(unused)]
 struct TracingExtension;
 
 #[async_trait::async_trait]
