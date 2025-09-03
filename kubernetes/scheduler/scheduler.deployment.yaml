@@ -39,7 +39,7 @@ spec:
           #   timeoutSeconds: 1
           env:
             - name: EVENT_API_BASE
-              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+              value: http://maccas-api.maccas-api.svc.cluster.local:8000/v1
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets

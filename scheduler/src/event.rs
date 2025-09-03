@@ -1,4 +1,4 @@
-use event::{CreateEvent, CreateEventResponse};
+use api::{CreateEvent, CreateEventResponse};
 use reqwest_middleware::{ClientWithMiddleware, reqwest::StatusCode};
 
 use crate::settings::Settings;
@@ -14,7 +14,7 @@ pub async fn send_event(
         "Maccas Event",
     )?;
 
-    let request_url = format!("{}/{}", settings.event_api_base, event::CreateEvent::path());
+    let request_url = format!("{}/{}", settings.event_api_base, api::CreateEvent::path());
 
     let request = http_client
         .post(&request_url)

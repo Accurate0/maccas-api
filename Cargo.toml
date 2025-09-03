@@ -1,13 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-    "graphql",
     "migration",
     "libmaccas",
     "places",
     "openai",
     "base",
-    "event", 
+    "api", 
     "sensordata/lib", 
     "recommendations", "scheduler", "caching", 
 ]
@@ -64,7 +63,7 @@ openai = { path = "./openai" }
 base = { path = "./base" }
 recommendations = { path = "./recommendations" }
 converters = { path = "./converters" }
-event = { path = "./event" }
+api = { path = "./api" }
 jobs = { path = "./jobs" }
 sensordata = { path = "./sensordata/lib" }
 

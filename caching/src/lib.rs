@@ -26,6 +26,14 @@ pub enum RedisError {
     RedisError(#[from] redis::RedisError),
 }
 
+impl Clone for Redis {
+    fn clone(&self) -> Self {
+        Self {
+            pool: self.pool.clone(),
+        }
+    }
+}
+
 impl Redis {
     pub async fn new(connection_string: &str) -> Result<Self, RedisError> {
         let pool = deadpool_redis::Config::from_url(connection_string)
@@ -56,6 +64,14 @@ impl Redis {
 pub enum OfferDetailsCacheError {
     #[error(transparent)]
     RedisError(#[from] RedisError),
+}
+
+impl Clone for OfferDetailsCache {
+    fn clone(&self) -> Self {
+        Self {
+            redis: self.redis.clone(),
+        }
+    }
 }
 
 pub struct OfferDetailsCache {

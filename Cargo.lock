@@ -415,6 +415,65 @@ dependencies = [
 ]
 
 [[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-web",
+ "actix-web-opentelemetry",
+ "anyhow",
+ "async-graphql",
+ "async-graphql-axum",
+ "async-trait",
+ "axum",
+ "axum-tracing-opentelemetry",
+ "base",
+ "caching",
+ "chrono",
+ "config",
+ "converters",
+ "cron",
+ "entity",
+ "futures",
+ "futures-util",
+ "geoutils",
+ "image",
+ "imap",
+ "itertools 0.14.0",
+ "libmaccas",
+ "mailparse",
+ "open-feature",
+ "openai",
+ "opentelemetry 0.30.0",
+ "opentelemetry_sdk",
+ "pgmq",
+ "places",
+ "rand 0.9.2",
+ "recommendations",
+ "regex",
+ "reqwest",
+ "reqwest-middleware",
+ "rust-s3",
+ "sea-orm",
+ "sensordata",
+ "serde",
+ "serde_json",
+ "state",
+ "strum 0.27.2",
+ "thiserror 2.0.16",
+ "tokio",
+ "tokio-util",
+ "tower-http",
+ "tracing",
+ "tracing-futures",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+ "twilight-model",
+ "twilight-util",
+ "uuid",
+]
+
+[[package]]
 name = "arbitrary"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -880,9 +939,9 @@ dependencies = [
 
 [[package]]
 name = "axum-tracing-opentelemetry"
-version = "0.30.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "446fb36f90022f7d98f3a42ada9ba6b16e97ce783ca514080e1991fa801cd025"
+checksum = "dd3e188039e0e9e3dce1ad873358fd6bab72e6496e18b898bc36d72c07af4b26"
 dependencies = [
  "axum",
  "futures-core",
@@ -1699,56 +1758,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "event"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-web",
- "actix-web-opentelemetry",
- "anyhow",
- "async-trait",
- "base",
- "caching",
- "chrono",
- "config",
- "converters",
- "cron",
- "entity",
- "futures",
- "image",
- "imap",
- "itertools 0.14.0",
- "libmaccas",
- "mailparse",
- "open-feature",
- "openai",
- "opentelemetry 0.30.0",
- "opentelemetry_sdk",
- "pgmq",
- "rand 0.9.2",
- "recommendations",
- "regex",
- "reqwest",
- "reqwest-middleware",
- "rust-s3",
- "sea-orm",
- "sensordata",
- "serde",
- "serde_json",
- "state",
- "strum 0.27.2",
- "thiserror 2.0.16",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-opentelemetry",
- "tracing-subscriber",
- "twilight-model",
- "twilight-util",
- "uuid",
-]
-
-[[package]]
 name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2103,44 +2112,6 @@ dependencies = [
  "futures-core",
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "graphql"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-graphql",
- "async-graphql-axum",
- "async-trait",
- "axum",
- "axum-tracing-opentelemetry",
- "base",
- "caching",
- "chrono",
- "config",
- "entity",
- "event",
- "futures",
- "futures-util",
- "geoutils",
- "libmaccas",
- "opentelemetry 0.30.0",
- "opentelemetry_sdk",
- "places",
- "recommendations",
- "reqwest",
- "reqwest-middleware",
- "sea-orm",
- "serde",
- "serde_json",
- "thiserror 2.0.16",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-futures",
- "tracing-opentelemetry",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -4848,10 +4819,10 @@ dependencies = [
  "anyhow",
  "apalis",
  "apalis-cron",
+ "api",
  "base",
  "chrono",
  "config",
- "event",
  "reqwest-middleware",
  "serde",
  "tokio",
@@ -6172,9 +6143,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-opentelemetry-instrumentation-sdk"
-version = "0.30.0"
+version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bad2c5f9f4756ba524eee2722ffb18332b362283beb1d18c9692fb408fa7db"
+checksum = "a13836788f587ab71400ef44b07196430782b5e483e189933c38dddb81381574"
 dependencies = [
  "http 1.3.1",
  "opentelemetry 0.30.0",

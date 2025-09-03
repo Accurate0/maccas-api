@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [graphql, scheduler, event, migration, recommendations]
+        apps: [api, scheduler, migration, recommendations]
 
     permissions:
       packages: write

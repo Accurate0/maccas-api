@@ -1,4 +1,4 @@
-use ::event::CreateEvent;
+use ::api::CreateEvent;
 use apalis::prelude::*;
 use apalis_cron::CronContext;
 use apalis_cron::CronStream;
@@ -19,7 +19,7 @@ mod settings;
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::Refresh {},
+        event: ::api::Event::Refresh {},
         delay: Duration::from_secs(5),
     },
     trigger_refresh
@@ -27,7 +27,7 @@ create_trigger_fn!(
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::UnlockAllAccounts {},
+        event: ::api::Event::UnlockAllAccounts {},
         delay: Duration::from_secs(5),
     },
     trigger_account_unlock
@@ -35,7 +35,7 @@ create_trigger_fn!(
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::CategoriseOffers {},
+        event: ::api::Event::CategoriseOffers {},
         delay: Duration::from_secs(5),
     },
     trigger_categorise_offers
@@ -43,7 +43,7 @@ create_trigger_fn!(
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::GenerateRecommendations {},
+        event: ::api::Event::GenerateRecommendations {},
         delay: Duration::from_secs(5),
     },
     trigger_generate_recommendations
@@ -51,7 +51,7 @@ create_trigger_fn!(
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::CreateAccount {},
+        event: ::api::Event::CreateAccount {},
         delay: Duration::from_secs(5),
     },
     trigger_create_account
@@ -59,7 +59,7 @@ create_trigger_fn!(
 
 create_trigger_fn!(
     CreateEvent {
-        event: ::event::Event::ActivateAccount {},
+        event: ::api::Event::ActivateAccount {},
         delay: Duration::from_secs(5),
     },
     trigger_activate_account

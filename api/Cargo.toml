@@ -1,0 +1,70 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = { workspace = true }
+async-graphql = { workspace = true }
+async-graphql-axum = "7.0.17"
+axum-tracing-opentelemetry = "0.29.0"
+geoutils = "0.5.1"
+async-trait = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+actix-web = "4"
+futures = { workspace = true }
+futures-util = { workspace = true }
+tracing-futures = { workspace = true }
+actix-cors = "0.7.1"
+tower-http = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+cron = { workspace = true }
+sea-orm = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing = { workspace = true }
+openai = { workspace = true }
+base = { workspace = true }
+recommendations = { workspace = true }
+config = { workspace = true }
+tokio-util = { workspace = true }
+entity = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+converters = { workspace = true }
+libmaccas = { workspace = true }
+caching = { workspace = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
+open-feature = { workspace = true }
+itertools = { workspace = true }
+rand = { workspace = true }
+places = { workspace = true }
+state = "0.6.0"
+actix-web-opentelemetry = "0.22.0"
+rust-s3 = "0.35.1"
+image = "0.25.6"
+sensordata = { workspace = true }
+imap = { version = "3.0.0-alpha.15", features = ["native-tls"] }
+mailparse = "0.16.1"
+regex = "1.11.1"
+
+opentelemetry = { workspace = true }
+opentelemetry_sdk = { workspace = true }
+tracing-opentelemetry = { workspace = true }
+twilight-model = "0.16.0"
+twilight-util = { version = "0.16.0", features = ["builder"] }
+pgmq = "0.31.0"
+strum = { version = "0.27.1", features = ["derive"] }
+
+[lib]
+name = "api"
+path = "src/lib.rs"
+
+[[bin]]
+name = "api"
+path = "src/main.rs"

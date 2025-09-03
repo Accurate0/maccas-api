@@ -11,7 +11,7 @@ tokio = { workspace = true }
 chrono = { workspace = true }
 tower = { workspace = true }
 base = { workspace = true }
-event = { workspace = true }
+api = { workspace = true }
 config = { workspace = true }
 serde = { workspace = true }
 anyhow = { workspace = true }

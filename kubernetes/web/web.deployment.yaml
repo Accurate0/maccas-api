@@ -43,9 +43,9 @@ spec:
             - name: OLD_API_BASE_URL
               value: https://api.maccas.one/v1
             - name: API_BASE_URL
-              value: http://maccas-graphql.maccas-api.svc.cluster.local:8000/v1
+              value: http://maccas-api.maccas-api.svc.cluster.local:8000/v1
             - name: EVENT_BASE_URL
-              value: http://maccas-event.maccas-api.svc.cluster.local:8001
+              value: http://maccas-api.maccas-api.svc.cluster.local:8000/v1
             - name: FLIPT_URL
               value: http://flipt-v2.flipt-v2.svc.cluster.local:8080
           envFrom:
