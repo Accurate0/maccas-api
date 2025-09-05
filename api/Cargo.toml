@@ -9,7 +9,7 @@ edition = "2024"
 axum = { workspace = true }
 async-graphql = { workspace = true }
 async-graphql-axum = "7.0.17"
-axum-tracing-opentelemetry = "0.29.0"
+axum-tracing-opentelemetry = "0.30.0"
 geoutils = "0.5.1"
 async-trait = { workspace = true }
 anyhow = { workspace = true }
