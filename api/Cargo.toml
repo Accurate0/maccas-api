@@ -46,7 +46,7 @@ rand = { workspace = true }
 places = { workspace = true }
 state = "0.6.0"
 actix-web-opentelemetry = "0.22.0"
-rust-s3 = "0.36.0"
+rust-s3 = "0.37.0"
 image = "0.25.6"
 sensordata = { workspace = true }
 imap = { version = "3.0.0-alpha.15", features = ["native-tls"] }
