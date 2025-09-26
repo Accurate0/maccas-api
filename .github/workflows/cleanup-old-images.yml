@@ -32,7 +32,7 @@ jobs:
           clustering=$(docker manifest inspect ghcr.io/accurate0/maccas-clustering | jq -r '.manifests.[] | .digest' | paste -s -d ' ' -)
           echo "multi-arch-digests=$web,$api,$migration,$scheduler,$sensordata,$recommendations,$clustering" >> $GITHUB_OUTPUT
 
-      - uses: snok/container-retention-policy@v3.0.0
+      - uses: snok/container-retention-policy@v3.0.1
         with:
           account: user
           token: ${{ secrets.GITHUB_TOKEN }}
