@@ -4,6 +4,7 @@ metadata:
   name: maccas-api
   namespace: maccas-api
 spec:
+  trafficDistribution: PreferSameNode
   selector:
     app: maccas-api
   ports:
