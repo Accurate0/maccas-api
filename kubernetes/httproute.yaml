@@ -7,7 +7,8 @@ spec:
   hostnames:
     - graphql.maccas.one
   parentRefs:
-    - name: maccas-gateway
+    - name: shared-gateway
+      namespace: envoy-gateway-system
   rules:
     - backendRefs:
         - name: maccas-api
@@ -26,7 +27,8 @@ spec:
   hostnames:
     - maccas.one
   parentRefs:
-    - name: maccas-gateway
+    - name: shared-gateway
+      namespace: envoy-gateway-system
   rules:
     - backendRefs:
         - name: maccas-web

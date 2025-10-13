@@ -16,7 +16,5 @@ resources:
   - sensordata/sensordata.deployment.yaml
   - sensordata/sensordata.service.yaml
   - sensordata/pvc.yaml
-  - gateway.yaml
   - httproute.yaml
-  - client.policy.yaml
   - backend.policy.yaml
