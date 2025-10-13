@@ -8,8 +8,8 @@ spec:
       kind: HTTPRoute
       name: maccas-web-route
   rateLimit:
-    type: Global
-    global:
+    type: Local
+    local:
       rules:
         - clientSelectors:
             - headers:
