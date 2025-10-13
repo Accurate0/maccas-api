@@ -19,3 +19,4 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - client.policy.yaml
+  - backend.policy.yaml
