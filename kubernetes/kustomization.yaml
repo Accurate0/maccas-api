@@ -9,14 +9,13 @@ resources:
   - recommendations/recommendations.service.yaml
   - recommendations/recommendations.deployment.yaml
   - api/api.service.yaml
-  - api/api.ingress.yaml
   - migration/migration.secret.yaml
   - namespace.yaml
   - web/web.secret.yaml
   - web/web.service.yaml
-  - web/web.ingress.yaml
   - sensordata/sensordata.deployment.yaml
   - sensordata/sensordata.service.yaml
   - sensordata/pvc.yaml
   - gateway.yaml
   - httproute.yaml
+  - client.policy.yaml
