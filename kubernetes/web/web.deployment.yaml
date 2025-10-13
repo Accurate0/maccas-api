@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: maccas-web
-  replicas: 0
+  replicas: 3
   template:
     metadata:
       labels:

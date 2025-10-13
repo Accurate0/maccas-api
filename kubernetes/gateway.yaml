@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  name: maccas-gateway
+  namespace: maccas-api
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    - hostname: graphql.maccas.one
+      name: graphql-maccas-one-https
+      port: 8443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+          - kind: Secret
+            name: graphql-maccas-api-tls
+    - hostname: maccas.one
+      name: maccas-one-https
+      port: 8443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+          - kind: Secret
+            name: maccas-api-tls
