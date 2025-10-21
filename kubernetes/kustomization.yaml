@@ -17,4 +17,5 @@ resources:
   - sensordata/sensordata.service.yaml
   - sensordata/pvc.yaml
   - httproute.yaml
+  - securitypolicy.yaml
   - backend.policy.yaml
