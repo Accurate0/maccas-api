@@ -55,6 +55,7 @@ spec:
                         type: PathPrefix
                         value: /
     - repoURL: https://github.com/Accurate0/maccas-api.git
+      name: application
       path: kubernetes
       kustomize:
         images:
