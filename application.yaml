@@ -8,19 +8,55 @@ spec:
     syncOptions:
       - CreateNamespace=true
   project: default
-  source:
-    repoURL: https://github.com/Accurate0/maccas-api.git
-    path: kubernetes
-    kustomize:
-      images:
-        - maccas-api=ghcr.io/accurate0/maccas-api:${ARGOCD_APP_REVISION}
-        - maccas-migration=ghcr.io/accurate0/maccas-migration:${ARGOCD_APP_REVISION}
-        - maccas-web=ghcr.io/accurate0/maccas-web:${ARGOCD_APP_REVISION}
-        - maccas-scheduler=ghcr.io/accurate0/maccas-scheduler:${ARGOCD_APP_REVISION}
-        - maccas-dashboard=ghcr.io/accurate0/maccas-dashboard:${ARGOCD_APP_REVISION}
-        - maccas-sensordata=ghcr.io/accurate0/maccas-sensordata:${ARGOCD_APP_REVISION}
-        - maccas-recommendations=ghcr.io/accurate0/maccas-recommendations:${ARGOCD_APP_REVISION}
-        - maccas-clustering=ghcr.io/accurate0/maccas-clustering:${ARGOCD_APP_REVISION}
+  sources:
+    - chart: secured-http-route
+      repoURL: https://accurate0.github.io/inf-k8s
+      targetRevision: 0.1.0
+      helm:
+        valuesObject:
+          routes:
+            - name: maccas-web-route
+              useBouncer: true
+              gateway:
+                name: shared-gateway
+                namespace: envoy-gateway-system
+              hostnames:
+                - maccas.one
+              rules:
+                - backendRefs:
+                    - name: maccas-web
+                      port: 3000
+                  matches:
+                    - path:
+                        type: PathPrefix
+                        value: /
+            - name: graphql-maccas-route
+              useBouncer: true
+              gateway:
+                name: shared-gateway
+                namespace: envoy-gateway-system
+              hostnames:
+                - graphql.maccas.one
+              rules:
+                - backendRefs:
+                    - name: maccas-api
+                      port: 8000
+                  matches:
+                    - path:
+                        type: PathPrefix
+                        value: /
+    - repoURL: https://github.com/Accurate0/maccas-api.git
+      path: kubernetes
+      kustomize:
+        images:
+          - maccas-api=ghcr.io/accurate0/maccas-api:${ARGOCD_APP_REVISION}
+          - maccas-migration=ghcr.io/accurate0/maccas-migration:${ARGOCD_APP_REVISION}
+          - maccas-web=ghcr.io/accurate0/maccas-web:${ARGOCD_APP_REVISION}
+          - maccas-scheduler=ghcr.io/accurate0/maccas-scheduler:${ARGOCD_APP_REVISION}
+          - maccas-dashboard=ghcr.io/accurate0/maccas-dashboard:${ARGOCD_APP_REVISION}
+          - maccas-sensordata=ghcr.io/accurate0/maccas-sensordata:${ARGOCD_APP_REVISION}
+          - maccas-recommendations=ghcr.io/accurate0/maccas-recommendations:${ARGOCD_APP_REVISION}
+          - maccas-clustering=ghcr.io/accurate0/maccas-clustering:${ARGOCD_APP_REVISION}
 
   destination:
     server: https://kubernetes.default.svc
