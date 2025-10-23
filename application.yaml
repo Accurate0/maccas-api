@@ -16,7 +16,7 @@ spec:
         valuesObject:
           routes:
             - name: maccas-web-route
-              useBouncer: true
+              crowdsecBouncer: true
               gateway:
                 name: shared-gateway
                 namespace: envoy-gateway-system
@@ -40,7 +40,7 @@ spec:
                         type: PathPrefix
                         value: /
             - name: graphql-maccas-route
-              useBouncer: true
+              crowdsecBouncer: true
               gateway:
                 name: shared-gateway
                 namespace: envoy-gateway-system
