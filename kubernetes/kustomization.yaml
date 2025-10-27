@@ -3,15 +3,11 @@ kind: Kustomization
 resources:
   - api/api.deployment.yaml
   - web/web.deployment.yaml
-  - api.secret.yaml
-  - common.secret.yaml
   - scheduler/scheduler.deployment.yaml
   - recommendations/recommendations.service.yaml
   - recommendations/recommendations.deployment.yaml
   - api/api.service.yaml
-  - migration/migration.secret.yaml
   - namespace.yaml
-  - web/web.secret.yaml
   - web/web.service.yaml
   - sensordata/sensordata.deployment.yaml
   - sensordata/sensordata.service.yaml

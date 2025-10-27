@@ -9,6 +9,44 @@ spec:
       - CreateNamespace=true
   project: default
   sources:
+    - chart: k8s-infisical-secrets
+      repoURL: https://accurate0.github.io/inf-k8s
+      targetRevision: 0.2.0
+      helm:
+        valuesObject:
+          secrets:
+            - name: maccas-api-secret
+              projectSlug: maccas-api-576-r
+              namespace: maccas-api
+              secretPath: /api
+              resyncInterval: 900
+              managedSecrets:
+                - secretName: maccas-api-managed-secrets
+                  namespace: maccas-api
+            - name: maccas-common-secret
+              projectSlug: maccas-api-576-r
+              namespace: maccas-api
+              secretPath: /
+              resyncInterval: 900
+              managedSecrets:
+                - secretName: maccas-common-managed-secrets
+                  namespace: maccas-api
+            - name: maccas-web-secret
+              projectSlug: maccas-api-576-r
+              namespace: maccas-api
+              secretPath: /web
+              resyncInterval: 900
+              managedSecrets:
+                - secretName: maccas-web-managed-secrets
+                  namespace: maccas-api
+            - name: maccas-migration-secret
+              projectSlug: maccas-api-576-r
+              namespace: maccas-api
+              secretPath: /migration
+              resyncInterval: 900
+              managedSecrets:
+                - secretName: maccas-migration-managed-secrets
+                  namespace: maccas-api
     - chart: k8s-http-routes
       repoURL: https://accurate0.github.io/inf-k8s
       targetRevision: 1.2.0
