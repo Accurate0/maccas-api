@@ -63,8 +63,6 @@ impl RecommendationEngine {
 
     #[instrument(skip(self))]
     pub async fn is_healthy(&self) -> Result<bool, RecommendationError> {
-        let is_db_ok = self.db.ping().await.ok().is_some();
-
         let http_client = base::http::get_http_client()?;
         let url = format!(
             "{}/{}",
@@ -80,7 +78,7 @@ impl RecommendationEngine {
             .status()
             == StatusCode::NO_CONTENT;
 
-        Ok(is_db_ok && is_clustering_ok)
+        Ok(is_clustering_ok)
     }
 
     pub fn db(&self) -> &DatabaseConnection {
