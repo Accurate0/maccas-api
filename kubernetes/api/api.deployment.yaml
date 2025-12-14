@@ -34,6 +34,10 @@ spec:
         - name: maccas-api
           image: maccas-api:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 80Mi
+              cpu: 100m
           livenessProbe:
             failureThreshold: 3
             httpGet:

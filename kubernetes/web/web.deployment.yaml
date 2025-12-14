@@ -27,6 +27,10 @@ spec:
         - name: maccas-web
           image: maccas-web:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 100m
           livenessProbe:
             failureThreshold: 3
             httpGet:

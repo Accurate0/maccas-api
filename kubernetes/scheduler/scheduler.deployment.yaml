@@ -26,6 +26,10 @@ spec:
         - name: maccas-scheduler
           image: maccas-scheduler:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 40Mi
+              cpu: 10m
           # TODO: healthcheck
           # livenessProbe:
           #   failureThreshold: 3

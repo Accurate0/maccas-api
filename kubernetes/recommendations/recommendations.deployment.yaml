@@ -26,6 +26,12 @@ spec:
         - name: maccas-recommendations
           image: maccas-recommendations:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 800Mi
+              cpu: 150m
+            limits:
+              memory: 1000Mi
           livenessProbe:
             failureThreshold: 3
             httpGet:
