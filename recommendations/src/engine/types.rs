@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 
 #[derive(serde::Serialize)]
-pub struct ClusteringRequestEmbedding {
-    pub name: String,
-    pub embedding: Vec<f32>,
+pub struct ClusteringRequestEmbedding<'a> {
+    pub name: &'a String,
+    pub embedding: &'a [f32],
 }
 
 #[derive(serde::Serialize)]
-pub struct ClusteringRequest {
-    pub embeddings: Vec<ClusteringRequestEmbedding>,
+pub struct ClusteringRequest<'a> {
+    pub embeddings: Vec<ClusteringRequestEmbedding<'a>>,
 }
 
-impl ClusteringRequest {
+impl ClusteringRequest<'_> {
     pub fn path() -> &'static str {
         "clusters"
     }

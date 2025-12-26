@@ -12,11 +12,6 @@ pub struct FilterInput {
     pub minimum_current_points: i64,
 }
 
-#[derive(InputObject)]
-pub struct PointsByAccountIdInput {
-    pub account_id: Uuid,
-}
-
 pub struct Points {
     pub model: points::Model,
     pub store_id: Option<String>,

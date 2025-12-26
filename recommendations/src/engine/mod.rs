@@ -265,14 +265,11 @@ impl RecommendationEngine {
 
     #[instrument(skip(self))]
     pub async fn generate_clusters(&self) -> Result<(), RecommendationError> {
-        let embeddings = offer_embeddings::Entity::find()
-            .all(self.db())
-            .await?
-            .into_iter()
-            .map(|m| ClusteringRequestEmbedding {
-                name: m.name,
-                embedding: m.embeddings.to_vec(),
-            });
+        let all = offer_embeddings::Entity::find().all(self.db()).await?;
+        let embeddings = all.iter().map(|m| ClusteringRequestEmbedding {
+            name: &m.name,
+            embedding: m.embeddings.as_slice(),
+        });
 
         let http_client = base::http::get_http_client()?;
         let url = format!(

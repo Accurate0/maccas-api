@@ -38,3 +38,6 @@ path = "src/lib.rs"
 [[bin]]
 name = "recommendations"
 path = "src/main.rs"
+
+# [profile.release]
+# debug = true
