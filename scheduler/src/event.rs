@@ -25,7 +25,7 @@ pub async fn send_event(
 
     match response {
         Ok(response) => match response.status() {
-            StatusCode::CREATED => {
+            StatusCode::CREATED | StatusCode::OK => {
                 let id = response.json::<CreateEventResponse>().await?.id;
                 tracing::info!("created events with id {:?}", id);
             }
