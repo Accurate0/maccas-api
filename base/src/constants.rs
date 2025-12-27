@@ -11,3 +11,4 @@ pub mod mc_donalds {
 
 pub const IMAGE_BASE_URL: &str = "https://images.maccas.one";
 pub const IMAGE_EXT: &str = "jpg";
+pub const MACCAS_ACCOUNT_REFRESH_FAILURE: i64 = 3;

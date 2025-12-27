@@ -1,10 +1,10 @@
 use self::types::{FilterInput, Points};
 use crate::graphql::guard::RoleGuard;
 use async_graphql::{Context, Object};
-use base::jwt::Role;
-use entity::points;
+use base::{constants::MACCAS_ACCOUNT_REFRESH_FAILURE, jwt::Role};
+use entity::{accounts, points};
 use sea_orm::{
-    prelude::Uuid, ColumnTrait, DatabaseConnection, EntityTrait, Order, QueryFilter, QueryOrder,
+    ColumnTrait, DatabaseConnection, EntityTrait, Order, QueryFilter, QueryOrder, prelude::Uuid,
 };
 
 mod types;
@@ -23,7 +23,9 @@ impl PointsQuery {
         let db = ctx.data::<DatabaseConnection>()?;
 
         Ok(points::Entity::find()
+            .find_also_related(accounts::Entity)
             .order_by(points::Column::CurrentPoints, Order::Asc)
+            .filter(accounts::Column::RefreshFailureCount.lte(MACCAS_ACCOUNT_REFRESH_FAILURE))
             .filter(
                 points::Column::CurrentPoints
                     .gte(filter.map(|f| f.minimum_current_points).unwrap_or(0)),
@@ -31,7 +33,7 @@ impl PointsQuery {
             .all(db)
             .await?
             .into_iter()
-            .map(|p| Points {
+            .map(|(p, _)| Points {
                 model: p,
                 store_id: None,
             })

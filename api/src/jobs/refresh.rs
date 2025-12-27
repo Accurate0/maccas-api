@@ -1,6 +1,7 @@
 use super::{Job, JobContext, error::JobError, shared};
 use anyhow::Context as _;
 use api::Event;
+use base::constants::MACCAS_ACCOUNT_REFRESH_FAILURE;
 use caching::OfferDetailsCache;
 use entity::accounts;
 use opentelemetry::trace::TraceContextExt;
@@ -40,7 +41,7 @@ impl Job for RefreshJob {
         let account_to_refresh = accounts::Entity::find()
             .lock_with_behavior(LockType::Update, LockBehavior::SkipLocked)
             .filter(accounts::Column::Active.eq(true))
-            .filter(accounts::Column::RefreshFailureCount.lte(3))
+            .filter(accounts::Column::RefreshFailureCount.lte(MACCAS_ACCOUNT_REFRESH_FAILURE))
             .order_by_asc(accounts::Column::OffersRefreshedAt)
             .one(context.database)
             .await?
