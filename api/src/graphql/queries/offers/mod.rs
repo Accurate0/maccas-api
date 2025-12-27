@@ -2,11 +2,11 @@ use self::types::{Offer, OfferByIdInput, OfferByIdResponse};
 use crate::{graphql::ValidatedClaims, settings::Settings};
 use anyhow::Context as _;
 use async_graphql::{Context, Object};
-use base::constants::mc_donalds::OFFSET;
+use base::constants::{MACCAS_ACCOUNT_REFRESH_FAILURE, mc_donalds::OFFSET};
 use entity::{accounts, offer_details, offers, recommendations};
 use sea_orm::{
-    prelude::Uuid, ColumnTrait, Condition, DatabaseConnection, EntityTrait, JoinType, Order,
-    QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
+    ColumnTrait, Condition, DatabaseConnection, EntityTrait, JoinType, Order, QueryFilter,
+    QueryOrder, QuerySelect, RelationTrait, TransactionTrait, prelude::Uuid,
 };
 use std::str::FromStr;
 
@@ -105,6 +105,7 @@ impl OffersQuery {
         let now = chrono::offset::Utc::now().naive_utc();
 
         let conditions = conditions
+            .add(accounts::Column::RefreshFailureCount.lte(MACCAS_ACCOUNT_REFRESH_FAILURE))
             .add(offers::Column::ValidTo.gt(now))
             .add(offers::Column::ValidFrom.lt(now))
             .add(offers::Column::OfferPropositionId.is_in(recommendations));
@@ -112,13 +113,14 @@ impl OffersQuery {
         let offers = offers::Entity::find()
             .distinct_on([offer_details::Column::ShortName])
             .find_also_related(offer_details::Entity)
+            .find_also_related(accounts::Entity)
             .order_by(offer_details::Column::ShortName, Order::Asc)
             .order_by(offers::Column::ValidTo, Order::Asc)
             .filter(conditions)
             .all(db)
             .await?
             .into_iter()
-            .map(|(model, _)| Offer(model))
+            .map(|(model, _, _)| Offer(model))
             .collect::<Vec<_>>();
 
         Ok(offers)
@@ -140,19 +142,21 @@ impl OffersQuery {
         let now = chrono::offset::Utc::now().naive_utc();
 
         let conditions = conditions
+            .add(accounts::Column::RefreshFailureCount.lte(MACCAS_ACCOUNT_REFRESH_FAILURE))
             .add(offers::Column::ValidTo.gt(now))
             .add(offers::Column::ValidFrom.lt(now));
 
         Ok(offers::Entity::find()
             .distinct_on([offer_details::Column::ShortName])
             .find_also_related(offer_details::Entity)
+            .find_also_related(accounts::Entity)
             .order_by(offer_details::Column::ShortName, Order::Asc)
             .order_by(offers::Column::ValidTo, Order::Asc)
             .filter(conditions)
             .all(db)
             .await?
             .into_iter()
-            .map(|(offer, _offer_details)| Offer(offer))
+            .map(|(offer, _offer_details, _account)| Offer(offer))
             .collect::<Vec<_>>())
     }
 }
