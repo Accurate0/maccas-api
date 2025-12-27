@@ -14,6 +14,7 @@ pub struct ApiState {
 
 pub enum AppError {
     Error(anyhow::Error),
+    #[allow(dead_code)]
     StatusCode(StatusCode),
 }
 
