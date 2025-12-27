@@ -6,10 +6,8 @@ use redis::{AsyncCommands, ToRedisArgs};
 pub use prost_types::Timestamp as ProtobufTimestamp;
 use tracing::instrument;
 
-pub mod maccas {
-    pub mod caching {
-        include!(concat!(env!("OUT_DIR"), "/maccas.caching.rs"));
-    }
+pub mod protos {
+    include!(concat!(env!("OUT_DIR"), "/maccas.caching.rs"));
 }
 
 pub struct Redis {
@@ -86,10 +84,7 @@ impl OfferDetailsCache {
     }
 
     #[instrument(name = "OfferDetailsCache::set", skip(self, details))]
-    pub async fn set(
-        &self,
-        details: maccas::caching::OfferDetails,
-    ) -> Result<(), OfferDetailsCacheError> {
+    pub async fn set(&self, details: protos::OfferDetails) -> Result<(), OfferDetailsCacheError> {
         let bytes = details.encode_to_vec();
         let _ = self
             .redis
@@ -106,7 +101,7 @@ impl OfferDetailsCache {
     pub async fn get_all(
         &self,
         ids: &[i64],
-    ) -> Result<Vec<Option<maccas::caching::OfferDetails>>, OfferDetailsCacheError> {
+    ) -> Result<Vec<Option<protos::OfferDetails>>, OfferDetailsCacheError> {
         Ok(self
             .redis
             .mget(

@@ -37,7 +37,6 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 converters = { workspace = true }
 libmaccas = { workspace = true }
-caching = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true }
 open-feature = { workspace = true }
@@ -60,6 +59,14 @@ twilight-model = "0.16.0"
 twilight-util = { version = "0.16.0", features = ["builder"] }
 pgmq = "0.31.0"
 strum = { version = "0.27.1", features = ["derive"] }
+
+prost = "0.14.1"
+prost-types = "0.14.1"
+redis = { version = "0.32.5", features = ["aio", "tokio-comp", "connection-manager"] }
+deadpool-redis = "0.22.0"
+
+[build-dependencies]
+prost-build = "0.14.1"
 
 [lib]
 name = "api"

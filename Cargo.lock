@@ -422,11 +422,11 @@ dependencies = [
  "axum",
  "axum-tracing-opentelemetry",
  "base",
- "caching",
  "chrono",
  "config",
  "converters",
  "cron",
+ "deadpool-redis",
  "entity",
  "futures",
  "futures-util",
@@ -442,8 +442,12 @@ dependencies = [
  "opentelemetry_sdk",
  "pgmq",
  "places",
+ "prost 0.14.1",
+ "prost-build",
+ "prost-types",
  "rand 0.9.2",
  "recommendations",
+ "redis",
  "regex",
  "reqwest",
  "reqwest-middleware",
@@ -1173,21 +1177,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e465647ae23b2823b0753f50decb2d5a86d2bb2cac04788fafd1f80e45378e5f"
 dependencies = [
  "bytes",
-]
-
-[[package]]
-name = "caching"
-version = "0.1.0"
-dependencies = [
- "base",
- "deadpool-redis",
- "entity",
- "prost 0.14.1",
- "prost-build",
- "prost-types",
- "redis",
- "thiserror 2.0.16",
- "tracing",
 ]
 
 [[package]]

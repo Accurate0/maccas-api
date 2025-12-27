@@ -1,8 +1,8 @@
 use super::HandlerError;
+use crate::caching::OfferDetailsCache;
 use crate::{event_manager::EventManager, jobs::shared, settings::Settings};
 use anyhow::Context;
 use base::http::get_proxied_maccas_http_client;
-use caching::OfferDetailsCache;
 use entity::accounts;
 use opentelemetry::trace::TraceContextExt;
 use sea_orm::{EntityTrait, TransactionTrait};

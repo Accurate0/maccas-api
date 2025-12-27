@@ -1,7 +1,7 @@
+use crate::caching::{OfferDetailsCache, protos};
 use crate::{event_manager::EventManager, graphql::queries::offers::types::OfferCount, name_of};
 use api::{CreateEvent, Event};
 use async_graphql::dataloader::Loader;
-use caching::OfferDetailsCache;
 use chrono::DateTime;
 use entity::{offer_details, offers};
 use opentelemetry::trace::TraceContextExt;
@@ -51,7 +51,7 @@ impl OfferDetailsLoader {
     }
 
     pub fn convert_from_cache_to_db(
-        cached_value: caching::maccas::caching::OfferDetails,
+        cached_value: protos::OfferDetails,
         now: chrono::NaiveDateTime,
     ) -> offer_details::Model {
         offer_details::Model {

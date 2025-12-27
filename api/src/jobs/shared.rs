@@ -1,7 +1,7 @@
 use super::error::JobError;
+use crate::caching::{OfferDetailsCache, ProtobufTimestamp, protos};
 use api::Event;
 use base::constants::mc_donalds;
-use caching::{OfferDetailsCache, maccas};
 use converters::Database;
 use entity::{account_lock, accounts, offer_details, offer_history, offers};
 use libmaccas::ApiClient;
@@ -14,15 +14,15 @@ use tokio_util::sync::CancellationToken;
 
 pub fn offer_details_model_to_cache(
     details: &entity::offer_details::Model,
-) -> maccas::caching::OfferDetails {
-    maccas::caching::OfferDetails {
+) -> protos::OfferDetails {
+    protos::OfferDetails {
         proposition_id: details.proposition_id,
         name: details.name.clone(),
         description: details.description.clone(),
         price: details.price,
         short_name: details.short_name.clone(),
         image_base_name: details.image_base_name.clone(),
-        created_at: Some(caching::ProtobufTimestamp {
+        created_at: Some(ProtobufTimestamp {
             seconds: details.created_at.and_utc().timestamp(),
             nanos: details
                 .created_at
@@ -31,7 +31,7 @@ pub fn offer_details_model_to_cache(
                 .try_into()
                 .unwrap_or_default(),
         }),
-        updated_at: Some(caching::ProtobufTimestamp {
+        updated_at: Some(ProtobufTimestamp {
             seconds: details.updated_at.and_utc().timestamp(),
             nanos: details
                 .updated_at

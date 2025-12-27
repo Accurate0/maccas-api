@@ -1,6 +1,6 @@
 use super::HandlerError;
+use crate::caching::OfferDetailsCache;
 use crate::{event_manager::EventManager, jobs::shared::offer_details_model_to_cache};
-use caching::OfferDetailsCache;
 use sea_orm::EntityTrait;
 use tracing::instrument;
 

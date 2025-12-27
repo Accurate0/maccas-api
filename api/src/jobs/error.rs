@@ -1,7 +1,7 @@
 use super::job_executor;
+use crate::caching::OfferDetailsCacheError;
 use crate::event_manager::EventManagerError;
 use base::{http::HttpCreationError, jwt::JwtValidationError};
-use caching::OfferDetailsCacheError;
 use sea_orm::DbErr;
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;

@@ -1,4 +1,5 @@
 use super::{EventManager, EventManagerError};
+use crate::caching::OfferDetailsCacheError;
 use crate::event_manager::handlers::cleanup::cleanup;
 use crate::event_manager::handlers::save_image::save_image;
 use crate::jobs::error::JobError;
@@ -9,7 +10,6 @@ use base::{
     jwt::JwtValidationError,
     retry::{ExponentialBackoff, RetryResult, retry_async},
 };
-use caching::OfferDetailsCacheError;
 use converters::ConversionError;
 use futures::FutureExt;
 use new_offer_found::new_offer_found;

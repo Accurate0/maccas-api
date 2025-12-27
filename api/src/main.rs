@@ -41,6 +41,7 @@ use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
 
+mod caching;
 mod discord_webhook;
 mod event_manager;
 mod graphql;

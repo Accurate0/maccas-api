@@ -1,8 +1,8 @@
 use super::{Job, JobContext, error::JobError, shared};
+use crate::OfferDetailsCache;
 use anyhow::Context as _;
 use api::Event;
 use base::constants::MACCAS_ACCOUNT_REFRESH_FAILURE;
-use caching::OfferDetailsCache;
 use entity::accounts;
 use opentelemetry::trace::TraceContextExt;
 use reqwest_middleware::ClientWithMiddleware;
