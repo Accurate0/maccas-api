@@ -305,7 +305,7 @@ pub struct OfferDetails {
     pub is_expired: bool,
     pub product_sets: Vec<ProductSet>,
     pub restaurants: Vec<Value>,
-    pub frequency_offer_info: FrequencyOfferInfo,
+    pub frequency_offer_info: Option<FrequencyOfferInfo>,
     pub recurring_info: Option<RecurringInfo>,
     pub conditions: Conditions,
     pub is_dynamic_expiration: bool,

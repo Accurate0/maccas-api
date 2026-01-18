@@ -43,7 +43,7 @@ impl Job for RefreshJob {
             .filter(accounts::Column::Active.eq(true))
             .filter(accounts::Column::RefreshFailureCount.lte(MACCAS_ACCOUNT_REFRESH_FAILURE))
             .order_by_asc(accounts::Column::OffersRefreshedAt)
-            .one(context.database)
+            .one(context.database_connection)
             .await?
             .ok_or_else(|| anyhow::Error::msg("no account found"))?;
 

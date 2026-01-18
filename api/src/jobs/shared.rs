@@ -100,7 +100,7 @@ pub async fn refresh_account(
                 refresh_failure_count: sea_orm::Set(current_failure_count + 1),
                 ..Default::default()
             })
-            .exec(db)
+            .exec(db_connection)
             .await?;
 
             return Err(e.into());
