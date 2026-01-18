@@ -36,8 +36,8 @@ where
 
         tracing::Span::current().record("statusCode", status.as_u16());
         if json.is_err() {
-            tracing::Span::current().record("json", &text);
-            tracing::warn!("DE_ERROR: deserialisation failed: {text}");
+            tracing::Span::current().record("json", "deserialisation_failed");
+            tracing::error!("DE_ERROR: deserialisation failed: {text}");
         };
 
         Ok(Self {
