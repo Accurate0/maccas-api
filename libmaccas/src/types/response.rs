@@ -26,15 +26,24 @@ where
     T: for<'de> serde::Deserialize<'de> + Debug,
 {
     pub async fn from_response(resp: reqwest::Response) -> Result<Self, ClientError> {
-        tracing::Span::current().record("statusCode", resp.status().as_u16());
+        let status = resp.status();
+        let headers = resp.headers().clone();
 
-        // return the status error before trying to decode the response to propogate correct error
+        // return the status error before trying to decode the response to propagate correct error
         let resp = resp.error_for_status()?;
+        let text = resp.text().await?;
+        let json = serde_json::from_str::<T>(&text);
+
+        tracing::Span::current().record("statusCode", status.as_u16());
+        if json.is_err() {
+            tracing::Span::current().record("json", &text);
+            tracing::warn!("DE_ERROR: deserialisation failed: {text}");
+        };
 
         Ok(Self {
-            status: resp.status(),
-            headers: resp.headers().clone(),
-            body: resp.json::<T>().await?,
+            status,
+            headers,
+            body: json?,
         })
     }
 }

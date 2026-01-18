@@ -5,6 +5,7 @@ use std::{error::Error, fmt::Display, num::ParseIntError};
 pub enum ClientError {
     RequestOrMiddlewareError(reqwest_middleware::Error),
     RequestError(reqwest::Error),
+    DeserializeError(serde_json::Error),
     Other(anyhow::Error),
 }
 
@@ -32,6 +33,12 @@ impl From<ParseIntError> for ClientError {
     }
 }
 
+impl From<serde_json::Error> for ClientError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::DeserializeError(e.into())
+    }
+}
+
 impl ClientError {
     pub fn status(&self) -> Option<StatusCode> {
         match self {
@@ -41,6 +48,7 @@ impl ClientError {
             },
             ClientError::RequestError(e) => e.status(),
             ClientError::Other(_) => None,
+            ClientError::DeserializeError(_) => None,
         }
     }
 }
@@ -51,6 +59,7 @@ impl Error for ClientError {
             ClientError::RequestOrMiddlewareError(e) => Some(e),
             ClientError::RequestError(e) => Some(e),
             ClientError::Other(e) => e.source(),
+            ClientError::DeserializeError(e) => Some(e),
         }
     }
 
@@ -69,6 +78,7 @@ impl Display for ClientError {
             ClientError::RequestOrMiddlewareError(e) => e.fmt(f),
             ClientError::RequestError(e) => e.fmt(f),
             ClientError::Other(e) => e.fmt(f),
+            ClientError::DeserializeError(e) => e.fmt(f),
         }
     }
 }
