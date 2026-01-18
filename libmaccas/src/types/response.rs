@@ -35,9 +35,9 @@ where
         let json = serde_json::from_str::<T>(&text);
 
         tracing::Span::current().record("statusCode", status.as_u16());
-        if json.is_err() {
+        if let Err(ref e) = json {
             tracing::Span::current().record("json", "deserialisation_failed");
-            tracing::error!("DE_ERROR: deserialisation failed: {text}");
+            tracing::error!("DE_ERROR: deserialisation failed: {e}");
         };
 
         Ok(Self {
