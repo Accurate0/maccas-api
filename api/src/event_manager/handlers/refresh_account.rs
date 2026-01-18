@@ -33,6 +33,7 @@ pub async fn refresh_account(account_id: Uuid, em: EventManager) -> Result<(), H
         &http_client,
         &settings.mcdonalds,
         &db,
+        em.db(),
         caching,
         CancellationToken::new(),
     )

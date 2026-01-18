@@ -1,11 +1,11 @@
-use super::{error::JobError, Job, JobContext, JobDetails};
+use super::{Job, JobContext, JobDetails, error::JobError};
 use crate::event_manager::EventManager;
 use anyhow::Context;
 use entity::jobs;
 use futures::FutureExt;
 use sea_orm::{
-    prelude::Uuid, sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DatabaseConnection,
-    EntityTrait, QueryFilter, Set, TransactionTrait, Unchanged,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
+    TransactionTrait, Unchanged, prelude::Uuid, sea_query::OnConflict,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -14,7 +14,7 @@ use std::{
 };
 use tokio::{sync::RwLock, task::JoinHandle};
 use tokio_util::sync::CancellationToken;
-use tracing::{instrument, Instrument, Level};
+use tracing::{Instrument, Level, instrument};
 
 const JOB_QUEUE_NAME: &str = "batch_job_queue";
 
@@ -183,7 +183,8 @@ impl JobExecutor {
         let fut = async move {
             let result = async {
                 let txn = db.begin().await?;
-                let context = JobContext::new(&txn, execution_id, event_manager_cloned.clone());
+                let context =
+                    JobContext::new(&txn, &db, execution_id, event_manager_cloned.clone());
 
                 let cancellation_token = cancellation_token.child_token();
                 tracing::info!("triggered job {}", job.name());
@@ -215,7 +216,7 @@ impl JobExecutor {
                 let post_result = async {
                     let txn = db.begin().await?;
                     let post_context =
-                        JobContext::new(&txn, execution_id, event_manager_cloned.clone());
+                        JobContext::new(&txn, &db, execution_id, event_manager_cloned.clone());
 
                     let cancellation_token = cancellation_token.child_token();
                     let result =

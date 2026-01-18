@@ -2,8 +2,8 @@ use crate::event_manager::EventManager;
 
 use self::error::JobError;
 use entity::job_history;
-use sea_orm::DatabaseTransaction;
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
+use sea_orm::{DatabaseConnection, DatabaseTransaction};
 use std::fmt::Debug;
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
@@ -53,6 +53,7 @@ impl JobDetails {
 
 pub struct JobContext<'a> {
     database: &'a DatabaseTransaction,
+    database_connection: &'a DatabaseConnection,
     event_manager: EventManager,
     execution_id: i32,
 }
@@ -61,11 +62,13 @@ pub struct JobContext<'a> {
 impl<'a> JobContext<'a> {
     pub fn new(
         database: &'a DatabaseTransaction,
+        database_connection: &'a DatabaseConnection,
         execution_id: i32,
         event_manager: EventManager,
     ) -> Self {
         Self {
             database,
+            database_connection,
             execution_id,
             event_manager,
         }

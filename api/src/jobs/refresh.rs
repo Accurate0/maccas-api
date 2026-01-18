@@ -53,6 +53,7 @@ impl Job for RefreshJob {
             &self.http_client,
             &self.mcdonalds_config,
             context.database,
+            context.database_connection,
             caching,
             cancellation_token,
         )

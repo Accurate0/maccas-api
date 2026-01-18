@@ -7,8 +7,8 @@ use entity::{account_lock, accounts, offer_details, offer_history, offers};
 use libmaccas::ApiClient;
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveModel,
-    QueryFilter, Set, TransactionTrait, TryIntoModel, sea_query::OnConflict,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DatabaseTransaction, DbErr, EntityTrait,
+    IntoActiveModel, QueryFilter, Set, TransactionTrait, TryIntoModel, sea_query::OnConflict,
 };
 use tokio_util::sync::CancellationToken;
 
@@ -51,6 +51,7 @@ pub async fn refresh_account(
     http_client: &ClientWithMiddleware,
     mcdonalds_config: &crate::settings::McDonalds,
     db: &DatabaseTransaction,
+    db_connection: &DatabaseConnection,
     caching: Option<&OfferDetailsCache>,
     _cancellation_token: CancellationToken,
 ) -> Result<Vec<Event>, JobError> {
@@ -83,7 +84,8 @@ pub async fn refresh_account(
         update_model.refresh_token = Set(response.refresh_token);
         tracing::info!("new tokens fetched, updating database");
 
-        update_model.update(db).await?;
+        // MUST USE CONNECTION OR WE'LL LOSE CREDENTIALS AND 401
+        update_model.update(db_connection).await?;
 
         Ok::<ApiClient, anyhow::Error>(api_client)
     }
