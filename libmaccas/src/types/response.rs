@@ -35,7 +35,7 @@ where
         let body = resp.json::<T>().await;
 
         if let Err(ref e) = body {
-            tracing::error!("error deserialising maccas response: {e}");
+            tracing::error!("error deserialising maccas response: {e:?}");
         };
 
         Ok(Self {
