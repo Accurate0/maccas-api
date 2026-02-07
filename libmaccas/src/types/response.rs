@@ -235,7 +235,7 @@ pub struct Restaurant {
     pub name: String,
     pub national_store_number: i64,
     pub status: i64,
-    pub time_zone: String,
+    pub time_zone: Option<String>,
     pub week_opening_hours: Vec<WeekOpeningHour>,
     pub phone_number: Option<String>,
 }
