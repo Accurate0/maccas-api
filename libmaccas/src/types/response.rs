@@ -30,11 +30,18 @@ where
 
         // return the status error before trying to decode the response to propagate correct error
         let resp = resp.error_for_status()?;
+        let status = resp.status();
+        let headers = resp.headers().clone();
+        let body = resp.json::<T>().await;
+
+        if let Err(ref e) = body {
+            tracing::error!("error deserialising maccas response: {e}");
+        };
 
         Ok(Self {
-            status: resp.status(),
-            headers: resp.headers().clone(),
-            body: resp.json::<T>().await?,
+            status,
+            body: body?,
+            headers,
         })
     }
 }
