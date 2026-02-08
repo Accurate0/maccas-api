@@ -1,5 +1,5 @@
 use super::{Job, JobContext, error::JobError};
-use base::{feature_flag::FeatureFlagClient, http::get_http_client, jwt::generate_internal_jwt};
+use base::{http::get_http_client, jwt::generate_internal_jwt};
 use entity::offer_audit;
 use itertools::Itertools;
 use recommendations::{GenerateClusterScores, GenerateClusters, GenerateEmbeddings};
@@ -26,20 +26,6 @@ impl Job for GenerateRecommendationsJob {
         context: &JobContext,
         _cancellation_token: CancellationToken,
     ) -> Result<(), JobError> {
-        let feature_flag_client = context.event_manager.try_get_state::<FeatureFlagClient>();
-        if let Some(feature_flag_client) = feature_flag_client {
-            let is_task_allowed = feature_flag_client
-                .is_feature_enabled("maccas-api-generate-recommendations-task", true)
-                .await;
-
-            if !is_task_allowed {
-                tracing::warn!("task: {} disabled by feature flag", self.name());
-                return Ok(());
-            }
-        } else {
-            tracing::warn!("no feature flag client found");
-        }
-
         let http_client = get_http_client()?;
         let token = generate_internal_jwt(
             self.auth_secret.as_ref(),

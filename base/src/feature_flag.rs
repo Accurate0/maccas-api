@@ -1,4 +1,4 @@
-use open_feature::{provider::NoOpProvider, EvaluationContext, OpenFeature};
+use open_feature::{EvaluationContext, OpenFeature, provider::NoOpProvider};
 use open_feature_flipt::flipt::{self, ClientTokenAuthentication, FliptProvider};
 
 pub struct FeatureFlagClient {
@@ -61,6 +61,28 @@ impl FeatureFlagClient {
             Err(e) => {
                 tracing::error!("error evaluating: {config_key} because {e:?}");
                 None
+            }
+        }
+    }
+
+    pub async fn is_feature_enabled_with_context(
+        &self,
+        feature_flag: &'static str,
+        default: bool,
+        mut evaluation_context: EvaluationContext,
+    ) -> bool {
+        evaluation_context.merge_missing(&self.evaluation_context);
+
+        let ff_eval_result = self
+            .client
+            .get_bool_value(feature_flag, Some(&evaluation_context), None)
+            .await;
+
+        match ff_eval_result {
+            Ok(eval) => eval,
+            Err(e) => {
+                tracing::error!("error evaluating: {feature_flag} because {e:?}");
+                default
             }
         }
     }

@@ -1,7 +1,9 @@
 use api::Event;
+use base::feature_flag::FeatureFlagClient;
 use entity::events;
 use entity::sea_orm_active_enums::{EventStatus, EventStatusEnum};
 use futures::TryFutureExt;
+use open_feature::EvaluationContext;
 use sea_orm::prelude::Uuid;
 use sea_orm::sea_query::Expr;
 use sea_orm::{
@@ -170,14 +172,37 @@ impl EventManager {
     }
 
     pub async fn should_run(&self, event_id: i32) -> bool {
-        events::Entity::find_by_id(event_id)
+        let Some(event) = events::Entity::find_by_id(event_id)
             .one(&self.inner.db)
-            .map_ok(|maybe_evt| {
-                maybe_evt.map_or_else(|| false, |evt| evt.status == EventStatus::Pending)
-            })
             .await
             .ok()
-            .unwrap_or(false)
+            .flatten()
+        else {
+            return false;
+        };
+
+        let is_pending = event.status == EventStatus::Pending;
+
+        let feature_flag_client = self.try_get_state::<FeatureFlagClient>();
+        let is_allowed_by_ff = if let Some(feature_flag_client) = feature_flag_client {
+            let evaluation_context =
+                EvaluationContext::default().with_custom_field("event_name", event.name.clone());
+            feature_flag_client
+                .is_feature_enabled_with_context(
+                    "maccas-api-task-control",
+                    true,
+                    evaluation_context,
+                )
+                .await
+        } else {
+            false
+        };
+
+        if !is_allowed_by_ff {
+            tracing::warn!("event {} disabled by feature flag", event.name);
+        }
+
+        is_pending && is_allowed_by_ff
     }
 
     pub async fn acquire_permit(&self) -> OwnedSemaphorePermit {
