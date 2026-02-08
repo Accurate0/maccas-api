@@ -24,4 +24,6 @@ pub enum EventStatus {
     Running,
     #[sea_orm(string_value = "duplicate")]
     Duplicate,
+    #[sea_orm(string_value = "cancelled")]
+    Cancelled,
 }

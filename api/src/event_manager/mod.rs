@@ -78,6 +78,18 @@ impl EventManager {
 
     #[instrument(skip(self))]
     pub async fn archive(&self, message_id: i64) -> Result<bool, EventManagerError> {
+        let completed_at = chrono::offset::Utc::now().naive_utc();
+        events::ActiveModel {
+            id: Unchanged(message_id as i32),
+            is_completed: Set(true),
+            completed_at: Set(Some(completed_at)),
+            status: Set(EventStatus::Cancelled),
+            error_message: Set(Some("cancelled by should_run".to_owned())),
+            ..Default::default()
+        }
+        .update(&self.inner.db)
+        .await?;
+
         self.inner
             .event_queue
             .archive(message_id)

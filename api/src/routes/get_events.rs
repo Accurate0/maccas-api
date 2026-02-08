@@ -29,7 +29,9 @@ pub async fn get_events_history(
 
     for event in events {
         match event.status {
-            EventStatus::Completed | EventStatus::Failed => historical_events.push(event),
+            EventStatus::Completed | EventStatus::Failed | EventStatus::Cancelled => {
+                historical_events.push(event)
+            }
             EventStatus::Pending | EventStatus::Running => active_events.push(event),
             EventStatus::Duplicate => historical_events.push(event),
         }
