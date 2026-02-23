@@ -58,7 +58,7 @@ spec:
             - name: REDIS_CONNECTION_STRING
               value: redis://node.valkey.svc.cluster.local
             - name: OTEL_TRACING_URL
-              value: http://monitoring-tempo.monitoring.svc.cluster.local:4318
+              value: monitoring-tempo.monitoring.svc.cluster.local:4317
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets

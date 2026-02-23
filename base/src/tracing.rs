@@ -1,7 +1,7 @@
 use http::{HeaderMap, HeaderValue};
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::{KeyValue, global};
-use opentelemetry_otlp::{WithExportConfig, WithHttpConfig};
+use opentelemetry_otlp::{Protocol, WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{BatchConfigBuilder, BatchSpanProcessor, Tracer};
@@ -56,6 +56,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
             .join()
             .unwrap(),
         )
+        .with_protocol(Protocol::Grpc)
         .with_endpoint(ingest_url)
         .with_timeout(Duration::from_secs(3))
         .build_span_exporter()

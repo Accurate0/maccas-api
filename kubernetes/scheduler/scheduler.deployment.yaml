@@ -45,7 +45,7 @@ spec:
             - name: EVENT_API_BASE
               value: http://maccas-api.maccas-api.svc.cluster.local:8000/v1
             - name: OTEL_TRACING_URL
-              value: http://monitoring-tempo.monitoring.svc.cluster.local:4318
+              value: monitoring-tempo.monitoring.svc.cluster.local:4317
           envFrom:
             - secretRef:
                 name: maccas-common-managed-secrets
