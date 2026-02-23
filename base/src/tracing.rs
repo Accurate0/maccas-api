@@ -28,7 +28,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         KeyValue::new(TELEMETRY_SDK_NAME, "otel-tracing-rs".to_string()),
         KeyValue::new(TELEMETRY_SDK_VERSION, env!("CARGO_PKG_VERSION").to_string()),
         KeyValue::new(TELEMETRY_SDK_LANGUAGE, "rust".to_string()),
-        KeyValue::new(SERVICE_NAME, name),
+        KeyValue::new(SERVICE_NAME, format!("maccas-{name}")),
         KeyValue::new(
             DEPLOYMENT_ENVIRONMENT_NAME,
             if cfg!(debug_assertions) {
@@ -56,7 +56,7 @@ pub fn external_tracer(name: &'static str) -> Tracer {
             .join()
             .unwrap(),
         )
-        .with_protocol(Protocol::Grpc)
+        .with_protocol(Protocol::HttpJson)
         .with_endpoint(ingest_url)
         .with_timeout(Duration::from_secs(3))
         .build_span_exporter()

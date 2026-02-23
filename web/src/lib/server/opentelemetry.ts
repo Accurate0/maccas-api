@@ -17,7 +17,7 @@ const traceExporter = new OTLPTraceExporter({
 
 const otelSdk = new opentelemetry.NodeSDK({
 	resource: new Resource({
-		[SEMRESATTRS_SERVICE_NAME]: 'web',
+		[SEMRESATTRS_SERVICE_NAME]: 'maccas-web',
 		[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: NODE_ENV
 	}),
 	spanProcessors: [new BatchSpanProcessor(traceExporter)],
