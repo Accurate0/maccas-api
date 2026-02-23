@@ -52,6 +52,8 @@ spec:
               value: http://maccas-api.maccas-api.svc.cluster.local:8000/v1
             - name: FLIPT_URL
               value: http://flipt-v2.flipt-v2.svc.cluster.local:8080
+            - name: OTEL_TRACING_URL
+              value: http://monitoring-tempo.monitoring.svc.cluster.local:4318
           envFrom:
             - secretRef:
                 name: maccas-web-managed-secrets

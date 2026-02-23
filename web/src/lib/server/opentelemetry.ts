@@ -7,17 +7,12 @@ import {
 import { NODE_ENV } from '$env/static/private';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
-
 import primsa from '@prisma/instrumentation';
 import { env } from '$env/dynamic/private';
 const { PrismaInstrumentation } = primsa;
 
 const traceExporter = new OTLPTraceExporter({
-	url: 'https://api.axiom.co/v1/traces',
-	headers: {
-		Authorization: `Bearer ${env.AXIOM_TOKEN}`,
-		'X-Axiom-Dataset': env.AXIOM_DATASET
-	}
+	url: env.OTEL_TRACING_URL
 });
 
 const otelSdk = new opentelemetry.NodeSDK({
