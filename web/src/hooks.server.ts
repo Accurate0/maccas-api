@@ -15,9 +15,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
+	const traceparent = event.request.headers.get('traceparent');
+	const tracestate = event.request.headers.get('tracestate');
+	const context = opentelemetry.propagation.extract(opentelemetry.context.active(), {
+		traceparent,
+		tracestate
+	});
+
 	const tracer = opentelemetry.trace.getTracer('default');
 	return tracer.startActiveSpan(
 		`${event.request.method.toUpperCase()} ${event.route.id}`,
+		{},
+		context,
 		async (span) => {
 			let evaluationContext: EvaluationContext = {};
 			if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
@@ -59,9 +68,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 			}
 
 			event.locals.featureFlagClient = FeatureFlagClientFactory.getClient({
-				environment: env.NODE_ENV,
+				environment: env.NODE_ENV ?? 'development',
 				...evaluationContext
-			});
+			} satisfies EvaluationContext);
 			const response = await resolve(event);
 			const isRedirect = response.status >= 300 && response.status < 400;
 
