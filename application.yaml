@@ -37,7 +37,7 @@ spec:
                 - secretName: maccas-migration-managed-secrets
     - chart: k8s-http-routes
       repoURL: https://accurate0.github.io/inf-k8s
-      targetRevision: 2.0.0
+      targetRevision: 2.1.0
       helm:
         valuesObject:
           routes:
