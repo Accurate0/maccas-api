@@ -9,7 +9,7 @@ edition = "2024"
 axum = { workspace = true }
 async-graphql = { workspace = true }
 async-graphql-axum = "7.0.17"
-axum-tracing-opentelemetry = "0.30.0"
+axum-tracing-opentelemetry = "0.33.0"
 geoutils = "0.5.1"
 async-trait = { workspace = true }
 anyhow = { workspace = true }
@@ -55,15 +55,15 @@ regex = "1.11.1"
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 tracing-opentelemetry = { workspace = true }
-twilight-model = "0.16.0"
-twilight-util = { version = "0.16.0", features = ["builder"] }
-pgmq = "0.31.0"
-strum = { version = "0.27.1", features = ["derive"] }
+twilight-model = "0.17.0"
+twilight-util = { version = "0.17.0", features = ["builder"] }
+pgmq = "0.32.0"
+strum = { version = "0.28.0", features = ["derive"] }
 
 prost = "0.14.1"
 prost-types = "0.14.1"
 redis = { version = "0.32.5", features = ["aio", "tokio-comp", "connection-manager"] }
-deadpool-redis = "0.22.0"
+deadpool-redis = "0.23.0"
 
 [build-dependencies]
 prost-build = "0.14.1"
