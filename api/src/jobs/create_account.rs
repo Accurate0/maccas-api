@@ -1,21 +1,21 @@
-use super::{error::JobError, Job, JobContext};
+use super::{Job, JobContext, error::JobError};
 use crate::settings::{Email, McDonalds};
 use base::{constants::mc_donalds, http::get_http_client};
 use entity::accounts;
 use libmaccas::{
+    ApiClient,
     types::request::{
         AcceptancePolicies, Address, Audit, Credentials, Device, Policies, Preference,
         RegistrationRequest, Subscription,
     },
-    ApiClient,
 };
 use rand::{
-    distr::{Alphanumeric, SampleString},
-    rngs::StdRng,
     SeedableRng,
+    distr::{Alphanumeric, SampleString},
+    rngs::{StdRng, SysRng},
 };
 use reqwest_middleware::ClientWithMiddleware;
-use sea_orm::{prelude::Uuid, ActiveModelTrait, Set};
+use sea_orm::{ActiveModelTrait, Set, prelude::Uuid};
 use sensordata::{SensorDataRequest, SensorDataResponse};
 use tokio_util::sync::CancellationToken;
 
@@ -51,7 +51,7 @@ impl Job for CreateAccountJob {
             .await?;
         client.set_login_token(&response.body.response.token);
 
-        let mut rng = StdRng::from_os_rng();
+        let mut rng = StdRng::try_from_rng(&mut SysRng).unwrap();
 
         let first_name = "Lachlan".to_owned();
         let last_name = "Wells".to_owned();

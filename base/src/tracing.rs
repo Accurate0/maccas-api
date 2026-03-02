@@ -1,7 +1,7 @@
 use http::{HeaderMap, HeaderValue};
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::{KeyValue, global};
-use opentelemetry_otlp::{Protocol, WithExportConfig, WithHttpConfig};
+use opentelemetry_otlp::{Protocol, WithExportConfig};
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{BatchConfigBuilder, BatchSpanProcessor, Tracer};
@@ -46,16 +46,6 @@ pub fn external_tracer(name: &'static str) -> Tracer {
         .build();
 
     let span_exporter = opentelemetry_otlp::HttpExporterBuilder::default()
-        .with_http_client(
-            std::thread::spawn(|| {
-                reqwest::blocking::ClientBuilder::new()
-                    .default_headers(headers)
-                    .build()
-                    .unwrap()
-            })
-            .join()
-            .unwrap(),
-        )
         .with_protocol(Protocol::HttpJson)
         .with_endpoint(ingest_url)
         .with_timeout(Duration::from_secs(3))
