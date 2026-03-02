@@ -1,7 +1,7 @@
-use deadpool_redis::Runtime;
+use deadpool_redis::redis::ToSingleRedisArg;
+use deadpool_redis::{Runtime, redis::AsyncCommands, redis::ToRedisArgs};
 use prost::Message;
 use prost::bytes::Bytes;
-use redis::{AsyncCommands, ToRedisArgs};
 
 pub use prost_types::Timestamp as ProtobufTimestamp;
 use tracing::instrument;
@@ -21,7 +21,7 @@ pub enum RedisError {
     #[error(transparent)]
     PoolError(#[from] deadpool_redis::PoolError),
     #[error(transparent)]
-    RedisError(#[from] redis::RedisError),
+    RedisError(#[from] deadpool_redis::redis::RedisError),
 }
 
 impl Clone for Redis {
@@ -42,8 +42,8 @@ impl Redis {
 
     pub async fn set_ex<K, V>(&self, k: K, v: V) -> Result<(), RedisError>
     where
-        K: ToRedisArgs + Send + Sync,
-        V: ToRedisArgs + Send + Sync,
+        K: ToRedisArgs + ToSingleRedisArg + Send + Sync,
+        V: ToRedisArgs + ToSingleRedisArg + Send + Sync,
     {
         let mut conn = self.pool.get().await?;
         conn.set_ex(k, v, 86400).await.map_err(RedisError::from)
@@ -114,11 +114,7 @@ impl OfferDetailsCache {
             .into_iter()
             .map(|b| {
                 if let Some(b) = b {
-                    if let Ok(r) = Message::decode(b) {
-                        Some(r)
-                    } else {
-                        None
-                    }
+                    Message::decode(b).ok()
                 } else {
                     None
                 }

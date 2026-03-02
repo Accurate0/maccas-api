@@ -39,11 +39,10 @@ impl OffersMutation {
                 .await?;
 
             tracing::info!("current active deals for {user_id}: {current_deal_count:?}");
-            if let Some(current_deal_count) = current_deal_count {
-                if current_deal_count.count + 1 > Self::CONCURRENT_OFFERS_LIMIT {
+            if let Some(current_deal_count) = current_deal_count
+                && current_deal_count.count + 1 > Self::CONCURRENT_OFFERS_LIMIT {
                     return Err(async_graphql::Error::new("cannot have more offers active"));
                 }
-            }
         }
 
         let all_locked_accounts = entity::account_lock::Entity::find()

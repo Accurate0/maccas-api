@@ -158,7 +158,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let offer_details_cache =
         if let Some(ref redis_connection_string) = settings.redis_connection_string {
             tracing::info!("redis connection string provided, connecting...");
-            let redis = Redis::new(&redis_connection_string).await?;
+            let redis = Redis::new(redis_connection_string).await?;
             Some(OfferDetailsCache::new(redis))
         } else {
             None
