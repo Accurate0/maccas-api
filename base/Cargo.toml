@@ -34,7 +34,7 @@ opentelemetry-stdout = { version = "0.31.0", features = ["trace"] }
 tracing-subscriber = "0.3.19"
 opentelemetry-otlp = { version = "0.31.0", features = [
     "http-proto",
-    "reqwest-client",
+    "reqwest-blocking-client",
     "logs",
     "reqwest-rustls",
 ] }
