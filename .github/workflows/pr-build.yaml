@@ -25,7 +25,7 @@ jobs:
 
       - name: Docker build
         if: ${{ matrix.apps  == 'api' || matrix.apps == 'migration' || matrix.apps == 'recommendations' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: false
@@ -34,7 +34,7 @@ jobs:
 
       - name: Docker build
         if: ${{ matrix.apps  == 'web' || matrix.apps == 'clustering' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.apps }}
           push: false
