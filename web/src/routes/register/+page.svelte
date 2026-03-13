@@ -14,6 +14,7 @@
 	}
 
 	let { data }: Props = $props();
+	// svelte-ignore state_referenced_locally
 	const { form, errors, submitting, enhance, message } = superForm(data.form, {
 		taintedMessage: false
 	});
@@ -67,7 +68,7 @@
 						</Alert.Root>
 					</div>
 				{/if}
-				{#if $errors.password || $errors.password}
+				{#if $errors.username || $errors.password}
 					<div class="mb-4 w-full">
 						<Alert.Root variant="destructive">
 							<ExclamationTriangle class="h-4 w-4" />

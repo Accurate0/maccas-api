@@ -14,7 +14,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import DealCode from '$lib/components/deal-code.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	interface Props {
 		data: PageData;
 	}
@@ -24,7 +24,7 @@
 	let filters = writable<Array<string> | undefined>();
 	let offerState: Writable<Record<string, Array<{ id: string }>>> = writable({});
 	let sortByAsc = $state(true);
-	const userConfig = $page.data.config;
+	const userConfig = page.data.config;
 
 	const addOffer = (offerId: string, id: string) => {
 		// FIXME: :)
@@ -84,7 +84,7 @@
 </script>
 
 <div class="grid grid-flow-row gap-4">
-	{#await Promise.all([data.offers, data.categories, data.recommendations])}
+	{#await Promise.all([data.offers, data.categories])}
 		<div class="flex flex-row gap-2">
 			<Skeleton class="h-[48px] w-full rounded-sm" />
 			<Skeleton class="h-12 min-w-12 rounded-sm" />

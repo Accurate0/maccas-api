@@ -16,6 +16,7 @@
 
 	const offerCode = writable('');
 	const addOffer = useMutation(
+		// svelte-ignore state_referenced_locally
 		`add-${id}`,
 		async () =>
 			await fetch(`/api/offers/${offerId}`, { method: 'POST' }).then(
@@ -32,11 +33,13 @@
 	);
 
 	const removeOffer = useMutation(
+		// svelte-ignore state_referenced_locally
 		`remove-${id}`,
 		async ({ id }: { id: string }) => await fetch(`/api/offers/${id}`, { method: 'DELETE' })
 	);
 
 	const refreshOffer = useMutation(
+		// svelte-ignore state_referenced_locally
 		`code-${id}`,
 		async () =>
 			await fetch(`/api/offers/${$addOffer.data?.id}`, { method: 'GET' }).then(

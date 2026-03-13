@@ -15,6 +15,7 @@
 
 	const code = writable<string | null>('');
 	const getAccountCode = useMutation(
+		// svelte-ignore state_referenced_locally
 		`add-${accountId}`,
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
@@ -32,6 +33,7 @@
 	);
 
 	const refreshAccountCode = useMutation(
+		// svelte-ignore state_referenced_locally
 		`add-${accountId}`,
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
