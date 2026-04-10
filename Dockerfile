@@ -1,6 +1,6 @@
 ARG BINARY_NAME
 
-FROM rust:1.93.1-slim-bookworm AS builder
+FROM rust:1.94.1-slim-bookworm AS builder
 ARG BINARY_NAME
 
 RUN apt-get update -y && apt-get install -y pkg-config libssl-dev protobuf-compiler
