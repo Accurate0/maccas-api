@@ -79,7 +79,7 @@ impl EventManager {
     #[instrument(skip(self))]
     pub async fn archive(&self, message_id: i64) -> Result<bool, EventManagerError> {
         let completed_at = chrono::offset::Utc::now().naive_utc();
-        events::ActiveModel {
+        let archived_event = events::ActiveModel {
             id: Unchanged(message_id as i32),
             is_completed: Set(true),
             completed_at: Set(Some(completed_at)),
@@ -88,7 +88,11 @@ impl EventManager {
             ..Default::default()
         }
         .update(&self.inner.db)
-        .await?;
+        .await;
+
+        if let Err(e) = archived_event {
+            tracing::warn!("error in archiving event: {e}");
+        }
 
         self.inner
             .event_queue
