@@ -48,6 +48,7 @@ jobs:
     with:
       service-name: maccas-api
       images: ghcr.io/accurate0/maccas-api,ghcr.io/accurate0/maccas-scheduler,ghcr.io/accurate0/maccas-recommendations,ghcr.io/accurate0/maccas-migration,ghcr.io/accurate0/maccas-clustering,ghcr.io/accurate0/maccas-web,ghcr.io/accurate0/maccas-sensordata
+      manifests-path: projects/maccas-api/manifests
       tag: ${{ github.sha }}
     secrets:
       FORGEJO_TOKEN: ${{ secrets.FORGEJO_CI_IMAGE_UPDATER }}
