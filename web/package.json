@@ -84,17 +84,5 @@
 		"svelte-sonner": "^0.3.28",
 		"tailwind-merge": "^2.6.1",
 		"tailwind-variants": "^0.2.1"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"@prisma/engines",
-			"protobufjs",
-			"sharp",
-			"bcrypt",
-			"prisma",
-			"@prisma/client",
-			"@sveltejs/kit"
-		]
 	}
 }

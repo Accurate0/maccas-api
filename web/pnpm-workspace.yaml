@@ -1,0 +1,10 @@
+engineStrict: true
+allowBuilds:
+  esbuild: true
+  '@prisma/engines': true
+  protobufjs: true
+  sharp: true
+  bcrypt: true
+  prisma: true
+  '@prisma/client': true
+  '@sveltejs/kit': true
