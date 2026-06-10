@@ -13,6 +13,7 @@ pub mod types;
 pub struct ApiClient {
     api_key: String,
     client: ClientWithMiddleware,
+    base_url: String,
 }
 
 impl Debug for ApiClient {
@@ -27,12 +28,16 @@ const BASE_URL: &str = "https://api.openai.com/v1";
 
 impl ApiClient {
     pub fn new(api_key: String, client: ClientWithMiddleware) -> Self {
-        Self { api_key, client }
+        Self {
+            api_key,
+            client,
+            base_url: std::env::var("OPENAI_BASE_URL").unwrap_or(BASE_URL.to_owned()),
+        }
     }
 
     fn get_default_request(&self, resource: &str, method: Method) -> RequestBuilder {
         self.client
-            .request(method, format!("{}/{resource}", BASE_URL))
+            .request(method, format!("{}/{resource}", self.base_url))
             .header(
                 "Authorization",
                 format!("Bearer {}", self.api_key.to_owned()),
