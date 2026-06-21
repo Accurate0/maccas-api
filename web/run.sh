@@ -1,2 +1,1 @@
-export CI=true
-cd /app && pnpm prisma migrate deploy && node docker-entry.js
+cd /app && node_modules/.bin/prisma migrate deploy && node docker-entry.js
