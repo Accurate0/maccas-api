@@ -9,4 +9,4 @@ allowBuilds:
   '@prisma/client': true
   '@sveltejs/kit': true
 minimumReleaseAgeExclude:
-  - '@accurate0/feature-flag-client@0.2.0'
+  - '@accurate0/*'
