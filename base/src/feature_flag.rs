@@ -1,5 +1,5 @@
 use open_feature::{EvaluationContext, OpenFeature, provider::NoOpProvider};
-use open_feature_flipt::flipt::{self, ClientTokenAuthentication, FliptProvider};
+use openfeature_provider::{EvaluationMode, FeatureFlagProvider};
 
 pub struct FeatureFlagClient {
     client: open_feature::Client,
@@ -8,29 +8,20 @@ pub struct FeatureFlagClient {
 
 impl FeatureFlagClient {
     pub async fn new() -> Self {
-        let url = std::env::var("FLIPT_URL");
-        let token = std::env::var("FLIPT_TOKEN");
-
         let mut client = OpenFeature::singleton_mut().await;
 
-        if url.is_err() || token.is_err() {
-            tracing::warn!("fallback to noop feature provider");
-            client.set_provider(NoOpProvider::default()).await;
-        } else {
-            let config = flipt::Config {
-                url: url.unwrap(),
-                authentication_strategy: ClientTokenAuthentication::new(token.unwrap()),
-                timeout: 60,
-            };
-
-            match FliptProvider::new("default".to_string(), config) {
+        if let Ok(url) = std::env::var("FEATURE_FLAGS_URL") {
+            match FeatureFlagProvider::connect_with(url, "maccas-api", EvaluationMode::Local).await {
                 Ok(provider) => client.set_provider(provider).await,
                 Err(e) => {
-                    tracing::error!("error when init flipt: {e}");
+                    tracing::error!("error when connecting to feature-flags: {e}");
                     client.set_provider(NoOpProvider::default()).await
                 }
             };
-        };
+        } else {
+            tracing::warn!("fallback to noop feature provider");
+            client.set_provider(NoOpProvider::default()).await;
+        }
 
         let client = client.create_client();
         let evaluation_context = EvaluationContext::default().with_custom_field(
@@ -45,23 +36,6 @@ impl FeatureFlagClient {
         Self {
             client,
             evaluation_context,
-        }
-    }
-
-    pub async fn get_dynamic_config<T>(&self, config_key: &'static str) -> Option<T>
-    where
-        T: TryFrom<open_feature::StructValue>,
-    {
-        match self
-            .client
-            .get_struct_details::<T>(config_key, Some(&self.evaluation_context), None)
-            .await
-        {
-            Ok(eval) => Some(eval.value),
-            Err(e) => {
-                tracing::error!("error evaluating: {config_key} because {e:?}");
-                None
-            }
         }
     }
 

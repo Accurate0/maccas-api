@@ -41,4 +41,4 @@ opentelemetry-otlp = { version = "0.31.0", features = [
 opentelemetry-semantic-conventions = { version = "0.31.0", features = ["semconv_experimental"] }
 opentelemetry-appender-tracing = { version = "0.31.0" }
 open-feature = { workspace = true }
-open-feature-flipt = { git = "https://github.com/open-feature/rust-sdk-contrib.git" }
+openfeature-provider = { git = "https://github.com/Accurate0/inf-k8s.git", branch = "main" }

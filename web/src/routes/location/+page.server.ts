@@ -6,13 +6,7 @@ export const load = async (event) => {
 		include: { config: true }
 	});
 
-	const shouldShowDistance = await event.locals.featureFlagClient.getBooleanValue(
-		'maccas-web-show-distance-from-store',
-		false
-	);
-
 	return {
-		config: user.config,
-		shouldShowDistance
+		config: user.config
 	};
 };

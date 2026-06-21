@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@flipt-io/flipt':
-        specifier: ^1.5.0
-        version: 1.5.0
+      '@accurate0/feature-flag-client':
+        specifier: ^0.2.0
+        version: 0.2.0(@openfeature/core@1.9.2)
       '@fontsource-variable/open-sans':
         specifier: ^5.2.7
         version: 5.2.7
@@ -20,9 +20,6 @@ importers:
       '@openfeature/core':
         specifier: ^1.9.2
         version: 1.9.2
-      '@openfeature/flipt-provider':
-        specifier: ^0.1.4
-        version: 0.1.4(@flipt-io/flipt@1.5.0)(@openfeature/server-sdk@1.20.2(@openfeature/core@1.9.2))
       '@openfeature/server-sdk':
         specifier: ^1.20.2
         version: 1.20.2(@openfeature/core@1.9.2)
@@ -103,7 +100,7 @@ importers:
         version: 2.6.1
       tailwind-variants:
         specifier: ^0.2.1
-        version: 0.2.1(tailwindcss@3.4.19(yaml@2.6.0))
+        version: 0.2.1(tailwindcss@3.4.19)
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.3.1
@@ -161,7 +158,7 @@ importers:
         version: 8.5.8
       postcss-load-config:
         specifier: ^6.0.1
-        version: 6.0.1(jiti@1.21.7)(postcss@8.5.8)(yaml@2.6.0)
+        version: 6.0.1(jiti@1.21.7)(postcss@8.5.8)
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
@@ -188,7 +185,7 @@ importers:
         version: 2.30.0(@sveltejs/kit@2.55.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.53.11)(vite@5.4.21(@types/node@22.19.15)))(svelte@5.53.11)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15)))(@types/json-schema@7.0.15)(svelte@5.53.11)(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.19
-        version: 3.4.19(yaml@2.6.0)
+        version: 3.4.19
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -206,6 +203,9 @@ importers:
         version: 3.25.76
 
 packages:
+
+  '@accurate0/feature-flag-client@0.2.0':
+    resolution: {integrity: sha512-CDovItQc/0cskuU82fingfIxmixWfbIgidmw638eXUdr8WxOr/EyLNJIizZ5FBDHusASfgVNWELwv4fjOUvhsQ==, tarball: https://npm.pkg.github.com/download/@accurate0/feature-flag-client/0.2.0/9b652e87081d96e3742e29e74d1facd99a45662e}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -237,6 +237,9 @@ packages:
   '@babel/types@7.29.0':
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
+
+  '@bufbuild/protobuf@2.12.0':
+    resolution: {integrity: sha512-B/XlCaFIP8LOwzo+bz5uFzATYokcwCKQcghqnlfwSmM5eX/qTkvDBnDPs+gXtX/RyjxJ4DRikECcPJbyALA8FA==}
 
   '@clack/core@0.3.5':
     resolution: {integrity: sha512-5cfhQNH+1VQ2xLQlmzXMqUoiaH0lRBq9/CLW9lTyMbuKLC3+xEK01tHVvyut++mLOn5urSHmkm6I0Lg9MaJSTQ==}
@@ -438,9 +441,6 @@ packages:
 
   '@fastify/busboy@3.2.0':
     resolution: {integrity: sha512-m9FVDXU3GT2ITSe0UaMA5rU3QkfC/UXtCU8y0gSN/GugTqtVldOBWIB5V6V3sbmenVZUIpU6f+mPEO2+m5iTaA==}
-
-  '@flipt-io/flipt@1.5.0':
-    resolution: {integrity: sha512-J4E9MXLBvf5cPued2yTgaW8hDa4axPbHM06J1cC5dJtvYuGRPnpaohRn1e6avHX4QRDjgKwpxe++3zJeulFTig==}
 
   '@floating-ui/core@1.7.5':
     resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
@@ -732,12 +732,6 @@ packages:
 
   '@openfeature/core@1.9.2':
     resolution: {integrity: sha512-0lX0xYTflLrjiYNlareYmdV98xEddR5+PhcuoGvH+BMIqpZ2icAC7us9Uv86KRVqofXvpAUwpP32wgqmtUFs8Q==}
-
-  '@openfeature/flipt-provider@0.1.4':
-    resolution: {integrity: sha512-wvGp/2AsA6qL89XNrC1RAAZAJCO0buEygRasf8rYTTRKNESbVNtv1rxQk5dZ3z2YR8RncPFCXTMTGioegG8n1g==}
-    peerDependencies:
-      '@flipt-io/flipt': ^1.2.0
-      '@openfeature/server-sdk': ^1.13.0
 
   '@openfeature/server-sdk@1.20.2':
     resolution: {integrity: sha512-JaaYhsX4CA/QTIXdQfDpD9zcxew5EHuWxJjL+Ctp3L4FXC2gEAZ3s1DaCJU6aFOF285dJH3zAoeU64EJvxCaAw==}
@@ -1713,6 +1707,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@valibot/to-json-schema@1.5.0':
     resolution: {integrity: sha512-GE7DmSr1C2UCWPiV0upRH6mv0cCPsqYGs819fb6srCS1tWhyXrkGGe+zxUiwzn/L1BOfADH4sNjY/YHCuP8phQ==}
@@ -3541,6 +3536,7 @@ packages:
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   valibot@1.2.0:
@@ -3654,11 +3650,6 @@ packages:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
 
-  yaml@2.6.0:
-    resolution: {integrity: sha512-a6ae//JvKDEra2kdi1qzCyrJW/WZCgFi8ydDV+eXExl95t+5R+ijnqHJbz9tmMh8FUjx3iv2fCQ4dclAQlO2UQ==}
-    engines: {node: '>= 14'}
-    hasBin: true
-
   yargs-parser@21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
@@ -3690,6 +3681,14 @@ packages:
 
 snapshots:
 
+  '@accurate0/feature-flag-client@0.2.0(@openfeature/core@1.9.2)':
+    dependencies:
+      '@bufbuild/protobuf': 2.12.0
+      '@grpc/grpc-js': 1.14.3
+      '@openfeature/server-sdk': 1.20.2(@openfeature/core@1.9.2)
+    transitivePeerDependencies:
+      - '@openfeature/core'
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@ark/schema@0.56.0':
@@ -3715,6 +3714,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@bufbuild/protobuf@2.12.0': {}
 
   '@clack/core@0.3.5':
     dependencies:
@@ -3860,8 +3861,6 @@ snapshots:
     optional: true
 
   '@fastify/busboy@3.2.0': {}
-
-  '@flipt-io/flipt@1.5.0': {}
 
   '@floating-ui/core@1.7.5':
     dependencies:
@@ -4136,11 +4135,6 @@ snapshots:
       fastq: 1.20.1
 
   '@openfeature/core@1.9.2': {}
-
-  '@openfeature/flipt-provider@0.1.4(@flipt-io/flipt@1.5.0)(@openfeature/server-sdk@1.20.2(@openfeature/core@1.9.2))':
-    dependencies:
-      '@flipt-io/flipt': 1.5.0
-      '@openfeature/server-sdk': 1.20.2(@openfeature/core@1.9.2)
 
   '@openfeature/server-sdk@1.20.2(@openfeature/core@1.9.2)':
     dependencies:
@@ -6644,13 +6638,12 @@ snapshots:
     optionalDependencies:
       postcss: 8.5.8
 
-  postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.8)(yaml@2.6.0):
+  postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.8):
     dependencies:
       lilconfig: 3.1.3
     optionalDependencies:
       jiti: 1.21.7
       postcss: 8.5.8
-      yaml: 2.6.0
 
   postcss-nested@6.2.0(postcss@8.5.8):
     dependencies:
@@ -7096,12 +7089,12 @@ snapshots:
 
   tailwind-merge@2.6.1: {}
 
-  tailwind-variants@0.2.1(tailwindcss@3.4.19(yaml@2.6.0)):
+  tailwind-variants@0.2.1(tailwindcss@3.4.19):
     dependencies:
       tailwind-merge: 2.6.1
-      tailwindcss: 3.4.19(yaml@2.6.0)
+      tailwindcss: 3.4.19
 
-  tailwindcss@3.4.19(yaml@2.6.0):
+  tailwindcss@3.4.19:
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -7120,7 +7113,7 @@ snapshots:
       postcss: 8.5.8
       postcss-import: 15.1.0(postcss@8.5.8)
       postcss-js: 4.1.0(postcss@8.5.8)
-      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.8)(yaml@2.6.0)
+      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.8)
       postcss-nested: 6.2.0(postcss@8.5.8)
       postcss-selector-parser: 6.1.2
       resolve: 1.22.11
@@ -7299,9 +7292,6 @@ snapshots:
   yallist@4.0.0: {}
 
   yaml@1.10.2: {}
-
-  yaml@2.6.0:
-    optional: true
 
   yargs-parser@21.1.1: {}
 

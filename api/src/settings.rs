@@ -34,6 +34,24 @@ pub struct Email {
     pub domain_name: String,
 }
 
+#[derive(Debug, Deserialize, Clone, Default)]
+pub struct NewOffer {
+    #[serde(default)]
+    pub discord_urls: Vec<String>,
+    #[serde(default)]
+    pub external_urls: Vec<String>,
+}
+
+impl NewOffer {
+    pub fn should_notify_discord(&self) -> bool {
+        !self.discord_urls.is_empty()
+    }
+
+    pub fn should_notify_external(&self) -> bool {
+        !self.external_urls.is_empty()
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub database: Database,
@@ -48,12 +66,21 @@ pub struct Settings {
     pub external_webhook_secret: String,
     pub places_api_key: String,
     pub redis_connection_string: Option<String>,
+    #[serde(default)]
+    pub new_offer: NewOffer,
 }
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
-            .add_source(Environment::default().separator("__"))
+            .add_source(
+                Environment::default()
+                    .separator("__")
+                    .list_separator(",")
+                    .with_list_parse_key("new_offer.discord_urls")
+                    .with_list_parse_key("new_offer.external_urls")
+                    .try_parsing(true),
+            )
             .build()?;
 
         s.try_deserialize()

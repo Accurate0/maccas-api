@@ -1,17 +1,10 @@
 import { NOOP_PROVIDER, OpenFeature, type EvaluationContext } from '@openfeature/server-sdk';
-import { FliptProvider } from '@openfeature/flipt-provider';
-import { ClientTokenAuthentication } from '@flipt-io/flipt';
+import { FeatureFlagProvider } from '@accurate0/feature-flag-client/openfeature';
 import { env } from '$env/dynamic/private';
 
-const url = env.FLIPT_URL ?? '';
-const token = env.FLIPT_TOKEN;
-
-if (token) {
-	const provider = new FliptProvider('default', {
-		url,
-		authenticationStrategy: new ClientTokenAuthentication(token)
-	});
-	await OpenFeature.setProviderAndWait(provider);
+const url = env.FEATURE_FLAGS_URL;
+if (url) {
+	await OpenFeature.setProviderAndWait(new FeatureFlagProvider(url, 'maccas-web'));
 } else {
 	await OpenFeature.setProviderAndWait(NOOP_PROVIDER);
 }

@@ -11,7 +11,9 @@ WORKDIR /app
 FROM builder AS build
 RUN apk add openssl
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    --mount=type=secret,id=node_auth_token,env=NODE_AUTH_TOKEN \
+    pnpm install --frozen-lockfile
 RUN pnpm run db:generate
 RUN pnpm run build
 
