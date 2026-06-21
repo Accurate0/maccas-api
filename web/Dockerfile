@@ -13,9 +13,9 @@ RUN apk add openssl
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     --mount=type=secret,id=node_auth_token,env=NODE_AUTH_TOKEN \
-    pnpm config set "//npm.pkg.github.com/:_authToken" "$NODE_AUTH_TOKEN" --global && \
+    printf '//npm.pkg.github.com/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > "$HOME/.npmrc" && \
     pnpm install --frozen-lockfile && \
-    pnpm config delete "//npm.pkg.github.com/:_authToken" --global
+    rm -f "$HOME/.npmrc"
 RUN pnpm run db:generate
 RUN pnpm run build
 
