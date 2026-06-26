@@ -30,6 +30,7 @@ WORKDIR /app
 COPY --from=build /app/build build/
 COPY --from=build /app/node_modules node_modules/
 COPY --from=build /app/docker-entry.js .
+COPY --from=build /app/instrumentation.mjs .
 COPY --from=build /app/prisma prisma
 COPY --from=build /app/pnpm-workspace.yaml .
 COPY --from=build /app/run.sh .

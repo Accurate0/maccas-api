@@ -4,16 +4,19 @@ import {
 	SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 	SEMRESATTRS_SERVICE_NAME
 } from '@opentelemetry/semantic-conventions';
-import { NODE_ENV } from '$env/static/private';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import primsa from '@prisma/instrumentation';
 import { GrpcInstrumentation } from '@opentelemetry/instrumentation-grpc';
-import { env } from '$env/dynamic/private';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
+
 const { PrismaInstrumentation } = primsa;
 
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+
 const traceExporter = new OTLPTraceExporter({
-	url: env.OTEL_TRACING_URL
+	url: process.env.OTEL_TRACING_URL
 });
 
 const otelSdk = new opentelemetry.NodeSDK({
@@ -23,7 +26,12 @@ const otelSdk = new opentelemetry.NodeSDK({
 	}),
 	spanProcessors: [new BatchSpanProcessor(traceExporter)],
 	traceExporter,
-	instrumentations: [new PrismaInstrumentation(), new GrpcInstrumentation()]
+	instrumentations: [
+		new PrismaInstrumentation(),
+		new GrpcInstrumentation(),
+		new HttpInstrumentation(),
+		new UndiciInstrumentation()
+	]
 });
 
 otelSdk.start();

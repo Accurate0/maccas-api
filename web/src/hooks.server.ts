@@ -2,10 +2,8 @@ import { prisma } from '$lib/server/prisma';
 import type { Handle } from '@sveltejs/kit';
 import { setSession } from '$houdini';
 import { SessionId } from '$lib/server/session';
-import '$lib/server/opentelemetry';
 import '$lib/server/featureflag';
-import type { HandleFetch } from '@sveltejs/kit';
-import opentelemetry, { SpanStatusCode, type Span } from '@opentelemetry/api';
+import opentelemetry, { SpanKind, SpanStatusCode } from '@opentelemetry/api';
 import { FeatureFlagClientFactory, type EvaluationContext } from '$lib/server/featureflag';
 import { env } from '$env/dynamic/private';
 
@@ -25,7 +23,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const tracer = opentelemetry.trace.getTracer('default');
 	return tracer.startActiveSpan(
 		`${event.request.method.toUpperCase()} ${event.route.id}`,
-		{},
+		{ kind: SpanKind.SERVER },
 		context,
 		async (span) => {
 			let evaluationContext: EvaluationContext = {};
@@ -88,37 +86,3 @@ export const handle: Handle = async ({ event, resolve }) => {
 	);
 };
 
-export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-	const tracer = opentelemetry.trace.getTracer('default');
-
-	return tracer.startActiveSpan(
-		`${request.method.toUpperCase()} ${request.url}`,
-		async (span: Span) => {
-			const output: { traceparent?: string; tracestate?: string } = {};
-			opentelemetry.propagation.inject(opentelemetry.context.active(), output);
-
-			const { traceparent, tracestate } = output;
-
-			if (traceparent) {
-				request.headers.set('traceparent', traceparent);
-			}
-
-			if (tracestate) {
-				request.headers.set('tracestate', tracestate);
-			}
-
-			const response = await fetch(request);
-
-			if (response.ok) {
-				span.setStatus({ code: SpanStatusCode.OK });
-			} else {
-				span.setStatus({ code: SpanStatusCode.ERROR });
-			}
-
-			span.setAttribute('statusCode', response.status);
-
-			span.end();
-			return response;
-		}
-	);
-};
