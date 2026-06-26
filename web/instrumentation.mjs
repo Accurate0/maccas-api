@@ -35,7 +35,12 @@ const otelSdk = new opentelemetry.NodeSDK({
 	instrumentations: [
 		new PrismaInstrumentation(),
 		new GrpcInstrumentation(),
-		new HttpInstrumentation(),
+		new HttpInstrumentation({
+			ignoreIncomingRequestHook: (req) => {
+				const path = (req.url ?? '').split('?')[0];
+				return path === '/health';
+			}
+		}),
 		new UndiciInstrumentation()
 	]
 });

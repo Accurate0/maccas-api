@@ -3,7 +3,7 @@ import type { Handle } from '@sveltejs/kit';
 import { setSession } from '$houdini';
 import { SessionId } from '$lib/server/session';
 import '$lib/server/featureflag';
-import { trace } from '@opentelemetry/api';
+import opentelemetry, { SpanKind, SpanStatusCode } from '@opentelemetry/api';
 import { FeatureFlagClientFactory, type EvaluationContext } from '$lib/server/featureflag';
 import { env } from '$env/dynamic/private';
 
@@ -13,46 +13,76 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return await resolve(event);
 	}
 
-	const span = trace.getActiveSpan();
+	const traceparent = event.request.headers.get('traceparent');
+	const tracestate = event.request.headers.get('tracestate');
+	const context = opentelemetry.propagation.extract(opentelemetry.context.active(), {
+		traceparent,
+		tracestate
+	});
 
-	let evaluationContext: EvaluationContext = {};
-	if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
-		const sessionId = event.cookies.get(SessionId);
-		span?.setAttribute('sessionId', sessionId ?? '(unknown)');
+	const tracer = opentelemetry.trace.getTracer('default');
+	return tracer.startActiveSpan(
+		`${event.request.method.toUpperCase()} ${event.route.id}`,
+		{ kind: SpanKind.SERVER },
+		context,
+		async (span) => {
+			let evaluationContext: EvaluationContext = {};
+			if (event.url.pathname !== '/login' && event.url.pathname !== '/register') {
+				const sessionId = event.cookies.get(SessionId);
+				span.setAttribute('sessionId', sessionId ?? '(unknown)');
 
-		if (!sessionId) {
-			return new Response(null, {
-				status: 307,
-				headers: { location: '/login' }
-			});
+				if (!sessionId) {
+					span.setStatus({ code: SpanStatusCode.OK });
+					span.end();
+
+					return new Response(null, {
+						status: 307,
+						headers: { location: '/login' }
+					});
+				}
+
+				const session = await prisma.session.findUnique({
+					where: { id: sessionId }
+				});
+				span.setAttribute('userId', session?.userId ?? '(unknown)');
+
+				if (!session || new Date() > session.expires) {
+					span.setStatus({ code: SpanStatusCode.OK });
+					span.end();
+
+					return new Response(null, {
+						status: 307,
+						headers: { location: '/login' }
+					});
+				}
+
+				// evaluate the impersonator over the real user
+				evaluationContext = {
+					targetingKey: session.impersonatorUserId ?? session.userId,
+					user_id: session.impersonatorUserId ?? session.userId
+				};
+				event.locals.session = session;
+				setSession(event, { ...session });
+			}
+
+			event.locals.featureFlagClient = FeatureFlagClientFactory.getClient({
+				environment: env.NODE_ENV ?? 'development',
+				...evaluationContext
+			} satisfies EvaluationContext);
+			const response = await resolve(event);
+			const isRedirect = response.status >= 300 && response.status < 400;
+
+			if (response.ok || isRedirect) {
+				span.setStatus({ code: SpanStatusCode.OK });
+			} else {
+				span.setStatus({ code: SpanStatusCode.ERROR });
+			}
+
+			span.setAttribute('statusCode', response.status);
+
+			span.end();
+			return response;
 		}
-
-		const session = await prisma.session.findUnique({
-			where: { id: sessionId }
-		});
-		span?.setAttribute('userId', session?.userId ?? '(unknown)');
-
-		if (!session || new Date() > session.expires) {
-			return new Response(null, {
-				status: 307,
-				headers: { location: '/login' }
-			});
-		}
-
-		// evaluate the impersonator over the real user
-		evaluationContext = {
-			targetingKey: session.impersonatorUserId ?? session.userId,
-			user_id: session.impersonatorUserId ?? session.userId
-		};
-		event.locals.session = session;
-		setSession(event, { ...session });
-	}
-
-	event.locals.featureFlagClient = FeatureFlagClientFactory.getClient({
-		environment: env.NODE_ENV ?? 'development',
-		...evaluationContext
-	} satisfies EvaluationContext);
-
-	return resolve(event);
+	);
 };
 
