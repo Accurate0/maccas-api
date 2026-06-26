@@ -61,12 +61,13 @@ export const actions = {
 		const password = passwordUntrimmed.trim();
 		const passwordHash = await bcrypt.hash(password, 10);
 		const featureFlagClient = event.locals.featureFlagClient;
-		const isUserActive = await featureFlagClient.getBooleanValue(
+		const activeDetails = await featureFlagClient.getBooleanDetails(
 			'maccas-web-allow-active-registration',
 			false
 		);
+		const isUserActive = activeDetails.value;
 
-		console.log('evaluated ff for active:', isUserActive);
+		console.log('evaluated ff for active:', activeDetails);
 
 		const user = await prisma.user.create({
 			data: {

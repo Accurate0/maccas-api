@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        apps: [web, clustering]
+        apps: [clustering]
 
     permissions:
       packages: write
@@ -21,6 +21,21 @@ jobs:
       image-name: maccas-${{ matrix.apps }}
       docker-build-args: |
         BINARY_NAME=${{ matrix.apps }}
+      use-rust-caching: false
+    secrets:
+      docker-build-secrets: |
+        node_auth_token=${{ secrets.GITHUB_TOKEN }}
+
+  build-web:
+    permissions:
+      packages: write
+
+    uses: Accurate0/workflows/.github/workflows/build-push-docker.yaml@main
+    with:
+      directory: web
+      image-name: maccas-web
+      docker-build-args: |
+        BINARY_NAME=web
       use-rust-caching: false
     secrets:
       docker-build-secrets: |
@@ -50,7 +65,19 @@ jobs:
     uses: Accurate0/workflows/.github/workflows/deploy-app-k8s-v2.yaml@main
     with:
       service-name: maccas-api
-      images: ghcr.io/accurate0/maccas-api,ghcr.io/accurate0/maccas-scheduler,ghcr.io/accurate0/maccas-recommendations,ghcr.io/accurate0/maccas-migration,ghcr.io/accurate0/maccas-clustering,ghcr.io/accurate0/maccas-web,ghcr.io/accurate0/maccas-sensordata
+      images: ghcr.io/accurate0/maccas-api,ghcr.io/accurate0/maccas-scheduler,ghcr.io/accurate0/maccas-recommendations,ghcr.io/accurate0/maccas-migration,ghcr.io/accurate0/maccas-clustering,ghcr.io/accurate0/maccas-sensordata
+      manifests-path: projects/maccas-api/manifests
+      tag: ${{ github.sha }}
+    secrets:
+      FORGEJO_TOKEN: ${{ secrets.FORGEJO_CI_IMAGE_UPDATER }}
+
+  deploy-web:
+    needs:
+      - build-web
+    uses: Accurate0/workflows/.github/workflows/deploy-app-k8s-v2.yaml@main
+    with:
+      service-name: maccas-api
+      images: ghcr.io/accurate0/maccas-web
       manifests-path: projects/maccas-api/manifests
       tag: ${{ github.sha }}
     secrets:
@@ -58,7 +85,9 @@ jobs:
 
   annotate:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs:
+      - deploy
+      - deploy-web
     steps:
       - name: Add annotation
         uses: axiomhq/annotation-action@v0.1.0
