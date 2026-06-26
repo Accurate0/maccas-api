@@ -1,5 +1,8 @@
 import { register } from 'node:module';
-register('import-in-the-middle/hook.mjs', import.meta.url);
+import { createAddHookMessageChannel } from 'import-in-the-middle';
+
+const { registerOptions, waitForAllMessagesAcknowledged } = createAddHookMessageChannel();
+register('import-in-the-middle/hook.mjs', import.meta.url, registerOptions);
 
 import opentelemetry from '@opentelemetry/sdk-node';
 import { Resource } from '@opentelemetry/resources';
@@ -38,3 +41,5 @@ const otelSdk = new opentelemetry.NodeSDK({
 });
 
 otelSdk.start();
+
+await waitForAllMessagesAcknowledged();
