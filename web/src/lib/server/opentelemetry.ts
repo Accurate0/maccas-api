@@ -8,6 +8,7 @@ import { NODE_ENV } from '$env/static/private';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import primsa from '@prisma/instrumentation';
+import { GrpcInstrumentation } from '@opentelemetry/instrumentation-grpc';
 import { env } from '$env/dynamic/private';
 const { PrismaInstrumentation } = primsa;
 
@@ -22,7 +23,7 @@ const otelSdk = new opentelemetry.NodeSDK({
 	}),
 	spanProcessors: [new BatchSpanProcessor(traceExporter)],
 	traceExporter,
-	instrumentations: [new PrismaInstrumentation()]
+	instrumentations: [new PrismaInstrumentation(), new GrpcInstrumentation()]
 });
 
 otelSdk.start();
