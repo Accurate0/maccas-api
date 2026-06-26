@@ -1,3 +1,6 @@
+import { register } from 'node:module';
+register('import-in-the-middle/hook.mjs', import.meta.url);
+
 import opentelemetry from '@opentelemetry/sdk-node';
 import { Resource } from '@opentelemetry/resources';
 import {

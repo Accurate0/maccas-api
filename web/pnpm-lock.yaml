@@ -83,6 +83,9 @@ importers:
       express:
         specifier: ^4.22.1
         version: 4.22.2
+      import-in-the-middle:
+        specifier: ^1.15.0
+        version: 1.15.0
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
