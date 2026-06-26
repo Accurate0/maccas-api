@@ -54,6 +54,7 @@
 	"dependencies": {
 		"@accurate0/feature-flag-client": "^0.2.0",
 		"@fontsource-variable/open-sans": "^5.2.7",
+		"@grpc/grpc-js": "1.14.4",
 		"@maptimy/platform-formatters": "^0.5.0",
 		"@openfeature/core": "^1.9.2",
 		"@openfeature/server-sdk": "^1.20.2",

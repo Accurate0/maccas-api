@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [houdini(), sveltekit()],
 	ssr: {
-		noExternal: ['@accurate0/feature-flag-client']
+		noExternal: ['@accurate0/feature-flag-client'],
+		external: ['@grpc/grpc-js']
 	}
 });
