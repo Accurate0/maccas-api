@@ -89,7 +89,11 @@
 	const setLocation = async (storeId: string, newStoreName: string) => {
 		optionsDisabled = true;
 		const body: UpdateLocationBody = { storeId };
-		const response = await fetch('/api/location', { method: 'POST', body: JSON.stringify(body) });
+		const response = await fetch('/api/location', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body)
+		});
 
 		if (response.ok) {
 			currentStoreName = newStoreName;
