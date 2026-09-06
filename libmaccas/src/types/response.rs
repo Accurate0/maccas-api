@@ -159,7 +159,7 @@ pub struct Offer {
     pub is_locked: bool,
     pub is_redeemed: bool,
     pub offer_bucket: String,
-    pub punch_info: PunchInfo,
+    pub punch_info: Option<PunchInfo>,
     pub recurring_info: Option<RecurringInfo>,
     pub conditions: Conditions,
     pub color_coding_info: i64,
