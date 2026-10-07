@@ -3,8 +3,8 @@ use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 use std::fmt::Debug;
 use tracing::instrument;
 use types::{
-    ClientResponse, ClientResult, OpenAIChatCompletionRequest, OpenAIChatCompletionResponse,
-    OpenAIEmbeddingsRequest, OpenAIEmbeddingsResponse,
+    ClientResponse, ClientResult, DecisionsRequest, DecisionsResponse, OpenAIChatCompletionRequest,
+    OpenAIChatCompletionResponse, OpenAIEmbeddingsRequest, OpenAIEmbeddingsResponse,
 };
 
 pub mod types;
@@ -66,6 +66,20 @@ impl ApiClient {
     ) -> ClientResult<ClientResponse<OpenAIEmbeddingsResponse>> {
         let request = self
             .get_default_request("embeddings", Method::POST)
+            .json(request);
+
+        let response = request.send().await?;
+        ClientResponse::from_response(response).await
+    }
+
+    // decisions
+    #[instrument(skip(self), fields(statusCode))]
+    pub async fn decisions(
+        &self,
+        request: &DecisionsRequest,
+    ) -> ClientResult<ClientResponse<DecisionsResponse>> {
+        let request = self
+            .get_default_request("decisions", Method::POST)
             .json(request);
 
         let response = request.send().await?;

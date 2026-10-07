@@ -1,10 +1,7 @@
-use super::{error::JobError, Job, JobContext};
-use anyhow::Context;
+use super::{Job, JobContext, error::JobError};
 use entity::offer_details;
 use itertools::Itertools;
-use openai::types::{OpenAIChatCompletionRequest, ResponseFormat, ResponseFormatOptions};
-use sea_orm::{sea_query::Expr, ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
-use std::collections::HashMap;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Debug)]
@@ -28,7 +25,7 @@ impl Job for RecategoriseOffersJob {
             .await?
             .into_iter()
             .map(|c| c.name)
-            .join(",");
+            .collect::<Vec<_>>();
 
         let all_empty_offer_details = entity::offer_details::Entity::find()
             .filter(offer_details::Column::Categories.eq(Vec::<String>::new()))
@@ -48,45 +45,12 @@ impl Job for RecategoriseOffersJob {
 
         tracing::info!("{count}", count = all_empty_offer_details.len());
 
-        let offer_details = all_empty_offer_details.join(",");
-
-        let response = self
-            .api_client
-            .chat_completions(&OpenAIChatCompletionRequest {
-                model: "gpt-4o".to_string(),
-                messages: super::categorise_offers::get_prompt(
-                    &available_categories,
-                    &offer_details,
-                ),
-                max_tokens: None,
-                response_format: Some(ResponseFormat {
-                    type_field: ResponseFormatOptions::JsonObject,
-                }),
-            })
-            .await?;
-
-        // n = 1 by default
-        let response = response
-            .body
-            .choices
-            .first()
-            .context("must have one choice")?;
-
-        let response =
-            serde_json::from_str::<HashMap<String, Vec<String>>>(&response.message.content)?;
-
-        // FIXME: bad...
-        for (key, value) in response {
-            entity::offer_details::Entity::update_many()
-                .filter(entity::offer_details::Column::ShortName.eq(key))
-                .col_expr(
-                    entity::offer_details::Column::Categories,
-                    Expr::value(value),
-                )
-                .exec(context.database)
-                .await?;
-        }
-
-        Ok(())
+        super::categorise_offers::categorise_offer_names(
+            &self.api_client,
+            context.database,
+            &available_categories,
+            all_empty_offer_details,
+        )
+        .await
     }
 }
