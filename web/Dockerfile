@@ -1,4 +1,4 @@
-FROM node:24-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -19,7 +19,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 RUN pnpm run db:generate
 RUN pnpm run build
 
-FROM node:24-alpine
+FROM node:24.22.1-alpine
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV COREPACK_INTEGRITY_KEYS=0
