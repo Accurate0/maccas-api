@@ -65,7 +65,7 @@ jobs:
     uses: Accurate0/workflows/.github/workflows/deploy-app-k8s-v2.yaml@main
     with:
       service-name: maccas-api
-      images: ghcr.io/accurate0/maccas-api,ghcr.io/accurate0/maccas-scheduler,ghcr.io/accurate0/maccas-recommendations,ghcr.io/accurate0/maccas-migration,ghcr.io/accurate0/maccas-clustering,ghcr.io/accurate0/maccas-sensordata
+      images: ghcr.io/accurate0/maccas-api,ghcr.io/accurate0/maccas-scheduler,ghcr.io/accurate0/maccas-recommendations,ghcr.io/accurate0/maccas-migration,ghcr.io/accurate0/maccas-clustering
       manifests-path: projects/maccas-api/manifests
       tag: ${{ github.sha }}
     secrets:
