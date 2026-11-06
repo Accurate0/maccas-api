@@ -1,3 +1,4 @@
+use super::tracing::Untraced;
 use crate::auth::{AuthError, Authenticator};
 use crate::types::{ApiState, AppError};
 use anyhow::Context;
@@ -22,8 +23,15 @@ fn unauthorized(message: impl Into<String>) -> GraphQLResponse {
     GraphQLResponse::from(response)
 }
 
+#[tracing::instrument(
+    name = "auth.validate_oauth",
+    skip_all,
+    fields(valid = tracing::field::Empty)
+)]
 async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, AuthError> {
-    let claims = auth.authorize(token).await?;
+    let claims = auth.authorize(token).await;
+    tracing::Span::current().record("valid", claims.is_ok());
+    let claims = claims?;
 
     Ok(JwtClaims {
         user_id: String::new(),
@@ -37,7 +45,6 @@ async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, A
     })
 }
 
-// FIXME: tracing the authorization code
 pub async fn graphql_handler(
     State(ApiState {
         schema,
@@ -66,7 +73,8 @@ pub async fn graphql_handler(
             Ok(claims) => claims,
             Err(e) => return Ok(unauthorized(e.to_string())),
         },
-        None => jwt::verify_jwt(settings.auth_secret.as_bytes(), &token)?,
+        None => tracing::info_span!("auth.validate_jwt")
+            .in_scope(|| jwt::verify_jwt(settings.auth_secret.as_bytes(), &token))?,
     };
 
     if cfg!(debug_assertions) {
@@ -99,7 +107,8 @@ pub async fn health(
         }
       }
       "#,
-    );
+    )
+    .data(Untraced);
 
     let response = schema.execute(request).await;
     let health_response = serde_json::from_value::<HealthResponse>(

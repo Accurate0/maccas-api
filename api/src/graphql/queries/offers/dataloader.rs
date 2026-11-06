@@ -96,7 +96,7 @@ impl Loader<i64> for OfferDetailsLoader {
     type Value = offer_details::Model;
     type Error = Arc<anyhow::Error>;
 
-    #[instrument(name = "OfferDetailsLoader::load", skip(self, keys))]
+    #[instrument(name = "db.offer_details.load_many", skip_all, fields(keys = keys.len(), cached, db))]
     async fn load(&self, keys: &[i64]) -> Result<HashMap<i64, Self::Value>, Self::Error> {
         let cached_values = if let Some(ref cache) = self.cache {
             cache.get_all(keys).await.map_err(anyhow::Error::from)?
@@ -163,7 +163,7 @@ impl Loader<String> for OfferCountDataLoader {
     type Value = i64;
     type Error = Arc<DbErr>;
 
-    #[instrument(name = "OfferCountDataLoader::load", skip(self, names))]
+    #[instrument(name = "db.offer_count.load_many", skip_all, fields(keys = names.len()))]
     async fn load(&self, names: &[String]) -> Result<HashMap<String, Self::Value>, Self::Error> {
         let db = &self.database;
         let all_locked_accounts = entity::account_lock::Entity::find()

@@ -83,7 +83,7 @@ impl OfferDetailsCache {
         Self { redis }
     }
 
-    #[instrument(name = "OfferDetailsCache::set", skip(self, details))]
+    #[instrument(name = "cache.offer_details.set", skip_all)]
     pub async fn set(&self, details: protos::OfferDetails) -> Result<(), OfferDetailsCacheError> {
         let bytes = details.encode_to_vec();
         let _ = self
@@ -97,7 +97,7 @@ impl OfferDetailsCache {
         Ok(())
     }
 
-    #[instrument(name = "OfferDetailsCache::get_all", skip(self, ids))]
+    #[instrument(name = "cache.offer_details.get_all", skip_all, fields(keys = ids.len()))]
     pub async fn get_all(
         &self,
         ids: &[i64],

@@ -77,6 +77,7 @@ pub fn init(name: &'static str) {
             Targets::default()
                 .with_target("otel::tracing", Level::TRACE)
                 .with_target("sea_orm::database", Level::TRACE)
+                .with_target("async_graphql::dataloader", Level::WARN)
                 .with_default(Level::INFO),
         )
         .with(tracing_subscriber::fmt::layer())
