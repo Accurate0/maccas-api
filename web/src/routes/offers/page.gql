@@ -1,5 +1,5 @@
 query GetOffers {
-	offers {
+	maccasOffers {
 		shortName
 		imageUrl
 		count
@@ -10,5 +10,5 @@ query GetOffers {
 		price
 	}
 
-	categories
+	maccasCategories
 }

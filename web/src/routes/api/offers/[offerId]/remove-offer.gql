@@ -1,3 +1,3 @@
 mutation RemoveOffer($id: UUID!, $storeId: String!) {
-	removeOffer(input: { id: $id, storeId: $storeId })
+	maccasRemoveOffer(input: { id: $id, storeId: $storeId })
 }

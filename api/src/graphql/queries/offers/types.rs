@@ -4,17 +4,16 @@ use super::dataloader::OfferCountDataLoader;
 use super::dataloader::OfferDetailsLoader;
 use crate::graphql::ValidatedClaims;
 use anyhow::Context;
-use async_graphql::dataloader::*;
 use async_graphql::InputObject;
 use async_graphql::Object;
 use async_graphql::SimpleObject;
+use async_graphql::dataloader::*;
 use base::constants::IMAGE_BASE_URL;
 use base::constants::IMAGE_EXT;
 use entity::offer_cluster_score;
 use entity::offer_details;
 use entity::offer_name_cluster_association;
 use entity::offers;
-use sea_orm::prelude::{DateTime, Uuid};
 use sea_orm::ColumnTrait;
 use sea_orm::DatabaseConnection;
 use sea_orm::EntityTrait;
@@ -23,14 +22,17 @@ use sea_orm::JoinType;
 use sea_orm::QueryFilter;
 use sea_orm::QuerySelect;
 use sea_orm::SelectColumns;
+use sea_orm::prelude::{DateTime, Uuid};
 
 #[derive(InputObject)]
+#[graphql(name = "MaccasOfferByIdInput")]
 pub struct OfferByIdInput {
     pub id: Uuid,
     pub store_id: String,
 }
 
 #[derive(SimpleObject)]
+#[graphql(name = "MaccasOfferByIdResponse")]
 pub struct OfferByIdResponse {
     pub code: String,
 }
@@ -62,7 +64,7 @@ impl Offer {
     }
 }
 
-#[Object]
+#[Object(name = "MaccasOffer")]
 impl Offer {
     pub async fn categories(
         &self,
@@ -114,7 +116,9 @@ impl Offer {
             return Err(anyhow::Error::msg("must have valid claims").into());
         }
 
-        let claims = claims.unwrap();
+        let Ok(user_id) = Uuid::from_str(&claims.unwrap().user_id) else {
+            return Ok(0.0);
+        };
 
         let score =
             offer_name_cluster_association::Entity::find_by_id(self.short_name(context).await?)
@@ -127,7 +131,7 @@ impl Offer {
                         .to(offer_cluster_score::Column::ClusterId)
                         .into(),
                 )
-                .filter(offer_cluster_score::Column::UserId.eq(Uuid::from_str(&claims.user_id)?))
+                .filter(offer_cluster_score::Column::UserId.eq(user_id))
                 .into_tuple::<f64>()
                 .one(db)
                 .await?;

@@ -38,6 +38,7 @@ uuid = { workspace = true }
 converters = { workspace = true }
 libmaccas = { workspace = true }
 reqwest = { workspace = true }
+jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 reqwest-middleware = { workspace = true }
 open-feature = { workspace = true }
 itertools = { workspace = true }

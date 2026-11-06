@@ -1,48 +1,89 @@
-schema {
-  query: QueryRoot
-  mutation: MutationRoot
+input MaccasAddOfferInput {
+	offerPropositionId: Int!
+	storeId: String!
 }
 
-"""
-Indicates that an Input Object is a OneOf Input Object (and thus requires exactly one of its field be provided)
-"""
-directive @oneOf on INPUT_OBJECT
-
-input AddOfferInput {
-  offerPropositionId: Int!
-  storeId: String!
+type MaccasAddOfferResponse {
+	id: UUID!
+	code: String!
 }
 
-type AddOfferResponse {
-  code: String!
-  id: UUID!
+input MaccasCoordinateSearchInput {
+	lat: Float!
+	lng: Float!
 }
 
-input CoordinateSearchInput {
-  lat: Float!
-  lng: Float!
+input MaccasFilterInput {
+	minimumCurrentPoints: Int!
 }
 
-input FilterInput {
-  minimumCurrentPoints: Int!
+type MaccasHealthResponse {
+	database: Boolean!
+	recommendations: Boolean!
 }
 
-type HealthResponse {
-  database: Boolean!
-  event: Boolean!
-  recommendations: Boolean!
+type MaccasLocation {
+	name: String!
+	storeNumber: String!
+	address: String!
+	distance: Float
 }
 
-type Location {
-  address: String!
-  distance: Float
-  name: String!
-  storeNumber: String!
+type MaccasOffer {
+	categories: [String!]!
+	name: String!
+	id: UUID!
+	offerPropositionId: Int!
+	validFrom: NaiveDateTime!
+	validTo: NaiveDateTime!
+	count: Int!
+	recommendationScore: Float!
+	shortName: String!
+	description: String!
+	creationDate: NaiveDateTime!
+	imageBasename: String! @deprecated(reason: "use image_url instead")
+	imageUrl: String!
+	price: Float
+}
+
+input MaccasOfferByIdInput {
+	id: UUID!
+	storeId: String!
+}
+
+type MaccasOfferByIdResponse {
+	code: String!
+}
+
+type MaccasPoints {
+	accountId: UUID!
+	currentPoints: Int!
+	lifetimePoints: Int!
+	code: String
+}
+
+type MaccasQueriedLocation {
+	text(input: MaccasTextSearchInput!): [MaccasLocation!]!
+	coordinate(input: MaccasCoordinateSearchInput!): [MaccasLocation!]!
+	storeId(input: MaccasStoreIdInput!): MaccasLocation!
+}
+
+input MaccasRemoveOfferInput {
+	id: UUID!
+	storeId: String!
+}
+
+input MaccasStoreIdInput {
+	storeId: String!
+}
+
+input MaccasTextSearchInput {
+	query: String!
 }
 
 type MutationRoot {
-  addOffer(input: AddOfferInput!): AddOfferResponse!
-  removeOffer(input: RemoveOfferInput!): UUID!
+	maccasAddOffer(input: MaccasAddOfferInput!): MaccasAddOfferResponse!
+	maccasRemoveOffer(input: MaccasRemoveOfferInput!): UUID!
 }
 
 """
@@ -54,68 +95,17 @@ ISO 8601 combined date and time without timezone.
 """
 scalar NaiveDateTime
 
-type Offer {
-  categories: [String!]!
-  count: Int!
-  creationDate: NaiveDateTime!
-  description: String!
-  id: UUID!
-  imageBasename: String! @deprecated(reason: "use image_url instead")
-  imageUrl: String!
-  name: String!
-  offerPropositionId: Int!
-  price: Float
-  recommendationScore: Float!
-  shortName: String!
-  validFrom: NaiveDateTime!
-  validTo: NaiveDateTime!
-}
-
-input OfferByIdInput {
-  id: UUID!
-  storeId: String!
-}
-
-type OfferByIdResponse {
-  code: String!
-}
-
-type Points {
-  accountId: UUID!
-  code: String
-  currentPoints: Int!
-  lifetimePoints: Int!
-}
-
-type QueriedLocation {
-  coordinate(input: CoordinateSearchInput!): [Location!]!
-  storeId(input: StoreIdInput!): Location!
-  text(input: TextSearchInput!): [Location!]!
-}
-
 type QueryRoot {
-  categories: [String!]!
-  health: HealthResponse!
-  location: QueriedLocation!
-  offerById(input: OfferByIdInput!): OfferByIdResponse!
-  offers: [Offer!]!
-  points(filter: FilterInput): [Points!]!
-  pointsByAccountId(accountId: UUID!, storeId: String): Points!
-  recommendations: [Offer!]!
-  upcomingOffers: [Offer!]!
-}
-
-input RemoveOfferInput {
-  id: UUID!
-  storeId: String!
-}
-
-input StoreIdInput {
-  storeId: String!
-}
-
-input TextSearchInput {
-  query: String!
+	maccasHealth: MaccasHealthResponse!
+	maccasOfferById(input: MaccasOfferByIdInput!): MaccasOfferByIdResponse!
+	maccasUpcomingOffers: [MaccasOffer!]!
+	maccasRecommendations: [MaccasOffer!]!
+	maccasOffers: [MaccasOffer!]!
+	maccasPoints(filter: MaccasFilterInput): [MaccasPoints!]!
+	maccasPointsByAccountId(accountId: UUID!, storeId: String): MaccasPoints!
+	maccasLocation: MaccasQueriedLocation!
+	maccasCategories: [String!]!
+	_service: _Service!
 }
 
 """
@@ -129,3 +119,34 @@ entities without requiring a central allocating authority.
 * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 """
 scalar UUID
+
+"""
+The `_Any` scalar is used to pass representations of entities from external
+services into the root `_entities` field for execution.
+"""
+scalar _Any
+
+type _Service {
+	sdl: String
+}
+
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Provides a scalar specification URL for specifying the behavior of custom scalar types.
+"""
+directive @specifiedBy(url: String!) on SCALAR
+schema {
+	query: QueryRoot
+	mutation: MutationRoot
+}

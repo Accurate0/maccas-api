@@ -13,14 +13,11 @@ use crate::{
     },
 };
 use crate::{
-    graphql::{
-        FinalSchema, MutationRoot, QueryRoot, graphql_handler,
-        queries::locations::dataloader::LocationLoader, self_health,
-    },
+    graphql::{graphql_handler, queries::locations::dataloader::LocationLoader, self_health},
     settings::Settings,
     types::ApiState,
 };
-use async_graphql::{EmptySubscription, dataloader::DataLoader};
+use async_graphql::dataloader::DataLoader;
 use axum::routing::post;
 use axum::{Router, http::Method, routing::get};
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
@@ -41,6 +38,7 @@ use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
 use tracing::log::LevelFilter;
 
+mod auth;
 mod caching;
 mod discord_webhook;
 mod event_manager;
@@ -201,41 +199,56 @@ async fn main() -> Result<(), anyhow::Error> {
     let http_client = base::http::get_http_client()?;
     let basic_http_client = base::http::get_basic_http_client()?;
 
-    let schema = FinalSchema::build(
-        QueryRoot::default(),
-        MutationRoot::default(),
-        EmptySubscription,
-    )
-    .data(event_manager.clone())
-    .data(http_client.clone())
-    // this client is special, it contains no tracing or retry
-    .data(basic_http_client)
-    .data(settings.clone())
-    .data(db.clone())
-    .data(DataLoader::new(
-        OfferCountDataLoader {
-            database: db.clone(),
-        },
-        tokio::spawn,
-    ))
-    .data(DataLoader::new(
-        OfferDetailsLoader {
-            event_manager: event_manager.clone(),
-            database: db.clone(),
-            cache: offer_details_cache,
-        },
-        tokio::spawn,
-    ))
-    .data(DataLoader::new(
-        LocationLoader {
-            database: db,
-            settings: settings.clone(),
-        },
-        tokio::spawn,
-    ))
-    // FIXME: health checks are showing up
-    // .extension(crate::graphql::tracing::Tracing)
-    .finish();
+    let providers = settings
+        .oidc_providers
+        .iter()
+        .map(|p| p.parse::<auth::Provider>().map_err(anyhow::Error::msg))
+        .collect::<Result<Vec<_>, _>>()?;
+    let auth = if providers.is_empty() || settings.oidc_groups.is_empty() {
+        None
+    } else {
+        let auth = auth::Authenticator::new(auth::AuthConfig {
+            providers,
+            groups: settings.oidc_groups.clone(),
+        });
+        if let Err(e) = auth.refresh().await {
+            tracing::warn!("initial jwks fetch failed, retrying on demand: {e}");
+        }
+        tokio::spawn(auth.clone().run());
+        Some(auth)
+    };
+
+    let schema = graphql::builder()
+        .data(event_manager.clone())
+        .data(http_client.clone())
+        // this client is special, it contains no tracing or retry
+        .data(basic_http_client)
+        .data(settings.clone())
+        .data(db.clone())
+        .data(DataLoader::new(
+            OfferCountDataLoader {
+                database: db.clone(),
+            },
+            tokio::spawn,
+        ))
+        .data(DataLoader::new(
+            OfferDetailsLoader {
+                event_manager: event_manager.clone(),
+                database: db.clone(),
+                cache: offer_details_cache,
+            },
+            tokio::spawn,
+        ))
+        .data(DataLoader::new(
+            LocationLoader {
+                database: db,
+                settings: settings.clone(),
+            },
+            tokio::spawn,
+        ))
+        // FIXME: health checks are showing up
+        // .extension(crate::graphql::tracing::Tracing)
+        .finish();
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
@@ -258,6 +271,7 @@ async fn main() -> Result<(), anyhow::Error> {
             schema,
             settings,
             event_manager,
+            auth,
         });
 
     let app = Router::new().nest("/v1", api_routes);

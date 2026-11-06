@@ -5,22 +5,26 @@ use async_graphql::{InputObject, SimpleObject};
 pub struct QueriedLocation {}
 
 #[derive(InputObject)]
+#[graphql(name = "MaccasTextSearchInput")]
 pub struct TextSearchInput {
     pub query: String,
 }
 
 #[derive(InputObject)]
+#[graphql(name = "MaccasCoordinateSearchInput")]
 pub struct CoordinateSearchInput {
     pub lat: f64,
     pub lng: f64,
 }
 
 #[derive(InputObject)]
+#[graphql(name = "MaccasStoreIdInput")]
 pub struct StoreIdInput {
     pub store_id: String,
 }
 
 #[derive(SimpleObject, Clone)]
+#[graphql(name = "MaccasLocation")]
 pub struct Location {
     pub name: String,
     pub store_number: String,

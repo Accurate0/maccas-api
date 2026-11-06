@@ -22,6 +22,7 @@ pub struct OffersMutation;
 #[Object]
 impl OffersMutation {
     const CONCURRENT_OFFERS_LIMIT: i32 = 5;
+    #[graphql(name = "maccasAddOffer")]
     async fn add_offer(
         &self,
         ctx: &Context<'_>,
@@ -40,9 +41,10 @@ impl OffersMutation {
 
             tracing::info!("current active deals for {user_id}: {current_deal_count:?}");
             if let Some(current_deal_count) = current_deal_count
-                && current_deal_count.count + 1 > Self::CONCURRENT_OFFERS_LIMIT {
-                    return Err(async_graphql::Error::new("cannot have more offers active"));
-                }
+                && current_deal_count.count + 1 > Self::CONCURRENT_OFFERS_LIMIT
+            {
+                return Err(async_graphql::Error::new("cannot have more offers active"));
+            }
         }
 
         let all_locked_accounts = entity::account_lock::Entity::find()
@@ -173,6 +175,7 @@ impl OffersMutation {
         })
     }
 
+    #[graphql(name = "maccasRemoveOffer")]
     async fn remove_offer(
         &self,
         ctx: &Context<'_>,

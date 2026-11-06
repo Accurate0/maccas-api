@@ -68,6 +68,10 @@ pub struct Settings {
     pub redis_connection_string: Option<String>,
     #[serde(default)]
     pub new_offer: NewOffer,
+    #[serde(default)]
+    pub oidc_providers: Vec<String>,
+    #[serde(default)]
+    pub oidc_groups: Vec<String>,
 }
 
 impl Settings {
@@ -79,6 +83,8 @@ impl Settings {
                     .list_separator(",")
                     .with_list_parse_key("new_offer.discord_urls")
                     .with_list_parse_key("new_offer.external_urls")
+                    .with_list_parse_key("oidc_providers")
+                    .with_list_parse_key("oidc_groups")
                     .try_parsing(true),
             )
             .build()?;

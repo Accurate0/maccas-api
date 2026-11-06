@@ -6,6 +6,7 @@ pub struct CategoryQuery;
 
 #[Object]
 impl CategoryQuery {
+    #[graphql(name = "maccasCategories")]
     async fn categories<'a>(
         &self,
         ctx: &async_graphql::Context<'_>,

@@ -5,7 +5,7 @@ use sea_orm::DatabaseConnection;
 
 pub struct HealthResponse;
 
-#[Object]
+#[Object(name = "MaccasHealthResponse")]
 impl HealthResponse {
     pub async fn database(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<bool> {
         let db = ctx.data::<DatabaseConnection>()?;

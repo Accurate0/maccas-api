@@ -43,7 +43,7 @@
 			method: 'GET'
 		});
 
-		options = (await response.json()) as LocationByText$result['location']['text'];
+		options = (await response.json()) as LocationByText$result['maccasLocation']['text'];
 		disabled = false;
 	};
 
@@ -69,7 +69,7 @@
 						});
 
 						options =
-							(await response.json()) as LocationByCoordinates$result['location']['coordinate'];
+							(await response.json()) as LocationByCoordinates$result['maccasLocation']['coordinate'];
 						disabled = false;
 					},
 					(err: GeolocationPositionError) => {

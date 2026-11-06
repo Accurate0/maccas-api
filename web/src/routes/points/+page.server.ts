@@ -15,6 +15,6 @@ export const load = async (event) => {
 	});
 
 	return {
-		points: data.then((c) => c.data?.points)
+		points: data.then((c) => c.data?.maccasPoints)
 	};
 };

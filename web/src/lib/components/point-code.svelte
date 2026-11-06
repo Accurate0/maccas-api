@@ -20,7 +20,7 @@
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
 				.then((r) => r.json())
-				.then((j) => j as GetAccountCode$result['pointsByAccountId']),
+				.then((j) => j as GetAccountCode$result['maccasPointsByAccountId']),
 
 		{
 			onError: () => {
@@ -38,7 +38,7 @@
 		async () =>
 			await fetch(`/api/accounts/${accountId}`, { method: 'GET' })
 				.then((r) => r.json())
-				.then((j) => j as GetAccountCode$result['pointsByAccountId']),
+				.then((j) => j as GetAccountCode$result['maccasPointsByAccountId']),
 		{
 			onError: () => {
 				code.update(() => 'Something went wrong');

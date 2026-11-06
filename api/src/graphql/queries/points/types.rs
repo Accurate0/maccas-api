@@ -8,6 +8,7 @@ use sea_orm::{DatabaseConnection, EntityTrait, TransactionTrait, prelude::Uuid};
 use std::time::Duration;
 
 #[derive(InputObject)]
+#[graphql(name = "MaccasFilterInput")]
 pub struct FilterInput {
     pub minimum_current_points: i64,
 }
@@ -17,7 +18,7 @@ pub struct Points {
     pub store_id: Option<String>,
 }
 
-#[Object]
+#[Object(name = "MaccasPoints")]
 impl Points {
     pub async fn account_id(&self) -> &Uuid {
         &self.model.account_id

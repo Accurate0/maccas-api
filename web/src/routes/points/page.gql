@@ -1,5 +1,5 @@
 query GetPoints($minimumCurrentPoints: Int!) {
-	points(filter: { minimumCurrentPoints: $minimumCurrentPoints }) {
+	maccasPoints(filter: { minimumCurrentPoints: $minimumCurrentPoints }) {
 		currentPoints
 		accountId
 	}

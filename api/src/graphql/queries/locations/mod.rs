@@ -20,6 +20,7 @@ pub struct LocationsQuery;
 
 #[Object]
 impl LocationsQuery {
+    #[graphql(name = "maccasLocation")]
     async fn location<'a>(&self) -> Result<QueriedLocation, anyhow::Error> {
         Ok(QueriedLocation {})
     }
@@ -27,7 +28,7 @@ impl LocationsQuery {
 
 // TODO: implement caching for locations (redis?)
 
-#[Object]
+#[Object(name = "MaccasQueriedLocation")]
 impl QueriedLocation {
     async fn text<'a>(
         &self,

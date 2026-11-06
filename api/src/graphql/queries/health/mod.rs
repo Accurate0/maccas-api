@@ -8,6 +8,7 @@ pub struct HealthQuery;
 
 #[Object]
 impl HealthQuery {
+    #[graphql(name = "maccasHealth")]
     async fn health<'a>(&self) -> async_graphql::Result<HealthResponse> {
         Ok(HealthResponse)
     }

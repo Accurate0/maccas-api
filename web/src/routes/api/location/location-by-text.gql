@@ -1,5 +1,5 @@
 query LocationByText($query: String!) {
-	location {
+	maccasLocation {
 		text(input: { query: $query }) {
 			name
 			storeNumber

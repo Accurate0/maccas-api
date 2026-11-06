@@ -1,3 +1,4 @@
+use crate::auth::{AuthError, Authenticator};
 use crate::types::{ApiState, AppError};
 use anyhow::Context;
 use async_graphql::{ServerError, http::GraphiQLSource};
@@ -5,7 +6,7 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::http::StatusCode;
 use axum::response::Result;
 use axum::{Json, extract::State, http::HeaderMap, response::IntoResponse};
-use base::jwt::{self, JwtClaims};
+use base::jwt::{self, JwtClaims, Role};
 
 pub async fn graphiql() -> impl IntoResponse {
     axum::response::Html(GraphiQLSource::build().endpoint("/v1/graphql").finish()).into_response()
@@ -15,70 +16,71 @@ pub async fn graphiql() -> impl IntoResponse {
 pub struct ValidatedToken(pub String);
 pub struct ValidatedClaims(pub JwtClaims);
 
+fn unauthorized(message: impl Into<String>) -> GraphQLResponse {
+    let mut response = async_graphql::Response::new(());
+    response.errors.push(ServerError::new(message, None));
+    GraphQLResponse::from(response)
+}
+
+async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, AuthError> {
+    let claims = auth.authorize(token).await?;
+
+    Ok(JwtClaims {
+        user_id: String::new(),
+        session_id: None,
+        iat: claims.iat,
+        exp: claims.exp,
+        aud: claims.aud,
+        iss: claims.iss,
+        sub: claims.sub,
+        role: vec![Role::Admin, Role::Points],
+    })
+}
+
 // FIXME: tracing the authorization code
 pub async fn graphql_handler(
     State(ApiState {
-        schema, settings, ..
+        schema,
+        settings,
+        auth,
+        ..
     }): State<ApiState>,
     headers: HeaderMap,
     req: GraphQLRequest,
 ) -> Result<GraphQLResponse, AppError> {
-    let auth_header = headers.get("Authorization");
-    let mut claims = None;
+    let token = match headers.get("Authorization") {
+        Some(auth_header) => Some(auth_header.to_str()?.replace("Bearer ", "")),
+        None => None,
+    };
+
+    let Some(token) = token else {
+        if cfg!(debug_assertions) {
+            return Ok(schema.execute(req.into_inner()).await.into());
+        }
+
+        return Ok(unauthorized("Unauthorized request"));
+    };
+
+    let claims = match auth.as_ref().filter(|auth| auth.issued(&token)) {
+        Some(auth) => match kanidm_claims(auth, &token).await {
+            Ok(claims) => claims,
+            Err(e) => return Ok(unauthorized(e.to_string())),
+        },
+        None => jwt::verify_jwt(settings.auth_secret.as_bytes(), &token)?,
+    };
 
     if cfg!(debug_assertions) {
-        let token = if let Some(auth_header) = auth_header {
-            let token = &auth_header.to_str()?.replace("Bearer ", "");
-
-            let validated_claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
-            tracing::info!("verified token with claims: {:?}", validated_claims);
-
-            claims = Some(validated_claims);
-            Some(token.clone())
-        } else {
-            None
-        };
-
-        let req_inner = req.into_inner();
-        let req = if let Some(claims) = claims {
-            req_inner.data(ValidatedClaims(claims))
-        } else {
-            req_inner
-        };
-
-        let req = if let Some(token) = token {
-            req.data(ValidatedToken(token))
-        } else {
-            req
-        };
-
-        return Ok(schema.execute(req).await.into());
+        tracing::info!("verified token with claims: {:?}", claims);
     }
 
-    match auth_header {
-        Some(auth_header) => {
-            let token = &auth_header.to_str()?.replace("Bearer ", "");
-
-            let claims = jwt::verify_jwt(settings.auth_secret.as_bytes(), token)?;
-
-            Ok(schema
-                .execute(
-                    req.into_inner()
-                        .data(ValidatedToken(token.to_string()))
-                        .data(ValidatedClaims(claims)),
-                )
-                .await
-                .into())
-        }
-        None => {
-            let mut response = async_graphql::Response::new(());
-            response
-                .errors
-                .push(ServerError::new("Unauthorized request", None));
-
-            Ok(GraphQLResponse::from(response))
-        }
-    }
+    Ok(schema
+        .execute(
+            req.into_inner()
+                .data(ValidatedToken(token))
+                .data(ValidatedClaims(claims)),
+        )
+        .await
+        .into())
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -92,7 +94,7 @@ pub async fn health(
     let request = async_graphql::Request::new(
         r#"
       {
-        health {
+        maccasHealth {
           recommendations
         }
       }
@@ -104,7 +106,7 @@ pub async fn health(
         response
             .data
             .into_json()?
-            .get("health")
+            .get("maccasHealth")
             .context("can't find health in response")?
             .clone(),
     )?;

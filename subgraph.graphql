@@ -1,0 +1,141 @@
+input MaccasAddOfferInput {
+	offerPropositionId: Int!
+	storeId: String!
+}
+
+type MaccasAddOfferResponse {
+	id: UUID!
+	code: String!
+}
+
+input MaccasCoordinateSearchInput {
+	lat: Float!
+	lng: Float!
+}
+
+input MaccasFilterInput {
+	minimumCurrentPoints: Int!
+}
+
+type MaccasHealthResponse {
+	database: Boolean!
+	recommendations: Boolean!
+}
+
+type MaccasLocation {
+	name: String!
+	storeNumber: String!
+	address: String!
+	distance: Float
+}
+
+type MaccasOffer {
+	categories: [String!]!
+	name: String!
+	id: UUID!
+	offerPropositionId: Int!
+	validFrom: NaiveDateTime!
+	validTo: NaiveDateTime!
+	count: Int!
+	recommendationScore: Float!
+	shortName: String!
+	description: String!
+	creationDate: NaiveDateTime!
+	imageBasename: String! @deprecated(reason: "use image_url instead")
+	imageUrl: String!
+	price: Float
+}
+
+input MaccasOfferByIdInput {
+	id: UUID!
+	storeId: String!
+}
+
+type MaccasOfferByIdResponse {
+	code: String!
+}
+
+type MaccasPoints {
+	accountId: UUID!
+	currentPoints: Int!
+	lifetimePoints: Int!
+	code: String
+}
+
+type MaccasQueriedLocation {
+	text(input: MaccasTextSearchInput!): [MaccasLocation!]!
+	coordinate(input: MaccasCoordinateSearchInput!): [MaccasLocation!]!
+	storeId(input: MaccasStoreIdInput!): MaccasLocation!
+}
+
+input MaccasRemoveOfferInput {
+	id: UUID!
+	storeId: String!
+}
+
+input MaccasStoreIdInput {
+	storeId: String!
+}
+
+input MaccasTextSearchInput {
+	query: String!
+}
+
+type MutationRoot {
+	maccasAddOffer(input: MaccasAddOfferInput!): MaccasAddOfferResponse!
+	maccasRemoveOffer(input: MaccasRemoveOfferInput!): UUID!
+}
+
+"""
+ISO 8601 combined date and time without timezone.
+
+# Examples
+
+* `2015-07-01T08:59:60.123`,
+"""
+scalar NaiveDateTime
+
+type QueryRoot {
+	maccasHealth: MaccasHealthResponse!
+	maccasOfferById(input: MaccasOfferByIdInput!): MaccasOfferByIdResponse!
+	maccasUpcomingOffers: [MaccasOffer!]!
+	maccasRecommendations: [MaccasOffer!]!
+	maccasOffers: [MaccasOffer!]!
+	maccasPoints(filter: MaccasFilterInput): [MaccasPoints!]!
+	maccasPointsByAccountId(accountId: UUID!, storeId: String): MaccasPoints!
+	maccasLocation: MaccasQueriedLocation!
+	maccasCategories: [String!]!
+}
+
+"""
+A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+Strings within GraphQL. UUIDs are used to assign unique identifiers to
+entities without requiring a central allocating authority.
+
+# References
+
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+* [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+"""
+scalar UUID
+
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Provides a scalar specification URL for specifying the behavior of custom scalar types.
+"""
+directive @specifiedBy(url: String!) on SCALAR
+extend schema @link(
+	url: "https://specs.apollo.dev/federation/v2.5",
+	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject", "@requiresScopes"]
+)

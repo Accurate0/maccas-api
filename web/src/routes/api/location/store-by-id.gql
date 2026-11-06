@@ -1,5 +1,5 @@
 query StoreById($storeId: String!) {
-	location {
+	maccasLocation {
 		storeId(input: { storeId: $storeId }) {
 			name
 		}

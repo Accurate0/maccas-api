@@ -13,7 +13,7 @@ export async function GET(event) {
 			variables: { query }
 		});
 
-		return json(data?.location.text ?? []);
+		return json(data?.maccasLocation.text ?? []);
 	}
 
 	const latitude = Number(event.url.searchParams.get('latitude'));
@@ -23,7 +23,7 @@ export async function GET(event) {
 		const store = new LocationByCoordinatesStore();
 		const { data } = await store.fetch({ event, variables: { latitude, longitude } });
 
-		return json(data?.location.coordinate ?? []);
+		return json(data?.maccasLocation.coordinate ?? []);
 	}
 
 	return new Response(null, { status: 400 });
@@ -47,7 +47,7 @@ export async function POST(event) {
 					update: {
 						data: {
 							storeId: validatedBody.data.storeId,
-							storeName: data?.location.storeId.name
+							storeName: data?.maccasLocation.storeId.name
 						}
 					}
 				}
@@ -58,7 +58,7 @@ export async function POST(event) {
 			data: {
 				userId: user.id,
 				storeId: validatedBody.data.storeId,
-				storeName: data?.location.storeId.name
+				storeName: data?.maccasLocation.storeId.name
 			}
 		});
 

@@ -18,6 +18,7 @@ pub struct OffersQuery;
 
 #[Object]
 impl OffersQuery {
+    #[graphql(name = "maccasOfferById")]
     async fn offer_by_id(
         &self,
         ctx: &Context<'_>,
@@ -60,6 +61,7 @@ impl OffersQuery {
         })
     }
 
+    #[graphql(name = "maccasUpcomingOffers")]
     async fn upcoming_offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let now = chrono::offset::Utc::now().naive_utc();
@@ -76,16 +78,20 @@ impl OffersQuery {
             .collect())
     }
 
+    #[graphql(name = "maccasRecommendations")]
     async fn recommendations(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let claims = ctx.data_opt::<ValidatedClaims>().map(|c| c.0.clone());
         if claims.is_none() {
             return Ok(vec![]);
         }
 
-        let claims = claims.unwrap();
+        let Ok(user_id) = Uuid::from_str(&claims.unwrap().user_id) else {
+            return Ok(vec![]);
+        };
+
         let db = ctx.data::<DatabaseConnection>()?;
         let recommendations = entity::recommendations::Entity::find()
-            .filter(recommendations::Column::UserId.eq(Uuid::from_str(&claims.user_id)?))
+            .filter(recommendations::Column::UserId.eq(user_id))
             .one(db)
             .await?
             .map(|m| m.offer_proposition_ids)
@@ -126,6 +132,7 @@ impl OffersQuery {
         Ok(offers)
     }
 
+    #[graphql(name = "maccasOffers")]
     async fn offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let all_locked_accounts = entity::account_lock::Entity::find()

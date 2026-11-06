@@ -1,3 +1,4 @@
+use crate::auth::Authenticator;
 use crate::event_manager::EventManager;
 use crate::graphql::FinalSchema;
 use crate::settings::Settings;
@@ -10,6 +11,7 @@ pub struct ApiState {
     pub schema: FinalSchema,
     pub settings: Settings,
     pub event_manager: EventManager,
+    pub auth: Option<Authenticator>,
 }
 
 pub enum AppError {

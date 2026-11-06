@@ -1,5 +1,5 @@
 query LocationByCoordinates($latitude: Float!, $longitude: Float!) {
-	location {
+	maccasLocation {
 		coordinate(input: { lat: $latitude, lng: $longitude }) {
 			name
 			storeNumber

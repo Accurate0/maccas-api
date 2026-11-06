@@ -23,11 +23,11 @@ export async function GET(event) {
 		variables: { id: offerId, storeId: user.config?.storeId ?? 'must be set' }
 	});
 
-	if (!data?.offerById.code) {
+	if (!data?.maccasOfferById.code) {
 		return new Response(null, { status: 500 });
 	}
 
-	return json({ code: data.offerById.code });
+	return json({ code: data.maccasOfferById.code });
 }
 
 export async function POST(event) {
@@ -53,11 +53,11 @@ export async function POST(event) {
 		{ event }
 	);
 
-	if (!data?.addOffer.code) {
+	if (!data?.maccasAddOffer.code) {
 		return new Response(null, { status: 500 });
 	}
 
-	return json({ code: data.addOffer.code, id: data.addOffer.id });
+	return json({ code: data.maccasAddOffer.code, id: data.maccasAddOffer.id });
 }
 
 export async function DELETE(event) {
@@ -79,7 +79,7 @@ export async function DELETE(event) {
 		{ event }
 	);
 
-	if (!data?.removeOffer) {
+	if (!data?.maccasRemoveOffer) {
 		return new Response(null, { status: 500 });
 	}
 
