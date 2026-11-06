@@ -15,6 +15,7 @@ pub use handler::*;
 pub mod guard;
 
 #[derive(Default, MergedObject)]
+#[graphql(name = "Query")]
 pub struct QueryRoot(
     HealthQuery,
     OffersQuery,
@@ -24,6 +25,7 @@ pub struct QueryRoot(
 );
 
 #[derive(Default, MergedObject)]
+#[graphql(name = "Mutation")]
 pub struct MutationRoot(OffersMutation);
 
 pub type FinalSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;

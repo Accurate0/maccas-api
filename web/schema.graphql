@@ -81,7 +81,7 @@ input MaccasTextSearchInput {
 	query: String!
 }
 
-type MutationRoot {
+type Mutation {
 	maccasAddOffer(input: MaccasAddOfferInput!): MaccasAddOfferResponse!
 	maccasRemoveOffer(input: MaccasRemoveOfferInput!): UUID!
 }
@@ -95,7 +95,7 @@ ISO 8601 combined date and time without timezone.
 """
 scalar NaiveDateTime
 
-type QueryRoot {
+type Query {
 	maccasHealth: MaccasHealthResponse!
 	maccasOfferById(input: MaccasOfferByIdInput!): MaccasOfferByIdResponse!
 	maccasUpcomingOffers: [MaccasOffer!]!
@@ -147,6 +147,6 @@ Provides a scalar specification URL for specifying the behavior of custom scalar
 """
 directive @specifiedBy(url: String!) on SCALAR
 schema {
-	query: QueryRoot
-	mutation: MutationRoot
+	query: Query
+	mutation: Mutation
 }
