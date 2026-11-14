@@ -1,0 +1,66 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+enable-openid-connect: true
+
+jobs:
+  build-clustering:
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: clustering
+      image-name: maccas-clustering
+      build-args: |
+        BINARY_NAME=clustering
+
+  build-web:
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: web
+      image-name: maccas-web
+      build-args: |
+        BINARY_NAME=web
+      npm-audience: u:1:23bd1a63-d212-4649-94b1-820aa15abc1d
+
+  build-rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        apps: [api, scheduler, migration, recommendations]
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: .
+      image-name: maccas-${{ matrix.apps }}
+      build-args: |
+        BINARY_NAME=${{ matrix.apps }}
+
+  deploy:
+    needs:
+      - build-clustering
+      - build-rust
+    uses: anurag/workflows/.forgejo/workflows/deploy-image.yaml@main
+    with:
+      service-name: maccas-api
+      images: registry.anurag.sh/containers/maccas-api,registry.anurag.sh/containers/maccas-scheduler,registry.anurag.sh/containers/maccas-recommendations,registry.anurag.sh/containers/maccas-migration,registry.anurag.sh/containers/maccas-clustering
+      manifests-path: projects/maccas-api
+      values-file: projects/maccas-api/image.values.yaml
+      tag: ${{ github.sha }}
+    secrets:
+      CI_IMAGE_UPDATER_TOKEN: ${{ secrets.CI_IMAGE_UPDATER_TOKEN }}
+
+  deploy-web:
+    needs:
+      - build-web
+    uses: anurag/workflows/.forgejo/workflows/deploy-image.yaml@main
+    with:
+      service-name: maccas-api
+      images: registry.anurag.sh/containers/maccas-web
+      manifests-path: projects/maccas-api
+      values-file: projects/maccas-api/image.values.yaml
+      tag: ${{ github.sha }}
+      update-name: web
+    secrets:
+      CI_IMAGE_UPDATER_TOKEN: ${{ secrets.CI_IMAGE_UPDATER_TOKEN }}

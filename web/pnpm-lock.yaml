@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@accurate0/feature-flag-client':
-        specifier: ^0.2.0
-        version: 0.2.0(@openfeature/core@1.11.0)
+        specifier: ^0.2.1
+        version: 0.2.1(@openfeature/core@1.11.0)
       '@fontsource-variable/open-sans':
         specifier: ^5.2.7
         version: 5.2.7
@@ -216,8 +216,8 @@ importers:
 
 packages:
 
-  '@accurate0/feature-flag-client@0.2.0':
-    resolution: {integrity: sha512-CDovItQc/0cskuU82fingfIxmixWfbIgidmw638eXUdr8WxOr/EyLNJIizZ5FBDHusASfgVNWELwv4fjOUvhsQ==, tarball: https://npm.pkg.github.com/download/@accurate0/feature-flag-client/0.2.0/9b652e87081d96e3742e29e74d1facd99a45662e}
+  '@accurate0/feature-flag-client@0.2.1':
+    resolution: {integrity: sha512-iMtirvce20og5r1/AH+/W1osyfZUKvc2jHeUPfGT0fP7LhVcoOrrBsZ0ldfa804JVgUcE82MUQA9Lk/HkjvGhg==, tarball: https://git.anurag.sh/api/packages/anurag/npm/%40accurate0%2Ffeature-flag-client/-/0.2.1/feature-flag-client-0.2.1.tgz}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -3710,7 +3710,7 @@ packages:
 
 snapshots:
 
-  '@accurate0/feature-flag-client@0.2.0(@openfeature/core@1.11.0)':
+  '@accurate0/feature-flag-client@0.2.1(@openfeature/core@1.11.0)':
     dependencies:
       '@bufbuild/protobuf': 2.12.0
       '@grpc/grpc-js': 1.14.4

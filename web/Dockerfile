@@ -13,7 +13,7 @@ RUN apk add openssl
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     --mount=type=secret,id=node_auth_token,env=NODE_AUTH_TOKEN \
-    printf '//npm.pkg.github.com/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > "$HOME/.npmrc" && \
+    printf '//git.anurag.sh/api/packages/anurag/npm/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > "$HOME/.npmrc" && \
     pnpm install --frozen-lockfile && \
     rm -f "$HOME/.npmrc"
 RUN pnpm run db:generate

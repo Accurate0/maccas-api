@@ -1,0 +1,38 @@
+name: PR & Push Build
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+      - v1
+      - v2
+
+jobs:
+  build-rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        apps: [api, migration, recommendations]
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: .
+      image-name: maccas-${{ matrix.apps }}
+      build-args: |
+        BINARY_NAME=${{ matrix.apps }}
+
+  build-web:
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: web
+      image-name: maccas-web
+      build-args: |
+        BINARY_NAME=web
+      npm-audience: u:1:23bd1a63-d212-4649-94b1-820aa15abc1d
+
+  build-clustering:
+    uses: anurag/workflows/.forgejo/workflows/build-push-image.yaml@main
+    with:
+      directory: clustering
+      image-name: maccas-clustering
+      build-args: |
+        BINARY_NAME=clustering
