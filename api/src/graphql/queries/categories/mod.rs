@@ -6,7 +6,7 @@ pub struct CategoryQuery;
 
 #[Object]
 impl CategoryQuery {
-    #[graphql(name = "maccasCategories")]
+    #[graphql(name = "maccasCategories", requires_scopes = "maccas:offer:read")]
     async fn categories<'a>(
         &self,
         ctx: &async_graphql::Context<'_>,

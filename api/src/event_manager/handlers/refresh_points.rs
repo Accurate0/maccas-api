@@ -2,7 +2,7 @@ use super::HandlerError;
 use crate::{event_manager::EventManager, settings::Settings};
 use anyhow::Context;
 use entity::{accounts, points};
-use sea_orm::{sea_query::OnConflict, EntityTrait, IntoActiveModel, TransactionTrait};
+use sea_orm::{EntityTrait, IntoActiveModel, TransactionTrait, sea_query::OnConflict};
 use tracing::instrument;
 use uuid::Uuid;
 

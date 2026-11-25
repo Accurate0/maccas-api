@@ -1,8 +1,8 @@
-use super::{error::JobError, Job, JobContext};
+use super::{Job, JobContext, error::JobError};
 use crate::settings::McDonalds;
 use base::{constants::mc_donalds, http::get_http_client};
 use entity::accounts;
-use libmaccas::{types::request::EmailRequest, ApiClient};
+use libmaccas::{ApiClient, types::request::EmailRequest};
 use reqwest_middleware::ClientWithMiddleware;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
 use sensordata::{SensorDataRequest, SensorDataResponse};

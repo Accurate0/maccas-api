@@ -18,7 +18,7 @@ pub struct OffersQuery;
 
 #[Object]
 impl OffersQuery {
-    #[graphql(name = "maccasOfferById")]
+    #[graphql(name = "maccasOfferById", requires_scopes = "maccas:offer:read")]
     async fn offer_by_id(
         &self,
         ctx: &Context<'_>,
@@ -61,7 +61,7 @@ impl OffersQuery {
         })
     }
 
-    #[graphql(name = "maccasUpcomingOffers")]
+    #[graphql(name = "maccasUpcomingOffers", requires_scopes = "maccas:offer:read")]
     async fn upcoming_offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let now = chrono::offset::Utc::now().naive_utc();
@@ -78,7 +78,7 @@ impl OffersQuery {
             .collect())
     }
 
-    #[graphql(name = "maccasRecommendations")]
+    #[graphql(name = "maccasRecommendations", requires_scopes = "maccas:offer:read")]
     async fn recommendations(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let claims = ctx.data_opt::<ValidatedClaims>().map(|c| c.0.clone());
         if claims.is_none() {
@@ -132,7 +132,7 @@ impl OffersQuery {
         Ok(offers)
     }
 
-    #[graphql(name = "maccasOffers")]
+    #[graphql(name = "maccasOffers", requires_scopes = "maccas:offer:read")]
     async fn offers(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Offer>> {
         let db = ctx.data::<DatabaseConnection>()?;
         let all_locked_accounts = entity::account_lock::Entity::find()

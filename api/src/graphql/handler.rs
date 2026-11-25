@@ -32,6 +32,19 @@ async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, A
     let claims = auth.authorize(token).await;
     tracing::Span::current().record("valid", claims.is_ok());
     let claims = claims?;
+    let scopes = claims.scopes();
+    let role = if scopes.is_empty() {
+        vec![Role::Admin, Role::Points]
+    } else {
+        [
+            ("maccas:offer:write", Role::Admin),
+            ("maccas:points:read", Role::Points),
+        ]
+        .into_iter()
+        .filter(|(scope, _)| scopes.contains(scope))
+        .map(|(_, role)| role)
+        .collect()
+    };
 
     Ok(JwtClaims {
         user_id: String::new(),
@@ -41,7 +54,7 @@ async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, A
         aud: claims.aud,
         iss: claims.iss,
         sub: claims.sub,
-        role: vec![Role::Admin, Role::Points],
+        role,
     })
 }
 

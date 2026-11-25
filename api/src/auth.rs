@@ -62,11 +62,25 @@ pub struct Claims {
     pub preferred_username: Option<String>,
     #[serde(default)]
     pub groups: Option<Vec<String>>,
+    #[serde(default)]
+    pub scope: Option<String>,
 }
+
+pub const SCOPE_PREFIX: &str = "maccas:";
 
 impl Claims {
     fn identity(&self) -> &str {
         self.preferred_username.as_deref().unwrap_or(&self.sub)
+    }
+
+    /// The maccas scopes Kanidm issued, from the space-separated `scope` claim.
+    pub fn scopes(&self) -> Vec<&str> {
+        self.scope
+            .as_deref()
+            .unwrap_or_default()
+            .split_whitespace()
+            .filter(|scope| scope.starts_with(SCOPE_PREFIX))
+            .collect()
     }
 }
 
@@ -154,6 +168,9 @@ impl Authenticator {
             .issuer_for(token)
             .ok_or_else(|| AuthError::Unauthorized("untrusted issuer".to_owned()))?;
         let claims = self.verify(issuer, token).await?;
+        if !claims.scopes().is_empty() {
+            return Ok(claims);
+        }
 
         let held = match &claims.groups {
             Some(groups) => groups.clone(),

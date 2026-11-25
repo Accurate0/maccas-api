@@ -1,4 +1,4 @@
-use super::{error::JobError, Job, JobContext};
+use super::{Job, JobContext, error::JobError};
 use entity::account_lock;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use tokio_util::sync::CancellationToken;

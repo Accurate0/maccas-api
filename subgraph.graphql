@@ -82,8 +82,8 @@ input MaccasTextSearchInput {
 }
 
 type Mutation {
-	maccasAddOffer(input: MaccasAddOfferInput!): MaccasAddOfferResponse!
-	maccasRemoveOffer(input: MaccasRemoveOfferInput!): UUID!
+	maccasAddOffer(input: MaccasAddOfferInput!): MaccasAddOfferResponse! @requiresScopes(scopes: [["maccas:offer:write"]])
+	maccasRemoveOffer(input: MaccasRemoveOfferInput!): UUID! @requiresScopes(scopes: [["maccas:offer:write"]])
 }
 
 """
@@ -97,14 +97,14 @@ scalar NaiveDateTime
 
 type Query {
 	maccasHealth: MaccasHealthResponse!
-	maccasOfferById(input: MaccasOfferByIdInput!): MaccasOfferByIdResponse!
-	maccasUpcomingOffers: [MaccasOffer!]!
-	maccasRecommendations: [MaccasOffer!]!
-	maccasOffers: [MaccasOffer!]!
-	maccasPoints(filter: MaccasFilterInput): [MaccasPoints!]!
-	maccasPointsByAccountId(accountId: UUID!, storeId: String): MaccasPoints!
-	maccasLocation: MaccasQueriedLocation!
-	maccasCategories: [String!]!
+	maccasOfferById(input: MaccasOfferByIdInput!): MaccasOfferByIdResponse! @requiresScopes(scopes: [["maccas:offer:read"]])
+	maccasUpcomingOffers: [MaccasOffer!]! @requiresScopes(scopes: [["maccas:offer:read"]])
+	maccasRecommendations: [MaccasOffer!]! @requiresScopes(scopes: [["maccas:offer:read"]])
+	maccasOffers: [MaccasOffer!]! @requiresScopes(scopes: [["maccas:offer:read"]])
+	maccasPoints(filter: MaccasFilterInput): [MaccasPoints!]! @requiresScopes(scopes: [["maccas:points:read"]])
+	maccasPointsByAccountId(accountId: UUID!, storeId: String): MaccasPoints! @requiresScopes(scopes: [["maccas:points:read"]])
+	maccasLocation: MaccasQueriedLocation! @requiresScopes(scopes: [["maccas:offer:read"]])
+	maccasCategories: [String!]! @requiresScopes(scopes: [["maccas:offer:read"]])
 }
 
 """

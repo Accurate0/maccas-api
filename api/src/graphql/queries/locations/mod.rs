@@ -20,7 +20,7 @@ pub struct LocationsQuery;
 
 #[Object]
 impl LocationsQuery {
-    #[graphql(name = "maccasLocation")]
+    #[graphql(name = "maccasLocation", requires_scopes = "maccas:offer:read")]
     async fn location<'a>(&self) -> Result<QueriedLocation, anyhow::Error> {
         Ok(QueriedLocation {})
     }

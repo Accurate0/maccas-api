@@ -22,7 +22,7 @@ pub struct OffersMutation;
 #[Object]
 impl OffersMutation {
     const CONCURRENT_OFFERS_LIMIT: i32 = 5;
-    #[graphql(name = "maccasAddOffer")]
+    #[graphql(name = "maccasAddOffer", requires_scopes = "maccas:offer:write")]
     async fn add_offer(
         &self,
         ctx: &Context<'_>,
@@ -175,7 +175,7 @@ impl OffersMutation {
         })
     }
 
-    #[graphql(name = "maccasRemoveOffer")]
+    #[graphql(name = "maccasRemoveOffer", requires_scopes = "maccas:offer:write")]
     async fn remove_offer(
         &self,
         ctx: &Context<'_>,

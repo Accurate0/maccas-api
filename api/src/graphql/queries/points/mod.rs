@@ -14,7 +14,11 @@ pub struct PointsQuery;
 
 #[Object]
 impl PointsQuery {
-    #[graphql(name = "maccasPoints", guard = "RoleGuard::with_role(Role::Points)")]
+    #[graphql(
+        name = "maccasPoints",
+        requires_scopes = "maccas:points:read",
+        guard = "RoleGuard::with_role(Role::Points)"
+    )]
     async fn points<'a>(
         &self,
         ctx: &Context<'a>,
@@ -42,6 +46,7 @@ impl PointsQuery {
 
     #[graphql(
         name = "maccasPointsByAccountId",
+        requires_scopes = "maccas:points:read",
         guard = "RoleGuard::with_role(Role::Points)"
     )]
     async fn points_by_account_id<'a>(
