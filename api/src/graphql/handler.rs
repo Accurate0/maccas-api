@@ -1,5 +1,5 @@
 use super::tracing::Untraced;
-use crate::auth::{AuthError, Authenticator};
+use crate::auth::{AuthError, Authenticator, PASSPORT_HEADER};
 use crate::types::{ApiState, AppError};
 use anyhow::Context;
 use async_graphql::{ServerError, http::GraphiQLSource};
@@ -24,12 +24,12 @@ fn unauthorized(message: impl Into<String>) -> GraphQLResponse {
 }
 
 #[tracing::instrument(
-    name = "auth.validate_oauth",
+    name = "auth.validate_passport",
     skip_all,
     fields(valid = tracing::field::Empty)
 )]
-async fn kanidm_claims(auth: &Authenticator, token: &str) -> Result<JwtClaims, AuthError> {
-    let claims = auth.authorize(token).await;
+async fn passport_claims(auth: &Authenticator, passport: &str) -> Result<JwtClaims, AuthError> {
+    let claims = auth.authorize(passport).await;
     tracing::Span::current().record("valid", claims.is_ok());
     let claims = claims?;
     let scopes = claims.scopes();
@@ -68,6 +68,21 @@ pub async fn graphql_handler(
     headers: HeaderMap,
     req: GraphQLRequest,
 ) -> Result<GraphQLResponse, AppError> {
+    // the graph router admitted the caller and signed a passport; it also forwards their token
+    if let Some(passport) = headers.get(PASSPORT_HEADER) {
+        let Some(auth) = auth.as_ref() else {
+            return Ok(unauthorized("graph passports are not accepted here"));
+        };
+        let claims = match passport_claims(auth, passport.to_str()?).await {
+            Ok(claims) => claims,
+            Err(e) => return Ok(unauthorized(e.to_string())),
+        };
+        return Ok(schema
+            .execute(req.into_inner().data(ValidatedClaims(claims)))
+            .await
+            .into());
+    }
+
     let token = match headers.get("Authorization") {
         Some(auth_header) => Some(auth_header.to_str()?.replace("Bearer ", "")),
         None => None,
@@ -81,14 +96,8 @@ pub async fn graphql_handler(
         return Ok(unauthorized("Unauthorized request"));
     };
 
-    let claims = match auth.as_ref().filter(|auth| auth.issued(&token)) {
-        Some(auth) => match kanidm_claims(auth, &token).await {
-            Ok(claims) => claims,
-            Err(e) => return Ok(unauthorized(e.to_string())),
-        },
-        None => tracing::info_span!("auth.validate_jwt")
-            .in_scope(|| jwt::verify_jwt(settings.auth_secret.as_bytes(), &token))?,
-    };
+    let claims = tracing::info_span!("auth.validate_jwt")
+        .in_scope(|| jwt::verify_jwt(settings.auth_secret.as_bytes(), &token))?;
 
     if cfg!(debug_assertions) {
         tracing::info!("verified token with claims: {:?}", claims);

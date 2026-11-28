@@ -199,23 +199,19 @@ async fn main() -> Result<(), anyhow::Error> {
     let http_client = base::http::get_http_client()?;
     let basic_http_client = base::http::get_basic_http_client()?;
 
-    let providers = settings
-        .oidc_providers
-        .iter()
-        .map(|p| p.parse::<auth::Provider>().map_err(anyhow::Error::msg))
-        .collect::<Result<Vec<_>, _>>()?;
-    let auth = if providers.is_empty() || settings.oidc_groups.is_empty() {
-        None
-    } else {
-        let auth = auth::Authenticator::new(auth::AuthConfig {
-            providers,
-            groups: settings.oidc_groups.clone(),
-        });
-        if let Err(e) = auth.refresh().await {
-            tracing::warn!("initial jwks fetch failed, retrying on demand: {e}");
+    let auth = match settings.subgraph_auth.as_deref() {
+        None => None,
+        Some(json) => {
+            let config = json
+                .parse::<auth::AuthConfig>()
+                .map_err(anyhow::Error::msg)?;
+            let auth = auth::Authenticator::new(config);
+            if let Err(e) = auth.refresh().await {
+                tracing::warn!("initial passport jwks fetch failed, retrying on demand: {e}");
+            }
+            tokio::spawn(auth.clone().run());
+            Some(auth)
         }
-        tokio::spawn(auth.clone().run());
-        Some(auth)
     };
 
     let schema = graphql::builder()

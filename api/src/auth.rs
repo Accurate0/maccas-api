@@ -1,11 +1,14 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use jsonwebtoken::jwk::{AlgorithmParameters, JwkSet};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
 use serde::Deserialize;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
+
+pub const PASSPORT_HEADER: &str = "x-graph-passport";
+const PASSPORT_ISSUER: &str = "graph-router";
 
 #[derive(Debug, thiserror::Error)]
 pub enum AuthError {
@@ -19,36 +22,23 @@ pub enum AuthError {
     Http(#[from] reqwest::Error),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Provider {
-    pub issuer: String,
+#[derive(Debug, Clone, Deserialize)]
+pub struct AuthConfig {
     pub audience: String,
+    pub jwks: String,
 }
 
-impl std::str::FromStr for Provider {
+impl std::str::FromStr for AuthConfig {
     type Err = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (issuer, audience) = s
-            .rsplit_once('=')
-            .filter(|(issuer, audience)| !issuer.is_empty() && !audience.is_empty())
-            .ok_or_else(|| format!("expected <issuer>=<audience>, got {s:?}"))?;
-        Ok(Self {
-            issuer: issuer.to_owned(),
-            audience: audience.to_owned(),
-        })
+    fn from_str(json: &str) -> Result<Self, Self::Err> {
+        let config: Self =
+            serde_json::from_str(json).map_err(|e| format!("SUBGRAPH_AUTH is not valid: {e}"))?;
+        if config.audience.is_empty() || config.jwks.is_empty() {
+            return Err("SUBGRAPH_AUTH needs an audience and the router's jwks".to_owned());
+        }
+        Ok(config)
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct AuthConfig {
-    pub providers: Vec<Provider>,
-    pub groups: Vec<String>,
-}
-
-#[derive(Deserialize)]
-struct Issuer {
-    iss: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -58,46 +48,30 @@ pub struct Claims {
     pub aud: String,
     pub iat: i64,
     pub exp: i64,
+    pub identity: Identity,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct Identity {
+    pub kind: String,
     #[serde(default)]
-    pub preferred_username: Option<String>,
+    pub username: Option<String>,
     #[serde(default)]
-    pub groups: Option<Vec<String>>,
-    #[serde(default)]
-    pub scope: Option<String>,
+    pub scopes: BTreeSet<String>,
 }
 
 pub const SCOPE_PREFIX: &str = "maccas:";
 
 impl Claims {
-    fn identity(&self) -> &str {
-        self.preferred_username.as_deref().unwrap_or(&self.sub)
-    }
-
-    /// The maccas scopes Kanidm issued, from the space-separated `scope` claim.
+    /// The maccas scopes the caller holds.
     pub fn scopes(&self) -> Vec<&str> {
-        self.scope
-            .as_deref()
-            .unwrap_or_default()
-            .split_whitespace()
+        self.identity
+            .scopes
+            .iter()
+            .map(String::as_str)
             .filter(|scope| scope.starts_with(SCOPE_PREFIX))
             .collect()
     }
-}
-
-#[derive(Deserialize)]
-struct UserInfo {
-    #[serde(default)]
-    groups: Vec<String>,
-}
-
-// kanidm reports groups as SPNs (name@domain) or UUIDs
-fn groups_match(held: &[String], allowed: &[String]) -> bool {
-    held.iter().any(|group| {
-        let name = group
-            .split_once('@')
-            .map_or(group.as_str(), |(name, _)| name);
-        allowed.iter().any(|a| a == group || a == name)
-    })
 }
 
 #[derive(Clone)]
@@ -113,34 +87,16 @@ pub struct Authenticator {
 
 struct Inner {
     client: reqwest::Client,
-    groups: Vec<String>,
-    issuers: Vec<IssuerKeys>,
-}
-
-struct IssuerKeys {
-    provider: Provider,
-    jwks_uri: String,
-    userinfo_endpoint: String,
+    config: AuthConfig,
     keys: RwLock<BTreeMap<String, VerifyingKey>>,
+    last_refresh: Mutex<Option<Instant>>,
 }
 
 impl Authenticator {
     const REFRESH_INTERVAL: Duration = Duration::from_secs(3600);
+    const UNKNOWN_KID_COOLDOWN: Duration = Duration::from_secs(30);
 
     pub fn new(config: AuthConfig) -> Self {
-        let issuers = config
-            .providers
-            .into_iter()
-            .map(|provider| {
-                let base = provider.issuer.trim_end_matches('/').to_owned();
-                IssuerKeys {
-                    jwks_uri: format!("{base}/public_key.jwk"),
-                    userinfo_endpoint: format!("{base}/userinfo"),
-                    provider,
-                    keys: RwLock::new(BTreeMap::new()),
-                }
-            })
-            .collect();
         Self {
             inner: Arc::new(Inner {
                 client: reqwest::Client::builder()
@@ -148,85 +104,54 @@ impl Authenticator {
                     .user_agent("maccas-api")
                     .build()
                     .unwrap_or_default(),
-                groups: config.groups,
-                issuers,
+                config,
+                keys: RwLock::new(BTreeMap::new()),
+                last_refresh: Mutex::new(None),
             }),
         }
     }
 
-    fn issuer_for(&self, token: &str) -> Option<&IssuerKeys> {
-        let Issuer { iss } = jsonwebtoken::dangerous::insecure_decode_claims(token).ok()?;
-        self.inner.issuers.iter().find(|i| i.provider.issuer == iss)
-    }
-
-    pub fn issued(&self, token: &str) -> bool {
-        self.issuer_for(token).is_some()
-    }
-
-    pub async fn authorize(&self, token: &str) -> Result<Claims, AuthError> {
-        let issuer = self
-            .issuer_for(token)
-            .ok_or_else(|| AuthError::Unauthorized("untrusted issuer".to_owned()))?;
-        let claims = self.verify(issuer, token).await?;
-        if !claims.scopes().is_empty() {
-            return Ok(claims);
-        }
-
-        let held = match &claims.groups {
-            Some(groups) => groups.clone(),
-            None => self.userinfo_groups(issuer, token).await?,
-        };
-        let allowed = &self.inner.groups;
-        if !groups_match(&held, allowed) {
+    pub async fn authorize(&self, passport: &str) -> Result<Claims, AuthError> {
+        let claims = self.verify(passport).await?;
+        if claims.identity.kind != "user" {
             return Err(AuthError::Forbidden(format!(
-                "{} is not in any of {allowed:?}",
-                claims.identity()
+                "{} identities can't use maccas",
+                claims.identity.kind
             )));
         }
+        tracing::debug!(
+            user = claims.identity.username.as_deref().unwrap_or(&claims.sub),
+            "authorized"
+        );
         Ok(claims)
     }
 
-    async fn userinfo_groups(
-        &self,
-        issuer: &IssuerKeys,
-        token: &str,
-    ) -> Result<Vec<String>, AuthError> {
-        let info: UserInfo = self
-            .inner
-            .client
-            .get(&issuer.userinfo_endpoint)
-            .bearer_auth(token)
-            .send()
-            .await?
-            .error_for_status()?
-            .json()
-            .await?;
-        Ok(info.groups)
-    }
-
     pub async fn refresh(&self) -> Result<usize, AuthError> {
-        let mut total = 0;
-        let mut failure = None;
-        for issuer in &self.inner.issuers {
-            match self.refresh_issuer(issuer).await {
-                Ok(count) => total += count,
-                Err(e) => {
-                    tracing::warn!(issuer = issuer.provider.issuer, "jwks refresh failed: {e}");
-                    failure = Some(e);
-                }
-            }
-        }
-        match failure {
-            Some(e) if total == 0 => Err(e),
-            _ => Ok(total),
-        }
+        let mut last = self.inner.last_refresh.lock().await;
+        *last = Some(Instant::now());
+        self.fetch_keys().await
     }
 
-    async fn refresh_issuer(&self, issuer: &IssuerKeys) -> Result<usize, AuthError> {
+    // an in-flight refresh may bring the kid; otherwise refresh at most once per cooldown
+    async fn refresh_for(&self, kid: &str) -> Result<(), AuthError> {
+        let mut last = self.inner.last_refresh.lock().await;
+        let known = self.inner.keys.read().await.contains_key(kid);
+        if known || last.is_some_and(|at| at.elapsed() < Self::UNKNOWN_KID_COOLDOWN) {
+            return Ok(());
+        }
+
+        tracing::info!("unknown passport kid {kid}, refreshing jwks");
+        *last = Some(Instant::now());
+        self.fetch_keys().await.map(|_| ())
+    }
+
+    async fn fetch_keys(&self) -> Result<usize, AuthError> {
+        let jwks = &self.inner.config.jwks;
+
         let set: JwkSet = self
             .inner
             .client
-            .get(&issuer.jwks_uri)
+            .get(jwks)
             .send()
             .await?
             .error_for_status()?
@@ -261,19 +186,12 @@ impl Authenticator {
         }
 
         if keys.is_empty() {
-            return Err(AuthError::Jwks(format!(
-                "no usable keys at {}",
-                issuer.jwks_uri
-            )));
+            return Err(AuthError::Jwks(format!("no usable keys at {jwks}")));
         }
 
         let count = keys.len();
-        *issuer.keys.write().await = keys;
-        tracing::info!(
-            issuer = issuer.provider.issuer,
-            keys = count,
-            "refreshed jwks"
-        );
+        *self.inner.keys.write().await = keys;
+        tracing::info!(jwks, keys = count, "refreshed passport jwks");
         Ok(count)
     }
 
@@ -283,80 +201,138 @@ impl Authenticator {
         loop {
             ticker.tick().await;
             if let Err(e) = self.refresh().await {
-                tracing::warn!("jwks refresh failed, keeping previous keys: {e}");
+                tracing::warn!("passport jwks refresh failed, keeping previous keys: {e}");
             }
         }
     }
 
-    async fn verify(&self, issuer: &IssuerKeys, token: &str) -> Result<Claims, AuthError> {
+    async fn verify(&self, token: &str) -> Result<Claims, AuthError> {
         let header = decode_header(token)
-            .map_err(|e| AuthError::Unauthorized(format!("unreadable token header: {e}")))?;
+            .map_err(|e| AuthError::Unauthorized(format!("unreadable passport header: {e}")))?;
         let kid = header
             .kid
-            .ok_or_else(|| AuthError::Unauthorized("token has no kid".to_owned()))?;
+            .ok_or_else(|| AuthError::Unauthorized("passport has no kid".to_owned()))?;
 
-        let mut key = issuer.keys.read().await.get(&kid).cloned();
+        let mut key = self.inner.keys.read().await.get(&kid).cloned();
         if key.is_none() {
-            tracing::info!("unknown kid {kid}, refreshing jwks");
-            self.refresh_issuer(issuer).await?;
-            key = issuer.keys.read().await.get(&kid).cloned();
+            self.refresh_for(&kid).await?;
+            key = self.inner.keys.read().await.get(&kid).cloned();
         }
         let key = key.ok_or_else(|| AuthError::Unauthorized(format!("no key for kid {kid}")))?;
 
         let mut validation = Validation::new(key.alg.unwrap_or(header.alg));
-        validation.set_issuer(&[&issuer.provider.issuer]);
-        validation.set_audience(&[&issuer.provider.audience]);
+        validation.set_issuer(&[PASSPORT_ISSUER]);
+        validation.set_audience(&[&self.inner.config.audience]);
+        validation.set_required_spec_claims(&["exp", "iss", "aud", "sub"]);
+        validation.leeway = 5;
 
         decode::<Claims>(token, &key.key, &validation)
             .map(|data| data.claims)
-            .map_err(|e| AuthError::Unauthorized(format!("token rejected: {e}")))
+            .map_err(|e| AuthError::Unauthorized(format!("passport rejected: {e}")))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use jsonwebtoken::{EncodingKey, Header, encode};
 
-    #[test]
-    fn groups_match_by_short_name_or_spn() {
-        let held = vec![
-            "00000000-0000-0000-0000-000000000002".to_owned(),
-            "platform_admins@idm.example.test".to_owned(),
-        ];
-        assert!(groups_match(&held, &["platform_admins".to_owned()]));
-        assert!(groups_match(
-            &held,
-            &["platform_admins@idm.example.test".to_owned()]
-        ));
-        assert!(!groups_match(&held, &["maccas_users".to_owned()]));
-        assert!(!groups_match(&[], &["platform_admins".to_owned()]));
-    }
+    // a throwaway P-256 key, only for signing test passports
+    const TEST_KEY: &str = "-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgQrxIw5f6gChTjB4J
+goqO/XL/jTOI1DURt4md/xUx3qChRANCAARRtn8X4BTpCgfXkHeNNosv447OcYmC
+WTbO2iQACXuyX0kacNHv2hA0Kb33waLg/85mkeG1cQVfOEMQq8jA8xNE
+-----END PRIVATE KEY-----";
+    const TEST_X: &str = "UbZ_F-AU6QoH15B3jTaLL-OOznGJglk2ztokAAl7sl8";
+    const TEST_Y: &str = "SRpw0e_aEDQpvffBouD_zmaR4bVxBV84QxCryMDzE0Q";
 
-    #[test]
-    fn providers_parse_issuer_and_audience() {
-        assert_eq!(
-            "https://idm.example.test/oauth2/openid/graph=graph"
-                .parse::<Provider>()
-                .unwrap(),
-            Provider {
-                issuer: "https://idm.example.test/oauth2/openid/graph".to_owned(),
-                audience: "graph".to_owned(),
-            }
-        );
-        assert!("https://idm.example.test".parse::<Provider>().is_err());
-        assert!("https://idm.example.test=".parse::<Provider>().is_err());
-    }
-
-    #[test]
-    fn hmac_tokens_are_not_issued_by_kanidm() {
+    async fn authenticator() -> Authenticator {
         let auth = Authenticator::new(AuthConfig {
-            providers: vec![
-                "https://idm.example.test/oauth2/openid/graph=graph"
-                    .parse()
-                    .unwrap(),
-            ],
-            groups: vec!["platform_admins".to_owned()],
+            audience: "maccas".to_owned(),
+            jwks: "http://router.invalid/.well-known/passport.jwks".to_owned(),
         });
-        assert!(!auth.issued("not-a-jwt"));
+        let set: JwkSet = serde_json::from_value(serde_json::json!({ "keys": [{
+            "kty": "EC", "crv": "P-256", "x": TEST_X, "y": TEST_Y, "kid": "router", "alg": "ES256",
+        }] }))
+        .unwrap();
+        auth.inner.keys.write().await.insert(
+            "router".to_owned(),
+            VerifyingKey {
+                key: DecodingKey::from_jwk(&set.keys[0]).unwrap(),
+                alg: Some(Algorithm::ES256),
+            },
+        );
+        *auth.inner.last_refresh.lock().await = Some(Instant::now());
+        auth
+    }
+
+    fn passport(overrides: serde_json::Value) -> String {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let mut claims = serde_json::json!({
+            "iss": PASSPORT_ISSUER,
+            "aud": "maccas",
+            "sub": "uuid",
+            "iat": now,
+            "exp": now + 60,
+            "identity": {
+                "issuer": "kanidm",
+                "kind": "user",
+                "subject": "uuid",
+                "username": "anurag",
+                "scopes": ["openid", "maccas:offer:read"],
+            },
+        });
+        for (key, value) in overrides.as_object().unwrap() {
+            claims[key] = value.clone();
+        }
+
+        let mut header = Header::new(Algorithm::ES256);
+        header.kid = Some("router".to_owned());
+        let key = EncodingKey::from_ec_pem(TEST_KEY.as_bytes()).unwrap();
+        encode(&header, &claims, &key).unwrap()
+    }
+
+    #[tokio::test]
+    async fn passports_carry_the_maccas_scopes() {
+        let claims = authenticator()
+            .await
+            .authorize(&passport(serde_json::json!({})))
+            .await
+            .unwrap();
+        assert_eq!(claims.scopes(), vec!["maccas:offer:read"]);
+        assert_eq!(claims.iss, PASSPORT_ISSUER);
+    }
+
+    #[tokio::test]
+    async fn passports_for_others_or_from_elsewhere_are_rejected() {
+        let auth = authenticator().await;
+        for overrides in [
+            serde_json::json!({ "aud": "registry" }),
+            serde_json::json!({ "iss": "https://idm.anurag.sh/oauth2/openid/graph" }),
+            serde_json::json!({ "exp": 1 }),
+        ] {
+            assert!(matches!(
+                auth.authorize(&passport(overrides)).await,
+                Err(AuthError::Unauthorized(_))
+            ));
+        }
+        let forgejo = passport(serde_json::json!({ "identity": { "kind": "external" } }));
+        assert!(matches!(
+            auth.authorize(&forgejo).await,
+            Err(AuthError::Forbidden(_))
+        ));
+    }
+
+    #[test]
+    fn subgraph_auth_needs_an_audience_and_jwks() {
+        let config: AuthConfig =
+            r#"{"audience":"maccas","jwks":"http://router/.well-known/passport.jwks","grants":{}}"#
+                .parse()
+                .unwrap();
+        assert_eq!(config.audience, "maccas");
+        assert!(r#"{"providers":[]}"#.parse::<AuthConfig>().is_err());
     }
 }
